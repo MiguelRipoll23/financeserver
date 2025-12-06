@@ -1,0 +1,45 @@
+{
+  "imports": {
+    "@hono/zod-openapi": "npm:@hono/zod-openapi@^1.1.5",
+    "@needle-di/core": "jsr:@needle-di/core@^1.1.0",
+    "@scalar/hono-api-reference": "npm:@scalar/hono-api-reference@^0.9.26",
+    "@hono/mcp": "npm:@hono/mcp@0.2.0",
+    "@modelcontextprotocol/sdk/server/mcp.js": "npm:@modelcontextprotocol/sdk@^1.24.3/server/mcp.js",
+    "@wok/djwt": "jsr:@wok/djwt@^3.0.2",
+    "drizzle-kit": "npm:drizzle-kit@^0.31.8",
+    "drizzle-orm": "npm:drizzle-orm@^0.45.0",
+    "pg": "npm:pg@^8.16.3",
+    "hono": "npm:hono@^4.10.7",
+    "zod": "npm:zod@^4.1.13"
+  },
+  "permissions": {
+    "default": {
+      "env": true,
+      "read": true,
+      "write": true,
+      "net": true
+    },
+    "development": {
+      "env": true,
+      "read": true,
+      "write": true,
+      "net": true
+    },
+    "database": {
+      "env": true,
+      "read": true,
+      "write": true,
+      "net": true,
+      "run": true,
+      "sys": true
+    }
+  },
+  "tasks": {
+    "dev": "deno run --permission-set=development --env --watch src/main.ts",
+    "debug": "deno run --inspect-wait --permission-set=development --env --watch src/main.ts",
+    "check": "deno check src/main.ts",
+    "studio": "deno run --permission-set=database --node-modules-dir npm:drizzle-kit studio",
+    "generate": "deno run --permission-set=database --node-modules-dir npm:drizzle-kit generate",
+    "push": "deno run --permission-set=database --node-modules-dir npm:drizzle-kit push"
+  }
+}
