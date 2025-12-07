@@ -10,6 +10,8 @@ import {
   and,
   isNull,
   or,
+  inArray,
+  max,
 } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
@@ -88,130 +90,7 @@ export class SubscriptionsService {
     const db = this.databaseService.get();
     const limit = this.resolveLimit(filters.limit ?? undefined);
     const offset = decodeCursor(filters.cursor);
-
-    const conditions: SQL[] = [];
-
-    if (filters.name) {
-      const normalizedName = filters.name.trim().toLowerCase();
-      conditions.push(
-        sql`LOWER(${subscriptionsTable.name}) LIKE ${`%${normalizedName}%`}`
-      );
-    }
-
-    if (filters.category) {
-      const normalizedCategory = filters.category.trim().toLowerCase();
-      conditions.push(
-        sql`LOWER(${
-          subscriptionsTable.category
-        }) LIKE ${`%${normalizedCategory}%`}`
-      );
-    }
-
-    if (filters.recurrence) {
-      conditions.push(
-        eq(subscriptionPricesTable.recurrence, filters.recurrence as Recurrence)
-      );
-    }
-
-    if (filters.minimumAmount != null) {
-      const minimumCents = this.parseAmountToCents(
-        filters.minimumAmount,
-        "SUBSCRIPTION_MIN_AMOUNT_INVALID",
-        "Minimum amount filter must be a non-negative monetary value"
-      );
-
-      conditions.push(
-        gte(
-          subscriptionPricesTable.amount,
-          this.formatAmount(minimumCents / 100)
-        )
-      );
-    }
-
-    if (filters.maximumAmount != null) {
-      const maximumCents = this.parseAmountToCents(
-        filters.maximumAmount,
-        "SUBSCRIPTION_MAX_AMOUNT_INVALID",
-        "Maximum amount filter must be a non-negative monetary value"
-      );
-
-      conditions.push(
-        lte(
-          subscriptionPricesTable.amount,
-          this.formatAmount(maximumCents / 100)
-        )
-      );
-    }
-
-    // Date range filtering: include any price period that intersects the
-    // requested range. That is: price.effective_from <= endDate AND
-    // (price.effective_until IS NULL OR price.effective_until >= startDate)
-    if (filters.startDate && filters.endDate) {
-      const dateRangeCondition = and(
-        sql`${subscriptionPricesTable.effectiveFrom} <= ${filters.endDate}`,
-        or(
-          isNull(subscriptionPricesTable.effectiveUntil),
-          sql`${subscriptionPricesTable.effectiveUntil} >= ${filters.startDate}`
-        )!
-      );
-      if (dateRangeCondition) {
-        conditions.push(dateRangeCondition);
-      }
-    } else if (filters.startDate) {
-      // Any price that hasn't ended before the startDate
-      conditions.push(
-        or(
-          isNull(subscriptionPricesTable.effectiveUntil),
-          sql`${subscriptionPricesTable.effectiveUntil} >= ${filters.startDate}`
-        )!
-      );
-    } else if (filters.endDate) {
-      // Any price that started on or before the endDate
-      conditions.push(
-        sql`${subscriptionPricesTable.effectiveFrom} <= ${filters.endDate}`
-      );
-    }
-
-    if (filters.currencyCode) {
-      conditions.push(
-        eq(subscriptionPricesTable.currencyCode, filters.currencyCode)
-      );
-    }
-
-    if (filters.isActive != null) {
-      if (filters.isActive) {
-        // Active subscriptions: started and either no end date OR end date is in the future
-        conditions.push(
-          sql`${subscriptionPricesTable.effectiveFrom} <= CURRENT_DATE`
-        );
-        conditions.push(
-          or(
-            isNull(subscriptionPricesTable.effectiveUntil),
-            sql`${subscriptionPricesTable.effectiveUntil} >= CURRENT_DATE`
-          )!
-        );
-      } else {
-        // Inactive subscriptions: end date is in the past
-        conditions.push(
-          sql`${subscriptionPricesTable.effectiveUntil} IS NOT NULL AND ${subscriptionPricesTable.effectiveUntil} < CURRENT_DATE`
-        );
-      }
-    }
-
-    // When no isActive filter is provided, get the most recent price for each subscription
-    if (filters.isActive === undefined) {
-      // Add condition to get the most recent price for each subscription
-      conditions.push(
-        sql`${subscriptionPricesTable.id} = (
-          SELECT sp.id 
-          FROM subscription_prices sp 
-          WHERE sp.subscription_id = ${subscriptionsTable.id} 
-          ORDER BY sp.effective_from DESC 
-          LIMIT 1
-        )`
-      );
-    }
-
+    const conditions = this.buildSubscriptionFilters(db, filters);
     const predicate = buildAndFilters(conditions);
 
     // Use subquery to count distinct subscriptions
@@ -255,24 +134,7 @@ export class SubscriptionsService {
       .limit(limit)
       .offset(offset);
 
-    const summaries: SubscriptionSummary[] = rows.map((row) => ({
-      id: row.subscription.id,
-      name: row.subscription.name,
-      category: row.subscription.category,
-      recurrence: row.price.recurrence,
-      amount: this.formatStoredAmount(
-        row.price.amount,
-        "SUBSCRIPTION_AMOUNT_CORRUPTED",
-        `Stored subscription amount for subscription ${row.subscription.id} is invalid`
-      ),
-      currencyCode: row.price.currencyCode,
-      effectiveFrom: toISOStringSafe(row.price.effectiveFrom),
-      effectiveUntil: row.price.effectiveUntil
-        ? toISOStringSafe(row.price.effectiveUntil)
-        : null,
-      plan: row.price.plan,
-      updatedAt: toISOStringSafe(row.subscription.updatedAt),
-    }));
+    const summaries = rows.map((row) => this.mapToSubscriptionSummary(row));
 
     return createOffsetPagination<SubscriptionSummary>(
       summaries,
@@ -617,6 +479,200 @@ export class SubscriptionsService {
     }
 
     return Math.min(Math.max(requested, 1), MAX_PAGE_SIZE);
+  }
+
+  private buildSubscriptionFilters(
+    db: NodePgDatabase,
+    filters: SubscriptionsFilter
+  ): SQL[] {
+    const conditions: SQL[] = [];
+
+    if (filters.name) {
+      const normalizedName = filters.name.trim().toLowerCase();
+      conditions.push(
+        sql`LOWER(${subscriptionsTable.name}) LIKE ${`%${normalizedName}%`}`
+      );
+    }
+
+    if (filters.category) {
+      const normalizedCategory = filters.category.trim().toLowerCase();
+      conditions.push(
+        sql`LOWER(${
+          subscriptionsTable.category
+        }) LIKE ${`%${normalizedCategory}%`}`
+      );
+    }
+
+    if (filters.recurrence) {
+      conditions.push(
+        eq(subscriptionPricesTable.recurrence, filters.recurrence as Recurrence)
+      );
+    }
+
+    this.addAmountFilters(conditions, filters);
+    this.addDateRangeFilters(conditions, filters);
+
+    if (filters.currencyCode) {
+      conditions.push(
+        eq(subscriptionPricesTable.currencyCode, filters.currencyCode)
+      );
+    }
+
+    this.addActiveStatusFilter(db, conditions, filters.isActive);
+
+    return conditions;
+  }
+
+  private addAmountFilters(
+    conditions: SQL[],
+    filters: SubscriptionsFilter
+  ): void {
+    if (filters.minimumAmount != null) {
+      const minimumCents = this.parseAmountToCents(
+        filters.minimumAmount,
+        "SUBSCRIPTION_MIN_AMOUNT_INVALID",
+        "Minimum amount filter must be a non-negative monetary value"
+      );
+
+      conditions.push(
+        gte(
+          subscriptionPricesTable.amount,
+          this.formatAmount(minimumCents / 100)
+        )
+      );
+    }
+
+    if (filters.maximumAmount != null) {
+      const maximumCents = this.parseAmountToCents(
+        filters.maximumAmount,
+        "SUBSCRIPTION_MAX_AMOUNT_INVALID",
+        "Maximum amount filter must be a non-negative monetary value"
+      );
+
+      conditions.push(
+        lte(
+          subscriptionPricesTable.amount,
+          this.formatAmount(maximumCents / 100)
+        )
+      );
+    }
+  }
+
+  private addDateRangeFilters(
+    conditions: SQL[],
+    filters: SubscriptionsFilter
+  ): void {
+    // Date range filtering: include any price period that intersects the
+    // requested range. That is: price.effective_from <= endDate AND
+    // (price.effective_until IS NULL OR price.effective_until >= startDate)
+    if (filters.startDate && filters.endDate) {
+      const dateRangeCondition = and(
+        sql`${subscriptionPricesTable.effectiveFrom} <= ${filters.endDate}`,
+        or(
+          isNull(subscriptionPricesTable.effectiveUntil),
+          sql`${subscriptionPricesTable.effectiveUntil} >= ${filters.startDate}`
+        )!
+      );
+      if (dateRangeCondition) {
+        conditions.push(dateRangeCondition);
+      }
+    } else if (filters.startDate) {
+      // Any price that hasn't ended before the startDate
+      conditions.push(
+        or(
+          isNull(subscriptionPricesTable.effectiveUntil),
+          sql`${subscriptionPricesTable.effectiveUntil} >= ${filters.startDate}`
+        )!
+      );
+    } else if (filters.endDate) {
+      // Any price that started on or before the endDate
+      conditions.push(
+        sql`${subscriptionPricesTable.effectiveFrom} <= ${filters.endDate}`
+      );
+    }
+  }
+
+  private addActiveStatusFilter(
+    db: NodePgDatabase,
+    conditions: SQL[],
+    isActive: boolean | null | undefined
+  ): void {
+    if (isActive == null) {
+      // No isActive filter: get the most recent price for each subscription
+      const latestPricesSubquery = db
+        .select({
+          id: subscriptionPricesTable.id,
+          subscriptionId: subscriptionPricesTable.subscriptionId,
+          maxEffectiveFrom: max(subscriptionPricesTable.effectiveFrom).as(
+            "max_effective_from"
+          ),
+        })
+        .from(subscriptionPricesTable)
+        .groupBy(subscriptionPricesTable.subscriptionId)
+        .as("latest_prices");
+
+      conditions.push(
+        inArray(
+          subscriptionPricesTable.id,
+          db
+            .select({ id: subscriptionPricesTable.id })
+            .from(subscriptionPricesTable)
+            .innerJoin(
+              latestPricesSubquery,
+              and(
+                eq(
+                  subscriptionPricesTable.subscriptionId,
+                  latestPricesSubquery.subscriptionId
+                ),
+                eq(
+                  subscriptionPricesTable.effectiveFrom,
+                  latestPricesSubquery.maxEffectiveFrom
+                )
+              )!
+            )
+        )
+      );
+    } else if (isActive) {
+      // Active subscriptions: started and either no end date OR end date is in the future
+      conditions.push(
+        sql`${subscriptionPricesTable.effectiveFrom} <= CURRENT_DATE`
+      );
+      conditions.push(
+        or(
+          isNull(subscriptionPricesTable.effectiveUntil),
+          sql`${subscriptionPricesTable.effectiveUntil} >= CURRENT_DATE`
+        )!
+      );
+    } else {
+      // Inactive subscriptions: end date is in the past
+      conditions.push(
+        sql`${subscriptionPricesTable.effectiveUntil} IS NOT NULL AND ${subscriptionPricesTable.effectiveUntil} < CURRENT_DATE`
+      );
+    }
+  }
+
+  private mapToSubscriptionSummary(row: {
+    subscription: typeof subscriptionsTable.$inferSelect;
+    price: typeof subscriptionPricesTable.$inferSelect;
+  }): SubscriptionSummary {
+    return {
+      id: row.subscription.id,
+      name: row.subscription.name,
+      category: row.subscription.category,
+      recurrence: row.price.recurrence,
+      amount: this.formatStoredAmount(
+        row.price.amount,
+        "SUBSCRIPTION_AMOUNT_CORRUPTED",
+        `Stored subscription amount for subscription ${row.subscription.id} is invalid`
+      ),
+      currencyCode: row.price.currencyCode,
+      effectiveFrom: toISOStringSafe(row.price.effectiveFrom),
+      effectiveUntil: row.price.effectiveUntil
+        ? toISOStringSafe(row.price.effectiveUntil)
+        : null,
+      plan: row.price.plan,
+      updatedAt: toISOStringSafe(row.subscription.updatedAt),
+    };
   }
 
   private async loadSubscriptionResponse(
