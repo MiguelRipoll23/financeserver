@@ -6,14 +6,6 @@ const DateOnlyRegex = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
 const MonetaryRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
 
 export const SaveBillToolSchema = z.object({
-  id: z
-    .number()
-    .int()
-    .positive()
-    .optional()
-    .describe(
-      "ID of existing bill to update (optional, if not provided a new bill will be created based on date)"
-    ),
   date: z
     .string()
     .regex(DateOnlyRegex, "Date must be in YYYY-MM-DD format")
@@ -46,6 +38,15 @@ export const SaveBillToolSchema = z.object({
       "Email address of the bill sender or service provider (optional)"
     ),
 });
+
+export const UpdateBillToolSchema = z
+  .object({
+    id: z.number().int().positive().describe("ID of the bill to update"),
+  })
+  .merge(SaveBillToolSchema.partial())
+  .refine((data) => Object.keys(data).some((key) => key !== "id"), {
+    message: "At least one field to update must be provided besides the ID.",
+  });
 
 export const FilterBillsToolSchema = z.object({
   startDate: z

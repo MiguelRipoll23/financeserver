@@ -14,7 +14,7 @@ export class SaveReceiptToolService {
       meta: {
         title: "Save receipt",
         description:
-          "Use this when you need to save a new receipt with date and items (each with name, quantity, and unit price). When an id is provided, use this to fix incorrect item names, quantities, or unit prices. Do not use for deleting receipts.",
+          "Use this when you need to save a new receipt with date and items (each with name, quantity, and unit price). Do not use for updating or deleting receipts.",
         inputSchema: SaveReceiptToolSchema.shape,
         annotations: {
           readOnlyHint: false,
@@ -26,20 +26,10 @@ export class SaveReceiptToolService {
       run: async (input: unknown) => {
         const parsed = SaveReceiptToolSchema.parse(input);
 
-        let result;
-        if (parsed.id) {
-          // Update existing receipt
-          result = await this.receiptsService.updateReceipt(parsed.id, {
-            date: parsed.date,
-            items: parsed.items,
-          });
-        } else {
-          // Create new receipt
-          result = await this.receiptsService.createReceipt({
-            date: parsed.date,
-            items: parsed.items,
-          });
-        }
+        const result = await this.receiptsService.createReceipt({
+          date: parsed.date,
+          items: parsed.items,
+        });
 
         const displayDate = parsed.date;
         const itemCount = parsed.items.length;
@@ -53,8 +43,7 @@ export class SaveReceiptToolService {
         const quantityText = totalQuantity === 1 ? "product" : "products";
         const currencySymbol = getCurrencySymbolForCode(result.currencyCode);
 
-        const actionText = parsed.id ? "updated" : "saved";
-        const text = `Receipt ${actionText} successfully: ${displayDate} – ${totalQuantity} ${quantityText} across ${itemCount} ${itemsText}, total: ${result.totalAmount}${currencySymbol} (ID: ${result.id})`;
+        const text = `Receipt saved successfully: ${displayDate} – ${totalQuantity} ${quantityText} across ${itemCount} ${itemsText}, total: ${result.totalAmount}${currencySymbol} (ID: ${result.id})`;
 
         return {
           text,

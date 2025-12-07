@@ -33,14 +33,6 @@ export const SaveReceiptItemToolSchema = z.object({
 });
 
 export const SaveReceiptToolSchema = z.object({
-  id: z
-    .number()
-    .int()
-    .positive()
-    .optional()
-    .describe(
-      "ID of existing receipt to update (optional, if provided allows fixing item names, quantities, and unit prices)"
-    ),
   date: z
     .string()
     .regex(DateOnlyRegex, "Date must be in YYYY-MM-DD format")
@@ -50,6 +42,15 @@ export const SaveReceiptToolSchema = z.object({
     .min(1, "At least one item is required")
     .describe("List of items purchased on this receipt"),
 });
+
+export const UpdateReceiptToolSchema = z
+  .object({
+    id: z.number().int().positive().describe("ID of the receipt to update"),
+  })
+  .merge(SaveReceiptToolSchema.partial())
+  .refine((data) => Object.keys(data).some((key) => key !== "id"), {
+    message: "At least one field to update must be provided besides the ID.",
+  });
 
 export const FilterReceiptsToolSchema = z.object({
   start_date: z

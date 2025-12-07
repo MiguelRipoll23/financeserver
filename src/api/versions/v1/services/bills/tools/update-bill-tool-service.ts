@@ -2,20 +2,20 @@ import { inject, injectable } from "@needle-di/core";
 import { McpToolDefinition } from "../../../interfaces/mcp/mcp-tool-interface.ts";
 import { BillsService } from "../bills-service.ts";
 import { getCurrencySymbolForCode } from "../../../utils/currency-utils.ts";
-import { SaveBillToolSchema } from "../../../schemas/mcp-bills-schemas.ts";
+import { UpdateBillToolSchema } from "../../../schemas/mcp-bills-schemas.ts";
 
 @injectable()
-export class SaveBillToolService {
+export class UpdateBillToolService {
   constructor(private billsService = inject(BillsService)) {}
 
   public getDefinition(): McpToolDefinition {
     return {
-      name: "bills.save",
+      name: "bills.update",
       meta: {
-        title: "Save bill",
+        title: "Update bill",
         description:
-          "Use this when you need to save a new bill. Do not use for updating or deleting bills.",
-        inputSchema: SaveBillToolSchema.shape,
+          "Use this when you need to update an existing bill. Do not use for creating new bills or deleting bills.",
+        inputSchema: UpdateBillToolSchema.shape,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,
@@ -24,9 +24,9 @@ export class SaveBillToolService {
         },
       },
       run: async (input: unknown) => {
-        const parsed = SaveBillToolSchema.parse(input);
+        const parsed = UpdateBillToolSchema.parse(input);
 
-        const result = await this.billsService.createBill({
+        const result = await this.billsService.updateBill(parsed.id, {
           date: parsed.date,
           category: parsed.category,
           totalAmount: parsed.totalAmount,
@@ -40,7 +40,7 @@ export class SaveBillToolService {
           : "";
         const currencySymbol = getCurrencySymbolForCode(result.currencyCode);
 
-        const text = `Bill saved successfully: ${displayDate} – ${result.category}: ${result.totalAmount}${currencySymbol}${emailDisplay} (ID: ${result.id})`;
+        const text = `Bill updated successfully: ${displayDate} – ${result.category}: ${result.totalAmount}${currencySymbol}${emailDisplay} (ID: ${result.id})`;
 
         return {
           text,
