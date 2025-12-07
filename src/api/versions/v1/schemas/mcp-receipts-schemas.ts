@@ -57,39 +57,39 @@ export const DeleteReceiptToolSchema = z.object({
 });
 
 export const FilterReceiptsToolSchema = z.object({
-  start_date: z
+  startDate: z
     .string()
     .optional()
     .describe("Filter receipts from this date onwards (format: YYYY-MM-DD)"),
-  end_date: z
+  endDate: z
     .string()
     .optional()
     .describe("Filter receipts up to this date (format: YYYY-MM-DD)"),
-  min_total_amount: z
+  minimumTotalAmount: z
     .string()
     .regex(MonetaryRegex)
     .optional()
     .describe(
       "Minimum total amount for receipts (format: 123.45, no currency symbol)"
     ),
-  max_total_amount: z
+  maximumTotalAmount: z
     .string()
     .regex(MonetaryRegex)
     .optional()
     .describe(
       "Maximum total amount for receipts (format: 123.45, no currency symbol)"
     ),
-  product_name: z
+  productName: z
     .string()
     .optional()
     .describe(
       "Filter receipts containing items with this name (partial match)"
     ),
-  sort_field: z
+  sortField: z
     .nativeEnum(ReceiptSortField)
     .optional()
     .describe("Field to sort receipts by"),
-  sort_order: z
+  sortOrder: z
     .nativeEnum(SortOrder)
     .optional()
     .describe("Order to sort results (ascending or descending)"),

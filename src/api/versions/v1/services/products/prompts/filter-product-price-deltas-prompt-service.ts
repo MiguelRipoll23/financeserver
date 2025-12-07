@@ -7,9 +7,9 @@ import {
 } from "../../../interfaces/mcp/mcp-prompt-interface.ts";
 
 const FilterProductPriceDeltasPromptSchema = z.object({
-  start_date: z.string().optional(),
-  end_date: z.string().optional(),
-  sort_order: z.nativeEnum(SortOrder).optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  sortOrder: z.nativeEnum(SortOrder).optional(),
   limit: z.number().int().gte(1).max(100).optional(),
   cursor: z.string().optional(),
   highlightFocus: z.string().min(1).max(512).optional(),
@@ -64,16 +64,16 @@ export class FilterProductPriceDeltasPromptService {
   ): Record<string, unknown> {
     const payload: Record<string, unknown> = {};
 
-    if (input.start_date) {
-      payload.start_date = input.start_date;
+    if (input.startDate) {
+      payload.startDate = input.startDate;
     }
 
-    if (input.end_date) {
-      payload.end_date = input.end_date;
+    if (input.endDate) {
+      payload.endDate = input.endDate;
     }
 
-    if (input.sort_order) {
-      payload.sort_order = input.sort_order;
+    if (input.sortOrder) {
+      payload.sortOrder = input.sortOrder;
     }
 
     if (input.limit !== undefined) {
