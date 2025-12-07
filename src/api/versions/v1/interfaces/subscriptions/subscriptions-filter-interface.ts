@@ -3,15 +3,15 @@ import { SubscriptionSortField } from "../../enums/subscription-sort-field-enum.
 import { SortOrder } from "../../enums/sort-order-enum.ts";
 
 export interface SubscriptionsFilter extends PaginationParams {
-  name?: string;
-  category?: string;
-  recurrence?: string;
-  minimumAmount?: string;
-  maximumAmount?: string;
-  startDate?: string;
-  endDate?: string;
-  isActive?: boolean;
-  currencyCode?: string;
-  sortField?: SubscriptionSortField;
-  sortOrder?: SortOrder;
+  name?: string | null;
+  category?: string | null;
+  recurrence?: string | null;
+  minimumAmount?: string | null;
+  maximumAmount?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  isActive?: boolean | null;
+  currencyCode?: string | null;
+  sortField?: SubscriptionSortField | null;
+  sortOrder?: SortOrder | null;
 }

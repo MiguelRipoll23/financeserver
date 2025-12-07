@@ -36,7 +36,9 @@ export class BillsService {
   constructor(private databaseService = inject(DatabaseService)) {}
 
   public async createBill(
-    payload: Omit<UpsertBillRequest, "senderEmail"> & { senderEmail?: string }
+    payload: Omit<UpsertBillRequest, "senderEmail"> & {
+      senderEmail?: string | null;
+    }
   ): Promise<UpsertBillResponse> {
     const categoryInput = this.normalizeCategoryInput(payload.category);
 
@@ -100,7 +102,9 @@ export class BillsService {
   }
 
   public async upsertBill(
-    payload: Omit<UpsertBillRequest, "senderEmail"> & { senderEmail?: string }
+    payload: Omit<UpsertBillRequest, "senderEmail"> & {
+      senderEmail?: string | null;
+    }
   ): Promise<UpsertBillResponse> {
     const categoryInput = this.normalizeCategoryInput(payload.category);
 
@@ -175,7 +179,7 @@ export class BillsService {
 
   public async getBills(filters: BillsFilter): Promise<GetBillsResponse> {
     const db = this.databaseService.get();
-    const limit = this.resolveLimit(filters.limit);
+    const limit = this.resolveLimit(filters.limit ?? undefined);
     const offset = decodeCursor(filters.cursor);
 
     const conditions: SQL[] = [];
@@ -197,7 +201,7 @@ export class BillsService {
       );
     }
 
-    if (filters.minimumTotalAmount !== undefined) {
+    if (filters.minimumTotalAmount != null) {
       const minimumCents = this.parseAmountToCents(
         filters.minimumTotalAmount,
         "BILL_MIN_TOTAL_INVALID",
@@ -209,7 +213,7 @@ export class BillsService {
       );
     }
 
-    if (filters.maximumTotalAmount !== undefined) {
+    if (filters.maximumTotalAmount != null) {
       const maximumCents = this.parseAmountToCents(
         filters.maximumTotalAmount,
         "BILL_MAX_TOTAL_INVALID",
@@ -294,7 +298,7 @@ export class BillsService {
   public async updateBill(
     billId: number,
     payload: Partial<
-      Omit<UpsertBillRequest, "senderEmail"> & { senderEmail?: string }
+      Omit<UpsertBillRequest, "senderEmail"> & { senderEmail?: string | null }
     >
   ): Promise<UpsertBillResponse> {
     const db = this.databaseService.get();
@@ -333,7 +337,7 @@ export class BillsService {
       } = { updatedAt: new Date() };
 
       // Handle date update
-      if (payload.date !== undefined) {
+      if (payload.date != null) {
         const billDate = payload.date;
 
         // Check for date conflicts if date is being changed
@@ -593,7 +597,7 @@ export class BillsService {
 
   private async resolveOptionalEmailId(
     tx: NodePgDatabase,
-    senderEmail?: string
+    senderEmail?: string | null
   ): Promise<number | null> {
     if (!senderEmail || senderEmail.trim().length === 0) {
       return null;

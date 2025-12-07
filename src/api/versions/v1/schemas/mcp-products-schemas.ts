@@ -8,6 +8,7 @@ export const FilterProductsToolSchema = z.object({
   query: z
     .string()
     .optional()
+    .nullable()
     .describe(
       "Search query to filter products by name (partial match). Try singular/plural if no results."
     ),
@@ -15,6 +16,7 @@ export const FilterProductsToolSchema = z.object({
     .string()
     .regex(MonetaryRegex)
     .optional()
+    .nullable()
     .describe(
       "Minimum unit price for products (format: 123.45, no currency symbol)"
     ),
@@ -22,16 +24,19 @@ export const FilterProductsToolSchema = z.object({
     .string()
     .regex(MonetaryRegex)
     .optional()
+    .nullable()
     .describe(
       "Maximum unit price for products (format: 123.45, no currency symbol)"
     ),
   sort_field: z
     .nativeEnum(ProductSortField)
     .optional()
+    .nullable()
     .describe("Field to sort products by"),
   sort_order: z
     .nativeEnum(SortOrder)
     .optional()
+    .nullable()
     .describe("Order to sort results (ascending or descending)"),
   limit: z
     .number()
@@ -39,10 +44,12 @@ export const FilterProductsToolSchema = z.object({
     .gte(1)
     .max(100)
     .optional()
+    .nullable()
     .describe("Maximum number of products to return (1-100)"),
   cursor: z
     .string()
     .optional()
+    .nullable()
     .describe("Pagination cursor for retrieving next page of results"),
 });
 
@@ -50,14 +57,17 @@ export const FilterProductPriceDeltasToolSchema = z.object({
   start_date: z
     .string()
     .optional()
+    .nullable()
     .describe("Start date for price delta analysis (format: YYYY-MM-DD)"),
   end_date: z
     .string()
     .optional()
+    .nullable()
     .describe("End date for price delta analysis (format: YYYY-MM-DD)"),
   sort_order: z
     .nativeEnum(SortOrder)
     .optional()
+    .nullable()
     .describe("Order to sort results by price delta (ascending or descending)"),
   limit: z
     .number()
@@ -65,9 +75,11 @@ export const FilterProductPriceDeltasToolSchema = z.object({
     .gte(1)
     .max(100)
     .optional()
+    .nullable()
     .describe("Maximum number of price deltas to return (1-100)"),
   cursor: z
     .string()
     .optional()
+    .nullable()
     .describe("Pagination cursor for retrieving next page of results"),
 });

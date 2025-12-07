@@ -34,6 +34,7 @@ export const SaveBillToolSchema = z.object({
     .string()
     .email("Sender email must be a valid email address")
     .optional()
+    .nullable()
     .describe(
       "Email address of the bill sender or service provider (optional)"
     ),
@@ -57,22 +58,26 @@ export const FilterBillsToolSchema = z.object({
     .string()
     .regex(DateOnlyRegex)
     .optional()
+    .nullable()
     .describe("Filter bills from this date onwards (format: YYYY-MM-DD)"),
   endDate: z
     .string()
     .regex(DateOnlyRegex)
     .optional()
+    .nullable()
     .describe("Filter bills up to this date (format: YYYY-MM-DD)"),
   category: z
     .string()
     .min(1)
     .max(128)
     .optional()
+    .nullable()
     .describe("Filter bills by category in English (exact match)"),
   minimumTotalAmount: z
     .string()
     .regex(MonetaryRegex)
     .optional()
+    .nullable()
     .describe(
       "Minimum total amount for bills (format: 123.45, no currency symbol)"
     ),
@@ -80,16 +85,19 @@ export const FilterBillsToolSchema = z.object({
     .string()
     .regex(MonetaryRegex)
     .optional()
+    .nullable()
     .describe(
       "Maximum total amount for bills (format: 123.45, no currency symbol)"
     ),
   sortField: z
     .nativeEnum(BillSortField)
     .optional()
+    .nullable()
     .describe("Field to sort bills by"),
   sortOrder: z
     .nativeEnum(SortOrder)
     .optional()
+    .nullable()
     .describe("Order to sort results (ascending or descending)"),
   limit: z.coerce
     .number()
@@ -97,9 +105,11 @@ export const FilterBillsToolSchema = z.object({
     .gte(1)
     .max(100)
     .optional()
+    .nullable()
     .describe("Maximum number of bills to return (1-100)"),
   cursor: z
     .string()
     .optional()
+    .nullable()
     .describe("Pagination cursor for retrieving next page of results"),
 });

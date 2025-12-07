@@ -39,6 +39,7 @@ export const SaveSubscriptionToolSchema = z.object({
     .min(1)
     .max(128)
     .optional()
+    .nullable()
     .describe("The subscription plan name (e.g., Premium, Pro, Basic)"),
   effectiveFrom: z
     .string()
@@ -50,6 +51,7 @@ export const SaveSubscriptionToolSchema = z.object({
     .string()
     .regex(DateOnlyRegex, "Effective until date must be in YYYY-MM-DD format")
     .optional()
+    .nullable()
     .describe(
       "The date when this subscription price expires (format: YYYY-MM-DD)"
     ),
@@ -78,23 +80,27 @@ export const FilterSubscriptionsToolSchema = z.object({
     .min(1)
     .max(256)
     .optional()
+    .nullable()
     .describe("Filter subscriptions by name (partial match, case insensitive)"),
   category: z
     .string()
     .min(1)
     .max(128)
     .optional()
+    .nullable()
     .describe(
       "Filter subscriptions by category (partial match, case insensitive)"
     ),
   recurrence: z
     .nativeEnum(Recurrence)
     .optional()
+    .nullable()
     .describe("Filter subscriptions by recurrence type"),
   minimumAmount: z
     .string()
     .regex(MonetaryRegex)
     .optional()
+    .nullable()
     .describe(
       "Filter subscriptions with amount greater than or equal to this value (format: 15.99)"
     ),
@@ -102,6 +108,7 @@ export const FilterSubscriptionsToolSchema = z.object({
     .string()
     .regex(MonetaryRegex)
     .optional()
+    .nullable()
     .describe(
       "Filter subscriptions with amount less than or equal to this value (format: 15.99)"
     ),
@@ -109,6 +116,7 @@ export const FilterSubscriptionsToolSchema = z.object({
     .string()
     .regex(DateOnlyRegex)
     .optional()
+    .nullable()
     .describe(
       "Filter subscriptions from this start date onwards (format: YYYY-MM-DD)"
     ),
@@ -116,10 +124,12 @@ export const FilterSubscriptionsToolSchema = z.object({
     .string()
     .regex(DateOnlyRegex)
     .optional()
+    .nullable()
     .describe("Filter subscriptions until this end date (format: YYYY-MM-DD)"),
   isActive: z
     .boolean()
     .optional()
+    .nullable()
     .describe(
       "Filter by active status (true for active, false for canceled/ended)"
     ),
@@ -127,14 +137,17 @@ export const FilterSubscriptionsToolSchema = z.object({
     .string()
     .length(3)
     .optional()
+    .nullable()
     .describe("Filter subscriptions by currency code (e.g., EUR, USD, GBP)"),
   sortField: z
     .nativeEnum(SubscriptionSortField)
     .optional()
+    .nullable()
     .describe("Field to sort subscriptions by"),
   sortOrder: z
     .nativeEnum(SortOrder)
     .optional()
+    .nullable()
     .describe("Order to sort results (ascending or descending)"),
   limit: z.coerce
     .number()
@@ -142,9 +155,11 @@ export const FilterSubscriptionsToolSchema = z.object({
     .gte(1)
     .max(100)
     .optional()
+    .nullable()
     .describe("Maximum number of subscriptions to return (1-100)"),
   cursor: z
     .string()
     .optional()
+    .nullable()
     .describe("Pagination cursor for retrieving next page of results"),
 });

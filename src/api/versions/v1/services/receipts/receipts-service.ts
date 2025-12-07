@@ -210,7 +210,7 @@ export class ReceiptsService {
       let receiptCurrencyCode = existingReceipt.currencyCode;
 
       // Handle items update
-      if (payload.items !== undefined) {
+      if (payload.items != null) {
         if (payload.items.length === 0) {
           throw new ServerError(
             "RECEIPT_NO_ITEMS",
@@ -239,7 +239,7 @@ export class ReceiptsService {
 
       // Handle date update
       const receiptDate = payload.date || isoReceiptDate;
-      if (payload.date !== undefined) {
+      if (payload.date != null) {
         updateData.receiptDate = payload.date;
       }
 
@@ -343,7 +343,7 @@ export class ReceiptsService {
     params: ReceiptsFilter
   ): Promise<GetReceiptsResponse> {
     const db = this.databaseService.get();
-    const limit = this.resolveLimit(params.limit);
+    const limit = this.resolveLimit(params.limit ?? undefined);
     const offset = decodeCursor(params.cursor);
 
     const filters: SQL[] = [];
@@ -356,7 +356,7 @@ export class ReceiptsService {
       filters.push(lte(receiptsTable.receiptDate, params.endDate));
     }
 
-    if (params.minimumTotalAmount !== undefined) {
+    if (params.minimumTotalAmount != null) {
       const minimumCents = this.parseAmountToCents(
         params.minimumTotalAmount,
         "RECEIPT_MIN_TOTAL_INVALID",
@@ -368,7 +368,7 @@ export class ReceiptsService {
       );
     }
 
-    if (params.maximumTotalAmount !== undefined) {
+    if (params.maximumTotalAmount != null) {
       const maximumCents = this.parseAmountToCents(
         params.maximumTotalAmount,
         "RECEIPT_MAX_TOTAL_INVALID",

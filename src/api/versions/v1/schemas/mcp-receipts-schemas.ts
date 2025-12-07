@@ -60,15 +60,18 @@ export const FilterReceiptsToolSchema = z.object({
   start_date: z
     .string()
     .optional()
+    .nullable()
     .describe("Filter receipts from this date onwards (format: YYYY-MM-DD)"),
   end_date: z
     .string()
     .optional()
+    .nullable()
     .describe("Filter receipts up to this date (format: YYYY-MM-DD)"),
   min_total_amount: z
     .string()
     .regex(MonetaryRegex)
     .optional()
+    .nullable()
     .describe(
       "Minimum total amount for receipts (format: 123.45, no currency symbol)"
     ),
@@ -76,22 +79,26 @@ export const FilterReceiptsToolSchema = z.object({
     .string()
     .regex(MonetaryRegex)
     .optional()
+    .nullable()
     .describe(
       "Maximum total amount for receipts (format: 123.45, no currency symbol)"
     ),
   product_name: z
     .string()
     .optional()
+    .nullable()
     .describe(
       "Filter receipts containing items with this name (partial match)"
     ),
   sort_field: z
     .nativeEnum(ReceiptSortField)
     .optional()
+    .nullable()
     .describe("Field to sort receipts by"),
   sort_order: z
     .nativeEnum(SortOrder)
     .optional()
+    .nullable()
     .describe("Order to sort results (ascending or descending)"),
   limit: z
     .number()
@@ -99,9 +106,11 @@ export const FilterReceiptsToolSchema = z.object({
     .gte(1)
     .max(100)
     .optional()
+    .nullable()
     .describe("Maximum number of receipts to return (1-100)"),
   cursor: z
     .string()
     .optional()
+    .nullable()
     .describe("Pagination cursor for retrieving next page of results"),
 });

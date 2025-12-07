@@ -26,6 +26,7 @@ export const UpsertBillRequestSchema = z.object({
     .email()
     .openapi({ example: "example@example.com" })
     .describe("Sender's email address")
+    .nullable()
     .optional(),
 });
 

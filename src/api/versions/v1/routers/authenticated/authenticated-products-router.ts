@@ -104,7 +104,7 @@ export class AuthenticatedProductsRouter {
       }),
       async (c: Context<{ Variables: HonoVariables }>) => {
         const query = GetProductPriceDeltasQuerySchema.parse(c.req.query());
-        const result = await this.productsService.getPriceDeltas(
+        const result = await this.productsService.getProductPriceDeltas(
           query as GetProductPriceDeltasQuery
         );
 

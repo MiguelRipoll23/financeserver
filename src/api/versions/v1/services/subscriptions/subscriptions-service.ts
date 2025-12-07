@@ -86,7 +86,7 @@ export class SubscriptionsService {
     filters: SubscriptionsFilter
   ): Promise<GetSubscriptionsResponse> {
     const db = this.databaseService.get();
-    const limit = this.resolveLimit(filters.limit);
+    const limit = this.resolveLimit(filters.limit ?? undefined);
     const offset = decodeCursor(filters.cursor);
 
     const conditions: SQL[] = [];
@@ -113,7 +113,7 @@ export class SubscriptionsService {
       );
     }
 
-    if (filters.minimumAmount !== undefined) {
+    if (filters.minimumAmount != null) {
       const minimumCents = this.parseAmountToCents(
         filters.minimumAmount,
         "SUBSCRIPTION_MIN_AMOUNT_INVALID",
@@ -128,7 +128,7 @@ export class SubscriptionsService {
       );
     }
 
-    if (filters.maximumAmount !== undefined) {
+    if (filters.maximumAmount != null) {
       const maximumCents = this.parseAmountToCents(
         filters.maximumAmount,
         "SUBSCRIPTION_MAX_AMOUNT_INVALID",
@@ -178,7 +178,7 @@ export class SubscriptionsService {
       );
     }
 
-    if (filters.isActive !== undefined) {
+    if (filters.isActive != null) {
       if (filters.isActive) {
         // Active subscriptions: started and either no end date OR end date is in the future
         conditions.push(
@@ -347,8 +347,8 @@ export class SubscriptionsService {
       payload.currencyCode ||
       payload.recurrence ||
       payload.effectiveFrom ||
-      payload.effectiveUntil !== undefined ||
-      payload.plan !== undefined;
+      payload.effectiveUntil != null ||
+      payload.plan != null;
 
     if (hasPriceUpdate) {
       // Get current active price to use as defaults
@@ -370,12 +370,12 @@ export class SubscriptionsService {
 
       // Check if this is a cancellation operation (only effectiveUntil provided)
       const isCancellation =
-        payload.effectiveUntil !== undefined &&
+        payload.effectiveUntil != null &&
         !payload.amount &&
         !payload.currencyCode &&
         !payload.recurrence &&
         !payload.effectiveFrom &&
-        payload.plan === undefined;
+        payload.plan == null;
 
       if (isCancellation) {
         // Cancellation: just update the end date of the current active price
@@ -477,9 +477,7 @@ export class SubscriptionsService {
             effectiveFrom,
             effectiveUntil: payload.effectiveUntil || null,
             plan:
-              payload.plan !== undefined
-                ? payload.plan
-                : currentPrice?.plan || null,
+              payload.plan != null ? payload.plan : currentPrice?.plan || null,
           };
 
           await tx.insert(subscriptionPricesTable).values(priceValues);

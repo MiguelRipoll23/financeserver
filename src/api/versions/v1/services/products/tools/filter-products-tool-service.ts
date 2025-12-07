@@ -79,8 +79,8 @@ export class FilterProductsToolService {
     return productsList;
   }
 
-  private parseAmountFilter(value?: string): number | undefined {
-    if (value === undefined) {
+  private parseAmountFilter(value?: string | null): number | undefined {
+    if (value == null) {
       return undefined;
     }
 

@@ -39,7 +39,7 @@ export class ProductsService {
 
   public async getProducts(params: ProductFilter) {
     const db = this.databaseService.get();
-    const limit = this.resolveLimit(params.limit);
+    const limit = this.resolveLimit(params.limit ?? undefined);
     const offset = decodeCursor(params.cursor);
 
     const filters: SQL[] = [];
@@ -48,13 +48,13 @@ export class ProductsService {
       filters.push(ilike(itemsTable.name, `%${params.query}%`));
     }
 
-    if (params.minimumUnitPrice !== undefined) {
+    if (params.minimumUnitPrice != null) {
       filters.push(
         sql`latest_prices.unit_price >= ${params.minimumUnitPrice.toFixed(2)}`
       );
     }
 
-    if (params.maximumUnitPrice !== undefined) {
+    if (params.maximumUnitPrice != null) {
       filters.push(
         sql`latest_prices.unit_price <= ${params.maximumUnitPrice.toFixed(2)}`
       );
@@ -159,9 +159,9 @@ export class ProductsService {
     );
   }
 
-  public async getPriceDeltas(params: PriceDeltaFilter) {
+  public async getProductPriceDeltas(params: PriceDeltaFilter) {
     const db = this.databaseService.get();
-    const limit = this.resolveLimit(params.limit);
+    const limit = this.resolveLimit(params.limit ?? undefined);
     const offset = decodeCursor(params.cursor);
 
     const sortOrder = params.sortOrder ?? SortOrder.Desc;

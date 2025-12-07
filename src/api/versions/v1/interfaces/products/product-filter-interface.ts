@@ -3,9 +3,9 @@ import { ProductSortField } from "../../enums/product-sort-field-enum.ts";
 import { SortOrder } from "../../enums/sort-order-enum.ts";
 
 export interface ProductFilter extends PaginationParams {
-  query?: string;
-  minimumUnitPrice?: number;
-  maximumUnitPrice?: number;
-  sortField?: ProductSortField;
-  sortOrder?: SortOrder;
+  query?: string | null;
+  minimumUnitPrice?: number | null;
+  maximumUnitPrice?: number | null;
+  sortField?: ProductSortField | null;
+  sortOrder?: SortOrder | null;
 }
