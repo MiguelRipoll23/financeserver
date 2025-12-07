@@ -27,13 +27,13 @@ export class FilterReceiptsToolService {
       run: async (input: unknown) => {
         const parsed = FilterReceiptsToolSchema.parse(input);
         const receiptPage = await this.receiptsService.getReceipts({
-          startDate: parsed.start_date,
-          endDate: parsed.end_date,
-          minimumTotalAmount: parsed.min_total_amount,
-          maximumTotalAmount: parsed.max_total_amount,
-          productName: parsed.product_name,
-          sortField: parsed.sort_field,
-          sortOrder: parsed.sort_order,
+          startDate: parsed.startDate,
+          endDate: parsed.endDate,
+          minimumTotalAmount: parsed.minimumTotalAmount,
+          maximumTotalAmount: parsed.maximumTotalAmount,
+          productName: parsed.productName,
+          sortField: parsed.sortField,
+          sortOrder: parsed.sortOrder,
           limit: parsed.limit,
           cursor: parsed.cursor,
         });
