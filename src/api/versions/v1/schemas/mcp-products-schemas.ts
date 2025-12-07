@@ -12,7 +12,7 @@ export const FilterProductsToolSchema = z.object({
     .describe(
       "Search query to filter products by name (partial match). Try singular/plural if no results."
     ),
-  min_unit_price: z
+  minUnitPrice: z
     .string()
     .regex(MonetaryRegex)
     .optional()
@@ -20,7 +20,7 @@ export const FilterProductsToolSchema = z.object({
     .describe(
       "Minimum unit price for products (format: 123.45, no currency symbol)"
     ),
-  max_unit_price: z
+  maxUnitPrice: z
     .string()
     .regex(MonetaryRegex)
     .optional()
@@ -28,12 +28,12 @@ export const FilterProductsToolSchema = z.object({
     .describe(
       "Maximum unit price for products (format: 123.45, no currency symbol)"
     ),
-  sort_field: z
+  sortField: z
     .nativeEnum(ProductSortField)
     .optional()
     .nullable()
     .describe("Field to sort products by"),
-  sort_order: z
+  sortOrder: z
     .nativeEnum(SortOrder)
     .optional()
     .nullable()
@@ -54,17 +54,17 @@ export const FilterProductsToolSchema = z.object({
 });
 
 export const FilterProductPriceDeltasToolSchema = z.object({
-  start_date: z
+  startDate: z
     .string()
     .optional()
     .nullable()
     .describe("Start date for price delta analysis (format: YYYY-MM-DD)"),
-  end_date: z
+  endDate: z
     .string()
     .optional()
     .nullable()
     .describe("End date for price delta analysis (format: YYYY-MM-DD)"),
-  sort_order: z
+  sortOrder: z
     .nativeEnum(SortOrder)
     .optional()
     .nullable()
