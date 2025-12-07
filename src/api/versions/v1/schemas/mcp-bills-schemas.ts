@@ -48,6 +48,10 @@ export const UpdateBillToolSchema = z
     message: "At least one field to update must be provided besides the ID.",
   });
 
+export const DeleteBillToolSchema = z.object({
+  id: z.number().int().positive().describe("ID of the bill to delete"),
+});
+
 export const FilterBillsToolSchema = z.object({
   startDate: z
     .string()

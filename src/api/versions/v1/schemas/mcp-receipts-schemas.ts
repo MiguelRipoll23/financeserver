@@ -52,6 +52,10 @@ export const UpdateReceiptToolSchema = z
     message: "At least one field to update must be provided besides the ID.",
   });
 
+export const DeleteReceiptToolSchema = z.object({
+  id: z.number().int().positive().describe("ID of the receipt to delete"),
+});
+
 export const FilterReceiptsToolSchema = z.object({
   start_date: z
     .string()

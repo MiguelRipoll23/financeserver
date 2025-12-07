@@ -68,6 +68,14 @@ export const UpdateSubscriptionToolSchema = z
     message: "At least one field to update must be provided besides the ID.",
   });
 
+export const DeleteSubscriptionToolSchema = z.object({
+  subscriptionId: z
+    .number()
+    .int()
+    .positive()
+    .describe("ID of the subscription to delete"),
+});
+
 export const FilterSubscriptionsToolSchema = z.object({
   name: z
     .string()
