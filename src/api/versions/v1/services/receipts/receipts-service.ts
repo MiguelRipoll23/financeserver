@@ -163,29 +163,18 @@ export class ReceiptsService {
 
   public async updateReceipt(
     receiptId: number,
-    payload: UpdateReceiptRequest
+    payload: Partial<UpdateReceiptRequest>
   ): Promise<UpdateReceiptResponse> {
-    if (payload.items.length === 0) {
-      throw new ServerError(
-        "RECEIPT_NO_ITEMS",
-        "At least one item is required to update a receipt",
-        400
-      );
-    }
-
     const db = this.databaseService.get();
 
-    const normalizedItems = this.normalizeReceiptItems(payload.items);
-
-    const totalInCents = normalizedItems.reduce<number>(
-      (sum, item) => sum + item.unitPriceCents * item.quantity,
-      0
-    );
-    const totalAmountString = this.formatAmount(totalInCents / 100);
-
-    await db.transaction(async (tx) => {
+    return await db.transaction(async (tx) => {
       const existingReceipt = await tx
-        .select({ receiptDate: receiptsTable.receiptDate })
+        .select({
+          id: receiptsTable.id,
+          receiptDate: receiptsTable.receiptDate,
+          totalAmount: receiptsTable.totalAmount,
+          currencyCode: receiptsTable.currencyCode,
+        })
         .from(receiptsTable)
         .where(eq(receiptsTable.id, receiptId))
         .limit(1)
@@ -208,97 +197,146 @@ export class ReceiptsService {
           500
         );
       }
-      const receiptDate = payload.date;
 
-      // Use the currency code from the first item (all items should have same currency)
-      const receiptCurrencyCode = normalizedItems[0].currencyCode;
+      // Build update object with only provided fields
+      const updateData: {
+        receiptDate?: string;
+        totalAmount?: string;
+        currencyCode?: string;
+        updatedAt: Date;
+      } = { updatedAt: new Date() };
 
-      await tx
-        .update(receiptsTable)
-        .set({
-          receiptDate,
-          totalAmount: totalAmountString,
-          currencyCode: receiptCurrencyCode,
-          updatedAt: new Date(),
-        })
-        .where(eq(receiptsTable.id, receiptId));
+      let normalizedItems;
+      let receiptCurrencyCode = existingReceipt.currencyCode;
 
-      await tx
-        .delete(receiptItemsTable)
-        .where(eq(receiptItemsTable.receiptId, receiptId));
-
-      for (const item of normalizedItems) {
-        const normalizedName = item.name;
-
-        const existingItem = await tx
-          .select({ id: itemsTable.id })
-          .from(itemsTable)
-          .where(eq(itemsTable.name, normalizedName))
-          .limit(1)
-          .then((rows) => rows[0]);
-
-        let itemId = existingItem?.id;
-
-        if (!itemId) {
-          const inserted = await tx
-            .insert(itemsTable)
-            .values({ name: normalizedName })
-            .onConflictDoNothing()
-            .returning({ id: itemsTable.id });
-
-          itemId = inserted[0]?.id;
-
-          if (!itemId) {
-            const fallback = await tx
-              .select({ id: itemsTable.id })
-              .from(itemsTable)
-              .where(eq(itemsTable.name, normalizedName))
-              .limit(1);
-            itemId = fallback[0]?.id;
-          }
-        }
-
-        if (!itemId) {
+      // Handle items update
+      if (payload.items !== undefined) {
+        if (payload.items.length === 0) {
           throw new ServerError(
-            "ITEM_CREATION_FAILED",
-            `Failed to create or retrieve item "${normalizedName}"`,
-            500
+            "RECEIPT_NO_ITEMS",
+            "At least one item is required when updating items",
+            400
           );
         }
 
-        const lineTotalCents = item.unitPriceCents * item.quantity;
-        const lineTotalString = this.formatAmount(lineTotalCents / 100);
+        normalizedItems = this.normalizeReceiptItems(payload.items);
 
-        await tx.insert(receiptItemsTable).values({
-          receiptId,
-          itemId,
-          quantity: item.quantity,
-          totalAmount: lineTotalString,
-        });
+        const totalInCents = normalizedItems.reduce<number>(
+          (sum, item) => sum + item.unitPriceCents * item.quantity,
+          0
+        );
+        updateData.totalAmount = this.formatAmount(totalInCents / 100);
 
+        // Use the currency code from the first item (all items should have same currency)
+        receiptCurrencyCode = normalizedItems[0].currencyCode;
+        updateData.currencyCode = receiptCurrencyCode;
+
+        // Delete old items
         await tx
-          .insert(itemPricesTable)
-          .values({
+          .delete(receiptItemsTable)
+          .where(eq(receiptItemsTable.receiptId, receiptId));
+      }
+
+      // Handle date update
+      const receiptDate = payload.date || isoReceiptDate;
+      if (payload.date !== undefined) {
+        updateData.receiptDate = payload.date;
+      }
+
+      // Update receipt table if there are changes
+      if (Object.keys(updateData).length > 1) {
+        await tx
+          .update(receiptsTable)
+          .set(updateData)
+          .where(eq(receiptsTable.id, receiptId));
+      }
+
+      // Insert new items if items were updated
+      if (normalizedItems) {
+        for (const item of normalizedItems) {
+          const normalizedName = item.name;
+
+          const existingItem = await tx
+            .select({ id: itemsTable.id })
+            .from(itemsTable)
+            .where(eq(itemsTable.name, normalizedName))
+            .limit(1)
+            .then((rows) => rows[0]);
+
+          let itemId = existingItem?.id;
+
+          if (!itemId) {
+            const inserted = await tx
+              .insert(itemsTable)
+              .values({ name: normalizedName })
+              .onConflictDoNothing()
+              .returning({ id: itemsTable.id });
+
+            itemId = inserted[0]?.id;
+
+            if (!itemId) {
+              const fallback = await tx
+                .select({ id: itemsTable.id })
+                .from(itemsTable)
+                .where(eq(itemsTable.name, normalizedName))
+                .limit(1);
+              itemId = fallback[0]?.id;
+            }
+          }
+
+          if (!itemId) {
+            throw new ServerError(
+              "ITEM_CREATION_FAILED",
+              `Failed to create or retrieve item "${normalizedName}"`,
+              500
+            );
+          }
+
+          const lineTotalCents = item.unitPriceCents * item.quantity;
+          const lineTotalString = this.formatAmount(lineTotalCents / 100);
+
+          await tx.insert(receiptItemsTable).values({
+            receiptId,
             itemId,
-            priceDate: receiptDate,
-            unitPrice: item.unitPriceString,
-            currencyCode: item.currencyCode,
-          })
-          .onConflictDoUpdate({
-            target: [itemPricesTable.itemId, itemPricesTable.priceDate],
-            set: {
+            quantity: item.quantity,
+            totalAmount: lineTotalString,
+          });
+
+          await tx
+            .insert(itemPricesTable)
+            .values({
+              itemId,
+              priceDate: receiptDate,
               unitPrice: item.unitPriceString,
               currencyCode: item.currencyCode,
-            },
-          });
+            })
+            .onConflictDoUpdate({
+              target: [itemPricesTable.itemId, itemPricesTable.priceDate],
+              set: {
+                unitPrice: item.unitPriceString,
+                currencyCode: item.currencyCode,
+              },
+            });
+        }
       }
-    });
 
-    return {
-      id: receiptId,
-      totalAmount: totalAmountString,
-      currencyCode: normalizedItems[0].currencyCode,
-    } satisfies UpdateReceiptResponse;
+      // Get final state
+      const finalReceipt = await tx
+        .select({
+          totalAmount: receiptsTable.totalAmount,
+          currencyCode: receiptsTable.currencyCode,
+        })
+        .from(receiptsTable)
+        .where(eq(receiptsTable.id, receiptId))
+        .limit(1)
+        .then((rows) => rows[0]);
+
+      return {
+        id: receiptId,
+        totalAmount: finalReceipt!.totalAmount,
+        currencyCode: finalReceipt!.currencyCode,
+      } satisfies UpdateReceiptResponse;
+    });
   }
 
   public async getReceipts(

@@ -14,7 +14,7 @@ export class UpdateReceiptToolService {
       meta: {
         title: "Update receipt",
         description:
-          "Use this when you need to update an existing receipt to fix incorrect item names, quantities, or unit prices. Do not use for creating new receipts or deleting receipts.",
+          "Use this when you need to update an existing receipt. You can update the date, items, or both. Only provide the fields you want to change. Do not use for creating new receipts or deleting receipts.",
         inputSchema: UpdateReceiptToolSchema.shape,
         annotations: {
           readOnlyHint: false,
@@ -31,24 +31,36 @@ export class UpdateReceiptToolService {
           items: parsed.items,
         });
 
-        const displayDate = parsed.date;
-        const itemCount = parsed.items.length;
-        const itemsText = itemCount === 1 ? "item" : "items";
+        const displayDate = parsed.date || "(date unchanged)";
+        const itemsProvided = parsed.items !== undefined;
 
-        // Calculate total items quantity
-        const totalQuantity = parsed.items.reduce(
-          (sum, item) => sum + item.quantity,
-          0
-        );
-        const quantityText = totalQuantity === 1 ? "product" : "products";
-        const currencySymbol = getCurrencySymbolForCode(result.currencyCode);
+        if (itemsProvided) {
+          const itemCount = parsed.items!.length;
+          const itemsText = itemCount === 1 ? "item" : "items";
 
-        const text = `Receipt updated successfully: ${displayDate} – ${totalQuantity} ${quantityText} across ${itemCount} ${itemsText}, total: ${result.totalAmount}${currencySymbol} (ID: ${result.id})`;
+          // Calculate total items quantity
+          const totalQuantity = parsed.items!.reduce(
+            (sum, item) => sum + item.quantity,
+            0
+          );
+          const quantityText = totalQuantity === 1 ? "product" : "products";
+          const currencySymbol = getCurrencySymbolForCode(result.currencyCode);
 
-        return {
-          text,
-          structured: result,
-        };
+          const text = `Receipt updated successfully: ${displayDate} – ${totalQuantity} ${quantityText} across ${itemCount} ${itemsText}, total: ${result.totalAmount}${currencySymbol} (ID: ${result.id})`;
+
+          return {
+            text,
+            structured: result,
+          };
+        } else {
+          const currencySymbol = getCurrencySymbolForCode(result.currencyCode);
+          const text = `Receipt updated successfully: ${displayDate} – total: ${result.totalAmount}${currencySymbol} (ID: ${result.id})`;
+
+          return {
+            text,
+            structured: result,
+          };
+        }
       },
     };
   }
