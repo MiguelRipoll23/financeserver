@@ -33,6 +33,14 @@ export const SaveReceiptItemToolSchema = z.object({
 });
 
 export const SaveReceiptToolSchema = z.object({
+  id: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .describe(
+      "ID of existing receipt to update (optional, if provided allows fixing item names, quantities, and unit prices)"
+    ),
   date: z
     .string()
     .regex(DateOnlyRegex, "Date must be in YYYY-MM-DD format")
