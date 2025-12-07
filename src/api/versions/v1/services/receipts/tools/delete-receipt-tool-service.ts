@@ -31,7 +31,7 @@ export class DeleteReceiptToolService {
         } catch (error) {
           if (
             error instanceof ServerError &&
-            error.code === "RECEIPT_NOT_FOUND"
+            error.getCode() === "RECEIPT_NOT_FOUND"
           ) {
             // If the receipt is already deleted, we can consider it a success for idempotency.
           } else {
