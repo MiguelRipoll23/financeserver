@@ -1,0 +1,39 @@
+import { inject, injectable } from "@needle-di/core";
+import { McpToolDefinition } from "../../../interfaces/mcp/mcp-tool-interface.ts";
+import { ReceiptsService } from "../receipts-service.ts";
+import { DeleteReceiptToolSchema } from "../../../schemas/mcp-receipts-schemas.ts";
+
+@injectable()
+export class DeleteReceiptToolService {
+  constructor(private receiptsService = inject(ReceiptsService)) {}
+
+  public getDefinition(): McpToolDefinition {
+    return {
+      name: "receipts.delete",
+      meta: {
+        title: "Delete receipt",
+        description:
+          "Use this when you need to delete a receipt that contains completely invalid data. Do not use for updating or correcting receipts - use receipts.update instead.",
+        inputSchema: DeleteReceiptToolSchema.shape,
+        annotations: {
+          readOnlyHint: false,
+          idempotentHint: true,
+          destructiveHint: true,
+          openWorldHint: false,
+        },
+      },
+      run: async (input: unknown) => {
+        const parsed = DeleteReceiptToolSchema.parse(input);
+
+        await this.receiptsService.deleteReceipt(parsed.id);
+
+        const text = `Receipt deleted successfully (ID: ${parsed.id})`;
+
+        return {
+          text,
+          structured: { id: parsed.id, deleted: true },
+        };
+      },
+    };
+  }
+}
