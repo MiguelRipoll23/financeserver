@@ -14,7 +14,7 @@ export class UpdateSubscriptionToolService {
       meta: {
         title: "Update subscription",
         description:
-          "Use this when you need to update an existing subscription with new details. Do not use for creating new subscriptions, canceling subscriptions, or deleting subscriptions.",
+          "Use this when you need to update an existing subscription or cancel it. You can update any combination of fields (name, category, amount, recurrence, currency, plan, dates). Only provide the fields you want to change. To cancel a subscription, provide only subscriptionId and effectiveUntil (the cancellation date). Do not use for creating new subscriptions or deleting subscriptions.",
         inputSchema: UpdateSubscriptionToolSchema.shape,
         annotations: {
           readOnlyHint: false,
@@ -25,6 +25,17 @@ export class UpdateSubscriptionToolService {
       },
       run: async (input: unknown) => {
         const parsed = UpdateSubscriptionToolSchema.parse(input);
+
+        // Check if this is a cancellation operation (only effectiveUntil provided)
+        const isCancellation =
+          parsed.effectiveUntil !== undefined &&
+          !parsed.name &&
+          !parsed.category &&
+          !parsed.amount &&
+          !parsed.currencyCode &&
+          !parsed.recurrence &&
+          !parsed.effectiveFrom &&
+          parsed.plan === undefined;
 
         const result = await this.subscriptionsService.updateSubscription(
           parsed.subscriptionId,
@@ -41,23 +52,43 @@ export class UpdateSubscriptionToolService {
         );
 
         const displayStartDate = result.effectiveFrom.split("T")[0];
-        const endDateDisplay = result.effectiveUntil
-          ? ` (ends: ${result.effectiveUntil.split("T")[0]})`
-          : " (active)";
+        const displayEndDate = result.effectiveUntil?.split("T")[0];
 
-        const planInfo = result.plan ? ` - ${result.plan}` : "";
-        const text = `Subscription updated successfully: ${
-          result.name
-        }${planInfo} – ${result.category} (${getCurrencySymbolForCode(
-          result.currencyCode
-        )}${result.amount}/${
-          result.recurrence
-        }, started: ${displayStartDate}${endDateDisplay}) (ID: ${result.id})`;
+        if (isCancellation) {
+          const planInfo = result.plan ? ` - ${result.plan}` : "";
+          const text = `Subscription canceled successfully: ${
+            result.name
+          }${planInfo} – ${result.category} (${getCurrencySymbolForCode(
+            result.currencyCode
+          )}${result.amount}/${
+            result.recurrence
+          }, started: ${displayStartDate}, ended: ${displayEndDate}) (ID: ${
+            result.id
+          })`;
 
-        return {
-          text,
-          structured: result,
-        };
+          return {
+            text,
+            structured: result,
+          };
+        } else {
+          const endDateDisplay = displayEndDate
+            ? ` (ends: ${displayEndDate})`
+            : " (active)";
+
+          const planInfo = result.plan ? ` - ${result.plan}` : "";
+          const text = `Subscription updated successfully: ${
+            result.name
+          }${planInfo} – ${result.category} (${getCurrencySymbolForCode(
+            result.currencyCode
+          )}${result.amount}/${
+            result.recurrence
+          }, started: ${displayStartDate}${endDateDisplay}) (ID: ${result.id})`;
+
+          return {
+            text,
+            structured: result,
+          };
+        }
       },
     };
   }

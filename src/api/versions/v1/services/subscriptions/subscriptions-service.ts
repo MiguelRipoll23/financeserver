@@ -284,21 +284,16 @@ export class SubscriptionsService {
 
   public async updateSubscription(
     subscriptionId: number,
-    payload: UpsertSubscriptionRequest
+    payload: Partial<UpsertSubscriptionRequest>
   ): Promise<UpsertSubscriptionResponse> {
-    this.validateSubscriptionPayload(payload);
-
-    const amountCents = this.parseAmountToCents(
-      payload.amount,
-      "SUBSCRIPTION_AMOUNT_INVALID",
-      "Subscription amount must be a non-negative monetary value"
-    );
-    const amountString = this.formatAmount(amountCents / 100);
-
     const db = this.databaseService.get();
 
     const existingSubscription = await db
-      .select({ id: subscriptionsTable.id })
+      .select({
+        id: subscriptionsTable.id,
+        name: subscriptionsTable.name,
+        category: subscriptionsTable.category,
+      })
       .from(subscriptionsTable)
       .where(eq(subscriptionsTable.id, subscriptionId))
       .limit(1)
@@ -312,59 +307,180 @@ export class SubscriptionsService {
       );
     }
 
-    // Update subscription basic info
-    await db
-      .update(subscriptionsTable)
-      .set({
-        name: payload.name.trim(),
-        category: payload.category.trim(),
-        updatedAt: new Date(),
-      })
-      .where(eq(subscriptionsTable.id, subscriptionId));
+    // Check if we need to update basic info (name or category)
+    const hasBasicInfoUpdate = payload.name || payload.category;
+    if (hasBasicInfoUpdate) {
+      const updateData: { name?: string; category?: string; updatedAt: Date } =
+        { updatedAt: new Date() };
 
-    // End current price period if updating price/currency/recurrence/plan
-    const currentDate = new Date().toISOString().split("T")[0];
+      if (payload.name) {
+        if (payload.name.trim().length === 0) {
+          throw new ServerError(
+            "SUBSCRIPTION_NAME_REQUIRED",
+            "Subscription name cannot be empty",
+            400
+          );
+        }
+        updateData.name = payload.name.trim();
+      }
 
-    // Check if there's a current active price
-    const currentPrice = await db
-      .select()
-      .from(subscriptionPricesTable)
-      .where(
-        and(
-          eq(subscriptionPricesTable.subscriptionId, subscriptionId),
-          sql`${subscriptionPricesTable.effectiveFrom} <= CURRENT_DATE`,
-          or(
-            isNull(subscriptionPricesTable.effectiveUntil),
-            sql`${subscriptionPricesTable.effectiveUntil} >= CURRENT_DATE`
-          )!
-        )
-      )
-      .limit(1)
-      .then((rows) => rows[0]);
+      if (payload.category) {
+        if (payload.category.trim().length === 0) {
+          throw new ServerError(
+            "SUBSCRIPTION_CATEGORY_REQUIRED",
+            "Subscription category cannot be empty",
+            400
+          );
+        }
+        updateData.category = payload.category.trim();
+      }
 
-    if (currentPrice) {
-      // End the current price period
       await db
-        .update(subscriptionPricesTable)
-        .set({
-          effectiveUntil: currentDate,
-          updatedAt: new Date(),
-        })
-        .where(eq(subscriptionPricesTable.id, currentPrice.id));
+        .update(subscriptionsTable)
+        .set(updateData)
+        .where(eq(subscriptionsTable.id, subscriptionId));
     }
 
-    // Create new price record
-    const priceValues = {
-      subscriptionId,
-      recurrence: payload.recurrence,
-      amount: amountString,
-      currencyCode: payload.currencyCode,
-      effectiveFrom: payload.effectiveFrom,
-      effectiveUntil: payload.effectiveUntil || null,
-      plan: payload.plan || null,
-    };
+    // Check if we need to update price info
+    const hasPriceUpdate =
+      payload.amount ||
+      payload.currencyCode ||
+      payload.recurrence ||
+      payload.effectiveFrom ||
+      payload.effectiveUntil !== undefined ||
+      payload.plan !== undefined;
 
-    await db.insert(subscriptionPricesTable).values(priceValues);
+    if (hasPriceUpdate) {
+      // Get current active price to use as defaults
+      const currentPrice = await db
+        .select()
+        .from(subscriptionPricesTable)
+        .where(
+          and(
+            eq(subscriptionPricesTable.subscriptionId, subscriptionId),
+            sql`${subscriptionPricesTable.effectiveFrom} <= CURRENT_DATE`,
+            or(
+              isNull(subscriptionPricesTable.effectiveUntil),
+              sql`${subscriptionPricesTable.effectiveUntil} >= CURRENT_DATE`
+            )!
+          )
+        )
+        .limit(1)
+        .then((rows) => rows[0]);
+
+      // Check if this is a cancellation operation (only effectiveUntil provided)
+      const isCancellation =
+        payload.effectiveUntil !== undefined &&
+        !payload.amount &&
+        !payload.currencyCode &&
+        !payload.recurrence &&
+        !payload.effectiveFrom &&
+        payload.plan === undefined;
+
+      if (isCancellation) {
+        // Cancellation: just update the end date of the current active price
+        if (!currentPrice) {
+          throw new ServerError(
+            "SUBSCRIPTION_NO_ACTIVE_PRICE",
+            "No active price period found to cancel",
+            404
+          );
+        }
+
+        if (payload.effectiveUntil! < currentPrice.effectiveFrom) {
+          throw new ServerError(
+            "SUBSCRIPTION_INVALID_DATE_RANGE",
+            "effectiveUntil must be greater than or equal to the current effectiveFrom",
+            400
+          );
+        }
+
+        await db
+          .update(subscriptionPricesTable)
+          .set({
+            effectiveUntil: payload.effectiveUntil,
+            updatedAt: new Date(),
+          })
+          .where(eq(subscriptionPricesTable.id, currentPrice.id));
+
+        // Update subscription timestamp
+        await db
+          .update(subscriptionsTable)
+          .set({
+            updatedAt: new Date(),
+          })
+          .where(eq(subscriptionsTable.id, subscriptionId));
+      } else {
+        // Regular price update: create a new price record
+        if (!currentPrice && !payload.effectiveFrom) {
+          throw new ServerError(
+            "SUBSCRIPTION_EFFECTIVE_FROM_REQUIRED",
+            "effectiveFrom is required when creating a new price period",
+            400
+          );
+        }
+
+        // Determine values for the new price record
+        const amount = payload.amount || currentPrice?.amount;
+        const currencyCode = payload.currencyCode || currentPrice?.currencyCode;
+        const recurrence = payload.recurrence || currentPrice?.recurrence;
+        const effectiveFrom =
+          payload.effectiveFrom || currentPrice?.effectiveFrom;
+
+        if (!amount || !currencyCode || !recurrence || !effectiveFrom) {
+          throw new ServerError(
+            "SUBSCRIPTION_PRICE_INFO_REQUIRED",
+            "Missing required price information (amount, currencyCode, recurrence, effectiveFrom)",
+            400
+          );
+        }
+
+        // Validate amount
+        const amountCents = this.parseAmountToCents(
+          amount,
+          "SUBSCRIPTION_AMOUNT_INVALID",
+          "Subscription amount must be a non-negative monetary value"
+        );
+        const amountString = this.formatAmount(amountCents / 100);
+
+        // Validate date range if effectiveUntil is provided
+        if (payload.effectiveUntil && payload.effectiveUntil < effectiveFrom) {
+          throw new ServerError(
+            "SUBSCRIPTION_INVALID_DATE_RANGE",
+            "effectiveUntil must be greater than or equal to effectiveFrom",
+            400
+          );
+        }
+
+        // End current price period if there is one
+        if (currentPrice) {
+          const currentDate = new Date().toISOString().split("T")[0];
+          await db
+            .update(subscriptionPricesTable)
+            .set({
+              effectiveUntil: currentDate,
+              updatedAt: new Date(),
+            })
+            .where(eq(subscriptionPricesTable.id, currentPrice.id));
+        }
+
+        // Create new price record
+        const priceValues = {
+          subscriptionId,
+          recurrence,
+          amount: amountString,
+          currencyCode,
+          effectiveFrom,
+          effectiveUntil: payload.effectiveUntil || null,
+          plan:
+            payload.plan !== undefined
+              ? payload.plan
+              : currentPrice?.plan || null,
+        };
+
+        await db.insert(subscriptionPricesTable).values(priceValues);
+      }
+    }
 
     return await this.loadSubscriptionResponse(db, subscriptionId);
   }
