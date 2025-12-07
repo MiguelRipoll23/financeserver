@@ -71,3 +71,40 @@ export const FilterProductPriceDeltasToolSchema = z.object({
     .optional()
     .describe("Pagination cursor for retrieving next page of results"),
 });
+
+export const FixProductToolSchema = z.object({
+  id: z
+    .number()
+    .int()
+    .positive()
+    .describe("The unique identifier of the product to update"),
+  name: z
+    .string()
+    .min(1)
+    .max(256)
+    .optional()
+    .describe(
+      "The new name for the product. Use this to fix incorrect product names created during receipt processing."
+    ),
+  unit_price: z
+    .string()
+    .regex(MonetaryRegex)
+    .optional()
+    .describe(
+      "The unit price for the product (format: 123.45, no currency symbol). When provided, this will add or update a price variation in the item_prices table."
+    ),
+  currency_code: z
+    .string()
+    .length(3)
+    .optional()
+    .describe(
+      "The ISO 4217 currency code (e.g., EUR, USD). Required when unit_price is provided. Defaults to EUR."
+    ),
+  price_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional()
+    .describe(
+      "The date for the price variation (format: YYYY-MM-DD). Defaults to current date. Use this to backdate price corrections."
+    ),
+});

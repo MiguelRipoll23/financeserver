@@ -246,26 +246,15 @@ export class ProductsService {
 
   public async updateProduct(
     productId: number,
-    payload: UpdateProductRequest
+    payload: Partial<UpdateProductRequest>
   ): Promise<ProductSummary> {
-    const normalizedName = payload.name.trim();
-
-    if (normalizedName.length === 0) {
+    if (!payload.name && !payload.unitPrice) {
       throw new ServerError(
-        "PRODUCT_NAME_REQUIRED",
-        "Product name must not be empty",
+        "PRODUCT_UPDATE_REQUIRED",
+        "At least one field (name or unitPrice) must be provided for update",
         400
       );
     }
-
-    const unitPriceCents = this.parseAmountToCents(
-      payload.unitPrice,
-      "PRODUCT_UNIT_PRICE_INVALID",
-      "Product unit price must be a non-negative monetary value"
-    );
-    const unitPriceString = this.formatAmount(unitPriceCents / 100);
-    const priceDate =
-      payload.priceDate ?? new Date().toISOString().split("T")[0];
 
     const db = this.databaseService.get();
 
@@ -288,54 +277,126 @@ export class ProductsService {
         );
       }
 
-      if (existingProduct.currentName !== normalizedName) {
-        const conflictingProduct = await tx
-          .select({ id: itemsTable.id })
-          .from(itemsTable)
-          .where(
-            and(
-              eq(itemsTable.name, normalizedName),
-              ne(itemsTable.id, productId)
-            )
-          )
-          .limit(1)
-          .then((rows) => rows[0]);
+      let finalName = existingProduct.currentName;
 
-        if (conflictingProduct) {
+      // Handle name update if provided
+      if (payload.name !== undefined) {
+        const normalizedName = payload.name.trim();
+
+        if (normalizedName.length === 0) {
           throw new ServerError(
-            "PRODUCT_NAME_CONFLICT",
-            `Another product already uses the name "${normalizedName}"`,
-            409
+            "PRODUCT_NAME_REQUIRED",
+            "Product name must not be empty",
+            400
           );
+        }
+
+        if (existingProduct.currentName !== normalizedName) {
+          const conflictingProduct = await tx
+            .select({ id: itemsTable.id })
+            .from(itemsTable)
+            .where(
+              and(
+                eq(itemsTable.name, normalizedName),
+                ne(itemsTable.id, productId)
+              )
+            )
+            .limit(1)
+            .then((rows) => rows[0]);
+
+          if (conflictingProduct) {
+            throw new ServerError(
+              "PRODUCT_NAME_CONFLICT",
+              `Another product already uses the name "${normalizedName}"`,
+              409
+            );
+          }
+
+          await tx
+            .update(itemsTable)
+            .set({ name: normalizedName, updatedAt: new Date() })
+            .where(eq(itemsTable.id, productId));
+
+          finalName = normalizedName;
         }
       }
 
-      await tx
-        .update(itemsTable)
-        .set({ name: normalizedName, updatedAt: new Date() })
-        .where(eq(itemsTable.id, productId));
+      // Handle price update if provided
+      let latestPrice: { unitPrice: string; currencyCode: string } | null =
+        null;
 
-      await tx
-        .insert(itemPricesTable)
-        .values({
-          itemId: productId,
-          priceDate,
-          unitPrice: unitPriceString,
-          currencyCode: payload.currencyCode,
-        })
-        .onConflictDoUpdate({
-          target: [itemPricesTable.itemId, itemPricesTable.priceDate],
-          set: {
+      if (payload.unitPrice !== undefined) {
+        if (!payload.currencyCode) {
+          throw new ServerError(
+            "PRODUCT_CURRENCY_REQUIRED",
+            "Currency code is required when updating unit price",
+            400
+          );
+        }
+
+        const unitPriceCents = this.parseAmountToCents(
+          payload.unitPrice,
+          "PRODUCT_UNIT_PRICE_INVALID",
+          "Product unit price must be a non-negative monetary value"
+        );
+        const unitPriceString = this.formatAmount(unitPriceCents / 100);
+        const priceDate =
+          payload.priceDate ?? new Date().toISOString().split("T")[0];
+
+        await tx
+          .insert(itemPricesTable)
+          .values({
+            itemId: productId,
+            priceDate,
             unitPrice: unitPriceString,
             currencyCode: payload.currencyCode,
-          },
-        });
+          })
+          .onConflictDoUpdate({
+            target: [itemPricesTable.itemId, itemPricesTable.priceDate],
+            set: {
+              unitPrice: unitPriceString,
+              currencyCode: payload.currencyCode,
+            },
+          });
+
+        latestPrice = {
+          unitPrice: unitPriceString,
+          currencyCode: payload.currencyCode,
+        };
+      }
+
+      // If no price was updated, fetch the latest price
+      if (!latestPrice) {
+        const latestPriceRecord = await tx
+          .select({
+            unitPrice: itemPricesTable.unitPrice,
+            currencyCode: itemPricesTable.currencyCode,
+          })
+          .from(itemPricesTable)
+          .where(eq(itemPricesTable.itemId, productId))
+          .orderBy(desc(itemPricesTable.priceDate))
+          .limit(1)
+          .then((rows) => rows[0]);
+
+        if (!latestPriceRecord) {
+          throw new ServerError(
+            "PRODUCT_PRICE_NOT_FOUND",
+            `Product ${productId} has no price records`,
+            500
+          );
+        }
+
+        latestPrice = {
+          unitPrice: latestPriceRecord.unitPrice,
+          currencyCode: latestPriceRecord.currencyCode,
+        };
+      }
 
       return {
         id: productId,
-        name: normalizedName,
-        latestUnitPrice: unitPriceString,
-        currencyCode: payload.currencyCode,
+        name: finalName,
+        latestUnitPrice: latestPrice.unitPrice,
+        currencyCode: latestPrice.currencyCode,
       } satisfies ProductSummary;
     });
   }
