@@ -40,18 +40,13 @@ export class FixProductToolService {
 
         if (parsed.unit_price !== undefined) {
           payload.unitPrice = parsed.unit_price;
-          payload.currencyCode = parsed.currency_code ?? "EUR";
+          payload.currencyCode = parsed.currency_code;
           payload.priceDate = parsed.price_date;
         }
 
         const updatedProduct = await this.productsService.updateProduct(
           parsed.id,
-          payload as Partial<{
-            name: string;
-            unitPrice: string;
-            currencyCode: string;
-            priceDate?: string;
-          }>
+          payload
         );
 
         const currencySymbol = getCurrencySymbolForCode(
