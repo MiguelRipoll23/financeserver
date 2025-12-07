@@ -6,6 +6,14 @@ const DateOnlyRegex = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
 const MonetaryRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
 
 export const SaveBillToolSchema = z.object({
+  id: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .describe(
+      "ID of existing bill to update (optional, if not provided a new bill will be created based on date)"
+    ),
   date: z
     .string()
     .regex(DateOnlyRegex, "Date must be in YYYY-MM-DD format")

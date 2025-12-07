@@ -1,7 +1,6 @@
 import { inject, injectable } from "@needle-di/core";
 import { FilterProductsToolService } from "./tools/filter-products-tool-service.ts";
 import { FilterProductPriceDeltasToolService } from "./tools/filter-product-price-deltas-tool-service.ts";
-import { FixProductToolService } from "./tools/fix-product-tool-service.ts";
 import { FilterProductsPromptService } from "./prompts/filter-products-prompt-service.ts";
 import { FilterProductPriceDeltasPromptService } from "./prompts/filter-product-price-deltas-prompt-service.ts";
 import { McpToolDefinition } from "../../interfaces/mcp/mcp-tool-interface.ts";
@@ -14,7 +13,6 @@ export class ProductsMCPService {
     private filterProductPriceDeltasToolService = inject(
       FilterProductPriceDeltasToolService
     ),
-    private fixProductToolService = inject(FixProductToolService),
     private filterProductsPromptService = inject(FilterProductsPromptService),
     private filterProductPriceDeltasPromptService = inject(
       FilterProductPriceDeltasPromptService
@@ -25,7 +23,6 @@ export class ProductsMCPService {
     return [
       this.filterProductsToolService.getDefinition(),
       this.filterProductPriceDeltasToolService.getDefinition(),
-      this.fixProductToolService.getDefinition(),
     ];
   }
 
