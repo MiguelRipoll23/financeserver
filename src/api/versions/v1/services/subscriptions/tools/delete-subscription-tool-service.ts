@@ -27,9 +27,7 @@ export class DeleteSubscriptionToolService {
         const parsed = DeleteSubscriptionToolSchema.parse(input);
 
         try {
-          await this.subscriptionsService.deleteSubscription(
-            parsed.subscriptionId
-          );
+          await this.subscriptionsService.deleteSubscription(parsed.id);
         } catch (error) {
           if (
             error instanceof ServerError &&
@@ -41,11 +39,11 @@ export class DeleteSubscriptionToolService {
           }
         }
 
-        const text = `Subscription deleted successfully (ID: ${parsed.subscriptionId})`;
+        const text = `Subscription deleted successfully (ID: ${parsed.id})`;
 
         return {
           text,
-          structured: { id: parsed.subscriptionId, deleted: true },
+          structured: { id: parsed.id, deleted: true },
         };
       },
     };

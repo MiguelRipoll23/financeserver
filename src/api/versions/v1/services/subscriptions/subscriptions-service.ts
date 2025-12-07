@@ -283,7 +283,7 @@ export class SubscriptionsService {
   }
 
   public async updateSubscription(
-    subscriptionId: number,
+    id: number,
     payload: Partial<UpsertSubscriptionRequest>
   ): Promise<UpsertSubscriptionResponse> {
     const db = this.databaseService.get();
@@ -295,14 +295,14 @@ export class SubscriptionsService {
         category: subscriptionsTable.category,
       })
       .from(subscriptionsTable)
-      .where(eq(subscriptionsTable.id, subscriptionId))
+      .where(eq(subscriptionsTable.id, id))
       .limit(1)
       .then((rows) => rows[0]);
 
     if (!existingSubscription) {
       throw new ServerError(
         "SUBSCRIPTION_NOT_FOUND",
-        `Subscription ${subscriptionId} was not found`,
+        `Subscription ${id} was not found`,
         404
       );
     }
@@ -338,7 +338,7 @@ export class SubscriptionsService {
       await db
         .update(subscriptionsTable)
         .set(updateData)
-        .where(eq(subscriptionsTable.id, subscriptionId));
+        .where(eq(subscriptionsTable.id, id));
     }
 
     // Check if we need to update price info
@@ -357,7 +357,7 @@ export class SubscriptionsService {
         .from(subscriptionPricesTable)
         .where(
           and(
-            eq(subscriptionPricesTable.subscriptionId, subscriptionId),
+            eq(subscriptionPricesTable.subscriptionId, id),
             sql`${subscriptionPricesTable.effectiveFrom} <= CURRENT_DATE`,
             or(
               isNull(subscriptionPricesTable.effectiveUntil),
@@ -410,7 +410,7 @@ export class SubscriptionsService {
             .set({
               updatedAt: new Date(),
             })
-            .where(eq(subscriptionsTable.id, subscriptionId));
+            .where(eq(subscriptionsTable.id, id));
         });
       } else {
         // Regular price update: create a new price record
@@ -470,7 +470,7 @@ export class SubscriptionsService {
 
           // Create new price record
           const priceValues = {
-            subscriptionId,
+            subscriptionId: id,
             recurrence,
             amount: amountString,
             currencyCode,
@@ -487,28 +487,28 @@ export class SubscriptionsService {
       }
     }
 
-    return await this.loadSubscriptionResponse(db, subscriptionId);
+    return await this.loadSubscriptionResponse(db, id);
   }
 
-  public async deleteSubscription(subscriptionId: number): Promise<void> {
+  public async deleteSubscription(id: number): Promise<void> {
     const db = this.databaseService.get();
 
     const deleted = await db
       .delete(subscriptionsTable)
-      .where(eq(subscriptionsTable.id, subscriptionId))
+      .where(eq(subscriptionsTable.id, id))
       .returning({ id: subscriptionsTable.id });
 
     if (deleted.length === 0) {
       throw new ServerError(
         "SUBSCRIPTION_NOT_FOUND",
-        `Subscription ${subscriptionId} was not found`,
+        `Subscription ${id} was not found`,
         404
       );
     }
   }
 
   public async saveSubscriptionEndDate(
-    subscriptionId: number,
+    id: number,
     endDate: string
   ): Promise<UpsertSubscriptionResponse> {
     const db = this.databaseService.get();
@@ -516,14 +516,14 @@ export class SubscriptionsService {
     const existingSubscription = await db
       .select({ id: subscriptionsTable.id })
       .from(subscriptionsTable)
-      .where(eq(subscriptionsTable.id, subscriptionId))
+      .where(eq(subscriptionsTable.id, id))
       .limit(1)
       .then((rows) => rows[0]);
 
     if (!existingSubscription) {
       throw new ServerError(
         "SUBSCRIPTION_NOT_FOUND",
-        `Subscription ${subscriptionId} was not found`,
+        `Subscription ${id} was not found`,
         404
       );
     }
@@ -534,7 +534,7 @@ export class SubscriptionsService {
       .from(subscriptionPricesTable)
       .where(
         and(
-          eq(subscriptionPricesTable.subscriptionId, subscriptionId),
+          eq(subscriptionPricesTable.subscriptionId, id),
           sql`${subscriptionPricesTable.effectiveFrom} <= CURRENT_DATE`,
           or(
             isNull(subscriptionPricesTable.effectiveUntil),
@@ -561,9 +561,9 @@ export class SubscriptionsService {
       .set({
         updatedAt: new Date(),
       })
-      .where(eq(subscriptionsTable.id, subscriptionId));
+      .where(eq(subscriptionsTable.id, id));
 
-    return await this.loadSubscriptionResponse(db, subscriptionId);
+    return await this.loadSubscriptionResponse(db, id);
   }
 
   private validateSubscriptionPayload(
@@ -623,7 +623,7 @@ export class SubscriptionsService {
 
   private async loadSubscriptionResponse(
     db: NodePgDatabase,
-    subscriptionId: number
+    id: number
   ): Promise<UpsertSubscriptionResponse> {
     // First try to get current/active price
     let result = await db
@@ -638,7 +638,7 @@ export class SubscriptionsService {
       )
       .where(
         and(
-          eq(subscriptionsTable.id, subscriptionId),
+          eq(subscriptionsTable.id, id),
           sql`${subscriptionPricesTable.effectiveFrom} <= CURRENT_DATE`,
           or(
             isNull(subscriptionPricesTable.effectiveUntil),
@@ -662,7 +662,7 @@ export class SubscriptionsService {
           subscriptionPricesTable,
           eq(subscriptionsTable.id, subscriptionPricesTable.subscriptionId)
         )
-        .where(eq(subscriptionsTable.id, subscriptionId))
+        .where(eq(subscriptionsTable.id, id))
         .orderBy(desc(subscriptionPricesTable.effectiveFrom))
         .limit(1)
         .then((rows) => rows[0]);

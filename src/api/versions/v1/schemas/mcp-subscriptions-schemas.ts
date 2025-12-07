@@ -57,23 +57,19 @@ export const SaveSubscriptionToolSchema = z.object({
 
 export const UpdateSubscriptionToolSchema = z
   .object({
-    subscriptionId: z
+    id: z
       .number()
       .int()
       .positive()
       .describe("ID of the subscription to update"),
   })
   .merge(SaveSubscriptionToolSchema.partial())
-  .refine((data) => Object.keys(data).some((key) => key !== "subscriptionId"), {
+  .refine((data) => Object.keys(data).some((key) => key !== "id"), {
     message: "At least one field to update must be provided besides the ID.",
   });
 
 export const DeleteSubscriptionToolSchema = z.object({
-  subscriptionId: z
-    .number()
-    .int()
-    .positive()
-    .describe("ID of the subscription to delete"),
+  id: z.number().int().positive().describe("ID of the subscription to delete"),
 });
 
 export const FilterSubscriptionsToolSchema = z.object({

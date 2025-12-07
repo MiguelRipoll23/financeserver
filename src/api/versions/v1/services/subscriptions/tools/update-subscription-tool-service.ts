@@ -38,7 +38,7 @@ export class UpdateSubscriptionToolService {
           parsed.plan === undefined;
 
         const result = await this.subscriptionsService.updateSubscription(
-          parsed.subscriptionId,
+          parsed.id,
           {
             name: parsed.name,
             category: parsed.category,
