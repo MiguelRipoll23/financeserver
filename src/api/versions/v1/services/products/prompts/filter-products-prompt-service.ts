@@ -11,10 +11,10 @@ const MonetaryRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
 
 const FilterProductsPromptSchema = z.object({
   query: z.string().min(1).max(256).optional(),
-  min_unit_price: z.string().regex(MonetaryRegex).optional(),
-  max_unit_price: z.string().regex(MonetaryRegex).optional(),
-  sort_field: z.nativeEnum(ProductSortField).optional(),
-  sort_order: z.nativeEnum(SortOrder).optional(),
+  minimumUnitPrice: z.string().regex(MonetaryRegex).optional(),
+  maximumUnitPrice: z.string().regex(MonetaryRegex).optional(),
+  sortField: z.nativeEnum(ProductSortField).optional(),
+  sortOrder: z.nativeEnum(SortOrder).optional(),
   limit: z.number().int().gte(1).max(100).optional(),
   cursor: z.string().optional(),
   insightFocus: z.string().min(1).max(512).optional(),
@@ -71,20 +71,20 @@ export class FilterProductsPromptService {
       payload.query = input.query;
     }
 
-    if (input.min_unit_price) {
-      payload.min_unit_price = input.min_unit_price;
+    if (input.minimumUnitPrice) {
+      payload.minimumUnitPrice = input.minimumUnitPrice;
     }
 
-    if (input.max_unit_price) {
-      payload.max_unit_price = input.max_unit_price;
+    if (input.maximumUnitPrice) {
+      payload.maximumUnitPrice = input.maximumUnitPrice;
     }
 
-    if (input.sort_field) {
-      payload.sort_field = input.sort_field;
+    if (input.sortField) {
+      payload.sortField = input.sortField;
     }
 
-    if (input.sort_order) {
-      payload.sort_order = input.sort_order;
+    if (input.sortOrder) {
+      payload.sortOrder = input.sortOrder;
     }
 
     if (input.limit !== undefined) {

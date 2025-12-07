@@ -10,13 +10,13 @@ import {
 const MonetaryRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
 
 const FilterReceiptsPromptSchema = z.object({
-  start_date: z.string().optional(),
-  end_date: z.string().optional(),
-  min_total_amount: z.string().regex(MonetaryRegex).optional(),
-  max_total_amount: z.string().regex(MonetaryRegex).optional(),
-  product_name: z.string().min(1).max(256).optional(),
-  sort_field: z.nativeEnum(ReceiptSortField).optional(),
-  sort_order: z.nativeEnum(SortOrder).optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  minimumTotalAmount: z.string().regex(MonetaryRegex).optional(),
+  maximumTotalAmount: z.string().regex(MonetaryRegex).optional(),
+  productName: z.string().min(1).max(256).optional(),
+  sortField: z.nativeEnum(ReceiptSortField).optional(),
+  sortOrder: z.nativeEnum(SortOrder).optional(),
   limit: z.number().int().gte(1).max(100).optional(),
   cursor: z.string().optional(),
   summaryFocus: z.string().min(1).max(512).optional(),
@@ -69,32 +69,32 @@ export class FilterReceiptsPromptService {
   ): Record<string, unknown> {
     const payload: Record<string, unknown> = {};
 
-    if (input.start_date) {
-      payload.start_date = input.start_date;
+    if (input.startDate) {
+      payload.startDate = input.startDate;
     }
 
-    if (input.end_date) {
-      payload.end_date = input.end_date;
+    if (input.endDate) {
+      payload.endDate = input.endDate;
     }
 
-    if (input.min_total_amount) {
-      payload.min_total_amount = input.min_total_amount;
+    if (input.minimumTotalAmount) {
+      payload.minimumTotalAmount = input.minimumTotalAmount;
     }
 
-    if (input.max_total_amount) {
-      payload.max_total_amount = input.max_total_amount;
+    if (input.maximumTotalAmount) {
+      payload.maximumTotalAmount = input.maximumTotalAmount;
     }
 
-    if (input.product_name) {
-      payload.product_name = input.product_name;
+    if (input.productName) {
+      payload.productName = input.productName;
     }
 
-    if (input.sort_field) {
-      payload.sort_field = input.sort_field;
+    if (input.sortField) {
+      payload.sortField = input.sortField;
     }
 
-    if (input.sort_order) {
-      payload.sort_order = input.sort_order;
+    if (input.sortOrder) {
+      payload.sortOrder = input.sortOrder;
     }
 
     if (input.limit !== undefined) {
