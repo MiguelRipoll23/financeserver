@@ -454,33 +454,36 @@ export class SubscriptionsService {
           );
         }
 
-        // End current price period if there is one
-        if (currentPrice) {
-          const currentDate = new Date().toISOString().split("T")[0];
-          await db
-            .update(subscriptionPricesTable)
-            .set({
-              effectiveUntil: currentDate,
-              updatedAt: new Date(),
-            })
-            .where(eq(subscriptionPricesTable.id, currentPrice.id));
-        }
+        // End current price period and create new price record in a transaction
+        await db.transaction(async (tx) => {
+          // End current price period if there is one
+          if (currentPrice) {
+            const currentDate = new Date().toISOString().split("T")[0];
+            await tx
+              .update(subscriptionPricesTable)
+              .set({
+                effectiveUntil: currentDate,
+                updatedAt: new Date(),
+              })
+              .where(eq(subscriptionPricesTable.id, currentPrice.id));
+          }
 
-        // Create new price record
-        const priceValues = {
-          subscriptionId,
-          recurrence,
-          amount: amountString,
-          currencyCode,
-          effectiveFrom,
-          effectiveUntil: payload.effectiveUntil || null,
-          plan:
-            payload.plan !== undefined
-              ? payload.plan
-              : currentPrice?.plan || null,
-        };
+          // Create new price record
+          const priceValues = {
+            subscriptionId,
+            recurrence,
+            amount: amountString,
+            currencyCode,
+            effectiveFrom,
+            effectiveUntil: payload.effectiveUntil || null,
+            plan:
+              payload.plan !== undefined
+                ? payload.plan
+                : currentPrice?.plan || null,
+          };
 
-        await db.insert(subscriptionPricesTable).values(priceValues);
+          await tx.insert(subscriptionPricesTable).values(priceValues);
+        });
       }
     }
 
