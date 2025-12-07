@@ -26,7 +26,7 @@ export class SaveBillToolService {
       run: async (input: unknown) => {
         const parsed = SaveBillToolSchema.parse(input);
 
-        const result = await this.billsService.upsertBill({
+        const result = await this.billsService.createBill({
           date: parsed.date,
           category: parsed.category,
           totalAmount: parsed.totalAmount,

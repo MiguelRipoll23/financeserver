@@ -35,6 +35,70 @@ type NormalizedCategoryInput = {
 export class BillsService {
   constructor(private databaseService = inject(DatabaseService)) {}
 
+  public async createBill(
+    payload: Omit<UpsertBillRequest, "senderEmail"> & { senderEmail?: string }
+  ): Promise<UpsertBillResponse> {
+    const categoryInput = this.normalizeCategoryInput(payload.category);
+
+    if (categoryInput.name.length === 0) {
+      throw new ServerError(
+        "BILL_CATEGORY_REQUIRED",
+        "Category is required to create a bill",
+        400
+      );
+    }
+
+    const billDate = payload.date;
+
+    const totalAmountCents = this.parseAmountToCents(
+      payload.totalAmount,
+      "BILL_TOTAL_INVALID",
+      "Bill total amount must be a non-negative monetary value"
+    );
+    const totalAmountString = this.formatAmount(totalAmountCents / 100);
+
+    const db = this.databaseService.get();
+
+    return await db.transaction(async (tx) => {
+      // Check if a bill already exists for this date
+      const existingBill = await tx
+        .select({ id: billsTable.id })
+        .from(billsTable)
+        .where(eq(billsTable.billDate, billDate))
+        .limit(1)
+        .then((rows) => rows[0]);
+
+      if (existingBill) {
+        throw new ServerError(
+          "BILL_DATE_CONFLICT",
+          `A bill already exists for date ${billDate}`,
+          409
+        );
+      }
+
+      const emailId = await this.resolveOptionalEmailId(
+        tx,
+        payload.senderEmail
+      );
+      const categoryId = await this.resolveCategoryId(tx, categoryInput);
+
+      const values = {
+        billDate,
+        categoryId,
+        totalAmount: totalAmountString,
+        currencyCode: payload.currencyCode,
+        emailId,
+      };
+
+      const [{ id: billId }] = await tx
+        .insert(billsTable)
+        .values(values)
+        .returning({ id: billsTable.id });
+
+      return await this.loadBillResponse(tx, billId);
+    });
+  }
+
   public async upsertBill(
     payload: Omit<UpsertBillRequest, "senderEmail"> & { senderEmail?: string }
   ): Promise<UpsertBillResponse> {
