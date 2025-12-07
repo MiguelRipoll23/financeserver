@@ -2,20 +2,20 @@ import { inject, injectable } from "@needle-di/core";
 import { McpToolDefinition } from "../../../interfaces/mcp/mcp-tool-interface.ts";
 import { ReceiptsService } from "../receipts-service.ts";
 import { getCurrencySymbolForCode } from "../../../utils/currency-utils.ts";
-import { SaveReceiptToolSchema } from "../../../schemas/mcp-receipts-schemas.ts";
+import { UpdateReceiptToolSchema } from "../../../schemas/mcp-receipts-schemas.ts";
 
 @injectable()
-export class SaveReceiptToolService {
+export class UpdateReceiptToolService {
   constructor(private receiptsService = inject(ReceiptsService)) {}
 
   public getDefinition(): McpToolDefinition {
     return {
-      name: "receipts.save",
+      name: "receipts.update",
       meta: {
-        title: "Save receipt",
+        title: "Update receipt",
         description:
-          "Use this when you need to save a new receipt with date and items (each with name, quantity, and unit price). Do not use for updating or deleting receipts.",
-        inputSchema: SaveReceiptToolSchema.shape,
+          "Use this when you need to update an existing receipt to fix incorrect item names, quantities, or unit prices. Do not use for creating new receipts or deleting receipts.",
+        inputSchema: UpdateReceiptToolSchema.shape,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,
@@ -24,9 +24,9 @@ export class SaveReceiptToolService {
         },
       },
       run: async (input: unknown) => {
-        const parsed = SaveReceiptToolSchema.parse(input);
+        const parsed = UpdateReceiptToolSchema.parse(input);
 
-        const result = await this.receiptsService.createReceipt({
+        const result = await this.receiptsService.updateReceipt(parsed.id, {
           date: parsed.date,
           items: parsed.items,
         });
@@ -43,7 +43,7 @@ export class SaveReceiptToolService {
         const quantityText = totalQuantity === 1 ? "product" : "products";
         const currencySymbol = getCurrencySymbolForCode(result.currencyCode);
 
-        const text = `Receipt saved successfully: ${displayDate} – ${totalQuantity} ${quantityText} across ${itemCount} ${itemsText}, total: ${result.totalAmount}${currencySymbol} (ID: ${result.id})`;
+        const text = `Receipt updated successfully: ${displayDate} – ${totalQuantity} ${quantityText} across ${itemCount} ${itemsText}, total: ${result.totalAmount}${currencySymbol} (ID: ${result.id})`;
 
         return {
           text,

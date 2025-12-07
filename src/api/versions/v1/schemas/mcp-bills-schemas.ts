@@ -6,14 +6,41 @@ const DateOnlyRegex = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
 const MonetaryRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
 
 export const SaveBillToolSchema = z.object({
-  id: z
-    .number()
-    .int()
-    .positive()
+  date: z
+    .string()
+    .regex(DateOnlyRegex, "Date must be in YYYY-MM-DD format")
+    .describe("The date when the bill was issued or due (format: YYYY-MM-DD)"),
+  category: z
+    .string()
+    .min(1)
+    .max(128, "Category must be between 1-128 characters")
+    .describe(
+      "The category of the bill in English (e.g., utilities, rent, insurance)"
+    ),
+  totalAmount: z
+    .string()
+    .regex(
+      MonetaryRegex,
+      "Total amount must be a valid monetary value (format: 123.45, no currency symbol, dot as decimal separator)"
+    )
+    .describe(
+      "The total amount of the bill (format: 123.45, no currency symbol)"
+    ),
+  currencyCode: z
+    .string()
+    .length(3, "Currency code must be exactly 3 characters (ISO 4217 format)")
+    .describe("ISO 4217 currency code (e.g., EUR, USD, GBP)"),
+  senderEmail: z
+    .string()
+    .email("Sender email must be a valid email address")
     .optional()
     .describe(
-      "ID of existing bill to update (optional, if not provided a new bill will be created based on date)"
+      "Email address of the bill sender or service provider (optional)"
     ),
+});
+
+export const UpdateBillToolSchema = z.object({
+  id: z.number().int().positive().describe("ID of the bill to update"),
   date: z
     .string()
     .regex(DateOnlyRegex, "Date must be in YYYY-MM-DD format")
