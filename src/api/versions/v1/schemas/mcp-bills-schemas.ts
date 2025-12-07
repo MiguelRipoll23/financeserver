@@ -39,40 +39,14 @@ export const SaveBillToolSchema = z.object({
     ),
 });
 
-export const UpdateBillToolSchema = z.object({
-  id: z.number().int().positive().describe("ID of the bill to update"),
-  date: z
-    .string()
-    .regex(DateOnlyRegex, "Date must be in YYYY-MM-DD format")
-    .describe("The date when the bill was issued or due (format: YYYY-MM-DD)"),
-  category: z
-    .string()
-    .min(1)
-    .max(128, "Category must be between 1-128 characters")
-    .describe(
-      "The category of the bill in English (e.g., utilities, rent, insurance)"
-    ),
-  totalAmount: z
-    .string()
-    .regex(
-      MonetaryRegex,
-      "Total amount must be a valid monetary value (format: 123.45, no currency symbol, dot as decimal separator)"
-    )
-    .describe(
-      "The total amount of the bill (format: 123.45, no currency symbol)"
-    ),
-  currencyCode: z
-    .string()
-    .length(3, "Currency code must be exactly 3 characters (ISO 4217 format)")
-    .describe("ISO 4217 currency code (e.g., EUR, USD, GBP)"),
-  senderEmail: z
-    .string()
-    .email("Sender email must be a valid email address")
-    .optional()
-    .describe(
-      "Email address of the bill sender or service provider (optional)"
-    ),
-});
+export const UpdateBillToolSchema = z
+  .object({
+    id: z.number().int().positive().describe("ID of the bill to update"),
+  })
+  .merge(SaveBillToolSchema.partial())
+  .refine((data) => Object.keys(data).some((key) => key !== "id"), {
+    message: "At least one field to update must be provided besides the ID.",
+  });
 
 export const FilterBillsToolSchema = z.object({
   startDate: z

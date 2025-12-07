@@ -229,34 +229,21 @@ export class BillsService {
 
   public async updateBill(
     billId: number,
-    payload: Omit<UpsertBillRequest, "senderEmail"> & { senderEmail?: string }
+    payload: Partial<
+      Omit<UpsertBillRequest, "senderEmail"> & { senderEmail?: string }
+    >
   ): Promise<UpsertBillResponse> {
-    const categoryInput = this.normalizeCategoryInput(payload.category);
-
-    if (categoryInput.name.length === 0) {
-      throw new ServerError(
-        "BILL_CATEGORY_REQUIRED",
-        "Category is required to update a bill",
-        400
-      );
-    }
-
-    const billDate = payload.date;
-
-    const totalAmountCents = this.parseAmountToCents(
-      payload.totalAmount,
-      "BILL_TOTAL_INVALID",
-      "Bill total amount must be a non-negative monetary value"
-    );
-    const totalAmountString = this.formatAmount(totalAmountCents / 100);
-
     const db = this.databaseService.get();
 
     return await db.transaction(async (tx) => {
       const existingBill = await tx
         .select({
           id: billsTable.id,
-          currentBillDate: billsTable.billDate,
+          billDate: billsTable.billDate,
+          categoryId: billsTable.categoryId,
+          totalAmount: billsTable.totalAmount,
+          currencyCode: billsTable.currencyCode,
+          emailId: billsTable.emailId,
         })
         .from(billsTable)
         .where(eq(billsTable.id, billId))
@@ -271,42 +258,89 @@ export class BillsService {
         );
       }
 
-      if (existingBill.currentBillDate !== billDate) {
-        const conflictingBill = await tx
-          .select({ id: billsTable.id })
-          .from(billsTable)
-          .where(
-            and(eq(billsTable.billDate, billDate), ne(billsTable.id, billId))
-          )
-          .limit(1)
-          .then((rows) => rows[0]);
+      // Build update object with only provided fields
+      const updateData: {
+        billDate?: string;
+        categoryId?: number;
+        totalAmount?: string;
+        currencyCode?: string;
+        emailId?: number | null;
+        updatedAt: Date;
+      } = { updatedAt: new Date() };
 
-        if (conflictingBill) {
-          throw new ServerError(
-            "BILL_DATE_CONFLICT",
-            `Another bill already exists for date ${billDate}`,
-            409
-          );
+      // Handle date update
+      if (payload.date !== undefined) {
+        const billDate = payload.date;
+
+        // Check for date conflicts if date is being changed
+        if (existingBill.billDate !== billDate) {
+          const conflictingBill = await tx
+            .select({ id: billsTable.id })
+            .from(billsTable)
+            .where(
+              and(eq(billsTable.billDate, billDate), ne(billsTable.id, billId))
+            )
+            .limit(1)
+            .then((rows) => rows[0]);
+
+          if (conflictingBill) {
+            throw new ServerError(
+              "BILL_DATE_CONFLICT",
+              `Another bill already exists for date ${billDate}`,
+              409
+            );
+          }
         }
+
+        updateData.billDate = billDate;
       }
 
-      const emailId = await this.resolveOptionalEmailId(
-        tx,
-        payload.senderEmail
-      );
-      const categoryId = await this.resolveCategoryId(tx, categoryInput);
+      // Handle category update
+      if (payload.category !== undefined) {
+        const categoryInput = this.normalizeCategoryInput(payload.category);
 
-      await tx
-        .update(billsTable)
-        .set({
-          billDate,
-          categoryId,
-          totalAmount: totalAmountString,
-          currencyCode: payload.currencyCode,
-          emailId,
-          updatedAt: new Date(),
-        })
-        .where(eq(billsTable.id, billId));
+        if (categoryInput.name.length === 0) {
+          throw new ServerError(
+            "BILL_CATEGORY_REQUIRED",
+            "Category cannot be empty",
+            400
+          );
+        }
+
+        const categoryId = await this.resolveCategoryId(tx, categoryInput);
+        updateData.categoryId = categoryId;
+      }
+
+      // Handle total amount update
+      if (payload.totalAmount !== undefined) {
+        const totalAmountCents = this.parseAmountToCents(
+          payload.totalAmount,
+          "BILL_TOTAL_INVALID",
+          "Bill total amount must be a non-negative monetary value"
+        );
+        updateData.totalAmount = this.formatAmount(totalAmountCents / 100);
+      }
+
+      // Handle currency code update
+      if (payload.currencyCode !== undefined) {
+        updateData.currencyCode = payload.currencyCode;
+      }
+
+      // Handle sender email update
+      if (payload.senderEmail !== undefined) {
+        updateData.emailId = await this.resolveOptionalEmailId(
+          tx,
+          payload.senderEmail
+        );
+      }
+
+      // Only update if there are changes
+      if (Object.keys(updateData).length > 1) {
+        await tx
+          .update(billsTable)
+          .set(updateData)
+          .where(eq(billsTable.id, billId));
+      }
 
       return await this.loadBillResponse(tx, billId);
     });
