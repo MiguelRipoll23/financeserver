@@ -11,14 +11,14 @@ export const FilterProductsToolSchema = z.object({
     .describe(
       "Search query to filter products by name (partial match). Try singular/plural if no results."
     ),
-  minUnitPrice: z
+  minimumUnitPrice: z
     .string()
     .regex(MonetaryRegex)
     .optional()
     .describe(
       "Minimum unit price for products (format: 123.45, no currency symbol)"
     ),
-  maxUnitPrice: z
+  maximumUnitPrice: z
     .string()
     .regex(MonetaryRegex)
     .optional()

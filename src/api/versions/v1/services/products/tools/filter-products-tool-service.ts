@@ -25,17 +25,12 @@ export class FilterProductsToolService {
         },
       },
       run: async (input: unknown) => {
-        const parsed = FilterProductsToolSchema.parse(input);
-        const minimumUnitPrice = this.parseAmountFilter(parsed.minUnitPrice);
-        const maximumUnitPrice = this.parseAmountFilter(parsed.maxUnitPrice);
+        const { minimumUnitPrice, maximumUnitPrice, ...rest } =
+          FilterProductsToolSchema.parse(input);
         const productsPage = await this.productsService.getProducts({
-          query: parsed.query,
-          minimumUnitPrice,
-          maximumUnitPrice,
-          sortField: parsed.sortField,
-          sortOrder: parsed.sortOrder,
-          limit: parsed.limit,
-          cursor: parsed.cursor,
+          ...rest,
+          minimumUnitPrice: this.parseAmountFilter(minimumUnitPrice),
+          maximumUnitPrice: this.parseAmountFilter(maximumUnitPrice),
         });
 
         const text = this.formatText(productsPage);
