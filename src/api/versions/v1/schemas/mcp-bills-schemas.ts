@@ -39,6 +39,19 @@ export const SaveBillToolSchema = z.object({
     ),
 });
 
+export const UpdateBillToolSchema = z
+  .object({
+    id: z.number().int().positive().describe("ID of the bill to update"),
+  })
+  .merge(SaveBillToolSchema.partial())
+  .refine((data) => Object.keys(data).some((key) => key !== "id"), {
+    message: "At least one field to update must be provided besides the ID.",
+  });
+
+export const DeleteBillToolSchema = z.object({
+  id: z.number().int().positive().describe("ID of the bill to delete"),
+});
+
 export const FilterBillsToolSchema = z.object({
   startDate: z
     .string()

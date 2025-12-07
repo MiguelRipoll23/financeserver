@@ -51,16 +51,25 @@ export const SaveSubscriptionToolSchema = z.object({
     .regex(DateOnlyRegex, "Effective until date must be in YYYY-MM-DD format")
     .optional()
     .describe(
-      "The date when this subscription price expires (format: YYYY-MM-DD, optional)"
+      "The date when this subscription price expires (format: YYYY-MM-DD)"
     ),
-  subscriptionId: z
-    .number()
-    .int()
-    .positive()
-    .optional()
-    .describe(
-      "ID of existing subscription to update (optional, used for updating end date when canceling)"
-    ),
+});
+
+export const UpdateSubscriptionToolSchema = z
+  .object({
+    id: z
+      .number()
+      .int()
+      .positive()
+      .describe("ID of the subscription to update"),
+  })
+  .merge(SaveSubscriptionToolSchema.partial())
+  .refine((data) => Object.keys(data).some((key) => key !== "id"), {
+    message: "At least one field to update must be provided besides the ID.",
+  });
+
+export const DeleteSubscriptionToolSchema = z.object({
+  id: z.number().int().positive().describe("ID of the subscription to delete"),
 });
 
 export const FilterSubscriptionsToolSchema = z.object({

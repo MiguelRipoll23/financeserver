@@ -3,6 +3,8 @@ import { McpToolDefinition } from "../../interfaces/mcp/mcp-tool-interface.ts";
 import { McpPromptDefinition } from "../../interfaces/mcp/mcp-prompt-interface.ts";
 import { FilterBillsToolService } from "./tools/filter-bills-tool-service.ts";
 import { SaveBillToolService } from "./tools/save-bill-tool-service.ts";
+import { UpdateBillToolService } from "./tools/update-bill-tool-service.ts";
+import { DeleteBillToolService } from "./tools/delete-bill-tool-service.ts";
 import { FilterBillsPromptService } from "./prompts/filter-bills-prompt-service.ts";
 import { SaveBillPromptService } from "./prompts/save-bill-prompt-service.ts";
 
@@ -11,6 +13,8 @@ export class BillsMCPService {
   constructor(
     private filterBillsToolService = inject(FilterBillsToolService),
     private saveBillToolService = inject(SaveBillToolService),
+    private updateBillToolService = inject(UpdateBillToolService),
+    private deleteBillToolService = inject(DeleteBillToolService),
     private filterBillsPromptService = inject(FilterBillsPromptService),
     private saveBillPromptService = inject(SaveBillPromptService)
   ) {}
@@ -19,6 +23,8 @@ export class BillsMCPService {
     return [
       this.filterBillsToolService.getDefinition(),
       this.saveBillToolService.getDefinition(),
+      this.updateBillToolService.getDefinition(),
+      this.deleteBillToolService.getDefinition(),
     ];
   }
 

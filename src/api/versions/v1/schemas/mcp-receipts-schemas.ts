@@ -43,6 +43,19 @@ export const SaveReceiptToolSchema = z.object({
     .describe("List of items purchased on this receipt"),
 });
 
+export const UpdateReceiptToolSchema = z
+  .object({
+    id: z.number().int().positive().describe("ID of the receipt to update"),
+  })
+  .merge(SaveReceiptToolSchema.partial())
+  .refine((data) => Object.keys(data).some((key) => key !== "id"), {
+    message: "At least one field to update must be provided besides the ID.",
+  });
+
+export const DeleteReceiptToolSchema = z.object({
+  id: z.number().int().positive().describe("ID of the receipt to delete"),
+});
+
 export const FilterReceiptsToolSchema = z.object({
   start_date: z
     .string()

@@ -14,7 +14,7 @@ export class SaveReceiptToolService {
       meta: {
         title: "Save receipt",
         description:
-          "Use this when you need to save a new receipt with date and items (each with name, quantity, and unit price).",
+          "Use this when you need to save a new receipt with date and items (each with name, quantity, and unit price). Do not use for updating or deleting receipts.",
         inputSchema: SaveReceiptToolSchema.shape,
         annotations: {
           readOnlyHint: false,
