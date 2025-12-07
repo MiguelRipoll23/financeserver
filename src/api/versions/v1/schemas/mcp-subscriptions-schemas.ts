@@ -8,13 +8,21 @@ const MonetaryRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
 
 export const SaveSubscriptionToolSchema = z
   .object({
+    subscriptionId: z
+      .number()
+      .int()
+      .positive()
+      .optional()
+      .describe(
+        "ID of existing subscription. Omit to create new. Provide with name and all required fields to update. Provide with only effectiveUntil (no name) to cancel."
+      ),
     name: z
       .string()
       .min(1)
       .max(256, "Name must be between 1-256 characters")
       .optional()
       .describe(
-        "The name of the subscription service (e.g., Netflix Premium, Spotify)"
+        "The name of the subscription service (e.g., Netflix Premium, Spotify). Required for create and update operations."
       ),
     category: z
       .string()
@@ -22,12 +30,14 @@ export const SaveSubscriptionToolSchema = z
       .max(128, "Category must be between 1-128 characters")
       .optional()
       .describe(
-        "The category of the subscription in English (e.g., Entertainment, Utilities, Software)"
+        "The category of the subscription in English (e.g., Entertainment, Utilities, Software). Required for create and update operations."
       ),
     recurrence: z
       .nativeEnum(Recurrence)
       .optional()
-      .describe("How often the subscription renews (weekly, monthly, yearly)"),
+      .describe(
+        "How often the subscription renews (weekly, monthly, yearly). Required for create and update operations."
+      ),
     amount: z
       .string()
       .regex(
@@ -36,40 +46,36 @@ export const SaveSubscriptionToolSchema = z
       )
       .optional()
       .describe(
-        "The subscription amount per billing cycle (format: 15.99, no currency symbol)"
+        "The subscription amount per billing cycle (format: 15.99, no currency symbol). Required for create and update operations."
       ),
     currencyCode: z
       .string()
       .length(3)
       .optional()
-      .describe("Three-letter currency code (e.g., EUR, USD, GBP)"),
+      .describe(
+        "Three-letter currency code (e.g., EUR, USD, GBP). Required for create and update operations."
+      ),
     plan: z
       .string()
       .min(1)
       .max(128)
       .optional()
-      .describe("The subscription plan name (e.g., Premium, Pro, Basic)"),
+      .describe(
+        "The subscription plan name (e.g., Premium, Pro, Basic). Optional for all operations."
+      ),
     effectiveFrom: z
       .string()
       .regex(DateOnlyRegex, "Effective from date must be in YYYY-MM-DD format")
       .optional()
       .describe(
-        "The date when this subscription price becomes effective (format: YYYY-MM-DD)"
+        "The date when this subscription price becomes effective (format: YYYY-MM-DD). Required for create and update operations."
       ),
     effectiveUntil: z
       .string()
       .regex(DateOnlyRegex, "Effective until date must be in YYYY-MM-DD format")
       .optional()
       .describe(
-        "The date when this subscription price expires (format: YYYY-MM-DD, optional)"
-      ),
-    subscriptionId: z
-      .number()
-      .int()
-      .positive()
-      .optional()
-      .describe(
-        "ID of existing subscription to update (optional, if provided with only effectiveUntil will cancel subscription, otherwise will update all subscription details)"
+        "The date when this subscription price expires (format: YYYY-MM-DD). Optional for create/update. For cancel operation, provide this with subscriptionId only (omit name and other fields)."
       ),
   })
   .refine(
