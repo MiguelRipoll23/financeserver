@@ -395,21 +395,23 @@ export class SubscriptionsService {
           );
         }
 
-        await db
-          .update(subscriptionPricesTable)
-          .set({
-            effectiveUntil: payload.effectiveUntil,
-            updatedAt: new Date(),
-          })
-          .where(eq(subscriptionPricesTable.id, currentPrice.id));
+        await db.transaction(async (tx) => {
+          await tx
+            .update(subscriptionPricesTable)
+            .set({
+              effectiveUntil: payload.effectiveUntil,
+              updatedAt: new Date(),
+            })
+            .where(eq(subscriptionPricesTable.id, currentPrice.id));
 
-        // Update subscription timestamp
-        await db
-          .update(subscriptionsTable)
-          .set({
-            updatedAt: new Date(),
-          })
-          .where(eq(subscriptionsTable.id, subscriptionId));
+          // Update subscription timestamp
+          await tx
+            .update(subscriptionsTable)
+            .set({
+              updatedAt: new Date(),
+            })
+            .where(eq(subscriptionsTable.id, subscriptionId));
+        });
       } else {
         // Regular price update: create a new price record
         if (!currentPrice && !payload.effectiveFrom) {
