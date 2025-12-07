@@ -28,74 +28,69 @@ export class SaveSubscriptionToolService {
 
         let result;
 
-        if (
-          parsed.subscriptionId &&
-          parsed.effectiveUntil &&
-          !parsed.name &&
-          !parsed.category &&
-          !parsed.recurrence &&
-          !parsed.amount &&
-          !parsed.currencyCode &&
-          !parsed.effectiveFrom
-        ) {
-          // Cancel subscription (only subscriptionId and effectiveUntil provided)
-          result = await this.subscriptionsService.saveSubscriptionEndDate(
-            parsed.subscriptionId,
-            parsed.effectiveUntil
-          );
+        if (parsed.subscriptionId) {
+          if (parsed.name) {
+            // Update existing subscription
+            result = await this.subscriptionsService.updateSubscription(
+              parsed.subscriptionId,
+              {
+                name: parsed.name,
+                category: parsed.category!,
+                recurrence: parsed.recurrence!,
+                amount: parsed.amount!,
+                currencyCode: parsed.currencyCode!,
+                effectiveFrom: parsed.effectiveFrom!,
+                effectiveUntil: parsed.effectiveUntil,
+                plan: parsed.plan,
+              }
+            );
 
-          const displayStartDate = result.effectiveFrom.split("T")[0];
-          const displayEndDate = result.effectiveUntil!.split("T")[0];
+            const displayStartDate = result.effectiveFrom.split("T")[0];
+            const endDateDisplay = result.effectiveUntil
+              ? ` (ends: ${result.effectiveUntil.split("T")[0]})`
+              : " (active)";
 
-          const planInfo = result.plan ? ` - ${result.plan}` : "";
-          const text = `Subscription canceled successfully: ${
-            result.name
-          }${planInfo} – ${result.category} (${getCurrencySymbolForCode(
-            result.currencyCode
-          )}${result.amount}/${
-            result.recurrence
-          }, started: ${displayStartDate}, ended: ${displayEndDate}) (ID: ${
-            result.id
-          })`;
+            const planInfo = result.plan ? ` - ${result.plan}` : "";
+            const text = `Subscription updated successfully: ${
+              result.name
+            }${planInfo} – ${result.category} (${getCurrencySymbolForCode(
+              result.currencyCode
+            )}${result.amount}/${
+              result.recurrence
+            }, started: ${displayStartDate}${endDateDisplay}) (ID: ${
+              result.id
+            })`;
 
-          return {
-            text,
-            structured: result,
-          };
-        } else if (parsed.subscriptionId) {
-          // Update existing subscription (all fields provided)
-          result = await this.subscriptionsService.updateSubscription(
-            parsed.subscriptionId,
-            {
-              name: parsed.name!,
-              category: parsed.category!,
-              recurrence: parsed.recurrence!,
-              amount: parsed.amount!,
-              currencyCode: parsed.currencyCode!,
-              effectiveFrom: parsed.effectiveFrom!,
-              effectiveUntil: parsed.effectiveUntil,
-              plan: parsed.plan,
-            }
-          );
+            return {
+              text,
+              structured: result,
+            };
+          } else {
+            // Cancel subscription
+            result = await this.subscriptionsService.saveSubscriptionEndDate(
+              parsed.subscriptionId,
+              parsed.effectiveUntil!
+            );
 
-          const displayStartDate = result.effectiveFrom.split("T")[0];
-          const endDateDisplay = result.effectiveUntil
-            ? ` (ends: ${result.effectiveUntil.split("T")[0]})`
-            : " (active)";
+            const displayStartDate = result.effectiveFrom.split("T")[0];
+            const displayEndDate = result.effectiveUntil!.split("T")[0];
 
-          const planInfo = result.plan ? ` - ${result.plan}` : "";
-          const text = `Subscription updated successfully: ${
-            result.name
-          }${planInfo} – ${result.category} (${getCurrencySymbolForCode(
-            result.currencyCode
-          )}${result.amount}/${
-            result.recurrence
-          }, started: ${displayStartDate}${endDateDisplay}) (ID: ${result.id})`;
+            const planInfo = result.plan ? ` - ${result.plan}` : "";
+            const text = `Subscription canceled successfully: ${
+              result.name
+            }${planInfo} – ${result.category} (${getCurrencySymbolForCode(
+              result.currencyCode
+            )}${result.amount}/${
+              result.recurrence
+            }, started: ${displayStartDate}, ended: ${displayEndDate}) (ID: ${
+              result.id
+            })`;
 
-          return {
-            text,
-            structured: result,
-          };
+            return {
+              text,
+              structured: result,
+            };
+          }
         } else {
           // Create new subscription
           result = await this.subscriptionsService.createSubscription({
