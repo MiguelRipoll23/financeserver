@@ -2,6 +2,7 @@ import { inject, injectable } from "@needle-di/core";
 import { McpToolDefinition } from "../../../interfaces/mcp/mcp-tool-interface.ts";
 import { ReceiptsService } from "../receipts-service.ts";
 import { DeleteReceiptToolSchema } from "../../../schemas/mcp-receipts-schemas.ts";
+import { ServerError } from "../../../models/server-error.ts";
 
 @injectable()
 export class DeleteReceiptToolService {
@@ -25,7 +26,18 @@ export class DeleteReceiptToolService {
       run: async (input: unknown) => {
         const parsed = DeleteReceiptToolSchema.parse(input);
 
-        await this.receiptsService.deleteReceipt(parsed.id);
+        try {
+          await this.receiptsService.deleteReceipt(parsed.id);
+        } catch (error) {
+          if (
+            error instanceof ServerError &&
+            error.code === "RECEIPT_NOT_FOUND"
+          ) {
+            // If the receipt is already deleted, we can consider it a success for idempotency.
+          } else {
+            throw error; // Re-throw other errors
+          }
+        }
 
         const text = `Receipt deleted successfully (ID: ${parsed.id})`;
 

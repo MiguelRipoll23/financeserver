@@ -2,6 +2,7 @@ import { inject, injectable } from "@needle-di/core";
 import { McpToolDefinition } from "../../../interfaces/mcp/mcp-tool-interface.ts";
 import { SubscriptionsService } from "../subscriptions-service.ts";
 import { DeleteSubscriptionToolSchema } from "../../../schemas/mcp-subscriptions-schemas.ts";
+import { ServerError } from "../../../models/server-error.ts";
 
 @injectable()
 export class DeleteSubscriptionToolService {
@@ -25,9 +26,20 @@ export class DeleteSubscriptionToolService {
       run: async (input: unknown) => {
         const parsed = DeleteSubscriptionToolSchema.parse(input);
 
-        await this.subscriptionsService.deleteSubscription(
-          parsed.subscriptionId
-        );
+        try {
+          await this.subscriptionsService.deleteSubscription(
+            parsed.subscriptionId
+          );
+        } catch (error) {
+          if (
+            error instanceof ServerError &&
+            error.code === "SUBSCRIPTION_NOT_FOUND"
+          ) {
+            // If the subscription is already deleted, we can consider it a success for idempotency.
+          } else {
+            throw error; // Re-throw other errors
+          }
+        }
 
         const text = `Subscription deleted successfully (ID: ${parsed.subscriptionId})`;
 

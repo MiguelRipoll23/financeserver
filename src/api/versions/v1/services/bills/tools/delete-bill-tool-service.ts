@@ -2,6 +2,7 @@ import { inject, injectable } from "@needle-di/core";
 import { McpToolDefinition } from "../../../interfaces/mcp/mcp-tool-interface.ts";
 import { BillsService } from "../bills-service.ts";
 import { DeleteBillToolSchema } from "../../../schemas/mcp-bills-schemas.ts";
+import { ServerError } from "../../../models/server-error.ts";
 
 @injectable()
 export class DeleteBillToolService {
@@ -25,7 +26,15 @@ export class DeleteBillToolService {
       run: async (input: unknown) => {
         const parsed = DeleteBillToolSchema.parse(input);
 
-        await this.billsService.deleteBill(parsed.id);
+        try {
+          await this.billsService.deleteBill(parsed.id);
+        } catch (error) {
+          if (error instanceof ServerError && error.code === "BILL_NOT_FOUND") {
+            // If the bill is already deleted, we can consider it a success for idempotency.
+          } else {
+            throw error; // Re-throw other errors
+          }
+        }
 
         const text = `Bill deleted successfully (ID: ${parsed.id})`;
 
