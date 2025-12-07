@@ -14,7 +14,7 @@ export class UpdateReceiptToolService {
       meta: {
         title: "Update receipt",
         description:
-          "Use this when you need to update an existing receipt. You can update the date, items, or both. Only provide the fields you want to change. Do not use for creating new receipts or deleting receipts.",
+          "Use this when you need to update an existing receipt. Do not use for creating new receipts or deleting receipts.",
         inputSchema: UpdateReceiptToolSchema.shape,
         annotations: {
           readOnlyHint: false,

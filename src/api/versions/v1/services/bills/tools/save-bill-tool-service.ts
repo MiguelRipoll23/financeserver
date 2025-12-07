@@ -14,7 +14,7 @@ export class SaveBillToolService {
       meta: {
         title: "Save bill",
         description:
-          "Use this when you need to save a new bill with date, category, total amount, and optional sender email. Do not use for updating or deleting bills.",
+          "Use this when you need to save a new bill. Do not use for updating or deleting bills.",
         inputSchema: SaveBillToolSchema.shape,
         annotations: {
           readOnlyHint: false,

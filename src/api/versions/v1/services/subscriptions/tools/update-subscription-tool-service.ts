@@ -14,7 +14,7 @@ export class UpdateSubscriptionToolService {
       meta: {
         title: "Update subscription",
         description:
-          "Use this when you need to update an existing subscription or cancel it. You can update any combination of fields (name, category, amount, recurrence, currency, plan, dates). Only provide the fields you want to change. To cancel a subscription, provide only subscriptionId and effectiveUntil (the cancellation date). Do not use for creating new subscriptions or deleting subscriptions.",
+          "Use this when you need to update an existing subscription or cancel it.",
         inputSchema: UpdateSubscriptionToolSchema.shape,
         annotations: {
           readOnlyHint: false,
