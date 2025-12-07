@@ -31,7 +31,7 @@ export class DeleteSubscriptionToolService {
         } catch (error) {
           if (
             error instanceof ServerError &&
-            error.code === "SUBSCRIPTION_NOT_FOUND"
+            error.getCode() === "SUBSCRIPTION_NOT_FOUND"
           ) {
             // If the subscription is already deleted, we can consider it a success for idempotency.
           } else {

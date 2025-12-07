@@ -29,7 +29,7 @@ export class DeleteBillToolService {
         try {
           await this.billsService.deleteBill(parsed.id);
         } catch (error) {
-          if (error instanceof ServerError && error.code === "BILL_NOT_FOUND") {
+          if (error instanceof ServerError && error.getCode() === "BILL_NOT_FOUND") {
             // If the bill is already deleted, we can consider it a success for idempotency.
           } else {
             throw error; // Re-throw other errors
