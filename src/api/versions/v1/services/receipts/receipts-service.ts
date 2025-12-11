@@ -10,6 +10,7 @@ import {
   lte,
   type SQL,
 } from "drizzle-orm";
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import {
   itemsTable,
@@ -557,7 +558,7 @@ export class ReceiptsService {
   }
 
   private async validateParentItem(
-    tx: any,
+    tx: NodePgDatabase,
     parentItemId: number
   ): Promise<void> {
     const parentItem = await tx
@@ -568,7 +569,7 @@ export class ReceiptsService {
       .from(itemsTable)
       .where(eq(itemsTable.id, parentItemId))
       .limit(1)
-      .then((rows: any[]) => rows[0]);
+      .then((rows) => rows[0]);
 
     if (!parentItem) {
       throw new ServerError(
