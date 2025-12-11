@@ -7,6 +7,27 @@ import { MonetaryStringSchema } from "./monetary-string-schema.ts";
 
 const OptionalDateOnlySchema = DateOnlyStringSchema.optional();
 
+const ReceiptSubitemInputSchema = z.object({
+  name: z
+    .string()
+    .min(1)
+    .max(256)
+    .describe("Name of the subitem")
+    .openapi({ example: "Extended warranty" }),
+  quantity: z.coerce
+    .number()
+    .int()
+    .positive()
+    .describe("Quantity of the subitem")
+    .openapi({ example: 1 }),
+  unitPrice: MonetaryStringSchema.describe("Unit price as a string"),
+  currencyCode: z
+    .string()
+    .length(3)
+    .describe("ISO 4217 currency code")
+    .openapi({ example: "USD" }),
+});
+
 export const ReceiptItemInputSchema = z.object({
   name: z
     .string()
@@ -27,28 +48,7 @@ export const ReceiptItemInputSchema = z.object({
     .describe("ISO 4217 currency code")
     .openapi({ example: "USD" }),
   items: z
-    .array(
-      z.object({
-        name: z
-          .string()
-          .min(1)
-          .max(256)
-          .describe("Name of the subitem")
-          .openapi({ example: "Extended warranty" }),
-        quantity: z.coerce
-          .number()
-          .int()
-          .positive()
-          .describe("Quantity of the subitem")
-          .openapi({ example: 1 }),
-        unitPrice: MonetaryStringSchema.describe("Unit price as a string"),
-        currencyCode: z
-          .string()
-          .length(3)
-          .describe("ISO 4217 currency code")
-          .openapi({ example: "USD" }),
-      })
-    )
+    .array(ReceiptSubitemInputSchema)
     .optional()
     .describe("Optional list of subitems (nesting limited to 1 level)")
     .openapi({

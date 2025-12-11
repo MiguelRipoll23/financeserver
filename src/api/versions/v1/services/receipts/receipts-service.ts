@@ -90,67 +90,7 @@ export class ReceiptsService {
         .returning({ id: receiptsTable.id });
 
       for (const lineItem of normalizedItems) {
-        // Create the parent item
-        const itemId = await this.createOrGetItem(tx, lineItem.name, null);
-
-        const lineTotalCents = lineItem.unitPriceCents * lineItem.quantity;
-        const lineTotalString = this.formatAmount(lineTotalCents / 100);
-
-        await tx.insert(receiptItemsTable).values({
-          receiptId: id,
-          itemId,
-          quantity: lineItem.quantity,
-          totalAmount: lineTotalString,
-        });
-
-        await tx
-          .insert(itemPricesTable)
-          .values({
-            itemId,
-            priceDate: receiptDate,
-            unitPrice: lineItem.unitPriceString,
-            currencyCode: lineItem.currencyCode,
-          })
-          .onConflictDoUpdate({
-            target: [itemPricesTable.itemId, itemPricesTable.priceDate],
-            set: {
-              unitPrice: lineItem.unitPriceString,
-              currencyCode: lineItem.currencyCode,
-            },
-          });
-
-        // Process subitems if any
-        if (lineItem.subitems && lineItem.subitems.length > 0) {
-          for (const subitem of lineItem.subitems) {
-            const subitemId = await this.createOrGetItem(tx, subitem.name, itemId);
-
-            const subitemTotalCents = subitem.unitPriceCents * subitem.quantity;
-            const subitemTotalString = this.formatAmount(subitemTotalCents / 100);
-
-            await tx.insert(receiptItemsTable).values({
-              receiptId: id,
-              itemId: subitemId,
-              quantity: subitem.quantity,
-              totalAmount: subitemTotalString,
-            });
-
-            await tx
-              .insert(itemPricesTable)
-              .values({
-                itemId: subitemId,
-                priceDate: receiptDate,
-                unitPrice: subitem.unitPriceString,
-                currencyCode: subitem.currencyCode,
-              })
-              .onConflictDoUpdate({
-                target: [itemPricesTable.itemId, itemPricesTable.priceDate],
-                set: {
-                  unitPrice: subitem.unitPriceString,
-                  currencyCode: subitem.currencyCode,
-                },
-              });
-          }
-        }
+        await this.insertReceiptItem(tx, id, receiptDate, lineItem, null);
       }
 
       return id;
@@ -256,67 +196,7 @@ export class ReceiptsService {
       // Insert new items if items were updated
       if (normalizedItems) {
         for (const item of normalizedItems) {
-          // Create the parent item
-          const itemId = await this.createOrGetItem(tx, item.name, null);
-
-          const lineTotalCents = item.unitPriceCents * item.quantity;
-          const lineTotalString = this.formatAmount(lineTotalCents / 100);
-
-          await tx.insert(receiptItemsTable).values({
-            receiptId,
-            itemId,
-            quantity: item.quantity,
-            totalAmount: lineTotalString,
-          });
-
-          await tx
-            .insert(itemPricesTable)
-            .values({
-              itemId,
-              priceDate: receiptDate,
-              unitPrice: item.unitPriceString,
-              currencyCode: item.currencyCode,
-            })
-            .onConflictDoUpdate({
-              target: [itemPricesTable.itemId, itemPricesTable.priceDate],
-              set: {
-                unitPrice: item.unitPriceString,
-                currencyCode: item.currencyCode,
-              },
-            });
-
-          // Process subitems if any
-          if (item.subitems && item.subitems.length > 0) {
-            for (const subitem of item.subitems) {
-              const subitemId = await this.createOrGetItem(tx, subitem.name, itemId);
-
-              const subitemTotalCents = subitem.unitPriceCents * subitem.quantity;
-              const subitemTotalString = this.formatAmount(subitemTotalCents / 100);
-
-              await tx.insert(receiptItemsTable).values({
-                receiptId,
-                itemId: subitemId,
-                quantity: subitem.quantity,
-                totalAmount: subitemTotalString,
-              });
-
-              await tx
-                .insert(itemPricesTable)
-                .values({
-                  itemId: subitemId,
-                  priceDate: receiptDate,
-                  unitPrice: subitem.unitPriceString,
-                  currencyCode: subitem.currencyCode,
-                })
-                .onConflictDoUpdate({
-                  target: [itemPricesTable.itemId, itemPricesTable.priceDate],
-                  set: {
-                    unitPrice: subitem.unitPriceString,
-                    currencyCode: subitem.currencyCode,
-                  },
-                });
-            }
-          }
+          await this.insertReceiptItem(tx, receiptId, receiptDate, item, null);
         }
       }
 
@@ -539,6 +419,49 @@ export class ReceiptsService {
     }
   }
 
+  private async insertReceiptItem(
+    tx: NodePgDatabase,
+    receiptId: number,
+    receiptDate: string,
+    item: NormalizedReceiptItem,
+    parentItemId: number | null
+  ): Promise<void> {
+    const itemId = await this.createOrGetItem(tx, item.name, parentItemId);
+
+    const lineTotalCents = item.unitPriceCents * item.quantity;
+    const lineTotalString = this.formatAmount(lineTotalCents / 100);
+
+    await tx.insert(receiptItemsTable).values({
+      receiptId,
+      itemId,
+      quantity: item.quantity,
+      totalAmount: lineTotalString,
+    });
+
+    await tx
+      .insert(itemPricesTable)
+      .values({
+        itemId,
+        priceDate: receiptDate,
+        unitPrice: item.unitPriceString,
+        currencyCode: item.currencyCode,
+      })
+      .onConflictDoUpdate({
+        target: [itemPricesTable.itemId, itemPricesTable.priceDate],
+        set: {
+          unitPrice: item.unitPriceString,
+          currencyCode: item.currencyCode,
+        },
+      });
+
+    // Process subitems if any
+    if (item.subitems && item.subitems.length > 0) {
+      for (const subitem of item.subitems) {
+        await this.insertReceiptItem(tx, receiptId, receiptDate, subitem, itemId);
+      }
+    }
+  }
+
   private async createOrGetItem(
     tx: NodePgDatabase,
     itemName: string,
@@ -613,98 +536,60 @@ export class ReceiptsService {
   private normalizeReceiptItems(
     items: CreateReceiptRequest["items"] | UpdateReceiptRequest["items"]
   ): NormalizedReceiptItem[] {
-    return items.map((item) => {
-      const name = item.name.trim();
+    return items.map((item) => this.normalizeSingleItem(item, false));
+  }
 
-      if (name.length === 0) {
-        throw new ServerError(
-          "RECEIPT_ITEM_NAME_REQUIRED",
-          "Item name must not be empty",
-          400
-        );
-      }
+  private normalizeSingleItem(
+    item: { name: string; quantity: number; unitPrice: string; currencyCode: string; items?: any[] },
+    isSubitem: boolean,
+    parentName?: string
+  ): NormalizedReceiptItem {
+    const name = item.name.trim();
 
-      const unitPriceString = item.unitPrice;
+    if (name.length === 0) {
+      const errorCode = isSubitem ? "RECEIPT_SUBITEM_NAME_REQUIRED" : "RECEIPT_ITEM_NAME_REQUIRED";
+      const errorMessage = isSubitem 
+        ? `Subitem name must not be empty for parent item "${parentName}"`
+        : "Item name must not be empty";
+      throw new ServerError(errorCode, errorMessage, 400);
+    }
 
-      if (!unitPriceString) {
-        throw new ServerError(
-          "RECEIPT_UNIT_PRICE_REQUIRED",
-          `Unit price is required for item "${name}"`,
-          400
-        );
-      }
+    const unitPriceString = item.unitPrice;
 
-      const unitPriceCents = this.parseAmountToCents(
-        unitPriceString,
-        "RECEIPT_UNIT_PRICE_INVALID",
-        `Unit price for item "${name}" must be a non-negative monetary value`
+    if (!unitPriceString) {
+      const errorCode = isSubitem ? "RECEIPT_SUBITEM_UNIT_PRICE_REQUIRED" : "RECEIPT_UNIT_PRICE_REQUIRED";
+      const errorMessage = `Unit price is required for ${isSubitem ? 'subitem' : 'item'} "${name}"`;
+      throw new ServerError(errorCode, errorMessage, 400);
+    }
+
+    const unitPriceCents = this.parseAmountToCents(
+      unitPriceString,
+      isSubitem ? "RECEIPT_SUBITEM_UNIT_PRICE_INVALID" : "RECEIPT_UNIT_PRICE_INVALID",
+      `Unit price for ${isSubitem ? 'subitem' : 'item'} "${name}" must be a non-negative monetary value`
+    );
+
+    if (item.quantity <= 0 || !Number.isInteger(item.quantity)) {
+      const errorCode = isSubitem ? "RECEIPT_SUBITEM_QUANTITY_INVALID" : "RECEIPT_ITEM_QUANTITY_INVALID";
+      const errorMessage = `Quantity for ${isSubitem ? 'subitem' : 'item'} "${name}" must be a positive integer`;
+      throw new ServerError(errorCode, errorMessage, 400);
+    }
+
+    // Process subitems only for parent items
+    let subitems: NormalizedReceiptItem[] | undefined;
+    if (!isSubitem && item.items && item.items.length > 0) {
+      subitems = item.items.map((subitem) => 
+        this.normalizeSingleItem(subitem, true, name)
       );
+    }
 
-      if (item.quantity <= 0 || !Number.isInteger(item.quantity)) {
-        throw new ServerError(
-          "RECEIPT_ITEM_QUANTITY_INVALID",
-          `Quantity for item "${name}" must be a positive integer`,
-          400
-        );
-      }
-
-      // Process subitems if provided
-      let subitems: NormalizedReceiptItem[] | undefined;
-      if (item.items && item.items.length > 0) {
-        subitems = item.items.map((subitem) => {
-          const subitemName = subitem.name.trim();
-
-          if (subitemName.length === 0) {
-            throw new ServerError(
-              "RECEIPT_SUBITEM_NAME_REQUIRED",
-              `Subitem name must not be empty for parent item "${name}"`,
-              400
-            );
-          }
-
-          const subitemUnitPriceString = subitem.unitPrice;
-
-          if (!subitemUnitPriceString) {
-            throw new ServerError(
-              "RECEIPT_SUBITEM_UNIT_PRICE_REQUIRED",
-              `Unit price is required for subitem "${subitemName}"`,
-              400
-            );
-          }
-
-          const subitemUnitPriceCents = this.parseAmountToCents(
-            subitemUnitPriceString,
-            "RECEIPT_SUBITEM_UNIT_PRICE_INVALID",
-            `Unit price for subitem "${subitemName}" must be a non-negative monetary value`
-          );
-
-          if (subitem.quantity <= 0 || !Number.isInteger(subitem.quantity)) {
-            throw new ServerError(
-              "RECEIPT_SUBITEM_QUANTITY_INVALID",
-              `Quantity for subitem "${subitemName}" must be a positive integer`,
-              400
-            );
-          }
-
-          return {
-            name: subitemName,
-            quantity: subitem.quantity,
-            unitPriceCents: subitemUnitPriceCents,
-            unitPriceString: this.formatAmount(subitemUnitPriceCents / 100),
-            currencyCode: subitem.currencyCode,
-          } satisfies NormalizedReceiptItem;
-        });
-      }
-
-      return {
-        name,
-        quantity: item.quantity,
-        unitPriceCents,
-        unitPriceString: this.formatAmount(unitPriceCents / 100),
-        currencyCode: item.currencyCode,
-        subitems,
-      } satisfies NormalizedReceiptItem;
-    });
+    return {
+      name,
+      quantity: item.quantity,
+      unitPriceCents,
+      unitPriceString: this.formatAmount(unitPriceCents / 100),
+      currencyCode: item.currencyCode,
+      subitems,
+    } satisfies NormalizedReceiptItem;
   }
 
   private parseAmountToCents(
