@@ -25,7 +25,7 @@ export const itemsTable = pgTable(
       .notNull(),
   },
   (table) => [
-    uniqueIndex("items_name_key").on(table.name),
+    uniqueIndex("items_name_parent_item_id_key").on(table.name, table.parentItemId),
     index("items_parent_item_id_idx").on(table.parentItemId),
   ]
 );
