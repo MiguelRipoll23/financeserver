@@ -26,13 +26,41 @@ export const ReceiptItemInputSchema = z.object({
     .length(3)
     .describe("ISO 4217 currency code")
     .openapi({ example: "USD" }),
-  parentItemId: z.coerce
-    .number()
-    .int()
-    .positive()
-    .describe("Optional parent item ID for creating subitems")
-    .openapi({ example: 1 })
-    .optional(),
+  items: z
+    .array(
+      z.object({
+        name: z
+          .string()
+          .min(1)
+          .max(256)
+          .describe("Name of the subitem")
+          .openapi({ example: "Extended warranty" }),
+        quantity: z.coerce
+          .number()
+          .int()
+          .positive()
+          .describe("Quantity of the subitem")
+          .openapi({ example: 1 }),
+        unitPrice: MonetaryStringSchema.describe("Unit price as a string"),
+        currencyCode: z
+          .string()
+          .length(3)
+          .describe("ISO 4217 currency code")
+          .openapi({ example: "USD" }),
+      })
+    )
+    .optional()
+    .describe("Optional list of subitems (nesting limited to 1 level)")
+    .openapi({
+      example: [
+        {
+          name: "Extended warranty",
+          quantity: 1,
+          unitPrice: "50.00",
+          currencyCode: "USD",
+        },
+      ],
+    }),
 });
 
 export const CreateReceiptRequestSchema = z.object({

@@ -30,12 +30,37 @@ export const SaveReceiptItemToolSchema = z.object({
     .string()
     .length(3, "Currency code must be exactly 3 characters (ISO 4217 format)")
     .describe("ISO 4217 currency code (e.g., EUR, USD, GBP)"),
-  parentItemId: z
-    .number()
-    .int()
-    .positive()
-    .describe("Optional parent item ID for creating subitems (nesting limited to 1 level)")
-    .optional(),
+  items: z
+    .array(
+      z.object({
+        name: z
+          .string()
+          .min(1, "Subitem name must not be empty")
+          .max(256, "Subitem name must be 256 characters or less")
+          .transform((val) => val.trim())
+          .describe("The name or description of the subitem"),
+        quantity: z
+          .number()
+          .int("Quantity must be an integer")
+          .gte(1, "Quantity must be positive")
+          .describe("The number of units purchased of this subitem"),
+        unitPrice: z
+          .string()
+          .regex(
+            MonetaryRegex,
+            "Unit price must be a valid monetary value (format: 123.45, no currency symbol, dot as decimal separator)"
+          )
+          .describe(
+            "The price per unit for this subitem (format: 123.45, no currency symbol)"
+          ),
+        currencyCode: z
+          .string()
+          .length(3, "Currency code must be exactly 3 characters (ISO 4217 format)")
+          .describe("ISO 4217 currency code (e.g., EUR, USD, GBP)"),
+      })
+    )
+    .optional()
+    .describe("Optional list of subitems associated with this item (nesting limited to 1 level)"),
 });
 
 export const SaveReceiptToolSchema = z.object({
