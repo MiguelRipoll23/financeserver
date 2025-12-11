@@ -44,6 +44,7 @@ type NormalizedReceiptItem = {
   unitPriceCents: number;
   unitPriceString: string;
   currencyCode: string;
+  parentItemId?: number;
 };
 
 @injectable()
@@ -88,6 +89,11 @@ export class ReceiptsService {
       for (const lineItem of normalizedItems) {
         const normalizedName = lineItem.name;
 
+        // Validate parent item if provided
+        if (lineItem.parentItemId !== undefined) {
+          await this.validateParentItem(tx, lineItem.parentItemId);
+        }
+
         const existingItem = await tx
           .select({ id: itemsTable.id })
           .from(itemsTable)
@@ -100,7 +106,10 @@ export class ReceiptsService {
         if (!itemId) {
           const inserted = await tx
             .insert(itemsTable)
-            .values({ name: normalizedName })
+            .values({ 
+              name: normalizedName,
+              parentItemId: lineItem.parentItemId,
+            })
             .onConflictDoNothing()
             .returning({ id: itemsTable.id });
 
@@ -256,6 +265,11 @@ export class ReceiptsService {
         for (const item of normalizedItems) {
           const normalizedName = item.name;
 
+          // Validate parent item if provided
+          if (item.parentItemId !== undefined) {
+            await this.validateParentItem(tx, item.parentItemId);
+          }
+
           const existingItem = await tx
             .select({ id: itemsTable.id })
             .from(itemsTable)
@@ -268,7 +282,10 @@ export class ReceiptsService {
           if (!itemId) {
             const inserted = await tx
               .insert(itemsTable)
-              .values({ name: normalizedName })
+              .values({ 
+                name: normalizedName,
+                parentItemId: item.parentItemId,
+              })
               .onConflictDoNothing()
               .returning({ id: itemsTable.id });
 
@@ -539,6 +556,38 @@ export class ReceiptsService {
     }
   }
 
+  private async validateParentItem(
+    tx: any,
+    parentItemId: number
+  ): Promise<void> {
+    const parentItem = await tx
+      .select({ 
+        id: itemsTable.id, 
+        parentItemId: itemsTable.parentItemId 
+      })
+      .from(itemsTable)
+      .where(eq(itemsTable.id, parentItemId))
+      .limit(1)
+      .then((rows: any[]) => rows[0]);
+
+    if (!parentItem) {
+      throw new ServerError(
+        "PARENT_ITEM_NOT_FOUND",
+        `Parent item with ID ${parentItemId} does not exist`,
+        400
+      );
+    }
+
+    // Limit nesting to 1 level: parent items cannot have their own parent
+    if (parentItem.parentItemId !== null) {
+      throw new ServerError(
+        "SUBITEM_NESTING_LIMIT_EXCEEDED",
+        `Cannot create subitem: parent item ${parentItemId} is itself a subitem. Nesting is limited to 1 level.`,
+        400
+      );
+    }
+  }
+
   private resolveLimit(requested?: number): number {
     if (!requested) {
       return DEFAULT_PAGE_SIZE;
@@ -600,6 +649,7 @@ export class ReceiptsService {
         unitPriceCents,
         unitPriceString: this.formatAmount(unitPriceCents / 100),
         currencyCode: item.currencyCode,
+        parentItemId: item.parentItemId,
       } satisfies NormalizedReceiptItem;
     });
   }

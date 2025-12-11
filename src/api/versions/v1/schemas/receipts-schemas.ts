@@ -26,6 +26,13 @@ export const ReceiptItemInputSchema = z.object({
     .length(3)
     .describe("ISO 4217 currency code")
     .openapi({ example: "USD" }),
+  parentItemId: z.coerce
+    .number()
+    .int()
+    .positive()
+    .describe("Optional parent item ID for creating subitems")
+    .openapi({ example: 1 })
+    .optional(),
 });
 
 export const CreateReceiptRequestSchema = z.object({

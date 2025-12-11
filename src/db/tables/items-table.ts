@@ -1,5 +1,7 @@
 import {
+  bigint,
   bigserial,
+  index,
   pgTable,
   text,
   timestamp,
@@ -11,6 +13,10 @@ export const itemsTable = pgTable(
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
     name: text("name").notNull(),
+    parentItemId: bigint("parent_item_id", { mode: "number" }).references(
+      () => itemsTable.id,
+      { onDelete: "cascade" }
+    ),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -18,7 +24,10 @@ export const itemsTable = pgTable(
       .defaultNow()
       .notNull(),
   },
-  (table) => [uniqueIndex("items_name_key").on(table.name)]
+  (table) => [
+    uniqueIndex("items_name_key").on(table.name),
+    index("items_parent_item_id_idx").on(table.parentItemId),
+  ]
 );
 
 export type ItemEntity = typeof itemsTable.$inferSelect;

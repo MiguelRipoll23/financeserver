@@ -30,6 +30,12 @@ export const SaveReceiptItemToolSchema = z.object({
     .string()
     .length(3, "Currency code must be exactly 3 characters (ISO 4217 format)")
     .describe("ISO 4217 currency code (e.g., EUR, USD, GBP)"),
+  parentItemId: z
+    .number()
+    .int()
+    .positive()
+    .describe("Optional parent item ID for creating subitems (nesting limited to 1 level)")
+    .optional(),
 });
 
 export const SaveReceiptToolSchema = z.object({
