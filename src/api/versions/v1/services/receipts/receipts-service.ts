@@ -50,6 +50,14 @@ type NormalizedReceiptItem = {
   subitems?: NormalizedReceiptItem[];
 };
 
+type ReceiptItemInput = {
+  name: string;
+  quantity: number;
+  unitPrice: string;
+  currencyCode: string;
+  items?: ReceiptItemInput[];
+};
+
 @injectable()
 export class ReceiptsService {
   constructor(private databaseService = inject(DatabaseService)) {}
@@ -540,7 +548,7 @@ export class ReceiptsService {
   }
 
   private normalizeSingleItem(
-    item: { name: string; quantity: number; unitPrice: string; currencyCode: string; items?: any[] },
+    item: ReceiptItemInput,
     isSubitem: boolean,
     parentName?: string
   ): NormalizedReceiptItem {
@@ -574,7 +582,8 @@ export class ReceiptsService {
       throw new ServerError(errorCode, errorMessage, 400);
     }
 
-    // Process subitems only for parent items
+    // Process subitems only for parent items (enforces 1-level nesting limit)
+    // Subitems cannot have their own nested items, preventing deeper hierarchies
     let subitems: NormalizedReceiptItem[] | undefined;
     if (!isSubitem && item.items && item.items.length > 0) {
       subitems = item.items.map((subitem) => 
