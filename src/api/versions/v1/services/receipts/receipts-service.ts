@@ -1,10 +1,12 @@
 import { inject, injectable } from "@needle-di/core";
 import {
+  and,
   asc,
   desc,
   eq,
   ilike,
   inArray,
+  isNull,
   sql,
   gte,
   lte,
@@ -544,10 +546,15 @@ export class ReceiptsService {
   ): Promise<number> {
     const normalizedName = itemName.trim();
 
+    // Build the where clause to consider both name and parentItemId
+    const whereClause = parentItemId === null
+      ? and(eq(itemsTable.name, normalizedName), isNull(itemsTable.parentItemId))
+      : and(eq(itemsTable.name, normalizedName), eq(itemsTable.parentItemId, parentItemId));
+
     const existingItem = await tx
       .select({ id: itemsTable.id })
       .from(itemsTable)
-      .where(eq(itemsTable.name, normalizedName))
+      .where(whereClause)
       .limit(1)
       .then((rows) => rows[0]);
 
@@ -558,7 +565,7 @@ export class ReceiptsService {
         .insert(itemsTable)
         .values({
           name: normalizedName,
-          parentItemId: parentItemId,
+          parentItemId,
         })
         .onConflictDoNothing()
         .returning({ id: itemsTable.id });
@@ -569,7 +576,7 @@ export class ReceiptsService {
         const fallback = await tx
           .select({ id: itemsTable.id })
           .from(itemsTable)
-          .where(eq(itemsTable.name, normalizedName))
+          .where(whereClause)
           .limit(1);
         itemId = fallback[0]?.id;
       }
