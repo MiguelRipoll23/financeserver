@@ -26,6 +26,7 @@ import { buildAndFilters } from "../../utils/sql-utils.ts";
 import { toISOStringSafe } from "../../utils/date-utils.ts";
 import { ReceiptsFilter } from "../../interfaces/receipts/receipts-filter-interface.ts";
 import { ReceiptSummary } from "../../interfaces/receipts/receipt-summary-interface.ts";
+import { ReceiptLineItem } from "../../interfaces/receipts/receipt-line-item-interface.ts";
 import {
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
@@ -330,7 +331,9 @@ export class ReceiptsService {
     const receiptItems = await db
       .select({
         receiptId: receiptItemsTable.receiptId,
+        itemId: itemsTable.id,
         name: itemsTable.name,
+        parentItemId: itemsTable.parentItemId,
         quantity: receiptItemsTable.quantity,
         totalAmount: receiptItemsTable.totalAmount,
         currencyCode: sql<string>`(
@@ -345,25 +348,41 @@ export class ReceiptsService {
       .innerJoin(itemsTable, eq(itemsTable.id, receiptItemsTable.itemId))
       .where(inArray(receiptItemsTable.receiptId, receiptIds));
 
-    const groupedItems = receiptItems.reduce<
-      Record<
-        number,
-        Array<{
-          name: string;
-          quantity: number;
-          totalAmount: string | number;
-          currencyCode: string;
-        }>
-      >
-    >((acc, row) => {
-      const collection = acc[row.receiptId as number] ?? [];
-      collection.push(row);
-      acc[row.receiptId as number] = collection;
-      return acc;
-    }, {});
+    type ReceiptItemRow = {
+      receiptId: number | null;
+      itemId: number;
+      name: string;
+      parentItemId: number | null;
+      quantity: number;
+      totalAmount: string | number;
+      currencyCode: string;
+    };
+
+    const groupedItems = receiptItems.reduce<Record<number, ReceiptItemRow[]>>(
+      (groupedByReceipt, row) => {
+        const collection = groupedByReceipt[row.receiptId as number] ?? [];
+        collection.push(row as ReceiptItemRow);
+        groupedByReceipt[row.receiptId as number] = collection;
+        return groupedByReceipt;
+      },
+      {}
+    );
 
     const summaries: ReceiptSummary[] = receiptRows.map((receipt) => {
-      const items = (groupedItems[receipt.id as number] ?? []).map((item) => {
+      const allItems = groupedItems[receipt.id as number] ?? [];
+
+      // Separate parent items and subitems
+      const parentItems = allItems.filter((item) => item.parentItemId === null);
+      const subitemsMap = allItems
+        .filter((item) => item.parentItemId !== null)
+        .reduce<Record<number, ReceiptItemRow[]>>((acc, item) => {
+          const parentId = item.parentItemId!;
+          if (!acc[parentId]) acc[parentId] = [];
+          acc[parentId].push(item);
+          return acc;
+        }, {});
+
+      const items: ReceiptLineItem[] = parentItems.map((item) => {
         const lineTotalNumber = this.parseStoredAmount(
           item.totalAmount,
           "RECEIPT_ITEM_TOTAL_CORRUPTED",
@@ -380,13 +399,45 @@ export class ReceiptsService {
           );
         }
 
-        return {
+        const lineItem: ReceiptLineItem = {
           name: item.name,
           quantity: item.quantity,
           unitPrice: this.formatAmount(unitPriceValue),
           totalAmount: this.formatAmount(lineTotalNumber),
           currencyCode: item.currencyCode,
         };
+
+        // Add subitems if they exist
+        const subitems = subitemsMap[item.itemId];
+        if (subitems && subitems.length > 0) {
+          lineItem.items = subitems.map((subitem): ReceiptLineItem => {
+            const subLineTotalNumber = this.parseStoredAmount(
+              subitem.totalAmount,
+              "RECEIPT_SUBITEM_TOTAL_CORRUPTED",
+              `Receipt ${receipt.id} subitem "${subitem.name}" total amount is invalid`
+            );
+
+            const subUnitPriceValue = subLineTotalNumber / subitem.quantity;
+
+            if (!Number.isFinite(subUnitPriceValue)) {
+              throw new ServerError(
+                "RECEIPT_SUBITEM_UNIT_PRICE_DERIVATION_FAILED",
+                `Failed to derive unit price for receipt ${receipt.id} subitem "${subitem.name}"`,
+                500
+              );
+            }
+
+            return {
+              name: subitem.name,
+              quantity: subitem.quantity,
+              unitPrice: this.formatAmount(subUnitPriceValue),
+              totalAmount: this.formatAmount(subLineTotalNumber),
+              currencyCode: subitem.currencyCode,
+            };
+          });
+        }
+
+        return lineItem;
       });
 
       return {
@@ -465,7 +516,13 @@ export class ReceiptsService {
     // Process subitems if any
     if (item.subitems && item.subitems.length > 0) {
       for (const subitem of item.subitems) {
-        await this.insertReceiptItem(tx, receiptId, receiptDate, subitem, itemId);
+        await this.insertReceiptItem(
+          tx,
+          receiptId,
+          receiptDate,
+          subitem,
+          itemId
+        );
       }
     }
   }
@@ -478,9 +535,16 @@ export class ReceiptsService {
     const normalizedName = itemName.trim();
 
     // Build the where clause to consider both name and parentItemId
-    const whereClause = parentItemId === null
-      ? and(eq(itemsTable.name, normalizedName), isNull(itemsTable.parentItemId))
-      : and(eq(itemsTable.name, normalizedName), eq(itemsTable.parentItemId, parentItemId));
+    const whereClause =
+      parentItemId === null
+        ? and(
+            eq(itemsTable.name, normalizedName),
+            isNull(itemsTable.parentItemId)
+          )
+        : and(
+            eq(itemsTable.name, normalizedName),
+            eq(itemsTable.parentItemId, parentItemId)
+          );
 
     const existingItem = await tx
       .select({ id: itemsTable.id })
@@ -555,8 +619,10 @@ export class ReceiptsService {
     const name = item.name.trim();
 
     if (name.length === 0) {
-      const errorCode = isSubitem ? "RECEIPT_SUBITEM_NAME_REQUIRED" : "RECEIPT_ITEM_NAME_REQUIRED";
-      const errorMessage = isSubitem 
+      const errorCode = isSubitem
+        ? "RECEIPT_SUBITEM_NAME_REQUIRED"
+        : "RECEIPT_ITEM_NAME_REQUIRED";
+      const errorMessage = isSubitem
         ? `Subitem name must not be empty for parent item "${parentName}"`
         : "Item name must not be empty";
       throw new ServerError(errorCode, errorMessage, 400);
@@ -565,28 +631,47 @@ export class ReceiptsService {
     const unitPriceString = item.unitPrice;
 
     if (!unitPriceString) {
-      const errorCode = isSubitem ? "RECEIPT_SUBITEM_UNIT_PRICE_REQUIRED" : "RECEIPT_UNIT_PRICE_REQUIRED";
-      const errorMessage = `Unit price is required for ${isSubitem ? 'subitem' : 'item'} "${name}"`;
+      const errorCode = isSubitem
+        ? "RECEIPT_SUBITEM_UNIT_PRICE_REQUIRED"
+        : "RECEIPT_UNIT_PRICE_REQUIRED";
+      const errorMessage = `Unit price is required for ${
+        isSubitem ? "subitem" : "item"
+      } "${name}"`;
       throw new ServerError(errorCode, errorMessage, 400);
     }
 
     const unitPriceCents = this.parseAmountToCents(
       unitPriceString,
-      isSubitem ? "RECEIPT_SUBITEM_UNIT_PRICE_INVALID" : "RECEIPT_UNIT_PRICE_INVALID",
-      `Unit price for ${isSubitem ? 'subitem' : 'item'} "${name}" must be a non-negative monetary value`
+      isSubitem
+        ? "RECEIPT_SUBITEM_UNIT_PRICE_INVALID"
+        : "RECEIPT_UNIT_PRICE_INVALID",
+      `Unit price for ${
+        isSubitem ? "subitem" : "item"
+      } "${name}" must be a non-negative monetary value`
     );
 
     if (item.quantity <= 0 || !Number.isInteger(item.quantity)) {
-      const errorCode = isSubitem ? "RECEIPT_SUBITEM_QUANTITY_INVALID" : "RECEIPT_ITEM_QUANTITY_INVALID";
-      const errorMessage = `Quantity for ${isSubitem ? 'subitem' : 'item'} "${name}" must be a positive integer`;
+      const errorCode = isSubitem
+        ? "RECEIPT_SUBITEM_QUANTITY_INVALID"
+        : "RECEIPT_ITEM_QUANTITY_INVALID";
+      const errorMessage = `Quantity for ${
+        isSubitem ? "subitem" : "item"
+      } "${name}" must be a positive integer`;
       throw new ServerError(errorCode, errorMessage, 400);
     }
 
     // Process subitems only for parent items (enforces 1-level nesting limit)
     // Subitems cannot have their own nested items, preventing deeper hierarchies
     let subitems: NormalizedReceiptItem[] | undefined;
-    if (!isSubitem && item.items && item.items.length > 0) {
-      subitems = item.items.map((subitem) => 
+    if (item.items && item.items.length > 0) {
+      if (isSubitem) {
+        throw new ServerError(
+          "RECEIPT_SUBITEM_NESTING_NOT_ALLOWED",
+          `Subitem "${name}" cannot have nested items; only one level of nesting is supported`,
+          400
+        );
+      }
+      subitems = item.items.map((subitem) =>
         this.normalizeSingleItem(subitem, true, name)
       );
     }

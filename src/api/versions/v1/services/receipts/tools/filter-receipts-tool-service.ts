@@ -63,13 +63,29 @@ export class FilterReceiptsToolService {
         const receiptCurrencySymbol = getCurrencySymbolForCode(
           receipt.currencyCode
         );
-        const header = `🧾 Receipt #${receipt.id} (${receipt.date}) — Total ${receipt.totalAmount}${receiptCurrencySymbol}`;
+        const header = `🧾 Receipt #${receipt.id} (${receipt.date}) — Total ${receiptCurrencySymbol}${receipt.totalAmount}`;
         const lines = receipt.items
           .map((item) => {
-            const itemCurrencySymbol = getCurrencySymbolForCode(
-              item.currencyCode
-            );
-            return ` • ${item.name} x${item.quantity} — ${item.totalAmount}${itemCurrencySymbol}`;
+            const formatItemLine = (
+              lineItem: typeof item,
+              prefix: string
+            ): string => {
+              const currencySymbol = getCurrencySymbolForCode(
+                lineItem.currencyCode
+              );
+              return `${prefix} ${lineItem.name} x${lineItem.quantity} — ${currencySymbol}${lineItem.totalAmount}`;
+            };
+
+            let itemLine = formatItemLine(item, " •");
+
+            if (item.items && item.items.length > 0) {
+              const subitemsLines = item.items
+                .map((subitem) => formatItemLine(subitem, "   ◦"))
+                .join("\n");
+              itemLine += "\n" + subitemsLines;
+            }
+
+            return itemLine;
           })
           .join("\n");
         return `${header}\n${lines}`;
