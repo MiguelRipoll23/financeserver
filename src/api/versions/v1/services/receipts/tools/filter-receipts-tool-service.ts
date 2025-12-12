@@ -70,7 +70,9 @@ export class FilterReceiptsToolService {
               lineItem: typeof item,
               prefix: string
             ): string => {
-              const currencySymbol = getCurrencySymbolForCode(lineItem.currencyCode);
+              const currencySymbol = getCurrencySymbolForCode(
+                lineItem.currencyCode
+              );
               return `${prefix} ${lineItem.name} x${lineItem.quantity} — ${currencySymbol}${lineItem.totalAmount}`;
             };
 
