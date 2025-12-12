@@ -413,7 +413,7 @@ export class ReceiptsService {
           lineItem.items = subitems.map((subitem): ReceiptLineItem => {
             const subLineTotalNumber = this.parseStoredAmount(
               subitem.totalAmount,
-              "RECEIPT_ITEM_TOTAL_CORRUPTED",
+              "RECEIPT_SUBITEM_TOTAL_CORRUPTED",
               `Receipt ${receipt.id} subitem "${subitem.name}" total amount is invalid`
             );
 
@@ -421,7 +421,7 @@ export class ReceiptsService {
 
             if (!Number.isFinite(subUnitPriceValue)) {
               throw new ServerError(
-                "RECEIPT_UNIT_PRICE_DERIVATION_FAILED",
+                "RECEIPT_SUBITEM_UNIT_PRICE_DERIVATION_FAILED",
                 `Failed to derive unit price for receipt ${receipt.id} subitem "${subitem.name}"`,
                 500
               );
@@ -663,7 +663,14 @@ export class ReceiptsService {
     // Process subitems only for parent items (enforces 1-level nesting limit)
     // Subitems cannot have their own nested items, preventing deeper hierarchies
     let subitems: NormalizedReceiptItem[] | undefined;
-    if (!isSubitem && item.items && item.items.length > 0) {
+    if (item.items && item.items.length > 0) {
+      if (isSubitem) {
+        throw new ServerError(
+          "RECEIPT_SUBITEM_NESTING_NOT_ALLOWED",
+          `Subitem "${name}" cannot have nested items; only one level of nesting is supported`,
+          400
+        );
+      }
       subitems = item.items.map((subitem) =>
         this.normalizeSingleItem(subitem, true, name)
       );
