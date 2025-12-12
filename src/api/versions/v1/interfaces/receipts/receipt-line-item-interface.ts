@@ -4,4 +4,5 @@ export interface ReceiptLineItem {
   unitPrice: string;
   totalAmount: string;
   currencyCode: string;
+  items?: ReceiptLineItem[];
 }
