@@ -359,11 +359,11 @@ export class ReceiptsService {
     };
 
     const groupedItems = receiptItems.reduce<Record<number, ReceiptItemRow[]>>(
-      (acc, row) => {
-        const collection = acc[row.receiptId as number] ?? [];
+      (groupedByReceipt, row) => {
+        const collection = groupedByReceipt[row.receiptId as number] ?? [];
         collection.push(row as ReceiptItemRow);
-        acc[row.receiptId as number] = collection;
-        return acc;
+        groupedByReceipt[row.receiptId as number] = collection;
+        return groupedByReceipt;
       },
       {}
     );
