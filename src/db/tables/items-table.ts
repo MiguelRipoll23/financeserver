@@ -3,6 +3,7 @@ import {
   bigserial,
   index,
   pgTable,
+  sql,
   text,
   timestamp,
   uniqueIndex,
@@ -25,7 +26,14 @@ export const itemsTable = pgTable(
       .notNull(),
   },
   (table) => [
-    uniqueIndex("items_name_parent_item_id_key").on(table.name, table.parentItemId),
+    // Root-level items: unique name when there is no parent
+    uniqueIndex("items_root_name_key")
+      .on(table.name)
+      .where(sql`${table.parentItemId} IS NULL`),
+    // Subitems: unique per (parent, name) when there is a parent
+    uniqueIndex("items_name_parent_item_id_key")
+      .on(table.name, table.parentItemId)
+      .where(sql`${table.parentItemId} IS NOT NULL`),
     index("items_parent_item_id_idx").on(table.parentItemId),
   ]
 );
