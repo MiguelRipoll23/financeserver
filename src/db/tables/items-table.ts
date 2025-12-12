@@ -3,11 +3,11 @@ import {
   bigserial,
   index,
   pgTable,
-  sql,
   text,
   timestamp,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 export const itemsTable = pgTable(
   "items",
