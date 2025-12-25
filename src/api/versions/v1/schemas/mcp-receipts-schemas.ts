@@ -60,7 +60,9 @@ export const SaveReceiptItemToolSchema = z.object({
   items: z
     .array(SaveReceiptSubitemToolSchema)
     .optional()
-    .describe("Optional list of subitems associated with this item (nesting limited to 1 level)"),
+    .describe(
+      "Optional list of subitems associated with this item (nesting limited to 1 level)"
+    ),
 });
 
 export const SaveReceiptToolSchema = z.object({
@@ -72,6 +74,12 @@ export const SaveReceiptToolSchema = z.object({
     .array(SaveReceiptItemToolSchema)
     .min(1, "At least one item is required")
     .describe("List of items purchased on this receipt"),
+  merchant: z
+    .object({
+      name: z.string().min(1).describe("The name of the merchant"),
+    })
+    .optional()
+    .describe("Merchant information"),
 });
 
 export const UpdateReceiptToolSchema = z
@@ -116,6 +124,10 @@ export const FilterReceiptsToolSchema = z.object({
     .describe(
       "Filter receipts containing items with this name (partial match)"
     ),
+  merchantName: z
+    .string()
+    .optional()
+    .describe("Filter receipts by merchant name (partial match)"),
   sortField: z
     .nativeEnum(ReceiptSortField)
     .optional()

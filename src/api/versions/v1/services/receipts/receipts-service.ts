@@ -19,6 +19,7 @@ import {
   itemPricesTable,
   receiptItemsTable,
   receiptsTable,
+  merchantsTable,
 } from "../../../../../db/schema.ts";
 import { decodeCursor } from "../../utils/cursor-utils.ts";
 import { createOffsetPagination } from "../../utils/pagination-utils.ts";
@@ -41,7 +42,7 @@ import type {
   UpdateReceiptResponse,
   GetReceiptsResponse,
 } from "../../schemas/receipts-schemas.ts";
-
+import { MerchantsService } from "../merchants/merchants-service.ts";
 type NormalizedReceiptItem = {
   name: string;
   quantity: number;
@@ -50,7 +51,6 @@ type NormalizedReceiptItem = {
   currencyCode: string;
   subitems?: NormalizedReceiptItem[];
 };
-
 type ReceiptItemInput = {
   name: string;
   quantity: number;
@@ -58,10 +58,12 @@ type ReceiptItemInput = {
   currencyCode: string;
   items?: ReceiptItemInput[];
 };
-
 @injectable()
 export class ReceiptsService {
-  constructor(private databaseService = inject(DatabaseService)) {}
+  constructor(
+    private databaseService = inject(DatabaseService),
+    private merchantsService = inject(MerchantsService)
+  ) {}
 
   public async createReceipt(
     payload: CreateReceiptRequest
@@ -76,14 +78,16 @@ export class ReceiptsService {
 
     const db = this.databaseService.get();
     const receiptDate = payload.date;
-
     const normalizedItems = this.normalizeReceiptItems(payload.items);
-
     const totalInCents = normalizedItems.reduce<number>(
       (sum, item) => sum + item.unitPriceCents * item.quantity,
       0
     );
     const totalAmountString = this.formatAmount(totalInCents / 100);
+
+    const merchantId = await this.merchantsService.getOrCreateMerchantId(
+      payload.merchant
+    );
 
     const receiptId = await db.transaction(async (tx) => {
       // Use the currency code from the first item (all items should have same currency)
@@ -95,6 +99,7 @@ export class ReceiptsService {
           receiptDate,
           totalAmount: totalAmountString,
           currencyCode: receiptCurrencyCode,
+          merchantId,
         })
         .returning({ id: receiptsTable.id });
 
@@ -105,10 +110,13 @@ export class ReceiptsService {
       return id;
     });
 
+    const merchant = await this.merchantsService.getMerchantInfo(merchantId);
+
     return {
       id: receiptId,
       totalAmount: totalAmountString,
       currencyCode: normalizedItems[0].currencyCode,
+      merchant,
     } satisfies CreateReceiptResponse;
   }
 
@@ -237,6 +245,27 @@ export class ReceiptsService {
 
     const filters: SQL[] = [];
 
+    // Filter by merchant name if provided
+    if (params.merchantName) {
+      const escapedMerchantName = this.escapeLikePattern(params.merchantName);
+      // Find merchant IDs matching the name (case-insensitive, partial match)
+      const matchingMerchants = await db
+        .select({ id: merchantsTable.id })
+        .from(merchantsTable)
+        .where(ilike(merchantsTable.name, `%${escapedMerchantName}%`));
+
+      const merchantIds = matchingMerchants.map((row) => row.id as number);
+      if (merchantIds.length === 0) {
+        return createOffsetPagination<ReceiptSummary>(
+          [],
+          limit,
+          offset,
+          0
+        ) as GetReceiptsResponse;
+      }
+      filters.push(inArray(receiptsTable.merchantId, merchantIds));
+    }
+
     if (params.startDate) {
       filters.push(gte(receiptsTable.receiptDate, params.startDate));
     }
@@ -270,11 +299,12 @@ export class ReceiptsService {
     }
 
     if (params.productName) {
+      const escapedProductName = this.escapeLikePattern(params.productName);
       const matchingReceiptIds = await db
         .select({ receiptId: receiptItemsTable.receiptId })
         .from(receiptItemsTable)
         .innerJoin(itemsTable, eq(itemsTable.id, receiptItemsTable.itemId))
-        .where(ilike(itemsTable.name, `%${params.productName}%`));
+        .where(ilike(itemsTable.name, `%${escapedProductName}%`));
 
       const uniqueIds = [
         ...new Set(matchingReceiptIds.map((row) => row.receiptId as number)),
@@ -310,6 +340,7 @@ export class ReceiptsService {
         receiptDate: receiptsTable.receiptDate,
         totalAmount: receiptsTable.totalAmount,
         currencyCode: receiptsTable.currencyCode,
+        merchantId: receiptsTable.merchantId,
       })
       .from(receiptsTable)
       .where(buildAndFilters(filters))
@@ -367,6 +398,19 @@ export class ReceiptsService {
       },
       {}
     );
+
+    // Fetch all merchants for receipts in one query
+    const merchantIds = [
+      ...new Set(receiptRows.map((r) => r.merchantId).filter(Boolean)),
+    ] as number[];
+    let merchantMap: Record<number, { id: number; name: string }> = {};
+    if (merchantIds.length > 0) {
+      const merchants = await db
+        .select({ id: merchantsTable.id, name: merchantsTable.name })
+        .from(merchantsTable)
+        .where(inArray(merchantsTable.id, merchantIds));
+      merchantMap = Object.fromEntries(merchants.map((m) => [m.id, m]));
+    }
 
     const summaries: ReceiptSummary[] = receiptRows.map((receipt) => {
       const allItems = groupedItems[receipt.id as number] ?? [];
@@ -440,6 +484,11 @@ export class ReceiptsService {
         return lineItem;
       });
 
+      let merchant: { id: number; name: string } | undefined = undefined;
+      if (receipt.merchantId && merchantMap[receipt.merchantId]) {
+        merchant = merchantMap[receipt.merchantId];
+      }
+
       return {
         id: receipt.id,
         date: toISOStringSafe(receipt.receiptDate),
@@ -450,6 +499,7 @@ export class ReceiptsService {
         ),
         currencyCode: receipt.currencyCode,
         items,
+        merchant,
       } satisfies ReceiptSummary;
     });
 
@@ -729,5 +779,9 @@ export class ReceiptsService {
     }
 
     return numeric;
+  }
+
+  private escapeLikePattern(pattern: string): string {
+    return pattern.replace(/[\\%_]/g, "\\$&");
   }
 }

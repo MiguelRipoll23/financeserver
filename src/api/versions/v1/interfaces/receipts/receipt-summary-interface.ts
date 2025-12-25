@@ -6,4 +6,5 @@ export interface ReceiptSummary {
   totalAmount: string;
   currencyCode: string;
   items: ReceiptLineItem[];
+  merchant?: { id: number; name: string };
 }

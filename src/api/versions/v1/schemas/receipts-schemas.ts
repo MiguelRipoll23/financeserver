@@ -79,6 +79,16 @@ export const CreateReceiptRequestSchema = z.object({
         },
       ],
     }),
+  merchant: z
+    .object({
+      name: z
+        .string()
+        .min(1)
+        .describe("The name of the merchant")
+        .openapi({ example: "Costco" }),
+    })
+    .optional()
+    .describe("Merchant information"),
 });
 
 export type CreateReceiptRequest = z.infer<typeof CreateReceiptRequestSchema>;
@@ -94,6 +104,13 @@ const ReceiptMutationResponseSchema = z.object({
     .string()
     .describe("ISO 4217 currency code")
     .openapi({ example: "USD" }),
+  merchant: z
+    .object({
+      id: z.number().int().describe("Merchant ID").openapi({ example: 7 }),
+      name: z.string().describe("Merchant name").openapi({ example: "Costco" }),
+    })
+    .optional()
+    .describe("Merchant information if available"),
 });
 
 export const CreateReceiptResponseSchema = ReceiptMutationResponseSchema;
@@ -131,6 +148,13 @@ export const GetReceiptsRequestSchema = PaginationQuerySchema.extend({
     .max(256)
     .describe("Product name filter")
     .openapi({ example: "chair" })
+    .optional(),
+  merchantName: z
+    .string()
+    .min(1)
+    .max(256)
+    .describe("Merchant name filter")
+    .openapi({ example: "Costco" })
     .optional(),
   sortField: z
     .nativeEnum(ReceiptSortField)
@@ -178,6 +202,13 @@ export const ReceiptSummarySchema = z.object({
     .describe("ISO 4217 currency code")
     .openapi({ example: "USD" }),
   items: z.array(ReceiptItemSchema).describe("List of items in the receipt"),
+  merchant: z
+    .object({
+      id: z.number().int().describe("Merchant ID").openapi({ example: 7 }),
+      name: z.string().describe("Merchant name").openapi({ example: "Costco" }),
+    })
+    .optional()
+    .describe("Merchant information if available"),
 });
 
 export const GetReceiptsResponseSchema = z.object({
