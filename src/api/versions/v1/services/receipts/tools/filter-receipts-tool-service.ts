@@ -64,7 +64,7 @@ export class FilterReceiptsToolService {
         const receiptCurrencySymbol = getCurrencySymbolForCode(
           receipt.currencyCode
         );
-        const header = `🧾 Receipt #${receipt.id} (${receipt.date}) ${receipt.merchant ? `(Merchant: ${receipt.merchant.name})` : ''} — Total ${receiptCurrencySymbol}${receipt.totalAmount}`;
+        const header = `🧾 Receipt #${receipt.id} (${receipt.date})${receipt.merchant ? ` (Merchant: ${receipt.merchant.name})` : ''} — Total ${receiptCurrencySymbol}${receipt.totalAmount}`;
         const lines = receipt.items
           .map((item) => {
             const formatItemLine = (
