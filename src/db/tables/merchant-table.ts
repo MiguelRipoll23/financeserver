@@ -18,7 +18,7 @@ export const merchantsTable = pgTable(
       .defaultNow()
       .notNull(),
   },
-  (table) => [uniqueIndex("merchants_name_unique").on(table.name)]
+  (table) => [uniqueIndex("merchants_name_unique").on(sql`lower(${table.name})`)]
 );
 
 export type MerchantEntity = typeof merchantsTable.$inferSelect;
