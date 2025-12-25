@@ -1,5 +1,5 @@
-import { pgTable } from "drizzle-orm/pg-core/table";
 import {
+  pgTable,
   bigserial,
   timestamp,
   uniqueIndex,
@@ -18,7 +18,9 @@ export const merchantsTable = pgTable(
       .defaultNow()
       .notNull(),
   },
-  (table) => [uniqueIndex("merchants_name_unique").on(sql`lower(${table.name})`)]
+  (table) => [
+    uniqueIndex("merchants_name_unique").on(sql`lower(${table.name})`),
+  ]
 );
 
 export type MerchantEntity = typeof merchantsTable.$inferSelect;

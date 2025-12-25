@@ -780,23 +780,31 @@ export class ReceiptsService {
     db: NodePgDatabase,
     merchant?: { name?: string }
   ): Promise<number | undefined> {
-    if (!merchant || !merchant.name) return undefined;
+    if (!merchant?.name) {
+      return undefined;
+    }
     const merchantName = merchant.name.trim();
+    if (merchantName === "") {
+      return undefined;
+    }
+
+    // Atomically insert or do nothing if a merchant with the same name (case-insensitive) already exists.
+    // This relies on a case-insensitive unique index on the `name` column.
+    await db
+      .insert(merchantsTable)
+      .values({ name: merchantName })
+      .onConflictOnConstraint("merchants_name_unique")
+      .doNothing();
+
+    // The merchant is now guaranteed to exist, so we can select it.
     const existingMerchant = await db
       .select({ id: merchantsTable.id })
       .from(merchantsTable)
       .where(ilike(merchantsTable.name, merchantName))
       .limit(1)
       .then((rows) => rows[0]);
-    if (existingMerchant) {
-      return existingMerchant.id;
-    } else {
-      const [{ id }] = await db
-        .insert(merchantsTable)
-        .values({ name: merchantName })
-        .returning({ id: merchantsTable.id });
-      return id;
-    }
+
+    return existingMerchant?.id;
   }
 
   private async getMerchantInfo(
