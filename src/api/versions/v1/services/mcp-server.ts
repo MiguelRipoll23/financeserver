@@ -6,15 +6,8 @@ import { BillsMCPService } from "./bills/bills-mcp-service.ts";
 import { SubscriptionsMCPService } from "./subscriptions/subscriptions-mcp-service.ts";
 import { McpToolDefinition } from "../interfaces/mcp/mcp-tool-interface.ts";
 import { McpPromptDefinition } from "../interfaces/mcp/mcp-prompt-interface.ts";
-
-type McpProvider = {
-  getTools(): McpToolDefinition[];
-  getPrompts(): McpPromptDefinition[];
-};
-
-type McpServerWithContext = McpServer & {
-  _userId?: string;
-};
+import { McpProvider } from "../types/mcp/mcp-provider-type.ts";
+import { McpServerWithContext } from "../types/mcp/mcp-server-with-context-type.ts";
 
 @injectable()
 export class MCPService {
