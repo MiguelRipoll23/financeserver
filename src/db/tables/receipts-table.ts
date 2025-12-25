@@ -8,6 +8,7 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
+import { merchantsTable } from "./merchants-table.ts";
 
 export const receiptsTable = pgTable(
   "receipts",
@@ -18,7 +19,10 @@ export const receiptsTable = pgTable(
     currencyCode: varchar("currency_code", { length: 3 })
       .notNull()
       .default("USD"),
-    merchantId: bigint("merchant_id", { mode: "number" }),
+    merchantId: bigint("merchant_id", { mode: "number" }).references(
+      () => merchantsTable.id,
+      { onDelete: "set null" }
+    ),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),

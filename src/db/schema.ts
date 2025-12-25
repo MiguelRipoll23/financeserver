@@ -2,7 +2,7 @@ export { billEmailsTable } from "./tables/bill-emails-table.ts";
 export { billCategoriesTable } from "./tables/bill-categories-table.ts";
 export { billsTable } from "./tables/bills-table.ts";
 export { receiptsTable } from "./tables/receipts-table.ts";
-export { merchantsTable } from "./tables/merchant-table.ts";
+export { merchantsTable } from "./tables/merchants-table.ts";
 export { itemsTable } from "./tables/items-table.ts";
 export { receiptItemsTable } from "./tables/receipt-items-table.ts";
 export { itemPricesTable } from "./tables/item-prices-table.ts";

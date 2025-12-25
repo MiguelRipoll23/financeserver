@@ -247,11 +247,12 @@ export class ReceiptsService {
 
     // Filter by merchant name if provided
     if (params.merchantName) {
+      const escapedMerchantName = this.escapeLikePattern(params.merchantName);
       // Find merchant IDs matching the name (case-insensitive, partial match)
       const matchingMerchants = await db
         .select({ id: merchantsTable.id })
         .from(merchantsTable)
-        .where(ilike(merchantsTable.name, `%${params.merchantName}%`));
+        .where(ilike(merchantsTable.name, `%${escapedMerchantName}%`));
 
       const merchantIds = matchingMerchants.map((row) => row.id as number);
       if (merchantIds.length === 0) {
@@ -298,11 +299,12 @@ export class ReceiptsService {
     }
 
     if (params.productName) {
+      const escapedProductName = this.escapeLikePattern(params.productName);
       const matchingReceiptIds = await db
         .select({ receiptId: receiptItemsTable.receiptId })
         .from(receiptItemsTable)
         .innerJoin(itemsTable, eq(itemsTable.id, receiptItemsTable.itemId))
-        .where(ilike(itemsTable.name, `%${params.productName}%`));
+        .where(ilike(itemsTable.name, `%${escapedProductName}%`));
 
       const uniqueIds = [
         ...new Set(matchingReceiptIds.map((row) => row.receiptId as number)),
@@ -777,5 +779,9 @@ export class ReceiptsService {
     }
 
     return numeric;
+  }
+
+  private escapeLikePattern(pattern: string): string {
+    return pattern.replace(/[\\%_]/g, "\\$&");
   }
 }
