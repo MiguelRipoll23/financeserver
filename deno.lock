@@ -4,7 +4,7 @@
     "jsr:@needle-di/core@^1.1.0": "1.1.0",
     "jsr:@std/encoding@0.221": "0.221.0",
     "jsr:@wok/djwt@^3.0.2": "3.0.2",
-    "npm:@hono/mcp@0.2.2": "0.2.2_@modelcontextprotocol+sdk@1.25.1__zod@4.2.1__hono@4.11.1__ajv@8.17.1__express@5.1.0_hono@4.11.1_hono-rate-limiter@0.4.2__hono@4.11.1_zod@4.2.1",
+    "npm:@hono/mcp@0.2.3": "0.2.3_@modelcontextprotocol+sdk@1.25.1__zod@4.2.1__hono@4.11.1__ajv@8.17.1__express@5.1.0_hono@4.11.1_hono-rate-limiter@0.4.2__hono@4.11.1_zod@4.2.1",
     "npm:@hono/zod-openapi@^1.2.0": "1.2.0_hono@4.11.1_zod@4.2.1",
     "npm:@modelcontextprotocol/sdk@^1.25.1": "1.25.1_zod@4.2.1_hono@4.11.1_ajv@8.17.1_express@5.1.0",
     "npm:@scalar/hono-api-reference@~0.9.30": "0.9.30_hono@4.11.1",
@@ -295,8 +295,8 @@
       "os": ["win32"],
       "cpu": ["x64"]
     },
-    "@hono/mcp@0.2.2_@modelcontextprotocol+sdk@1.25.1__zod@4.2.1__hono@4.11.1__ajv@8.17.1__express@5.1.0_hono@4.11.1_hono-rate-limiter@0.4.2__hono@4.11.1_zod@4.2.1": {
-      "integrity": "sha512-h1yHXsv08OWT8bXyIOoZVXw0qU1UmSDwm014fPnFXiyeS9iMMHftn907wNXTh07IorlGqPbZArev4nBz9Q3oKQ==",
+    "@hono/mcp@0.2.3_@modelcontextprotocol+sdk@1.25.1__zod@4.2.1__hono@4.11.1__ajv@8.17.1__express@5.1.0_hono@4.11.1_hono-rate-limiter@0.4.2__hono@4.11.1_zod@4.2.1": {
+      "integrity": "sha512-wrYKVQSjnBg4/ZinnnP/1t3jlvP3Z9fqZv8OzuhLXV4gVTLOHOHDhnXsIwD0nFVKk2pMOvA+sDfrKyRzw4yUPg==",
       "dependencies": [
         "@modelcontextprotocol/sdk",
         "hono",
@@ -1064,7 +1064,7 @@
     "dependencies": [
       "jsr:@needle-di/core@^1.1.0",
       "jsr:@wok/djwt@^3.0.2",
-      "npm:@hono/mcp@0.2.2",
+      "npm:@hono/mcp@0.2.3",
       "npm:@hono/zod-openapi@^1.2.0",
       "npm:@modelcontextprotocol/sdk@^1.25.1",
       "npm:@scalar/hono-api-reference@~0.9.30",
