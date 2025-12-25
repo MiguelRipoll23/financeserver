@@ -29,6 +29,7 @@ export class SaveReceiptToolService {
         const result = await this.receiptsService.createReceipt({
           date: parsed.date,
           items: parsed.items,
+          merchant: parsed.merchant,
         });
 
         const displayDate = parsed.date;

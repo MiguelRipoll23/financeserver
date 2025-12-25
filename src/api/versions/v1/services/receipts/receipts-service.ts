@@ -19,6 +19,7 @@ import {
   itemPricesTable,
   receiptItemsTable,
   receiptsTable,
+  merchantsTable,
 } from "../../../../../db/schema.ts";
 import { decodeCursor } from "../../utils/cursor-utils.ts";
 import { createOffsetPagination } from "../../utils/pagination-utils.ts";
@@ -76,14 +77,14 @@ export class ReceiptsService {
 
     const db = this.databaseService.get();
     const receiptDate = payload.date;
-
     const normalizedItems = this.normalizeReceiptItems(payload.items);
-
     const totalInCents = normalizedItems.reduce<number>(
       (sum, item) => sum + item.unitPriceCents * item.quantity,
       0
     );
     const totalAmountString = this.formatAmount(totalInCents / 100);
+
+    const merchantId = await this.getOrCreateMerchantId(db, payload.merchant);
 
     const receiptId = await db.transaction(async (tx) => {
       // Use the currency code from the first item (all items should have same currency)
@@ -95,6 +96,7 @@ export class ReceiptsService {
           receiptDate,
           totalAmount: totalAmountString,
           currencyCode: receiptCurrencyCode,
+          merchantId,
         })
         .returning({ id: receiptsTable.id });
 
@@ -105,10 +107,13 @@ export class ReceiptsService {
       return id;
     });
 
+    const merchant = await this.getMerchantInfo(db, merchantId);
+
     return {
       id: receiptId,
       totalAmount: totalAmountString,
       currencyCode: normalizedItems[0].currencyCode,
+      merchant,
     } satisfies CreateReceiptResponse;
   }
 
@@ -237,6 +242,26 @@ export class ReceiptsService {
 
     const filters: SQL[] = [];
 
+    // Filter by merchant name if provided
+    if (params.merchantName) {
+      // Find merchant IDs matching the name (case-insensitive, partial match)
+      const matchingMerchants = await db
+        .select({ id: merchantsTable.id })
+        .from(merchantsTable)
+        .where(ilike(merchantsTable.name, `%${params.merchantName}%`));
+
+      const merchantIds = matchingMerchants.map((row) => row.id as number);
+      if (merchantIds.length === 0) {
+        return createOffsetPagination<ReceiptSummary>(
+          [],
+          limit,
+          offset,
+          0
+        ) as GetReceiptsResponse;
+      }
+      filters.push(inArray(receiptsTable.merchantId, merchantIds));
+    }
+
     if (params.startDate) {
       filters.push(gte(receiptsTable.receiptDate, params.startDate));
     }
@@ -310,6 +335,7 @@ export class ReceiptsService {
         receiptDate: receiptsTable.receiptDate,
         totalAmount: receiptsTable.totalAmount,
         currencyCode: receiptsTable.currencyCode,
+        merchantId: receiptsTable.merchantId,
       })
       .from(receiptsTable)
       .where(buildAndFilters(filters))
@@ -367,6 +393,19 @@ export class ReceiptsService {
       },
       {}
     );
+
+    // Fetch all merchants for receipts in one query
+    const merchantIds = [
+      ...new Set(receiptRows.map((r) => r.merchantId).filter(Boolean)),
+    ] as number[];
+    let merchantMap: Record<number, { id: number; name: string }> = {};
+    if (merchantIds.length > 0) {
+      const merchants = await db
+        .select({ id: merchantsTable.id, name: merchantsTable.name })
+        .from(merchantsTable)
+        .where(inArray(merchantsTable.id, merchantIds));
+      merchantMap = Object.fromEntries(merchants.map((m) => [m.id, m]));
+    }
 
     const summaries: ReceiptSummary[] = receiptRows.map((receipt) => {
       const allItems = groupedItems[receipt.id as number] ?? [];
@@ -440,6 +479,11 @@ export class ReceiptsService {
         return lineItem;
       });
 
+      let merchant: { id: number; name: string } | undefined = undefined;
+      if (receipt.merchantId && merchantMap[receipt.merchantId]) {
+        merchant = merchantMap[receipt.merchantId];
+      }
+
       return {
         id: receipt.id,
         date: toISOStringSafe(receipt.receiptDate),
@@ -450,6 +494,7 @@ export class ReceiptsService {
         ),
         currencyCode: receipt.currencyCode,
         items,
+        merchant,
       } satisfies ReceiptSummary;
     });
 
@@ -729,5 +774,45 @@ export class ReceiptsService {
     }
 
     return numeric;
+  }
+
+  private async getOrCreateMerchantId(
+    db: NodePgDatabase,
+    merchant?: { name?: string }
+  ): Promise<number | undefined> {
+    if (!merchant || !merchant.name) return undefined;
+    const merchantName = merchant.name.trim();
+    const existingMerchant = await db
+      .select({ id: merchantsTable.id })
+      .from(merchantsTable)
+      .where(ilike(merchantsTable.name, merchantName))
+      .limit(1)
+      .then((rows) => rows[0]);
+    if (existingMerchant) {
+      return existingMerchant.id;
+    } else {
+      const [{ id }] = await db
+        .insert(merchantsTable)
+        .values({ name: merchantName })
+        .returning({ id: merchantsTable.id });
+      return id;
+    }
+  }
+
+  private async getMerchantInfo(
+    db: NodePgDatabase,
+    merchantId?: number
+  ): Promise<{ id: number; name: string } | undefined> {
+    if (!merchantId) return undefined;
+    const merchantRow = await db
+      .select({ id: merchantsTable.id, name: merchantsTable.name })
+      .from(merchantsTable)
+      .where(eq(merchantsTable.id, merchantId))
+      .limit(1)
+      .then((rows) => rows[0]);
+    if (merchantRow) {
+      return { id: merchantRow.id, name: merchantRow.name };
+    }
+    return undefined;
   }
 }

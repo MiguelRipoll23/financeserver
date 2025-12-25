@@ -15,7 +15,7 @@ export class FilterReceiptsToolService {
       meta: {
         title: "Filter receipts",
         description:
-          "Use this when you need to search receipts by date range, total amounts, and product names.",
+          "Use this when you need to search receipts by date range, total amounts, product names, or merchant name. Do not use for creating or updating receipts.",
         inputSchema: FilterReceiptsToolSchema.shape,
         annotations: {
           readOnlyHint: true,
@@ -32,6 +32,7 @@ export class FilterReceiptsToolService {
           minimumTotalAmount: parsed.minimumTotalAmount,
           maximumTotalAmount: parsed.maximumTotalAmount,
           productName: parsed.productName,
+          merchantName: parsed.merchantName,
           sortField: parsed.sortField,
           sortOrder: parsed.sortOrder,
           limit: parsed.limit,
