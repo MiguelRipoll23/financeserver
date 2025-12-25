@@ -16,9 +16,17 @@ export const receiptsRelations = relations(receipts, ({many}) => ({
 	receiptItems: many(receiptItems),
 }));
 
-export const itemsRelations = relations(items, ({many}) => ({
+export const itemsRelations = relations(items, ({one, many}) => ({
 	receiptItems: many(receiptItems),
 	itemPrices: many(itemPrices),
+	parentItem: one(items, {
+		fields: [items.parentItemId],
+		references: [items.id],
+		onDelete: "cascade"
+	}),
+	subItems: many(items, {
+		relationName: "subItems"
+	})
 }));
 
 export const billsRelations = relations(bills, ({one}) => ({
