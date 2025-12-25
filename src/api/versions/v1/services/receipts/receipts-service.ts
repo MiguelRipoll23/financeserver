@@ -42,7 +42,7 @@ import type {
   UpdateReceiptResponse,
   GetReceiptsResponse,
 } from "../../schemas/receipts-schemas.ts";
-
+import { MerchantsService } from "../merchants/merchants-service.ts";
 type NormalizedReceiptItem = {
   name: string;
   quantity: number;
@@ -51,7 +51,6 @@ type NormalizedReceiptItem = {
   currencyCode: string;
   subitems?: NormalizedReceiptItem[];
 };
-
 type ReceiptItemInput = {
   name: string;
   quantity: number;
@@ -59,10 +58,12 @@ type ReceiptItemInput = {
   currencyCode: string;
   items?: ReceiptItemInput[];
 };
-
 @injectable()
 export class ReceiptsService {
-  constructor(private databaseService = inject(DatabaseService)) {}
+  constructor(
+    private databaseService = inject(DatabaseService),
+    private merchantsService = inject(MerchantsService)
+  ) {}
 
   public async createReceipt(
     payload: CreateReceiptRequest
@@ -84,7 +85,9 @@ export class ReceiptsService {
     );
     const totalAmountString = this.formatAmount(totalInCents / 100);
 
-    const merchantId = await this.getOrCreateMerchantId(db, payload.merchant);
+    const merchantId = await this.merchantsService.getOrCreateMerchantId(
+      payload.merchant
+    );
 
     const receiptId = await db.transaction(async (tx) => {
       // Use the currency code from the first item (all items should have same currency)
@@ -107,7 +110,7 @@ export class ReceiptsService {
       return id;
     });
 
-    const merchant = await this.getMerchantInfo(db, merchantId);
+    const merchant = await this.merchantsService.getMerchantInfo(merchantId);
 
     return {
       id: receiptId,
@@ -774,53 +777,5 @@ export class ReceiptsService {
     }
 
     return numeric;
-  }
-
-  private async getOrCreateMerchantId(
-    db: NodePgDatabase,
-    merchant?: { name?: string }
-  ): Promise<number | undefined> {
-    if (!merchant?.name) {
-      return undefined;
-    }
-    const merchantName = merchant.name.trim();
-    if (merchantName === "") {
-      return undefined;
-    }
-
-    // Atomically insert or do nothing if a merchant with the same name (case-insensitive) already exists.
-    // This relies on a case-insensitive unique index on the `name` column.
-    await db
-      .insert(merchantsTable)
-      .values({ name: merchantName })
-      .onConflictOnConstraint("merchants_name_unique")
-      .doNothing();
-
-    // The merchant is now guaranteed to exist, so we can select it.
-    const existingMerchant = await db
-      .select({ id: merchantsTable.id })
-      .from(merchantsTable)
-      .where(ilike(merchantsTable.name, merchantName))
-      .limit(1)
-      .then((rows) => rows[0]);
-
-    return existingMerchant?.id;
-  }
-
-  private async getMerchantInfo(
-    db: NodePgDatabase,
-    merchantId?: number
-  ): Promise<{ id: number; name: string } | undefined> {
-    if (!merchantId) return undefined;
-    const merchantRow = await db
-      .select({ id: merchantsTable.id, name: merchantsTable.name })
-      .from(merchantsTable)
-      .where(eq(merchantsTable.id, merchantId))
-      .limit(1)
-      .then((rows) => rows[0]);
-    if (merchantRow) {
-      return { id: merchantRow.id, name: merchantRow.name };
-    }
-    return undefined;
   }
 }

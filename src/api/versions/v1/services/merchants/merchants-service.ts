@@ -1,16 +1,15 @@
 import { inject, injectable } from "@needle-di/core";
 import { eq, ilike } from "drizzle-orm";
-import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import { merchantsTable } from "../../../../../db/schema.ts";
+import { MerchantInput } from "../../interfaces/merchants/merchant-input-interface.ts";
 
 @injectable()
 export class MerchantsService {
   constructor(private databaseService = inject(DatabaseService)) {}
 
   public async getOrCreateMerchantId(
-    db: NodePgDatabase,
-    merchant?: { name?: string }
+    merchant?: MerchantInput
   ): Promise<number | undefined> {
     if (!merchant?.name) {
       return undefined;
@@ -19,6 +18,7 @@ export class MerchantsService {
     if (merchantName === "") {
       return undefined;
     }
+    const db = this.databaseService.get();
     await db
       .insert(merchantsTable)
       .values({ name: merchantName })
@@ -33,10 +33,10 @@ export class MerchantsService {
   }
 
   public async getMerchantInfo(
-    db: NodePgDatabase,
     merchantId?: number | null
   ): Promise<{ id: number; name: string } | undefined> {
     if (!merchantId) return undefined;
+    const db = this.databaseService.get();
     const merchant = await db
       .select({ id: merchantsTable.id, name: merchantsTable.name })
       .from(merchantsTable)
