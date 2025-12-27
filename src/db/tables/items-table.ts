@@ -26,6 +26,7 @@ export const itemsTable = pgTable(
   (table) => [
     // Self-reference FK (no TS circular errors)
     foreignKey({
+      name: "items_parent_item_id_items_id_fk",
       columns: [table.parentItemId],
       foreignColumns: [table.id],
     }).onDelete("cascade"),
