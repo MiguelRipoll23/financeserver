@@ -111,6 +111,7 @@ export const bills = pgTable("bills", {
 export const items = pgTable("items", {
 	id: bigserial({ mode: "bigint" }).primaryKey().notNull(),
 	name: text().notNull(),
+	parentItemId: bigint("parent_item_id", { mode: "number" }),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [

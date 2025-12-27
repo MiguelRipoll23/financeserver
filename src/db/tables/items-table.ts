@@ -14,10 +14,7 @@ export const itemsTable = pgTable(
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
     name: text("name").notNull(),
-    parentItemId: bigint("parent_item_id", { mode: "number" }).references(
-      () => itemsTable.id,
-      { onDelete: "cascade" }
-    ),
+    parentItemId: bigint("parent_item_id", { mode: "number" }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
