@@ -48,14 +48,12 @@ type NormalizedReceiptItem = {
   quantity: number;
   unitPriceCents: number;
   unitPriceString: string;
-  currencyCode: string;
   subitems?: NormalizedReceiptItem[];
 };
 type ReceiptItemInput = {
   name: string;
   quantity: number;
   unitPrice: string;
-  currencyCode: string;
   items?: ReceiptItemInput[];
 };
 @injectable()
@@ -77,7 +75,7 @@ export class ReceiptsService {
     }
 
     const db = this.databaseService.get();
-    const receiptDate = payload.date;
+    const { date: receiptDate, currencyCode: receiptCurrencyCode } = payload;
     const normalizedItems = this.normalizeReceiptItems(payload.items);
     const totalInCents = normalizedItems.reduce<number>(
       (sum, item) => sum + item.unitPriceCents * item.quantity,
@@ -90,9 +88,6 @@ export class ReceiptsService {
     );
 
     const receiptId = await db.transaction(async (tx) => {
-      // Use the currency code from the first item (all items should have same currency)
-      const receiptCurrencyCode = normalizedItems[0].currencyCode;
-
       const [{ id }] = await tx
         .insert(receiptsTable)
         .values({
@@ -104,7 +99,14 @@ export class ReceiptsService {
         .returning({ id: receiptsTable.id });
 
       for (const lineItem of normalizedItems) {
-        await this.insertReceiptItem(tx, id, receiptDate, lineItem, null);
+        await this.insertReceiptItem(
+          tx,
+          id,
+          receiptDate,
+          receiptCurrencyCode,
+          lineItem,
+          null
+        );
       }
 
       return id;
@@ -115,14 +117,14 @@ export class ReceiptsService {
     return {
       id: receiptId,
       totalAmount: totalAmountString,
-      currencyCode: normalizedItems[0].currencyCode,
+      currencyCode: receiptCurrencyCode,
       merchant,
     } satisfies CreateReceiptResponse;
   }
 
   public async updateReceipt(
     receiptId: number,
-    payload: Partial<UpdateReceiptRequest>
+    payload: UpdateReceiptRequest
   ): Promise<UpdateReceiptResponse> {
     const db = this.databaseService.get();
 
@@ -165,8 +167,8 @@ export class ReceiptsService {
         updatedAt: Date;
       } = { updatedAt: new Date() };
 
-      let normalizedItems;
-      let receiptCurrencyCode = existingReceipt.currencyCode;
+      let normalizedItems: NormalizedReceiptItem[] = [];
+      let receiptCurrencyCode = payload.currencyCode ?? existingReceipt.currencyCode;
 
       // Handle items update
       if (payload.items !== undefined) {
@@ -178,22 +180,23 @@ export class ReceiptsService {
           );
         }
 
-        normalizedItems = this.normalizeReceiptItems(payload.items);
+        if (payload.items) {
+          normalizedItems = this.normalizeReceiptItems(payload.items);
+        }
 
         const totalInCents = normalizedItems.reduce<number>(
           (sum, item) => sum + item.unitPriceCents * item.quantity,
           0
         );
         updateData.totalAmount = this.formatAmount(totalInCents / 100);
-
-        // Use the currency code from the first item (all items should have same currency)
-        receiptCurrencyCode = normalizedItems[0].currencyCode;
         updateData.currencyCode = receiptCurrencyCode;
 
         // Delete old items
         await tx
           .delete(receiptItemsTable)
           .where(eq(receiptItemsTable.receiptId, receiptId));
+      } else if (payload.currencyCode) {
+        updateData.currencyCode = payload.currencyCode;
       }
 
       // Handle date update
@@ -213,7 +216,14 @@ export class ReceiptsService {
       // Insert new items if items were updated
       if (normalizedItems) {
         for (const item of normalizedItems) {
-          await this.insertReceiptItem(tx, receiptId, receiptDate, item, null);
+          await this.insertReceiptItem(
+            tx,
+            receiptId,
+            receiptDate,
+            receiptCurrencyCode,
+            item,
+            null
+          );
         }
       }
 
@@ -367,13 +377,6 @@ export class ReceiptsService {
         parentItemId: itemsTable.parentItemId,
         quantity: receiptItemsTable.quantity,
         totalAmount: receiptItemsTable.totalAmount,
-        currencyCode: sql<string>`(
-          SELECT ip.currency_code 
-          FROM ${itemPricesTable} ip 
-          WHERE ip.item_id = ${itemsTable.id} 
-          ORDER BY ip.price_date DESC 
-          LIMIT 1
-        )`,
       })
       .from(receiptItemsTable)
       .innerJoin(itemsTable, eq(itemsTable.id, receiptItemsTable.itemId))
@@ -386,7 +389,6 @@ export class ReceiptsService {
       parentItemId: number | null;
       quantity: number;
       totalAmount: string | number;
-      currencyCode: string;
     };
 
     const groupedItems = receiptItems.reduce<Record<number, ReceiptItemRow[]>>(
@@ -448,7 +450,6 @@ export class ReceiptsService {
           quantity: item.quantity,
           unitPrice: this.formatAmount(unitPriceValue),
           totalAmount: this.formatAmount(lineTotalNumber),
-          currencyCode: item.currencyCode,
         };
 
         // Add subitems if they exist
@@ -476,7 +477,6 @@ export class ReceiptsService {
               quantity: subitem.quantity,
               unitPrice: this.formatAmount(subUnitPriceValue),
               totalAmount: this.formatAmount(subLineTotalNumber),
-              currencyCode: subitem.currencyCode,
             };
           });
         }
@@ -532,6 +532,7 @@ export class ReceiptsService {
     tx: NodePgDatabase,
     receiptId: number,
     receiptDate: string,
+    currencyCode: string,
     item: NormalizedReceiptItem,
     parentItemId: number | null
   ): Promise<void> {
@@ -553,13 +554,13 @@ export class ReceiptsService {
         itemId,
         priceDate: receiptDate,
         unitPrice: item.unitPriceString,
-        currencyCode: item.currencyCode,
+        currencyCode: currencyCode,
       })
       .onConflictDoUpdate({
         target: [itemPricesTable.itemId, itemPricesTable.priceDate],
         set: {
           unitPrice: item.unitPriceString,
-          currencyCode: item.currencyCode,
+          currencyCode: currencyCode,
         },
       });
 
@@ -570,6 +571,7 @@ export class ReceiptsService {
           tx,
           receiptId,
           receiptDate,
+          currencyCode,
           subitem,
           itemId
         );
@@ -656,9 +658,12 @@ export class ReceiptsService {
   }
 
   private normalizeReceiptItems(
-    items: CreateReceiptRequest["items"] | UpdateReceiptRequest["items"]
+    items: UpdateReceiptRequest["items"]
   ): NormalizedReceiptItem[] {
-    return items.map((item) => this.normalizeSingleItem(item, false));
+    if (!items) {
+      return [];
+    }
+    return items.map((item: ReceiptItemInput) => this.normalizeSingleItem(item, false));
   }
 
   private normalizeSingleItem(
@@ -721,9 +726,11 @@ export class ReceiptsService {
           400
         );
       }
-      subitems = item.items.map((subitem) =>
-        this.normalizeSingleItem(subitem, true, name)
-      );
+      if (item.items) {
+        subitems = item.items.map((subitem) =>
+          this.normalizeSingleItem(subitem as ReceiptItemInput, true, name)
+        );
+      }
     }
 
     return {
@@ -731,7 +738,6 @@ export class ReceiptsService {
       quantity: item.quantity,
       unitPriceCents,
       unitPriceString: this.formatAmount(unitPriceCents / 100),
-      currencyCode: item.currencyCode,
       subitems,
     } satisfies NormalizedReceiptItem;
   }

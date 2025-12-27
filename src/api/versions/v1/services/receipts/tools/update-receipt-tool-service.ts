@@ -29,6 +29,8 @@ export class UpdateReceiptToolService {
         const result = await this.receiptsService.updateReceipt(parsed.id, {
           date: parsed.date,
           items: parsed.items,
+          currencyCode: parsed.currencyCode,
+          merchant: parsed.merchant,
         });
 
         const displayDate = parsed.date || "(date unchanged)";
