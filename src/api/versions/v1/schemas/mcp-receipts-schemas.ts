@@ -26,10 +26,6 @@ const SaveReceiptSubitemToolSchema = z.object({
     .describe(
       "The price per unit for this subitem (format: 123.45, no currency symbol)"
     ),
-  currencyCode: z
-    .string()
-    .length(3, "Currency code must be exactly 3 characters (ISO 4217 format)")
-    .describe("ISO 4217 currency code (e.g., EUR, USD, GBP)"),
 });
 
 export const SaveReceiptItemToolSchema = z.object({
@@ -53,10 +49,6 @@ export const SaveReceiptItemToolSchema = z.object({
     .describe(
       "The price per unit for this item (format: 123.45, no currency symbol)"
     ),
-  currencyCode: z
-    .string()
-    .length(3, "Currency code must be exactly 3 characters (ISO 4217 format)")
-    .describe("ISO 4217 currency code (e.g., EUR, USD, GBP)"),
   items: z
     .array(SaveReceiptSubitemToolSchema)
     .optional()
@@ -70,6 +62,10 @@ export const SaveReceiptToolSchema = z.object({
     .string()
     .regex(DateOnlyRegex, "Date must be in YYYY-MM-DD format")
     .describe("The date when the receipt was issued (format: YYYY-MM-DD)"),
+  currencyCode: z
+    .string()
+    .length(3, "Currency code must be exactly 3 characters (ISO 4217 format)")
+    .describe("ISO 4217 currency code (e.g., EUR, USD, GBP)"),
   items: z
     .array(SaveReceiptItemToolSchema)
     .min(1, "At least one item is required")

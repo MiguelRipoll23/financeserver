@@ -3,6 +3,5 @@ export interface ReceiptLineItem {
   quantity: number;
   unitPrice: string;
   totalAmount: string;
-  currencyCode: string;
   items?: ReceiptLineItem[];
 }

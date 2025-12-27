@@ -21,11 +21,6 @@ const ReceiptSubitemInputSchema = z.object({
     .describe("Quantity of the subitem")
     .openapi({ example: 1 }),
   unitPrice: MonetaryStringSchema.describe("Unit price as a string"),
-  currencyCode: z
-    .string()
-    .length(3)
-    .describe("ISO 4217 currency code")
-    .openapi({ example: "USD" }),
 });
 
 export const ReceiptItemInputSchema = z.object({
@@ -42,11 +37,6 @@ export const ReceiptItemInputSchema = z.object({
     .describe("Quantity of the item")
     .openapi({ example: 2 }),
   unitPrice: MonetaryStringSchema.describe("Unit price as a string"),
-  currencyCode: z
-    .string()
-    .length(3)
-    .describe("ISO 4217 currency code")
-    .openapi({ example: "USD" }),
   items: z
     .array(ReceiptSubitemInputSchema)
     .optional()
@@ -57,7 +47,6 @@ export const ReceiptItemInputSchema = z.object({
           name: "Extended warranty",
           quantity: 1,
           unitPrice: "50.00",
-          currencyCode: "USD",
         },
       ],
     }),
@@ -65,6 +54,11 @@ export const ReceiptItemInputSchema = z.object({
 
 export const CreateReceiptRequestSchema = z.object({
   date: DateOnlyStringSchema.describe("Date of the receipt"),
+  currencyCode: z
+    .string()
+    .length(3)
+    .describe("ISO 4217 currency code")
+    .openapi({ example: "USD" }),
   items: z
     .array(ReceiptItemInputSchema)
     .min(1)
@@ -75,7 +69,6 @@ export const CreateReceiptRequestSchema = z.object({
           name: "Office chair",
           quantity: 2,
           unitPrice: "120.50",
-          currencyCode: "USD",
         },
       ],
     }),
@@ -116,7 +109,7 @@ const ReceiptMutationResponseSchema = z.object({
 export const CreateReceiptResponseSchema = ReceiptMutationResponseSchema;
 export type CreateReceiptResponse = z.infer<typeof CreateReceiptResponseSchema>;
 
-export const UpdateReceiptRequestSchema = CreateReceiptRequestSchema;
+export const UpdateReceiptRequestSchema = CreateReceiptRequestSchema.partial();
 export type UpdateReceiptRequest = z.infer<typeof UpdateReceiptRequestSchema>;
 
 export const UpdateReceiptResponseSchema = ReceiptMutationResponseSchema;
@@ -180,10 +173,6 @@ export const ReceiptItemSchema = z.object({
   totalAmount: MonetaryStringSchema.describe(
     "Total amount for the item as a string"
   ),
-  currencyCode: z
-    .string()
-    .describe("ISO 4217 currency code")
-    .openapi({ example: "USD" }),
 });
 
 export const ReceiptSummarySchema = z.object({
