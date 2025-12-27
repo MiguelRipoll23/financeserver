@@ -434,6 +434,8 @@ export class ProductsService {
       );
     }
 
+    this.assertNoChildItems(productId);
+
     await db.delete(itemsTable).where(eq(itemsTable.id, productId));
   }
 
@@ -493,5 +495,23 @@ export class ProductsService {
     }
 
     return numeric.toFixed(2);
+  }
+
+  private async assertNoChildItems(productId: number): Promise<void> {
+    const childItem = await this.databaseService
+      .get()
+      .select({ id: itemsTable.id })
+      .from(itemsTable)
+      .where(eq(itemsTable.parentItemId, productId))
+      .limit(1)
+      .then((rows: { id: number }[]) => rows[0]);
+
+    if (childItem) {
+      throw new ServerError(
+        "PRODUCT_HAS_CHILD_ITEMS",
+        `Product ${productId} has child items and cannot be deleted. Remove or reassign child items first.`,
+        409
+      );
+    }
   }
 }
