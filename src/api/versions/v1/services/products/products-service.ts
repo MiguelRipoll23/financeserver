@@ -419,21 +419,7 @@ export class ProductsService {
       );
     }
 
-    const usage = await db
-      .select({ id: receiptItemsTable.id })
-      .from(receiptItemsTable)
-      .where(eq(receiptItemsTable.itemId, productId))
-      .limit(1)
-      .then((rows) => rows[0]);
-
-    if (usage) {
-      throw new ServerError(
-        "PRODUCT_IN_USE",
-        `Product ${productId} is referenced by existing receipts and cannot be deleted`,
-        409
-      );
-    }
-
+    this.assertNotReferencedByReceipts(productId);
     this.assertNoChildItems(productId);
 
     await db.delete(itemsTable).where(eq(itemsTable.id, productId));
@@ -495,6 +481,26 @@ export class ProductsService {
     }
 
     return numeric.toFixed(2);
+  }
+
+  private async assertNotReferencedByReceipts(
+    productId: number
+  ): Promise<void> {
+    const usage = await this.databaseService
+      .get()
+      .select({ id: receiptItemsTable.id })
+      .from(receiptItemsTable)
+      .where(eq(receiptItemsTable.itemId, productId))
+      .limit(1)
+      .then((rows: { id: number }[]) => rows[0]);
+
+    if (usage) {
+      throw new ServerError(
+        "PRODUCT_IN_USE",
+        `Product ${productId} is referenced by existing receipts and cannot be deleted`,
+        409
+      );
+    }
   }
 
   private async assertNoChildItems(productId: number): Promise<void> {
