@@ -81,11 +81,6 @@ export const SaveReceiptToolSchema = z.object({
 export const UpdateReceiptToolSchema = z
   .object({
     id: z.number().int().positive().describe("ID of the receipt to update"),
-    currencyCode: z
-      .string()
-      .length(3, "Currency code must be exactly 3 characters (ISO 4217 format)")
-      .describe("ISO 4217 currency code (e.g., EUR, USD, GBP)")
-      .optional(),
   })
   .merge(SaveReceiptToolSchema.partial())
   .refine((data) => Object.keys(data).some((key) => key !== "id"), {

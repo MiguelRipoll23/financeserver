@@ -109,14 +109,7 @@ const ReceiptMutationResponseSchema = z.object({
 export const CreateReceiptResponseSchema = ReceiptMutationResponseSchema;
 export type CreateReceiptResponse = z.infer<typeof CreateReceiptResponseSchema>;
 
-export const UpdateReceiptRequestSchema = CreateReceiptRequestSchema.partial().extend({
-  currencyCode: z
-    .string()
-    .length(3)
-    .describe("ISO 4217 currency code")
-    .openapi({ example: "USD" })
-    .optional(),
-});
+export const UpdateReceiptRequestSchema = CreateReceiptRequestSchema.partial();
 export type UpdateReceiptRequest = z.infer<typeof UpdateReceiptRequestSchema>;
 
 export const UpdateReceiptResponseSchema = ReceiptMutationResponseSchema;

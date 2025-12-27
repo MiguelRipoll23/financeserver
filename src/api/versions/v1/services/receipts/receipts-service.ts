@@ -180,9 +180,7 @@ export class ReceiptsService {
           );
         }
 
-        if (payload.items) {
           normalizedItems = this.normalizeReceiptItems(payload.items);
-        }
 
         const totalInCents = normalizedItems.reduce<number>(
           (sum, item) => sum + item.unitPriceCents * item.quantity,
@@ -214,7 +212,7 @@ export class ReceiptsService {
       }
 
       // Insert new items if items were updated
-      if (normalizedItems) {
+      if (normalizedItems.length > 0) {
         for (const item of normalizedItems) {
           await this.insertReceiptItem(
             tx,
@@ -726,11 +724,9 @@ export class ReceiptsService {
           400
         );
       }
-      if (item.items) {
-        subitems = item.items.map((subitem) =>
-          this.normalizeSingleItem(subitem as ReceiptItemInput, true, name)
-        );
-      }
+      subitems = item.items.map((subitem) =>
+        this.normalizeSingleItem(subitem as ReceiptItemInput, true, name)
+      );
     }
 
     return {
