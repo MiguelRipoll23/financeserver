@@ -106,10 +106,11 @@ export class FilterReceiptsToolService {
 
   private formatHumanReadableDateTime(isoDateString: string): string {
     const date = new Date(isoDateString);
-    return date.toLocaleString(undefined, {
+    return date.toLocaleString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
+      timeZone: 'UTC',
     });
   }
 }
