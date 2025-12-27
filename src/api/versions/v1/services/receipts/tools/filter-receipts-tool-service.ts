@@ -2,6 +2,7 @@ import { inject, injectable } from "@needle-di/core";
 import { ReceiptsService } from "../receipts-service.ts";
 import { McpToolDefinition } from "../../../interfaces/mcp/mcp-tool-interface.ts";
 import { ReceiptSummary } from "../../../interfaces/receipts/receipt-summary-interface.ts";
+import { ReceiptLineItem } from "../../../interfaces/receipts/receipt-line-item-interface.ts";
 import { getCurrencySymbolForCode } from "../../../utils/currency-utils.ts";
 import { FilterReceiptsToolSchema } from "../../../schemas/mcp-receipts-schemas.ts";
 
@@ -64,11 +65,12 @@ export class FilterReceiptsToolService {
         const receiptCurrencySymbol = getCurrencySymbolForCode(
           receipt.currencyCode
         );
-        const header = `🧾 Receipt #${receipt.id} (${receipt.date})${receipt.merchant ? ` (Merchant: ${receipt.merchant.name})` : ''} — Total ${receiptCurrencySymbol}${receipt.totalAmount}`;
+        const humanReadableDate = this.formatHumanReadableDateTime(receipt.date);
+        const header = `🧾 Receipt #${receipt.id} (${humanReadableDate})${receipt.merchant ? ` (Merchant: ${receipt.merchant.name})` : ''} — Total ${receiptCurrencySymbol}${receipt.totalAmount}`;
         const lines = receipt.items
-          .map((item) => {
+          .map((item: ReceiptLineItem) => {
             const formatItemLine = (
-              lineItem: typeof item,
+              lineItem: ReceiptLineItem,
               prefix: string,
               currencyCode: string
             ): string => {
@@ -80,7 +82,7 @@ export class FilterReceiptsToolService {
 
             if (item.items && item.items.length > 0) {
               const subitemsLines = item.items
-                .map((subitem) => formatItemLine(subitem, "   ◦", receipt.currencyCode))
+                .map((subitem: ReceiptLineItem) => formatItemLine(subitem, "   ◦", receipt.currencyCode))
                 .join("\n");
               itemLine += "\n" + subitemsLines;
             }
@@ -100,5 +102,15 @@ export class FilterReceiptsToolService {
     }
 
     return receiptsList;
+  }
+
+  private formatHumanReadableDateTime(isoDateString: string): string {
+    const date = new Date(isoDateString);
+    return date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      timeZone: 'UTC',
+    });
   }
 }
