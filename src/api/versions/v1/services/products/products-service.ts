@@ -419,8 +419,8 @@ export class ProductsService {
       );
     }
 
-    this.assertNotReferencedByReceipts(productId);
-    this.assertNoChildItems(productId);
+    await this.assertNotReferencedByReceipts(productId);
+    await this.assertNoChildItems(productId);
 
     await db.delete(itemsTable).where(eq(itemsTable.id, productId));
   }
