@@ -39,7 +39,7 @@ export class SaveMerchantPromptService {
               content: {
                 type: "text",
                 text: [
-                  "Use the save_merchant tool with the following input:",
+                  "Use the merchants.save tool with the following input:",
                   jsonPayload,
                   "",
                   `After saving the merchant, ${confirmationMessage}`,
