@@ -87,7 +87,12 @@ export const GetMerchantsResponseSchema = z.object({
 
 export type GetMerchantsResponse = z.infer<typeof GetMerchantsResponseSchema>;
 
-export const UpdateMerchantRequestSchema = UpsertMerchantRequestSchema;
+export const UpdateMerchantRequestSchema = UpsertMerchantRequestSchema.partial().refine(
+  (data) => Object.keys(data).length > 0,
+  {
+    message: "At least one field to update must be provided.",
+  }
+);
 export type UpdateMerchantRequest = z.infer<typeof UpdateMerchantRequestSchema>;
 
 export const UpdateMerchantResponseSchema = UpsertMerchantResponseSchema;

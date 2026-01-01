@@ -17,7 +17,7 @@ export class SaveMerchantToolService {
         inputSchema: SaveMerchantToolSchema.shape,
         annotations: {
           readOnlyHint: false,
-          idempotentHint: true,
+          idempotentHint: false,
           destructiveHint: false,
           openWorldHint: false,
         },
