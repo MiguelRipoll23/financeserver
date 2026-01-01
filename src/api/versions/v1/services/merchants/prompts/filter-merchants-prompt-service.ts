@@ -39,7 +39,7 @@ export class FilterMerchantsPromptService {
               content: {
                 type: "text",
                 text: [
-                  "Use the filter_merchants tool with the following input:",
+                  "Use the merchants.filter tool with the following input:",
                   jsonPayload,
                   "",
                   `After filtering the merchants, ${summaryRequest}`,
