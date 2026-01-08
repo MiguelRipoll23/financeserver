@@ -2,15 +2,15 @@
   "imports": {
     "@hono/zod-openapi": "npm:@hono/zod-openapi@^1.2.0",
     "@needle-di/core": "jsr:@needle-di/core@^1.1.0",
-    "@scalar/hono-api-reference": "npm:@scalar/hono-api-reference@^0.9.30",
+    "@scalar/hono-api-reference": "npm:@scalar/hono-api-reference@^0.9.32",
     "@hono/mcp": "npm:@hono/mcp@0.2.3",
-    "@modelcontextprotocol/sdk/server/mcp.js": "npm:@modelcontextprotocol/sdk@^1.25.1/server/mcp.js",
+    "@modelcontextprotocol/sdk/server/mcp.js": "npm:@modelcontextprotocol/sdk@^1.25.2/server/mcp.js",
     "@wok/djwt": "jsr:@wok/djwt@^3.0.2",
     "drizzle-kit": "npm:drizzle-kit@^0.31.8",
     "drizzle-orm": "npm:drizzle-orm@^0.45.1",
     "pg": "npm:pg@^8.16.3",
     "hono": "npm:hono@^4.11.3",
-    "zod": "npm:zod@^4.3.0"
+    "zod": "npm:zod@^4.3.5"
   },
   "permissions": {
     "default": {
