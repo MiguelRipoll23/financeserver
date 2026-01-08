@@ -3,6 +3,8 @@
 A Deno-based finance server with MCP integration that helps you manage bills,
 subscriptions and receipts through natural language interactions.
 
+[![Deploy on Deno](https://deno.com/button)](https://console.deno.com/new?clone=https://github.com/MiguelRipoll23/financeserver)
+
 ## Usage
 
 Ask or tell the AI whatever you want to manage your finances:
