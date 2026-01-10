@@ -1,5 +1,4 @@
 import { create, Payload, verify } from "@wok/djwt";
-import { CryptoUtils } from "../utils/crypto-utils.ts";
 import { injectable } from "@needle-di/core";
 import { ServerError } from "../../api/versions/v1/models/server-error.ts";
 import { ENV_JWT_SECRET } from "../../api/versions/v1/constants/environment-constants.ts";
@@ -27,20 +26,22 @@ export class JWTService {
   private async generateTemporaryKey(): Promise<CryptoKey> {
     return await crypto.subtle.generateKey(
       { name: "HMAC", hash: "SHA-512" },
-      true,
+      false,
       ["sign", "verify"]
     );
   }
 
   private async createKeyFromSecret(secret: string): Promise<CryptoKey> {
-    const encodedSecret = btoa(secret);
+    const secretBytes = new TextEncoder().encode(secret);
 
-    return await CryptoUtils.base64ToCryptoKey(
-      encodedSecret,
+    return await crypto.subtle.importKey(
+      "raw",
+      secretBytes,
       {
         name: "HMAC",
         hash: "SHA-512",
       },
+      false,
       ["sign", "verify"]
     );
   }
