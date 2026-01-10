@@ -1,5 +1,4 @@
 import { create, Payload, verify } from "@wok/djwt";
-import { CryptoUtils } from "../utils/crypto-utils.ts";
 import { injectable } from "@needle-di/core";
 import { ServerError } from "../../api/versions/v1/models/server-error.ts";
 import { ENV_JWT_SECRET } from "../../api/versions/v1/constants/environment-constants.ts";
@@ -16,26 +15,35 @@ export class JWTService {
 
     const secret: string | undefined = Deno.env.get(ENV_JWT_SECRET);
 
-    if (secret === undefined) {
-      throw new ServerError(
-        "INVALID_SERVER_CONFIGURATION",
-        "Missing JWT secret environment variable",
-        500
-      );
-    }
+    this.key =
+      secret === undefined
+        ? await this.generateTemporaryKey()
+        : await this.createKeyFromSecret(secret);
 
-    const encodedSecret = btoa(secret);
+    return this.key;
+  }
 
-    this.key = await CryptoUtils.base64ToCryptoKey(
-      encodedSecret,
+  private async generateTemporaryKey(): Promise<CryptoKey> {
+    return await crypto.subtle.generateKey(
+      { name: "HMAC", hash: "SHA-512" },
+      false,
+      ["sign", "verify"]
+    );
+  }
+
+  private async createKeyFromSecret(secret: string): Promise<CryptoKey> {
+    const secretBytes = new TextEncoder().encode(secret);
+
+    return await crypto.subtle.importKey(
+      "raw",
+      secretBytes,
       {
         name: "HMAC",
         hash: "SHA-512",
       },
+      false,
       ["sign", "verify"]
     );
-
-    return this.key;
   }
 
   public async verify(jwt: string): Promise<Payload> {

@@ -3,7 +3,7 @@
 A Deno-based finance server with MCP integration that helps you manage bills,
 subscriptions and receipts through natural language interactions.
 
-[![Deploy on Deno](https://deno.com/button)](https://console.deno.com/new?clone=https://github.com/MiguelRipoll23/financeserver)
+[![Deploy on Deno](https://deno.com/button)](https://console.deno.com/new?clone=https://github.com/MiguelRipoll23/financeserver&predeploy=deno%20task%20push)
 
 ## Usage
 
@@ -35,13 +35,6 @@ commands:
 git clone https://github.com/MiguelRipoll23/financeserver.git
 cd financeserver
 cp .env.example .env
-```
-
-Update your `JWT_SECRET` in your `.env` file with a solid passphrase wrapped in
-quotes:
-
-```env
-JWT_SECRET="this is my biggest secret"
 ```
 
 ### Database setup
