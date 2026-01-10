@@ -16,17 +16,26 @@ export class JWTService {
 
     const secret: string | undefined = Deno.env.get(ENV_JWT_SECRET);
 
-    if (secret === undefined) {
-      throw new ServerError(
-        "INVALID_SERVER_CONFIGURATION",
-        "Missing JWT secret environment variable",
-        500
-      );
-    }
+    this.key =
+      secret === undefined
+        ? await this.generateTemporaryKey()
+        : await this.createKeyFromSecret(secret);
 
+    return this.key;
+  }
+
+  private async generateTemporaryKey(): Promise<CryptoKey> {
+    return await crypto.subtle.generateKey(
+      { name: "HMAC", hash: "SHA-512" },
+      true,
+      ["sign", "verify"]
+    );
+  }
+
+  private async createKeyFromSecret(secret: string): Promise<CryptoKey> {
     const encodedSecret = btoa(secret);
 
-    this.key = await CryptoUtils.base64ToCryptoKey(
+    return await CryptoUtils.base64ToCryptoKey(
       encodedSecret,
       {
         name: "HMAC",
@@ -34,8 +43,6 @@ export class JWTService {
       },
       ["sign", "verify"]
     );
-
-    return this.key;
   }
 
   public async verify(jwt: string): Promise<Payload> {
