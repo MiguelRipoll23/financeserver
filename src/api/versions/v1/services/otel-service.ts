@@ -3,15 +3,15 @@ import { metrics, Meter } from "@opentelemetry/api";
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-http";
 import { Resource } from "@opentelemetry/resources";
 import {
+  MeterProvider,
   MetricReader,
   PeriodicExportingMetricReader,
 } from "@opentelemetry/sdk-metrics";
-import { NodeSDK } from "@opentelemetry/sdk-node";
 import { ATTR_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 
 @injectable()
 export class OTelService {
-  private sdk: NodeSDK | null = null;
+  private meterProvider: MeterProvider | null = null;
 
   public init(): void {
     const endpoint = Deno.env.get("OTEL_EXPORTER_OTLP_ENDPOINT");
@@ -61,13 +61,13 @@ export class OTelService {
   }
 
   private initializeSdk(metricReader: MetricReader, resource: Resource): void {
-    this.sdk = new NodeSDK({
+    this.meterProvider = new MeterProvider({
       resource: resource,
-      metricReader: metricReader,
+      readers: [metricReader],
     });
 
     try {
-      this.sdk.start();
+      metrics.setGlobalMeterProvider(this.meterProvider);
       console.log("OTel SDK initialized");
     } catch (error) {
       console.error("Error initializing OTel SDK", error);
