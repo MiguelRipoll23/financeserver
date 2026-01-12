@@ -27,7 +27,7 @@
 
 ## Naming conventions
 
-- Use snake_case for file names (receipts-service.ts)
+- Use kebab-case for file names (receipts-service.ts)
 - Use PascalCase for services names (ReceiptsService)
 - Use camelCase for JSON input for API (totalAmount)
 - Use snake_case for database table and columns names
