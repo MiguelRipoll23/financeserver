@@ -134,6 +134,7 @@ export class BillsService {
     const totalAmountString = this.formatAmount(totalAmountCents / 100);
 
     const db = this.databaseService.get();
+    let isNewBill = false;
 
     const billResponse = await db.transaction(async (tx) => {
       const emailId = await this.resolveOptionalEmailId(
@@ -165,6 +166,8 @@ export class BillsService {
           })
           .where(eq(billsTable.id, billId));
       } else {
+        isNewBill = true;
+
         const values = {
           billDate,
           categoryId,
@@ -184,11 +187,13 @@ export class BillsService {
       return await this.loadBillResponse(tx, billId);
     });
 
-    this.recordBillTelemetry(
-      categoryInput.name,
-      totalAmountCents / 100,
-      payload.currencyCode
-    );
+    if (isNewBill) {
+      this.recordBillTelemetry(
+        categoryInput.name,
+        totalAmountCents / 100,
+        payload.currencyCode
+      );
+    }
 
     return billResponse;
   }

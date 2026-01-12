@@ -8,22 +8,26 @@ import {
   PeriodicExportingMetricReader,
 } from "@opentelemetry/sdk-metrics";
 import { ATTR_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
+import {
+  ENV_APP_OTEL_EXPORTER_OTLP_ENDPOINT,
+  ENV_APP_OTEL_EXPORTER_OTLP_HEADERS,
+  ENV_DEPLOYMENT_ENVIRONMENT,
+} from "../constants/environment-constants.ts";
 
 @injectable()
 export class OTelService {
   private meterProvider: MeterProvider | null = null;
 
   public init(): void {
-    const endpoint = Deno.env.get("OTEL_EXPORTER_OTLP_ENDPOINT");
+    const endpoint = Deno.env.get(ENV_APP_OTEL_EXPORTER_OTLP_ENDPOINT);
+    const headers = Deno.env.get(ENV_APP_OTEL_EXPORTER_OTLP_HEADERS);
 
-    if (!endpoint) {
-      console.warn(
-        "OTEL_EXPORTER_OTLP_ENDPOINT not set, OTel SDK not initialized"
-      );
+    if (!endpoint || !headers) {
+      console.warn("OTel SDK not initialized (missing configuration)");
       return;
     }
 
-    const metricReader = this.createMetricReader(endpoint);
+    const metricReader = this.createMetricReader(endpoint, headers);
     const resource = this.createResource();
 
     this.initializeSdk(metricReader, resource);
@@ -33,8 +37,8 @@ export class OTelService {
     return metrics.getMeter(name, version);
   }
 
-  private createMetricReader(endpoint: string): MetricReader {
-    const metricExporter = this.createMetricExporter(endpoint);
+  private createMetricReader(endpoint: string, headers: string): MetricReader {
+    const metricExporter = this.createMetricExporter(endpoint, headers);
 
     return new PeriodicExportingMetricReader({
       exporter: metricExporter,
@@ -42,13 +46,15 @@ export class OTelService {
     });
   }
 
-  private createMetricExporter(endpoint: string): OTLPMetricExporter {
-    const headers = Deno.env.get("OTEL_EXPORTER_OTLP_HEADERS");
+  private createMetricExporter(
+    endpoint: string,
+    headers: string
+  ): OTLPMetricExporter {
     const normalizedEndpoint = endpoint.replace(/\/+$/, "");
 
     return new OTLPMetricExporter({
       url: `${normalizedEndpoint}/v1/metrics`,
-      headers: headers ? this.parseHeaders(headers) : {},
+      headers: this.parseHeaders(headers),
     });
   }
 
@@ -56,7 +62,7 @@ export class OTelService {
     return new Resource({
       [ATTR_SERVICE_NAME]: "financeserver",
       "deployment.environment":
-        Deno.env.get("DEPLOYMENT_ENVIRONMENT") || "development",
+        Deno.env.get(ENV_DEPLOYMENT_ENVIRONMENT) || "development",
     });
   }
 
@@ -75,18 +81,34 @@ export class OTelService {
   }
 
   private parseHeaders(headersString: string): Record<string, string> {
+    const headers = this.parseDelimitedHeaders(headersString);
+
     if (headersString.startsWith("Authorization=")) {
-      return this.parseAuthorizationHeader(headersString);
+      const authHeaders = this.parseAuthorizationHeader(headersString);
+      return { ...headers, ...authHeaders };
     }
 
-    return this.parseDelimitedHeaders(headersString);
+    return headers;
   }
 
   private parseAuthorizationHeader(
     headersString: string
   ): Record<string, string> {
-    const value = headersString.substring("Authorization=".length);
-    return { Authorization: value };
+    const authPrefix = "Authorization=";
+    const startIndex = headersString.indexOf(authPrefix);
+
+    if (startIndex === -1) {
+      return {};
+    }
+
+    const valueStart = startIndex + authPrefix.length;
+    const commaIndex = headersString.indexOf(",", valueStart);
+    const value =
+      commaIndex === -1
+        ? headersString.substring(valueStart)
+        : headersString.substring(valueStart, commaIndex);
+
+    return { Authorization: value.trim() };
   }
 
   private parseDelimitedHeaders(headersString: string): Record<string, string> {
