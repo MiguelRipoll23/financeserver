@@ -13,7 +13,9 @@ import { ActiveSubscription } from "../../interfaces/subscriptions/active-subscr
 @injectable()
 export class SubscriptionsOTelService {
   private meter: Meter;
+  private totalSubscriptionsGauge!: ObservableGauge;
   private activeSubscriptionsGauge!: ObservableGauge;
+  private inactiveSubscriptionsGauge!: ObservableGauge;
 
   constructor(
     private otelService = inject(OTelService),
@@ -24,8 +26,19 @@ export class SubscriptionsOTelService {
   }
 
   private initializeMetrics(): void {
+    this.totalSubscriptionsGauge = this.meter.createObservableGauge(
+      "total_subscriptions",
+      {
+        description: "Total number of subscriptions in the system",
+      }
+    );
+
+    this.totalSubscriptionsGauge.addCallback(async (observableResult) => {
+      await this.reportTotalSubscriptions(observableResult);
+    });
+
     this.activeSubscriptionsGauge = this.meter.createObservableGauge(
-      "active_subscriptions",
+      "total_active_subscriptions",
       {
         description: "Number of active subscriptions",
       }
@@ -34,6 +47,32 @@ export class SubscriptionsOTelService {
     this.activeSubscriptionsGauge.addCallback(async (observableResult) => {
       await this.reportActiveSubscriptions(observableResult);
     });
+
+    this.inactiveSubscriptionsGauge = this.meter.createObservableGauge(
+      "total_inactive_subscriptions",
+      {
+        description: "Number of inactive subscriptions",
+      }
+    );
+
+    this.inactiveSubscriptionsGauge.addCallback(async (observableResult) => {
+      await this.reportInactiveSubscriptions(observableResult);
+    });
+  }
+
+  private async reportTotalSubscriptions(
+    observableResult: ObservableResult
+  ): Promise<void> {
+    try {
+      const db = this.databaseService.get();
+      const [{ count }] = await db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(subscriptionsTable);
+
+      observableResult.observe(Number(count ?? 0));
+    } catch (error) {
+      console.error("Error reporting total subscriptions to OTel", error);
+    }
   }
 
   private async reportActiveSubscriptions(
@@ -122,6 +161,51 @@ export class SubscriptionsOTelService {
         "subscription.plan": metric.plan,
         "subscription.currency_code": metric.currency,
       });
+    }
+  }
+
+  private async reportInactiveSubscriptions(
+    observableResult: ObservableResult
+  ): Promise<void> {
+    try {
+      const db = this.databaseService.get();
+      const inactiveSubscriptions = await db
+        .select({
+          name: subscriptionsTable.name,
+          plan: subscriptionPricesTable.plan,
+          currency: subscriptionPricesTable.currencyCode,
+        })
+        .from(subscriptionsTable)
+        .innerJoin(
+          subscriptionPricesTable,
+          eq(subscriptionsTable.id, subscriptionPricesTable.subscriptionId)
+        )
+        .where(
+          sql`${subscriptionPricesTable.effectiveUntil} IS NOT NULL AND ${subscriptionPricesTable.effectiveUntil} < CURRENT_DATE`
+        );
+
+      const counts = new Map<string, SubscriptionMetric>();
+
+      for (const subscription of inactiveSubscriptions) {
+        const normalizedPlan = this.normalizePlan(subscription.plan);
+        const key = `${subscription.name}|${normalizedPlan}|${subscription.currency}`;
+        const existing = counts.get(key);
+
+        if (existing) {
+          existing.count++;
+        } else {
+          counts.set(key, {
+            count: 1,
+            name: subscription.name,
+            plan: normalizedPlan,
+            currency: subscription.currency,
+          });
+        }
+      }
+
+      this.reportMetrics(observableResult, counts);
+    } catch (error) {
+      console.error("Error reporting inactive subscriptions to OTel", error);
     }
   }
 }
