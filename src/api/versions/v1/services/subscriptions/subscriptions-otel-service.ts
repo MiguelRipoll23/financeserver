@@ -109,7 +109,7 @@ export class SubscriptionsOTelService {
           or(
             isNull(subscriptionPricesTable.effectiveUntil),
             sql`${subscriptionPricesTable.effectiveUntil} >= CURRENT_DATE`
-          )!
+          ) ?? sql`FALSE`
         )
       );
   }

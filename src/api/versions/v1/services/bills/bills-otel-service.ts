@@ -10,11 +10,6 @@ import { DatabaseService } from "../../../../../core/services/database-service.t
 import { billsTable, billCategoriesTable } from "../../../../../db/schema.ts";
 import { eq, sql } from "drizzle-orm";
 
-interface BillCategoryMetric {
-  count: number;
-  category: string;
-}
-
 @injectable()
 export class BillsOTelService {
   private meter: Meter;
