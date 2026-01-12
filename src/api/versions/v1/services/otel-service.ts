@@ -74,21 +74,58 @@ export class OTelService {
     }
   }
 
-  private parseHeaders(headersRaw: string): Record<string, string> {
-    const headers: Record<string, string> = {};
-    if (!headersRaw) {
-      return headers;
+  private parseHeaders(headersString: string): Record<string, string> {
+    if (headersString.startsWith("Authorization=")) {
+      return this.parseAuthorizationHeader(headersString);
     }
 
-    headersRaw.split(",").forEach((part) => {
-      const separatorIndex = part.indexOf("=");
-      if (separatorIndex > 0) {
-        const key = part.substring(0, separatorIndex).trim();
-        const value = part.substring(separatorIndex + 1).trim();
-        headers[key] = value;
-      }
-    });
+    return this.parseDelimitedHeaders(headersString);
+  }
+
+  private parseAuthorizationHeader(
+    headersString: string
+  ): Record<string, string> {
+    const value = headersString.substring("Authorization=".length);
+    return { Authorization: value };
+  }
+
+  private parseDelimitedHeaders(headersString: string): Record<string, string> {
+    const headers: Record<string, string> = {};
+    const parts = headersString.split(",");
+
+    for (const part of parts) {
+      this.parseHeaderPart(part, headers);
+    }
 
     return headers;
+  }
+
+  private parseHeaderPart(part: string, headers: Record<string, string>): void {
+    const trimmedPart = part.trim();
+    const equalsIndex = trimmedPart.indexOf("=");
+    const key =
+      equalsIndex >= 0 ? trimmedPart.slice(0, equalsIndex).trim() : "";
+    const value =
+      equalsIndex >= 0 ? trimmedPart.slice(equalsIndex + 1).trim() : "";
+
+    if (key && value) {
+      headers[key] = value;
+    } else if (key?.includes(":")) {
+      this.parseColonDelimitedHeader(key, headers);
+    }
+  }
+
+  private parseColonDelimitedHeader(
+    part: string,
+    headers: Record<string, string>
+  ): void {
+    const colonIndex = part.indexOf(":");
+    if (colonIndex > 0) {
+      const key = part.slice(0, colonIndex).trim();
+      const value = part.slice(colonIndex + 1).trim();
+      if (key && value) {
+        headers[key] = value;
+      }
+    }
   }
 }
