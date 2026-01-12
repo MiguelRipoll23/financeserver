@@ -23,7 +23,6 @@ export class BillsOTelService {
     this.billAmountCounter.add(amount, {
       "bill.category": category,
       "bill.currency_code": currencyCode,
-      "bill.amount": amount,
     });
   }
 }

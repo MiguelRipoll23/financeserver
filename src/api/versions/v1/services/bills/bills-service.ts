@@ -99,9 +99,20 @@ export class BillsService {
         .values(values)
         .returning({ id: billsTable.id });
 
-      this.otelService.recordBill(categoryInput.name, totalAmountCents / 100, payload.currencyCode);
+      const billResponse = await this.loadBillResponse(tx, billId);
 
-      return await this.loadBillResponse(tx, billId);
+      // Record telemetry outside transaction to avoid rollback on failure
+      try {
+        this.otelService.recordBill(
+          categoryInput.name,
+          totalAmountCents / 100,
+          payload.currencyCode
+        );
+      } catch (error) {
+        console.warn("Failed to record bill telemetry:", error);
+      }
+
+      return billResponse;
     });
   }
 
@@ -173,10 +184,22 @@ export class BillsService {
           .returning({ id: billsTable.id });
 
         billId = id;
-        this.otelService.recordBill(categoryInput.name, totalAmountCents / 100, payload.currencyCode);
       }
 
-      return await this.loadBillResponse(tx, billId);
+      const billResponse = await this.loadBillResponse(tx, billId);
+
+      // Record telemetry outside transaction to avoid rollback on failure
+      try {
+        this.otelService.recordBill(
+          categoryInput.name,
+          totalAmountCents / 100,
+          payload.currencyCode
+        );
+      } catch (error) {
+        console.warn("Failed to record bill telemetry:", error);
+      }
+
+      return billResponse;
     });
   }
 
@@ -494,8 +517,8 @@ export class BillsService {
       field === BillSortField.TotalAmount
         ? billsTable.totalAmount
         : field === BillSortField.Category
-        ? billCategoriesTable.name
-        : billsTable.billDate;
+          ? billCategoriesTable.name
+          : billsTable.billDate;
 
     return order === SortOrder.Desc ? desc(column) : asc(column);
   }

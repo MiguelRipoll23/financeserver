@@ -73,53 +73,21 @@ export class OTelService {
     }
   }
 
-  private parseHeaders(headersStr: string): Record<string, string> {
-    if (headersStr.startsWith("Authorization=")) {
-      return this.parseAuthorizationHeader(headersStr);
-    }
-
-    return this.parseDelimitedHeaders(headersStr);
-  }
-
-  private parseAuthorizationHeader(headersStr: string): Record<string, string> {
-    const value = headersStr.substring("Authorization=".length);
-    return { Authorization: value };
-  }
-
-  private parseDelimitedHeaders(headersStr: string): Record<string, string> {
+  private parseHeaders(headersRaw: string): Record<string, string> {
     const headers: Record<string, string> = {};
-    const parts = headersStr.split(",");
-
-    for (const part of parts) {
-      this.parseHeaderPart(part, headers);
+    if (!headersRaw) {
+      return headers;
     }
+
+    headersRaw.split(",").forEach((part) => {
+      const separatorIndex = part.indexOf("=");
+      if (separatorIndex > 0) {
+        const key = part.substring(0, separatorIndex).trim();
+        const value = part.substring(separatorIndex + 1).trim();
+        headers[key] = value;
+      }
+    });
 
     return headers;
-  }
-
-  private parseHeaderPart(part: string, headers: Record<string, string>): void {
-    const [key, value] = part.split("=");
-
-    if (key && value) {
-      headers[key.trim()] = value.trim();
-    } else if (key?.includes(":")) {
-      this.parseColonDelimitedHeader(key, headers);
-    }
-  }
-
-  private parseColonDelimitedHeader(
-    keyStr: string,
-    headers: Record<string, string>
-  ): void {
-    const authPart = keyStr.split("=");
-
-    if (authPart.length === 2) {
-      headers[authPart[0].trim()] = authPart[1].trim();
-    } else {
-      const [key, value] = keyStr.split(":");
-      if (key && value) {
-        headers[key.trim()] = value.trim();
-      }
-    }
   }
 }
