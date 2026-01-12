@@ -11,11 +11,12 @@ import { ATTR_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import {
   ENV_APP_OTEL_EXPORTER_OTLP_ENDPOINT,
   ENV_APP_OTEL_EXPORTER_OTLP_HEADERS,
-  ENV_DEPLOYMENT_ENVIRONMENT,
+  ENV_DENO_DEPLOYMENT_ID,
 } from "../constants/environment-constants.ts";
 
 @injectable()
 export class OTelService {
+  private static readonly SERVICE_NAME = "financeserver";
   private meterProvider: MeterProvider | null = null;
 
   public init(): void {
@@ -59,11 +60,17 @@ export class OTelService {
   }
 
   private createResource(): Resource {
-    return new Resource({
-      [ATTR_SERVICE_NAME]: "financeserver",
-      "deployment.environment":
-        Deno.env.get(ENV_DEPLOYMENT_ENVIRONMENT) || "development",
-    });
+    const attributes: Record<string, string> = {
+      [ATTR_SERVICE_NAME]: OTelService.SERVICE_NAME,
+    };
+
+    const deploymentId = Deno.env.get(ENV_DENO_DEPLOYMENT_ID);
+
+    if (deploymentId) {
+      attributes["deployment.id"] = deploymentId;
+    }
+
+    return new Resource(attributes);
   }
 
   private initializeSdk(metricReader: MetricReader, resource: Resource): void {
