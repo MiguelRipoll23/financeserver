@@ -20,6 +20,7 @@ import { SortOrder } from "../../enums/sort-order-enum.ts";
 import { BillSortField } from "../../enums/bill-sort-field-enum.ts";
 import { BillsFilter } from "../../interfaces/bills/bills-filter-interface.ts";
 import { BillSummary } from "../../interfaces/bills/bill-summary-interface.ts";
+import { BillsOTelService } from "./bills-otel-service.ts";
 import type {
   GetBillsResponse,
   UpsertBillRequest,
@@ -33,7 +34,10 @@ type NormalizedCategoryInput = {
 
 @injectable()
 export class BillsService {
-  constructor(private databaseService = inject(DatabaseService)) {}
+  constructor(
+    private databaseService = inject(DatabaseService),
+    private otelService = inject(BillsOTelService)
+  ) {}
 
   public async createBill(
     payload: Omit<UpsertBillRequest, "senderEmail"> & { senderEmail?: string }
@@ -59,7 +63,7 @@ export class BillsService {
 
     const db = this.databaseService.get();
 
-    return await db.transaction(async (tx) => {
+    const billResponse = await db.transaction(async (tx) => {
       // Check if a bill already exists for this date
       const existingBill = await tx
         .select({ id: billsTable.id })
@@ -97,6 +101,14 @@ export class BillsService {
 
       return await this.loadBillResponse(tx, billId);
     });
+
+    this.recordBillTelemetry(
+      categoryInput.name,
+      totalAmountCents / 100,
+      payload.currencyCode
+    );
+
+    return billResponse;
   }
 
   public async upsertBill(
@@ -122,8 +134,9 @@ export class BillsService {
     const totalAmountString = this.formatAmount(totalAmountCents / 100);
 
     const db = this.databaseService.get();
+    let isNewBill = false;
 
-    return await db.transaction(async (tx) => {
+    const billResponse = await db.transaction(async (tx) => {
       const emailId = await this.resolveOptionalEmailId(
         tx,
         payload.senderEmail
@@ -153,6 +166,8 @@ export class BillsService {
           })
           .where(eq(billsTable.id, billId));
       } else {
+        isNewBill = true;
+
         const values = {
           billDate,
           categoryId,
@@ -171,6 +186,16 @@ export class BillsService {
 
       return await this.loadBillResponse(tx, billId);
     });
+
+    if (isNewBill) {
+      this.recordBillTelemetry(
+        categoryInput.name,
+        totalAmountCents / 100,
+        payload.currencyCode
+      );
+    }
+
+    return billResponse;
   }
 
   public async getBills(filters: BillsFilter): Promise<GetBillsResponse> {
@@ -487,8 +512,8 @@ export class BillsService {
       field === BillSortField.TotalAmount
         ? billsTable.totalAmount
         : field === BillSortField.Category
-        ? billCategoriesTable.name
-        : billsTable.billDate;
+          ? billCategoriesTable.name
+          : billsTable.billDate;
 
     return order === SortOrder.Desc ? desc(column) : asc(column);
   }
@@ -654,5 +679,18 @@ export class BillsService {
       `Failed to persist sender email "${normalizedEmail}"`,
       500
     );
+  }
+
+  private recordBillTelemetry(
+    categoryName: string,
+    totalAmount: number,
+    currencyCode: string
+  ): void {
+    // Record telemetry outside transaction to avoid rollback on failure
+    try {
+      this.otelService.recordBill(categoryName, totalAmount, currencyCode);
+    } catch (error) {
+      console.warn("Failed to record bill telemetry:", error);
+    }
   }
 }
