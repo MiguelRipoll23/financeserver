@@ -20,6 +20,7 @@ import { SortOrder } from "../../enums/sort-order-enum.ts";
 import { BillSortField } from "../../enums/bill-sort-field-enum.ts";
 import { BillsFilter } from "../../interfaces/bills/bills-filter-interface.ts";
 import { BillSummary } from "../../interfaces/bills/bill-summary-interface.ts";
+import { BillsOTelService } from "./bills-otel-service.ts";
 import type {
   GetBillsResponse,
   UpsertBillRequest,
@@ -33,7 +34,10 @@ type NormalizedCategoryInput = {
 
 @injectable()
 export class BillsService {
-  constructor(private databaseService = inject(DatabaseService)) {}
+  constructor(
+    private databaseService = inject(DatabaseService),
+    private otelService = inject(BillsOTelService)
+  ) {}
 
   public async createBill(
     payload: Omit<UpsertBillRequest, "senderEmail"> & { senderEmail?: string }
@@ -94,6 +98,8 @@ export class BillsService {
         .insert(billsTable)
         .values(values)
         .returning({ id: billsTable.id });
+
+      this.otelService.recordBill(categoryInput.name, totalAmountCents / 100, payload.currencyCode);
 
       return await this.loadBillResponse(tx, billId);
     });
@@ -167,6 +173,7 @@ export class BillsService {
           .returning({ id: billsTable.id });
 
         billId = id;
+        this.otelService.recordBill(categoryInput.name, totalAmountCents / 100, payload.currencyCode);
       }
 
       return await this.loadBillResponse(tx, billId);
