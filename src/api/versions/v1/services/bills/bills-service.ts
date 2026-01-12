@@ -102,16 +102,11 @@ export class BillsService {
       return await this.loadBillResponse(tx, billId);
     });
 
-    // Record telemetry outside transaction to avoid rollback on failure
-    try {
-      this.otelService.recordBill(
-        categoryInput.name,
-        totalAmountCents / 100,
-        payload.currencyCode
-      );
-    } catch (error) {
-      console.warn("Failed to record bill telemetry:", error);
-    }
+    this.recordBillTelemetry(
+      categoryInput.name,
+      totalAmountCents / 100,
+      payload.currencyCode
+    );
 
     return billResponse;
   }
@@ -140,7 +135,7 @@ export class BillsService {
 
     const db = this.databaseService.get();
 
-    return await db.transaction(async (tx) => {
+    const billResponse = await db.transaction(async (tx) => {
       const emailId = await this.resolveOptionalEmailId(
         tx,
         payload.senderEmail
@@ -186,21 +181,16 @@ export class BillsService {
         billId = id;
       }
 
-      const billResponse = await this.loadBillResponse(tx, billId);
-
-      // Record telemetry outside transaction to avoid rollback on failure
-      try {
-        this.otelService.recordBill(
-          categoryInput.name,
-          totalAmountCents / 100,
-          payload.currencyCode
-        );
-      } catch (error) {
-        console.warn("Failed to record bill telemetry:", error);
-      }
-
-      return billResponse;
+      return await this.loadBillResponse(tx, billId);
     });
+
+    this.recordBillTelemetry(
+      categoryInput.name,
+      totalAmountCents / 100,
+      payload.currencyCode
+    );
+
+    return billResponse;
   }
 
   public async getBills(filters: BillsFilter): Promise<GetBillsResponse> {
@@ -684,5 +674,18 @@ export class BillsService {
       `Failed to persist sender email "${normalizedEmail}"`,
       500
     );
+  }
+
+  private recordBillTelemetry(
+    categoryName: string,
+    totalAmount: number,
+    currencyCode: string
+  ): void {
+    // Record telemetry outside transaction to avoid rollback on failure
+    try {
+      this.otelService.recordBill(categoryName, totalAmount, currencyCode);
+    } catch (error) {
+      console.warn("Failed to record bill telemetry:", error);
+    }
   }
 }
