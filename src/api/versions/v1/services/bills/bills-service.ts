@@ -63,7 +63,7 @@ export class BillsService {
 
     const db = this.databaseService.get();
 
-    return await db.transaction(async (tx) => {
+    const billResponse = await db.transaction(async (tx) => {
       // Check if a bill already exists for this date
       const existingBill = await tx
         .select({ id: billsTable.id })
@@ -99,21 +99,21 @@ export class BillsService {
         .values(values)
         .returning({ id: billsTable.id });
 
-      const billResponse = await this.loadBillResponse(tx, billId);
-
-      // Record telemetry outside transaction to avoid rollback on failure
-      try {
-        this.otelService.recordBill(
-          categoryInput.name,
-          totalAmountCents / 100,
-          payload.currencyCode
-        );
-      } catch (error) {
-        console.warn("Failed to record bill telemetry:", error);
-      }
-
-      return billResponse;
+      return await this.loadBillResponse(tx, billId);
     });
+
+    // Record telemetry outside transaction to avoid rollback on failure
+    try {
+      this.otelService.recordBill(
+        categoryInput.name,
+        totalAmountCents / 100,
+        payload.currencyCode
+      );
+    } catch (error) {
+      console.warn("Failed to record bill telemetry:", error);
+    }
+
+    return billResponse;
   }
 
   public async upsertBill(
