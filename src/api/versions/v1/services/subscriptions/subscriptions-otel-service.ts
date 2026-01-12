@@ -90,8 +90,7 @@ export class SubscriptionsOTelService {
         counts.set(key, {
           count: 1,
           name: subscription.name,
-          plan: subscription.plan,
-          amount: subscription.amount,
+          plan: this.normalizePlan(subscription.plan),
           currency: subscription.currency,
         });
       }
@@ -101,7 +100,16 @@ export class SubscriptionsOTelService {
   }
 
   private buildAggregationKey(subscription: ActiveSubscription): string {
-    return `${subscription.name}|${subscription.plan || ""}|${subscription.amount}|${subscription.currency}`;
+    const normalizedPlan = this.normalizePlan(subscription.plan);
+    return `${subscription.name}|${normalizedPlan}|${subscription.currency}`;
+  }
+
+  private normalizePlan(plan: string | null): string {
+    if (!plan || plan.trim() === "") {
+      return "default";
+    }
+    // Normalize to lowercase for consistency
+    return plan.toLowerCase().trim();
   }
 
   private reportMetrics(
@@ -111,8 +119,7 @@ export class SubscriptionsOTelService {
     for (const metric of metrics.values()) {
       observableResult.observe(metric.count, {
         "subscription.name": metric.name,
-        "subscription.plan": metric.plan || "default",
-        "subscription.amount": Number(metric.amount),
+        "subscription.plan": metric.plan,
         "subscription.currency_code": metric.currency,
       });
     }

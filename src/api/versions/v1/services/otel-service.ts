@@ -44,9 +44,10 @@ export class OTelService {
 
   private createMetricExporter(endpoint: string): OTLPMetricExporter {
     const headers = Deno.env.get("OTEL_EXPORTER_OTLP_HEADERS");
+    const normalizedEndpoint = endpoint.replace(/\/+$/, "");
 
     return new OTLPMetricExporter({
-      url: `${endpoint}/v1/metrics`,
+      url: `${normalizedEndpoint}/v1/metrics`,
       headers: headers ? this.parseHeaders(headers) : {},
     });
   }
