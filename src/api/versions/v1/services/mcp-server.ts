@@ -37,16 +37,17 @@ export class MCPService {
     ]);
   }
 
-  public createReceiptsServer(): McpServer {
-    return this.createServer("receipts-mcp", [this.receiptsMCPService]);
+  public createBankingServer(): McpServer {
+    return this.createServer("banking-mcp", [
+      this.bankAccountsMCPService,
+      this.bankAccountBalancesMCPService,
+    ]);
   }
 
-  public createBillsServer(): McpServer {
-    return this.createServer("bills-mcp", [this.billsMCPService]);
-  }
-
-  public createSubscriptionsServer(): McpServer {
-    return this.createServer("subscriptions-mcp", [
+  public createExpensesServer(): McpServer {
+    return this.createServer("expenses-mcp", [
+      this.billsMCPService,
+      this.receiptsMCPService,
       this.subscriptionsMCPService,
     ]);
   }
