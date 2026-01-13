@@ -77,11 +77,9 @@
 ├─ services/                 # Business logic
 │  ├─ authentication/        # Login + token flow logic
 │  ├─ bills/
-│  │  ├─ prompts/            # AI prompts for bill processing
 │  │  └─ tools/              # MCP tools for bill operations
 │  ├─ products/              # Product catalog + management
 │  ├─ receipts/
-│  │  ├─ prompts/            # AI prompts for receipt analysis
 │  │  └─ tools/              # MCP tools for receipt operations
 │  └─ users/                 # User management + profiles
 ├─ types/                    # Shared TypeScript type definitions

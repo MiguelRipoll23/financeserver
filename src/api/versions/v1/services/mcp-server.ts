@@ -8,7 +8,6 @@ import { MerchantsMCPService } from "./merchants/merchants-mcp-service.ts";
 import { BankAccountsMCPService } from "./bank-accounts/bank-accounts-mcp-service.ts";
 import { BankAccountBalancesMCPService } from "./bank-account-balances/bank-account-balances-mcp-service.ts";
 import { McpToolDefinition } from "../interfaces/mcp/mcp-tool-interface.ts";
-import { McpPromptDefinition } from "../interfaces/mcp/mcp-prompt-interface.ts";
 import { McpProvider } from "../types/mcp/mcp-provider-type.ts";
 import { McpServerWithContext } from "../types/mcp/mcp-server-with-context-type.ts";
 
@@ -56,17 +55,13 @@ export class MCPService {
     const server = new McpServer({ name, version: "1.0.0" });
 
     let totalTools = 0;
-    let totalPrompts = 0;
 
     for (const provider of providers) {
       const tools = provider.getTools();
-      const prompts = provider.getPrompts();
 
       this.registerTools(server, tools);
-      this.registerPrompts(server, prompts);
 
       totalTools += tools.length;
-      totalPrompts += prompts.length;
     }
 
     return server;
@@ -119,35 +114,6 @@ export class MCPService {
               { type: "text" as const, text: `Error: ${errorMessage}` },
             ],
             isError: true,
-          };
-        }
-      });
-    }
-  }
-
-  private registerPrompts(
-    server: McpServer,
-    prompts: McpPromptDefinition[]
-  ): void {
-    for (const prompt of prompts) {
-      server.registerPrompt(prompt.name, prompt.meta, async (input, _extra) => {
-        try {
-          const result = await prompt.run(input);
-          return { messages: result.messages };
-        } catch (error) {
-          // Return error as user message for MCP client
-          const errorMessage =
-            error instanceof Error ? error.message : "Unknown error occurred";
-          return {
-            messages: [
-              {
-                role: "user" as const,
-                content: {
-                  type: "text" as const,
-                  text: `Error executing prompt: ${errorMessage}`,
-                },
-              },
-            ],
           };
         }
       });
