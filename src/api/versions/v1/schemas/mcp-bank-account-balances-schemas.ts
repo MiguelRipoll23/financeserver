@@ -62,3 +62,56 @@ export const FilterBankAccountBalancesToolSchema = z.object({
     .optional()
     .describe("Cursor for pagination (from nextCursor in previous response)"),
 });
+
+export const DeleteBalanceToolSchema = z.object({
+  id: z
+    .number()
+    .int()
+    .positive()
+    .describe("ID of the balance record to delete"),
+  bankAccountId: z.number().int().positive().describe("ID of the bank account"),
+});
+
+export const UpdateBalanceToolSchema = z.object({
+  id: z
+    .number()
+    .int()
+    .positive()
+    .describe("ID of the balance record to update"),
+  bankAccountId: z.number().int().positive().describe("ID of the bank account"),
+  balance: z
+    .string()
+    .regex(
+      MonetaryRegex,
+      "Balance must be a valid monetary value (format: 123.45, no currency symbol, dot as decimal separator)"
+    )
+    .optional()
+    .describe("The updated balance (format: 123.45, no currency symbol)"),
+  currencySymbol: z
+    .string()
+    .length(3, "Currency code must be exactly 3 characters (ISO 4217 format)")
+    .optional()
+    .describe("ISO 4217 currency code (e.g., EUR, USD, GBP)"),
+  interestRate: z
+    .string()
+    .regex(
+      PercentageRegex,
+      "Interest rate must be a valid percentage (format: 2.50 for 2.50%)"
+    )
+    .optional()
+    .describe("Interest rate percentage (format: 2.50 for 2.50%, optional)"),
+  interestRateStartDate: z
+    .string()
+    .regex(DateOnlyRegex, "Date must be in YYYY-MM-DD format")
+    .optional()
+    .describe(
+      "Start date of interest rate period (format: YYYY-MM-DD, optional)"
+    ),
+  interestRateEndDate: z
+    .string()
+    .regex(DateOnlyRegex, "Date must be in YYYY-MM-DD format")
+    .optional()
+    .describe(
+      "End date of interest rate period (format: YYYY-MM-DD, optional)"
+    ),
+});

@@ -9,7 +9,7 @@ import {
   GetBankAccountBalancesResponseSchema,
   UpdateBankAccountBalanceRequestSchema,
   UpdateBankAccountBalanceResponseSchema,
-  DeleteBankAccountBalanceRequestSchema,
+  BankAccountBalanceIdParamSchema,
 } from "../../schemas/bank-account-balances-schemas.ts";
 import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
 import { ServerResponse } from "../../models/server-response.ts";
@@ -53,7 +53,7 @@ export class AuthenticatedBankAccountBalancesRouter {
           },
         },
         responses: {
-          200: {
+          201: {
             description: "Balance created successfully",
             content: {
               "application/json": {
@@ -73,7 +73,7 @@ export class AuthenticatedBankAccountBalancesRouter {
         const result =
           await this.bankAccountsService.createBankAccountBalance(body);
 
-        return context.json(result, 200);
+        return context.json(result, 201);
       }
     );
   }
@@ -125,11 +125,13 @@ export class AuthenticatedBankAccountBalancesRouter {
     this.app.openapi(
       createRoute({
         method: "patch",
-        path: "/",
+        path: "/{balanceId}",
         summary: "Update bank account balance",
-        description: "Updates an existing bank account balance record.",
+        description:
+          "Updates an existing bank account balance record by identifier.",
         tags: ["Bank account balances"],
         request: {
+          params: BankAccountBalanceIdParamSchema,
           body: {
             content: {
               "application/json": {
@@ -153,11 +155,17 @@ export class AuthenticatedBankAccountBalancesRouter {
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
+        const { accountId, balanceId } = BankAccountBalanceIdParamSchema.parse(
+          context.req.param()
+        );
         const body = UpdateBankAccountBalanceRequestSchema.parse(
           await context.req.json()
         );
-        const result =
-          await this.bankAccountsService.updateBankAccountBalance(body);
+        const result = await this.bankAccountsService.updateBankAccountBalance(
+          parseInt(accountId, 10),
+          parseInt(balanceId, 10),
+          body
+        );
 
         return context.json(result, 200);
       }
@@ -168,18 +176,12 @@ export class AuthenticatedBankAccountBalancesRouter {
     this.app.openapi(
       createRoute({
         method: "delete",
-        path: "/",
+        path: "/{balanceId}",
         summary: "Delete bank account balance",
         description: "Permanently deletes a bank account balance record.",
         tags: ["Bank account balances"],
         request: {
-          body: {
-            content: {
-              "application/json": {
-                schema: DeleteBankAccountBalanceRequestSchema,
-              },
-            },
-          },
+          params: BankAccountBalanceIdParamSchema,
         },
         responses: {
           204: {
@@ -190,10 +192,13 @@ export class AuthenticatedBankAccountBalancesRouter {
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
-        const body = DeleteBankAccountBalanceRequestSchema.parse(
-          await context.req.json()
+        const { accountId, balanceId } = BankAccountBalanceIdParamSchema.parse(
+          context.req.param()
         );
-        await this.bankAccountsService.deleteBankAccountBalance(body);
+        await this.bankAccountsService.deleteBankAccountBalance(
+          parseInt(accountId, 10),
+          parseInt(balanceId, 10)
+        );
 
         return context.body(null, 204);
       }

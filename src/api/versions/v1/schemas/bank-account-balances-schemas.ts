@@ -118,12 +118,6 @@ export type GetBankAccountBalancesResponse = z.infer<
 >;
 
 export const UpdateBankAccountBalanceRequestSchema = z.object({
-  id: z.number().int().openapi({ example: 1 }).describe("Balance identifier"),
-  bankAccountId: z
-    .number()
-    .int()
-    .openapi({ example: 1 })
-    .describe("Bank account identifier"),
   balance: MonetaryStringSchema.optional().describe("Current balance amount"),
   currencySymbol: z
     .string()
@@ -154,17 +148,4 @@ export const UpdateBankAccountBalanceResponseSchema =
 
 export type UpdateBankAccountBalanceResponse = z.infer<
   typeof UpdateBankAccountBalanceResponseSchema
->;
-
-export const DeleteBankAccountBalanceRequestSchema = z.object({
-  id: z.number().int().openapi({ example: 1 }).describe("Balance identifier"),
-  bankAccountId: z
-    .number()
-    .int()
-    .openapi({ example: 1 })
-    .describe("Bank account identifier"),
-});
-
-export type DeleteBankAccountBalanceRequest = z.infer<
-  typeof DeleteBankAccountBalanceRequestSchema
 >;

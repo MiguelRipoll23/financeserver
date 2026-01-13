@@ -33,7 +33,6 @@ import type {
   GetBankAccountBalancesResponse,
   UpdateBankAccountBalanceRequest,
   UpdateBankAccountBalanceResponse,
-  DeleteBankAccountBalanceRequest,
 } from "../../schemas/bank-account-balances-schemas.ts";
 
 @injectable()
@@ -201,12 +200,11 @@ export class BankAccountsService {
       );
     }
 
-    const balanceCents = this.parseAmountToCents(
+    const balanceString = this.validateAndFormatAmount(
       payload.balance,
       "INVALID_BALANCE",
       "Balance must be a valid monetary value"
     );
-    const balanceString = this.formatAmount(balanceCents / 100);
 
     const [result] = await db
       .insert(bankAccountBalancesTable)
@@ -296,11 +294,11 @@ export class BankAccountsService {
   }
 
   public async updateBankAccountBalance(
+    accountId: number,
+    balanceId: number,
     payload: UpdateBankAccountBalanceRequest
   ): Promise<UpdateBankAccountBalanceResponse> {
     const db = this.databaseService.get();
-    const accountId = payload.bankAccountId;
-    const balanceId = payload.id;
 
     // Verify balance exists and belongs to account
     const existingBalance = await db
@@ -323,17 +321,23 @@ export class BankAccountsService {
       );
     }
 
-    const updateValues: Record<string, any> = {
+    const updateValues: {
+      balance?: string;
+      currencySymbol?: string;
+      interestRate?: string | null;
+      interestRateStartDate?: string | null;
+      interestRateEndDate?: string | null;
+      updatedAt: Date;
+    } = {
       updatedAt: new Date(),
     };
 
     if (payload.balance !== undefined) {
-      const balanceCents = this.parseAmountToCents(
+      updateValues.balance = this.validateAndFormatAmount(
         payload.balance,
         "INVALID_BALANCE",
         "Balance must be a valid monetary value"
       );
-      updateValues.balance = this.formatAmount(balanceCents / 100);
     }
 
     if (payload.currencySymbol !== undefined) {
@@ -379,11 +383,10 @@ export class BankAccountsService {
   }
 
   public async deleteBankAccountBalance(
-    payload: DeleteBankAccountBalanceRequest
+    accountId: number,
+    balanceId: number
   ): Promise<void> {
     const db = this.databaseService.get();
-    const accountId = payload.bankAccountId;
-    const balanceId = payload.id;
 
     const result = await db
       .delete(bankAccountBalancesTable)
@@ -529,6 +532,20 @@ export class BankAccountsService {
     }
 
     return Math.round(parsed * 100);
+  }
+
+  private validateAndFormatAmount(
+    amount: string,
+    errorCode: string,
+    errorMessage: string
+  ): string {
+    const parsed = parseFloat(amount);
+
+    if (isNaN(parsed) || parsed < 0) {
+      throw new ServerError(errorCode, errorMessage, 400);
+    }
+
+    return parsed.toFixed(2);
   }
 
   private formatAmount(amount: number): string {

@@ -1,16 +1,7 @@
 import { inject, injectable } from "@needle-di/core";
 import { McpToolDefinition } from "../../../interfaces/mcp/mcp-tool-interface.ts";
 import { BankAccountsService } from "../../bank-accounts/bank-accounts-service.ts";
-import { z } from "zod";
-
-const DeleteBalanceSchema = z.object({
-  id: z
-    .number()
-    .int()
-    .positive()
-    .describe("ID of the balance record to delete"),
-  bankAccountId: z.number().int().positive().describe("ID of the bank account"),
-});
+import { DeleteBalanceToolSchema } from "../../../schemas/mcp-bank-account-balances-schemas.ts";
 
 @injectable()
 export class DeleteBalanceToolService {
@@ -23,7 +14,7 @@ export class DeleteBalanceToolService {
         title: "Delete bank account balance",
         description:
           "Use this when you need to permanently delete a balance record. Do not use for adding or editing balances.",
-        inputSchema: DeleteBalanceSchema.shape,
+        inputSchema: DeleteBalanceToolSchema.shape,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,
@@ -32,12 +23,12 @@ export class DeleteBalanceToolService {
         },
       },
       run: async (input: unknown) => {
-        const parsed = DeleteBalanceSchema.parse(input);
+        const parsed = DeleteBalanceToolSchema.parse(input);
 
-        await this.bankAccountsService.deleteBankAccountBalance({
-          id: parsed.id,
-          bankAccountId: parsed.bankAccountId,
-        });
+        await this.bankAccountsService.deleteBankAccountBalance(
+          parsed.bankAccountId,
+          parsed.id
+        );
 
         const text = `Balance with ID ${parsed.id} has been deleted successfully`;
 

@@ -53,7 +53,7 @@ export class AuthenticatedBankAccountsRouter {
           },
         },
         responses: {
-          200: {
+          201: {
             description: "Bank account created successfully",
             content: {
               "application/json": {
@@ -71,7 +71,7 @@ export class AuthenticatedBankAccountsRouter {
         );
         const result = await this.bankAccountsService.createBankAccount(body);
 
-        return context.json(result, 200);
+        return context.json(result, 201);
       }
     );
   }
@@ -110,9 +110,14 @@ export class AuthenticatedBankAccountsRouter {
       async (context: Context<{ Variables: HonoVariables }>) => {
         const payload = await this.readJsonOrEmpty(context);
         const body = GetBankAccountsRequestSchema.parse(payload);
-        const result = await this.bankAccountsService.getBankAccounts(
-          body as BankAccountsFilter
-        );
+        const filter: BankAccountsFilter = {
+          pageSize: body.limit,
+          cursor: body.cursor,
+          sortField: body.sortField,
+          sortOrder: body.sortOrder,
+          name: body.name,
+        };
+        const result = await this.bankAccountsService.getBankAccounts(filter);
 
         return context.json(result, 200);
       }
