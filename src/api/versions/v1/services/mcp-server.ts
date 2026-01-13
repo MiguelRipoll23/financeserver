@@ -55,14 +55,10 @@ export class MCPService {
   private createServer(name: string, providers: McpProvider[]): McpServer {
     const server = new McpServer({ name, version: "1.0.0" });
 
-    let totalTools = 0;
-
     for (const provider of providers) {
       const tools = provider.getTools();
 
       this.registerTools(server, tools);
-
-      totalTools += tools.length;
     }
 
     return server;

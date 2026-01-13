@@ -76,11 +76,22 @@
 ├─ schemas/                  # Zod validation schemas for API endpoints
 ├─ services/                 # Business logic
 │  ├─ authentication/        # Login + token flow logic
-│  ├─ bills/
+│  ├─ bank-account-balances/ # Bank account balance tracking
+│  │  └─ tools/              # MCP tools for balance operations
+│  ├─ bank-accounts/         # Bank account management
+│  │  └─ tools/              # MCP tools for bank account operations
+│  ├─ bills/                 # Bill management
 │  │  └─ tools/              # MCP tools for bill operations
+│  ├─ estimations/           # Cost estimation services
+│  ├─ merchants/             # Merchant data management
+│  │  └─ tools/              # MCP tools for merchant operations
 │  ├─ products/              # Product catalog + management
-│  ├─ receipts/
+│  │  └─ tools/              # MCP tools for product operations
+│  ├─ receipts/              # Receipt processing + storage
 │  │  └─ tools/              # MCP tools for receipt operations
+│  ├─ routes/                # Route metadata services
+│  ├─ subscriptions/         # Subscription management
+│  │  └─ tools/              # MCP tools for subscription operations
 │  └─ users/                 # User management + profiles
 ├─ types/                    # Shared TypeScript type definitions
 └─ utils/                    # Reusable utility functions
