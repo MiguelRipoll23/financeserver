@@ -5,6 +5,8 @@ import { ProductsMCPService } from "./products/products-mcp-service.ts";
 import { BillsMCPService } from "./bills/bills-mcp-service.ts";
 import { SubscriptionsMCPService } from "./subscriptions/subscriptions-mcp-service.ts";
 import { MerchantsMCPService } from "./merchants/merchants-mcp-service.ts";
+import { BankAccountsMCPService } from "./bank-accounts/bank-accounts-mcp-service.ts";
+import { BankAccountBalancesMCPService } from "./bank-account-balances/bank-account-balances-mcp-service.ts";
 import { McpToolDefinition } from "../interfaces/mcp/mcp-tool-interface.ts";
 import { McpPromptDefinition } from "../interfaces/mcp/mcp-prompt-interface.ts";
 import { McpProvider } from "../types/mcp/mcp-provider-type.ts";
@@ -17,7 +19,9 @@ export class MCPService {
     private productsMCPService = inject(ProductsMCPService),
     private billsMCPService = inject(BillsMCPService),
     private subscriptionsMCPService = inject(SubscriptionsMCPService),
-    private merchantsMCPService = inject(MerchantsMCPService)
+    private merchantsMCPService = inject(MerchantsMCPService),
+    private bankAccountsMCPService = inject(BankAccountsMCPService),
+    private bankAccountBalancesMCPService = inject(BankAccountBalancesMCPService)
   ) {}
 
   public createUnifiedServer(): McpServer {
@@ -27,6 +31,8 @@ export class MCPService {
       this.billsMCPService,
       this.subscriptionsMCPService,
       this.merchantsMCPService,
+      this.bankAccountsMCPService,
+      this.bankAccountBalancesMCPService,
     ]);
   }
 
