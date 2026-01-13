@@ -70,7 +70,7 @@ export type BankAccountBalanceIdParam = z.infer<
 
 export const GetBankAccountBalancesRequestSchema = PaginationQuerySchema.extend(
   {
-    bankAccountId: z
+    bankAccountId: z.coerce
       .number()
       .int()
       .openapi({ example: 1 })

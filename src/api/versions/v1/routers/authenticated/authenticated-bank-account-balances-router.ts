@@ -89,7 +89,7 @@ export class AuthenticatedBankAccountBalancesRouter {
         tags: ["Bank account balances"],
         request: {
           body: {
-            required: false,
+            required: true,
             content: {
               "application/json": {
                 schema: GetBankAccountBalancesRequestSchema,
