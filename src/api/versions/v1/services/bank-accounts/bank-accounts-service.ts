@@ -294,32 +294,28 @@ export class BankAccountsService {
   }
 
   public async updateBankAccountBalance(
-    accountId: number,
     balanceId: number,
     payload: UpdateBankAccountBalanceRequest
   ): Promise<UpdateBankAccountBalanceResponse> {
     const db = this.databaseService.get();
 
-    // Verify balance exists and belongs to account
+    // Verify balance exists
     const existingBalance = await db
       .select()
       .from(bankAccountBalancesTable)
-      .where(
-        and(
-          eq(bankAccountBalancesTable.id, balanceId),
-          eq(bankAccountBalancesTable.bankAccountId, accountId)
-        )
-      )
+      .where(eq(bankAccountBalancesTable.id, balanceId))
       .limit(1)
       .then((rows) => rows[0]);
 
     if (!existingBalance) {
       throw new ServerError(
         "BALANCE_NOT_FOUND",
-        `Balance with ID ${balanceId} not found for account ${accountId}`,
+        `Balance with ID ${balanceId} not found`,
         404
       );
     }
+
+    const accountId = existingBalance.bankAccountId;
 
     const updateValues: {
       balance?: string;
@@ -382,26 +378,18 @@ export class BankAccountsService {
     return this.mapBalanceToResponse(result);
   }
 
-  public async deleteBankAccountBalance(
-    accountId: number,
-    balanceId: number
-  ): Promise<void> {
+  public async deleteBankAccountBalance(balanceId: number): Promise<void> {
     const db = this.databaseService.get();
 
     const result = await db
       .delete(bankAccountBalancesTable)
-      .where(
-        and(
-          eq(bankAccountBalancesTable.id, balanceId),
-          eq(bankAccountBalancesTable.bankAccountId, accountId)
-        )
-      )
+      .where(eq(bankAccountBalancesTable.id, balanceId))
       .returning({ id: bankAccountBalancesTable.id });
 
     if (result.length === 0) {
       throw new ServerError(
         "BALANCE_NOT_FOUND",
-        `Balance with ID ${balanceId} not found for account ${accountId}`,
+        `Balance with ID ${balanceId} not found`,
         404
       );
     }

@@ -26,7 +26,6 @@ export class UpdateBalanceToolService {
         const parsed = UpdateBalanceToolSchema.parse(input);
 
         const result = await this.bankAccountsService.updateBankAccountBalance(
-          parsed.bankAccountId,
           parsed.id,
           {
             balance: parsed.balance,
@@ -36,6 +35,8 @@ export class UpdateBalanceToolService {
             interestRateEndDate: parsed.interestRateEndDate,
           }
         );
+
+        // Note: bankAccountId still required in input for validation but not passed to service
 
         const text = `Balance updated successfully: ${result.balance} ${result.currencySymbol} (ID: ${result.id})`;
 

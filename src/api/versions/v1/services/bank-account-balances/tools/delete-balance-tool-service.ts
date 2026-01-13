@@ -25,10 +25,9 @@ export class DeleteBalanceToolService {
       run: async (input: unknown) => {
         const parsed = DeleteBalanceToolSchema.parse(input);
 
-        await this.bankAccountsService.deleteBankAccountBalance(
-          parsed.bankAccountId,
-          parsed.id
-        );
+        await this.bankAccountsService.deleteBankAccountBalance(parsed.id);
+
+        // Note: bankAccountId still required in input for validation context but not passed to service
 
         const text = `Balance with ID ${parsed.id} has been deleted successfully`;
 

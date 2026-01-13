@@ -55,16 +55,9 @@ export type CreateBankAccountBalanceResponse = z.infer<
 >;
 
 export const BankAccountBalanceIdParamSchema = z.object({
-  accountId: z.string().openapi({
+  id: z.string().openapi({
     param: {
-      name: "accountId",
-      in: "path",
-    },
-    example: "1",
-  }),
-  balanceId: z.string().openapi({
-    param: {
-      name: "balanceId",
+      name: "id",
       in: "path",
     },
     example: "1",

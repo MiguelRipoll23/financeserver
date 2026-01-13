@@ -176,7 +176,7 @@ export class AuthenticatedBankAccountBalancesRouter {
     this.app.openapi(
       createRoute({
         method: "delete",
-        path: "/{balanceId}",
+        path: "/{id}",
         summary: "Delete bank account balance",
         description: "Permanently deletes a bank account balance record.",
         tags: ["Bank account balances"],
@@ -192,12 +192,11 @@ export class AuthenticatedBankAccountBalancesRouter {
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
-        const { accountId, balanceId } = BankAccountBalanceIdParamSchema.parse(
+        const { id } = BankAccountBalanceIdParamSchema.parse(
           context.req.param()
         );
         await this.bankAccountsService.deleteBankAccountBalance(
-          parseInt(accountId, 10),
-          parseInt(balanceId, 10)
+          parseInt(id, 10)
         );
 
         return context.body(null, 204);

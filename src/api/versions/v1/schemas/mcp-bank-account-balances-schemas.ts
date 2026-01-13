@@ -56,7 +56,7 @@ export const FilterBankAccountBalancesToolSchema = z.object({
     .min(1)
     .max(100)
     .optional()
-    .describe("Number of results per page (default: 20, max: 100)"),
+    .describe("Number of results per page (default: 10, max: 100)"),
   cursor: z
     .string()
     .optional()
