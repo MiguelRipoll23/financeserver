@@ -26,29 +26,22 @@ export class AuthenticatedMCPRouter {
     this.registerMcpRoutes(
       "/global",
       "Connect global",
-      "Establishes a unified streaming Model Context Protocol session.",
+      "Establishes a unified streaming Model Context Protocol session with access to all financial tools.",
       () => this.mcpService.createUnifiedServer()
     );
 
     this.registerMcpRoutes(
-      "/bills",
-      "Connect bills",
-      "Establishes a bills-focused streaming Model Context Protocol session.",
-      () => this.mcpService.createBillsServer()
+      "/banking",
+      "Connect banking",
+      "Establishes a banking-focused streaming Model Context Protocol session for bank accounts and balances.",
+      () => this.mcpService.createBankingServer()
     );
 
     this.registerMcpRoutes(
-      "/receipts",
-      "Connect receipts",
-      "Establishes a receipts-focused streaming Model Context Protocol session.",
-      () => this.mcpService.createReceiptsServer()
-    );
-
-    this.registerMcpRoutes(
-      "/subscriptions",
-      "Connect subscriptions",
-      "Establishes a subscriptions-focused streaming Model Context Protocol session.",
-      () => this.mcpService.createSubscriptionsServer()
+      "/expenses",
+      "Connect expenses",
+      "Establishes an expenses-focused streaming Model Context Protocol session for bills, receipts, and subscriptions.",
+      () => this.mcpService.createExpensesServer()
     );
   }
 

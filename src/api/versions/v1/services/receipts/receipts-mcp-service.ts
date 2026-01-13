@@ -3,10 +3,7 @@ import { FilterReceiptsToolService } from "./tools/filter-receipts-tool-service.
 import { SaveReceiptToolService } from "./tools/save-receipt-tool-service.ts";
 import { UpdateReceiptToolService } from "./tools/update-receipt-tool-service.ts";
 import { DeleteReceiptToolService } from "./tools/delete-receipt-tool-service.ts";
-import { FilterReceiptsPromptService } from "./prompts/filter-receipts-prompt-service.ts";
-import { SaveReceiptPromptService } from "./prompts/save-receipt-prompt-service.ts";
 import { McpToolDefinition } from "../../interfaces/mcp/mcp-tool-interface.ts";
-import { McpPromptDefinition } from "../../interfaces/mcp/mcp-prompt-interface.ts";
 
 @injectable()
 export class ReceiptsMCPService {
@@ -14,9 +11,7 @@ export class ReceiptsMCPService {
     private filterReceiptsToolService = inject(FilterReceiptsToolService),
     private saveReceiptToolService = inject(SaveReceiptToolService),
     private updateReceiptToolService = inject(UpdateReceiptToolService),
-    private deleteReceiptToolService = inject(DeleteReceiptToolService),
-    private filterReceiptsPromptService = inject(FilterReceiptsPromptService),
-    private saveReceiptPromptService = inject(SaveReceiptPromptService)
+    private deleteReceiptToolService = inject(DeleteReceiptToolService)
   ) {}
 
   public getTools(): McpToolDefinition[] {
@@ -25,13 +20,6 @@ export class ReceiptsMCPService {
       this.saveReceiptToolService.getDefinition(),
       this.updateReceiptToolService.getDefinition(),
       this.deleteReceiptToolService.getDefinition(),
-    ];
-  }
-
-  public getPrompts(): McpPromptDefinition[] {
-    return [
-      this.filterReceiptsPromptService.getDefinition(),
-      this.saveReceiptPromptService.getDefinition(),
     ];
   }
 }
