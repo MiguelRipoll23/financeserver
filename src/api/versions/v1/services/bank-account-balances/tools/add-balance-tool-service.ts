@@ -28,7 +28,7 @@ export class AddBalanceToolService {
         const result = await this.bankAccountsService.createBankAccountBalance({
           bankAccountId: parsed.bankAccountId,
           balance: parsed.balance,
-          currencySymbol: parsed.currencySymbol,
+          currencyCode: parsed.currencyCode,
           interestRate: parsed.interestRate,
           interestRateStartDate: parsed.interestRateStartDate,
           interestRateEndDate: parsed.interestRateEndDate,
@@ -38,7 +38,7 @@ export class AddBalanceToolService {
           ? ` with ${result.interestRate}% interest rate`
           : "";
 
-        const text = `Balance recorded successfully: ${result.balance} ${result.currencySymbol}${interestInfo} (ID: ${result.id})`;
+        const text = `Balance recorded successfully: ${result.balance} ${result.currencyCode}${interestInfo} (ID: ${result.id})`;
 
         return {
           text,

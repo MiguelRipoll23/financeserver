@@ -12,7 +12,7 @@ export const CreateBankAccountBalanceRequestSchema = z.object({
     .openapi({ example: 1 })
     .describe("Bank account identifier"),
   balance: MonetaryStringSchema.describe("Current balance amount"),
-  currencySymbol: z
+  currencyCode: z
     .string()
     .length(3)
     .openapi({ example: "USD" })
@@ -39,7 +39,7 @@ export const CreateBankAccountBalanceResponseSchema = z.object({
   id: z.number().int().openapi({ example: 1 }),
   bankAccountId: z.number().int().openapi({ example: 1 }),
   balance: z.string().openapi({ example: "1500.00" }),
-  currencySymbol: z.string().openapi({ example: "USD" }),
+  currencyCode: z.string().openapi({ example: "USD" }),
   interestRate: z.string().nullable().openapi({ example: "2.50" }),
   interestRateStartDate: z
     .string()
@@ -90,7 +90,7 @@ export const BankAccountBalanceSummarySchema = z.object({
   id: z.number().int().openapi({ example: 1 }),
   bankAccountId: z.number().int().openapi({ example: 1 }),
   balance: z.string().openapi({ example: "1500.00" }),
-  currencySymbol: z.string().openapi({ example: "USD" }),
+  currencyCode: z.string().openapi({ example: "USD" }),
   interestRate: z.string().nullable().openapi({ example: "2.50" }),
   interestRateStartDate: z
     .string()
@@ -112,7 +112,7 @@ export type GetBankAccountBalancesResponse = z.infer<
 
 export const UpdateBankAccountBalanceRequestSchema = z.object({
   balance: MonetaryStringSchema.optional().describe("Current balance amount"),
-  currencySymbol: z
+  currencyCode: z
     .string()
     .length(3)
     .optional()

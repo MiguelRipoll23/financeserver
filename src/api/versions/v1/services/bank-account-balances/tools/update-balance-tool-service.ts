@@ -29,7 +29,7 @@ export class UpdateBalanceToolService {
           parsed.id,
           {
             balance: parsed.balance,
-            currencySymbol: parsed.currencySymbol,
+            currencyCode: parsed.currencyCode,
             interestRate: parsed.interestRate,
             interestRateStartDate: parsed.interestRateStartDate,
             interestRateEndDate: parsed.interestRateEndDate,
@@ -38,7 +38,7 @@ export class UpdateBalanceToolService {
 
         // Note: bankAccountId still required in input for validation but not passed to service
 
-        const text = `Balance updated successfully: ${result.balance} ${result.currencySymbol} (ID: ${result.id})`;
+        const text = `Balance updated successfully: ${result.balance} ${result.currencyCode} (ID: ${result.id})`;
 
         return {
           text,

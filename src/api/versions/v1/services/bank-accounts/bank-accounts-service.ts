@@ -211,7 +211,7 @@ export class BankAccountsService {
       .values({
         bankAccountId: accountId,
         balance: balanceString,
-        currencySymbol: payload.currencySymbol,
+        currencyCode: payload.currencyCode,
         interestRate: payload.interestRate ?? null,
         interestRateStartDate: payload.interestRateStartDate ?? null,
         interestRateEndDate: payload.interestRateEndDate ?? null,
@@ -319,7 +319,7 @@ export class BankAccountsService {
 
     const updateValues: {
       balance?: string;
-      currencySymbol?: string;
+      currencyCode?: string;
       interestRate?: string | null;
       interestRateStartDate?: string | null;
       interestRateEndDate?: string | null;
@@ -336,8 +336,8 @@ export class BankAccountsService {
       );
     }
 
-    if (payload.currencySymbol !== undefined) {
-      updateValues.currencySymbol = payload.currencySymbol;
+    if (payload.currencyCode !== undefined) {
+      updateValues.currencyCode = payload.currencyCode;
     }
 
     if (payload.interestRate !== undefined) {
@@ -483,7 +483,7 @@ export class BankAccountsService {
       id: balance.id,
       bankAccountId: balance.bankAccountId,
       balance: balance.balance,
-      currencySymbol: balance.currencySymbol,
+      currencyCode: balance.currencyCode,
       interestRate: balance.interestRate,
       interestRateStartDate: balance.interestRateStartDate,
       interestRateEndDate: balance.interestRateEndDate,
@@ -499,27 +499,13 @@ export class BankAccountsService {
       id: balance.id,
       bankAccountId: balance.bankAccountId,
       balance: balance.balance,
-      currencySymbol: balance.currencySymbol,
+      currencyCode: balance.currencyCode,
       interestRate: balance.interestRate,
       interestRateStartDate: balance.interestRateStartDate,
       interestRateEndDate: balance.interestRateEndDate,
       createdAt: toISOStringSafe(balance.createdAt),
       updatedAt: toISOStringSafe(balance.updatedAt),
     };
-  }
-
-  private parseAmountToCents(
-    amount: string,
-    errorCode: string,
-    errorMessage: string
-  ): number {
-    const parsed = parseFloat(amount);
-
-    if (isNaN(parsed) || parsed < 0) {
-      throw new ServerError(errorCode, errorMessage, 400);
-    }
-
-    return Math.round(parsed * 100);
   }
 
   private validateAndFormatAmount(
@@ -534,9 +520,5 @@ export class BankAccountsService {
     }
 
     return parsed.toFixed(2);
-  }
-
-  private formatAmount(amount: number): string {
-    return amount.toFixed(2);
   }
 }

@@ -36,7 +36,7 @@ export class FilterBalancesToolService {
         const balancesList = result.data
           .map(
             (balance) =>
-              `- ${balance.balance} ${balance.currencySymbol} (${balance.createdAt})`
+              `- ${balance.balance} ${balance.currencyCode} (${balance.createdAt})`
           )
           .join("\n");
 

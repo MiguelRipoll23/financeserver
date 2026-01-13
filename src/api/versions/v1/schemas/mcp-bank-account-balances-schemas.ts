@@ -15,7 +15,7 @@ export const CreateBankAccountBalanceToolSchema = z.object({
       "Balance must be a valid monetary value (format: 123.45, no currency symbol, dot as decimal separator)"
     )
     .describe("The current balance (format: 123.45, no currency symbol)"),
-  currencySymbol: z
+  currencyCode: z
     .string()
     .length(3, "Currency code must be exactly 3 characters (ISO 4217 format)")
     .describe("ISO 4217 currency code (e.g., EUR, USD, GBP)"),
@@ -87,7 +87,7 @@ export const UpdateBalanceToolSchema = z.object({
     )
     .optional()
     .describe("The updated balance (format: 123.45, no currency symbol)"),
-  currencySymbol: z
+  currencyCode: z
     .string()
     .length(3, "Currency code must be exactly 3 characters (ISO 4217 format)")
     .optional()

@@ -125,7 +125,7 @@ export class AuthenticatedBankAccountBalancesRouter {
     this.app.openapi(
       createRoute({
         method: "patch",
-        path: "/{balanceId}",
+        path: "/{id}",
         summary: "Update bank account balance",
         description:
           "Updates an existing bank account balance record by identifier.",
@@ -155,15 +155,14 @@ export class AuthenticatedBankAccountBalancesRouter {
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
-        const { accountId, balanceId } = BankAccountBalanceIdParamSchema.parse(
+        const { id } = BankAccountBalanceIdParamSchema.parse(
           context.req.param()
         );
         const body = UpdateBankAccountBalanceRequestSchema.parse(
           await context.req.json()
         );
         const result = await this.bankAccountsService.updateBankAccountBalance(
-          parseInt(accountId, 10),
-          parseInt(balanceId, 10),
+          parseInt(id, 10),
           body
         );
 

@@ -18,7 +18,7 @@ export const bankAccountBalancesTable = pgTable(
       .notNull()
       .references(() => bankAccountsTable.id, { onDelete: "cascade" }),
     balance: numeric("balance", { precision: 15, scale: 2 }).notNull(),
-    currencySymbol: varchar("currency_symbol", { length: 3 }).notNull(),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull(),
     interestRate: numeric("interest_rate", { precision: 5, scale: 2 }),
     interestRateStartDate: date("interest_rate_start_date"),
     interestRateEndDate: date("interest_rate_end_date"),

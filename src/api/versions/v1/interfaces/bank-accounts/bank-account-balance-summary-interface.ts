@@ -2,7 +2,7 @@ export interface BankAccountBalanceSummary {
   id: number;
   bankAccountId: number;
   balance: string;
-  currencySymbol: string;
+  currencyCode: string;
   interestRate: string | null;
   interestRateStartDate: string | null;
   interestRateEndDate: string | null;
