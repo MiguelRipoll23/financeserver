@@ -11,6 +11,7 @@ import { ATTR_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import {
   ENV_APP_OTEL_EXPORTER_OTLP_ENDPOINT,
   ENV_APP_OTEL_EXPORTER_OTLP_HEADERS,
+  ENV_DATABASE_URL,
   ENV_DENO_DEPLOYMENT_ID,
 } from "../constants/environment-constants.ts";
 
@@ -19,7 +20,7 @@ export class OTelService {
   private static readonly SERVICE_NAME = "financeserver";
   private meterProvider: MeterProvider | null = null;
 
-  public init(): void {
+  public async init(): Promise<void> {
     const endpoint = Deno.env.get(ENV_APP_OTEL_EXPORTER_OTLP_ENDPOINT);
     const headers = Deno.env.get(ENV_APP_OTEL_EXPORTER_OTLP_HEADERS);
 
@@ -29,7 +30,7 @@ export class OTelService {
     }
 
     const metricReader = this.createMetricReader(endpoint, headers);
-    const resource = this.createResource();
+    const resource = await this.createResource();
 
     this.initializeSdk(metricReader, resource);
   }
@@ -59,10 +60,18 @@ export class OTelService {
     });
   }
 
-  private createResource(): Resource {
+  private async createResource(): Promise<Resource> {
     const attributes: Record<string, string> = {
       [ATTR_SERVICE_NAME]: OTelService.SERVICE_NAME,
     };
+
+    const databaseUrl = Deno.env.get(ENV_DATABASE_URL);
+    const hostname = this.extractHostname(databaseUrl);
+
+    if (hostname) {
+      const hashedHostname = await this.hashHostname(hostname);
+      attributes["database.hostname.hash"] = hashedHostname;
+    }
 
     const deploymentId = Deno.env.get(ENV_DENO_DEPLOYMENT_ID);
 
@@ -156,5 +165,29 @@ export class OTelService {
         headers[key] = value;
       }
     }
+  }
+
+  private extractHostname(databaseUrl: string | undefined): string | null {
+    if (!databaseUrl) {
+      return null;
+    }
+
+    try {
+      const url = new URL(databaseUrl);
+      return url.hostname;
+    } catch {
+      return null;
+    }
+  }
+
+  private async hashHostname(hostname: string): Promise<string> {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(hostname);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray
+      .map((byte) => byte.toString(16).padStart(2, "0"))
+      .join("");
+    return hashHex;
   }
 }
