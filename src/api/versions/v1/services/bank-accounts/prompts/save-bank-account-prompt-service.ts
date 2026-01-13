@@ -52,7 +52,9 @@ export class SaveBankAccountPromptService {
     } satisfies McpPromptDefinition;
   }
 
-  private buildPayload(input: SaveBankAccountPromptInput): Record<string, unknown> {
+  private buildPayload(
+    input: SaveBankAccountPromptInput
+  ): Record<string, unknown> {
     return {
       name: input.name,
     };

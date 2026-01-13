@@ -11,21 +11,13 @@ import { FilterBankAccountsPromptService } from "./prompts/filter-bank-accounts-
 @injectable()
 export class BankAccountsMCPService {
   constructor(
-    private createBankAccountToolService = inject(
-      CreateBankAccountToolService
-    ),
-    private updateBankAccountToolService = inject(
-      UpdateBankAccountToolService
-    ),
-    private deleteBankAccountToolService = inject(
-      DeleteBankAccountToolService
-    ),
+    private createBankAccountToolService = inject(CreateBankAccountToolService),
+    private updateBankAccountToolService = inject(UpdateBankAccountToolService),
+    private deleteBankAccountToolService = inject(DeleteBankAccountToolService),
     private filterBankAccountsToolService = inject(
       FilterBankAccountsToolService
     ),
-    private saveBankAccountPromptService = inject(
-      SaveBankAccountPromptService
-    ),
+    private saveBankAccountPromptService = inject(SaveBankAccountPromptService),
     private filterBankAccountsPromptService = inject(
       FilterBankAccountsPromptService
     )

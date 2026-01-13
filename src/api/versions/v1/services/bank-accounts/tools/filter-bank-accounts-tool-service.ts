@@ -5,9 +5,7 @@ import { FilterBankAccountsToolSchema } from "../../../schemas/mcp-bank-accounts
 
 @injectable()
 export class FilterBankAccountsToolService {
-  constructor(
-    private bankAccountsService = inject(BankAccountsService)
-  ) {}
+  constructor(private bankAccountsService = inject(BankAccountsService)) {}
 
   public getDefinition(): McpToolDefinition {
     return {

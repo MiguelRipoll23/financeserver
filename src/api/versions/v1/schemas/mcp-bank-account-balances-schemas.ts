@@ -7,11 +7,7 @@ const PercentageRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
 
 // Bank Account Balance Tool Schemas
 export const CreateBankAccountBalanceToolSchema = z.object({
-  bankAccountId: z
-    .number()
-    .int()
-    .positive()
-    .describe("ID of the bank account"),
+  bankAccountId: z.number().int().positive().describe("ID of the bank account"),
   balance: z
     .string()
     .regex(
@@ -35,12 +31,16 @@ export const CreateBankAccountBalanceToolSchema = z.object({
     .string()
     .regex(DateOnlyRegex, "Date must be in YYYY-MM-DD format")
     .optional()
-    .describe("Start date of interest rate period (format: YYYY-MM-DD, optional)"),
+    .describe(
+      "Start date of interest rate period (format: YYYY-MM-DD, optional)"
+    ),
   interestRateEndDate: z
     .string()
     .regex(DateOnlyRegex, "Date must be in YYYY-MM-DD format")
     .optional()
-    .describe("End date of interest rate period (format: YYYY-MM-DD, optional)"),
+    .describe(
+      "End date of interest rate period (format: YYYY-MM-DD, optional)"
+    ),
 });
 
 export const FilterBankAccountBalancesToolSchema = z.object({

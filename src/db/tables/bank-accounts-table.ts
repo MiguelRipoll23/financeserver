@@ -18,9 +18,7 @@ export const bankAccountsTable = pgTable(
       .defaultNow()
       .notNull(),
   },
-  (table) => [
-    index("bank_accounts_name_idx").on(table.name),
-  ]
+  (table) => [index("bank_accounts_name_idx").on(table.name)]
 );
 
 export type BankAccountEntity = typeof bankAccountsTable.$inferSelect;

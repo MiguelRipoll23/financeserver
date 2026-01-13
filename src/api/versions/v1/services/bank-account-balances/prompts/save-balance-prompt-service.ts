@@ -28,12 +28,16 @@ const SaveBalancePromptSchema = z.object({
     .string()
     .regex(DateOnlyRegex)
     .optional()
-    .describe("Start date of interest rate period (format: YYYY-MM-DD, optional)"),
+    .describe(
+      "Start date of interest rate period (format: YYYY-MM-DD, optional)"
+    ),
   interestRateEndDate: z
     .string()
     .regex(DateOnlyRegex)
     .optional()
-    .describe("End date of interest rate period (format: YYYY-MM-DD, optional)"),
+    .describe(
+      "End date of interest rate period (format: YYYY-MM-DD, optional)"
+    ),
   confirmationMessage: z.string().min(1).max(512).optional(),
 });
 

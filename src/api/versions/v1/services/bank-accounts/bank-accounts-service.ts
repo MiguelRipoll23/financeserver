@@ -187,7 +187,11 @@ export class BankAccountsService {
     }
 
     // Validate interest rate period if provided
-    if (payload.interestRate && payload.interestRateStartDate && payload.interestRateEndDate) {
+    if (
+      payload.interestRate &&
+      payload.interestRateStartDate &&
+      payload.interestRateEndDate
+    ) {
       await this.validateNoOverlappingInterestRates(
         db,
         accountId,
@@ -349,8 +353,10 @@ export class BankAccountsService {
     }
 
     // Validate interest rate period if being updated
-    const newStartDate = payload.interestRateStartDate ?? existingBalance.interestRateStartDate;
-    const newEndDate = payload.interestRateEndDate ?? existingBalance.interestRateEndDate;
+    const newStartDate =
+      payload.interestRateStartDate ?? existingBalance.interestRateStartDate;
+    const newEndDate =
+      payload.interestRateEndDate ?? existingBalance.interestRateEndDate;
     const newRate = payload.interestRate ?? existingBalance.interestRate;
 
     if (newRate && newStartDate && newEndDate) {
@@ -419,7 +425,9 @@ export class BankAccountsService {
 
     // Exclude the current balance being updated
     if (excludeBalanceId !== null) {
-      conditions.push(sql`${bankAccountBalancesTable.id} != ${excludeBalanceId}`);
+      conditions.push(
+        sql`${bankAccountBalancesTable.id} != ${excludeBalanceId}`
+      );
     }
 
     const overlapping = await db

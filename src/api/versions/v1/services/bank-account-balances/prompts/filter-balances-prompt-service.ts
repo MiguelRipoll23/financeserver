@@ -52,7 +52,9 @@ export class FilterBalancesPromptService {
     } satisfies McpPromptDefinition;
   }
 
-  private buildPayload(input: FilterBalancesPromptInput): Record<string, unknown> {
+  private buildPayload(
+    input: FilterBalancesPromptInput
+  ): Record<string, unknown> {
     return {
       bankAccountId: input.bankAccountId,
     };

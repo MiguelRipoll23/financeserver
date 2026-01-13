@@ -21,7 +21,9 @@ export class MCPService {
     private subscriptionsMCPService = inject(SubscriptionsMCPService),
     private merchantsMCPService = inject(MerchantsMCPService),
     private bankAccountsMCPService = inject(BankAccountsMCPService),
-    private bankAccountBalancesMCPService = inject(BankAccountBalancesMCPService)
+    private bankAccountBalancesMCPService = inject(
+      BankAccountBalancesMCPService
+    )
   ) {}
 
   public createUnifiedServer(): McpServer {

@@ -4,15 +4,17 @@ import { BankAccountsService } from "../../bank-accounts/bank-accounts-service.t
 import { z } from "zod";
 
 const DeleteBalanceSchema = z.object({
-  id: z.number().int().positive().describe("ID of the balance record to delete"),
+  id: z
+    .number()
+    .int()
+    .positive()
+    .describe("ID of the balance record to delete"),
   bankAccountId: z.number().int().positive().describe("ID of the bank account"),
 });
 
 @injectable()
 export class DeleteBalanceToolService {
-  constructor(
-    private bankAccountsService = inject(BankAccountsService)
-  ) {}
+  constructor(private bankAccountsService = inject(BankAccountsService)) {}
 
   public getDefinition(): McpToolDefinition {
     return {

@@ -30,11 +30,7 @@ export const UpdateBankAccountToolSchema = z
   });
 
 export const DeleteBankAccountToolSchema = z.object({
-  id: z
-    .number()
-    .int()
-    .positive()
-    .describe("ID of the bank account to delete"),
+  id: z.number().int().positive().describe("ID of the bank account to delete"),
 });
 
 export const FilterBankAccountsToolSchema = z.object({

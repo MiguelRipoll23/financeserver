@@ -5,9 +5,7 @@ import { UpdateBankAccountToolSchema } from "../../../schemas/mcp-bank-accounts-
 
 @injectable()
 export class UpdateBankAccountToolService {
-  constructor(
-    private bankAccountsService = inject(BankAccountsService)
-  ) {}
+  constructor(private bankAccountsService = inject(BankAccountsService)) {}
 
   public getDefinition(): McpToolDefinition {
     return {

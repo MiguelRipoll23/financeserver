@@ -10,7 +10,9 @@ const FilterBankAccountsPromptSchema = z.object({
   summaryRequest: z.string().min(1).max(512).optional(),
 });
 
-type FilterBankAccountsPromptInput = z.infer<typeof FilterBankAccountsPromptSchema>;
+type FilterBankAccountsPromptInput = z.infer<
+  typeof FilterBankAccountsPromptSchema
+>;
 
 @injectable()
 export class FilterBankAccountsPromptService {
@@ -52,7 +54,9 @@ export class FilterBankAccountsPromptService {
     } satisfies McpPromptDefinition;
   }
 
-  private buildPayload(input: FilterBankAccountsPromptInput): Record<string, unknown> {
+  private buildPayload(
+    input: FilterBankAccountsPromptInput
+  ): Record<string, unknown> {
     const payload: Record<string, unknown> = {};
 
     if (input.name) {
