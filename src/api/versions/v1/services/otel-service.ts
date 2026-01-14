@@ -2,11 +2,7 @@ import { injectable } from "@needle-di/core";
 import { metrics, Meter, diag, DiagConsoleLogger, DiagLogLevel } from "@opentelemetry/api";
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-http";
 import { Resource, resourceFromAttributes } from "@opentelemetry/resources";
-import {
-  MeterProvider,
-  MetricReader,
-  PushMetricExporter,
-} from "@opentelemetry/sdk-metrics";
+import { MeterProvider } from "@opentelemetry/sdk-metrics";
 import { ATTR_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import {
   ENV_APP_OTEL_EXPORTER_OTLP_ENDPOINT,
@@ -18,7 +14,6 @@ import {
 @injectable()
 export class OTelService {
   private static readonly SERVICE_NAME = "financeserver";
-  private meterProvider: MeterProvider | null = null;
 
   public async init(): Promise<void> {
     const endpoint = Deno.env.get(ENV_APP_OTEL_EXPORTER_OTLP_ENDPOINT);
@@ -31,22 +26,25 @@ export class OTelService {
 
     diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO);
 
-    const metricReader = this.createMetricReader(endpoint, headers);
+    const metricExporter = this.createMetricExporter(endpoint, headers);
     const resource = await this.createResource();
 
-    this.initializeSdk(metricReader, resource);
+    const meterProvider = new MeterProvider({ resource: resource });
+    meterProvider.addMetricReader(metricExporter);
+
+    try {
+      metrics.setGlobalMeterProvider(meterProvider);
+      console.log("OTel SDK initialized");
+    } catch (error) {
+      console.error("Error initializing OTel SDK", error);
+    }
+
+    await meterProvider.forceFlush();
+    await meterProvider.shutdown();
   }
 
   public getMeter(name: string, version?: string): Meter {
     return metrics.getMeter(name, version);
-  }
-
-  private createMetricReader(endpoint: string, headers: string): MetricReader {
-    const metricExporter = this.createMetricExporter(endpoint, headers);
-
-    return new PushMetricExporter({
-      exporter: metricExporter,
-    });
   }
 
   private createMetricExporter(
@@ -59,42 +57,6 @@ export class OTelService {
       url: `${normalizedEndpoint}/v1/metrics`,
       headers: this.parseHeaders(headers),
     });
-  }
-
-  private async createResource(): Promise<Resource> {
-    const attributes: Record<string, string> = {
-      [ATTR_SERVICE_NAME]: OTelService.SERVICE_NAME,
-    };
-
-    const databaseUrl = Deno.env.get(ENV_DATABASE_URL);
-    const hostname = this.extractHostname(databaseUrl);
-
-    if (hostname) {
-      const hashedHostname = await this.hashHostname(hostname);
-      attributes["database.hostname.hash"] = hashedHostname;
-    }
-
-    const deploymentId = Deno.env.get(ENV_DENO_DEPLOYMENT_ID);
-
-    if (deploymentId) {
-      attributes["deployment.id"] = deploymentId;
-    }
-
-    return resourceFromAttributes(attributes);
-  }
-
-  private initializeSdk(metricReader: MetricReader, resource: Resource): void {
-    this.meterProvider = new MeterProvider({
-      resource: resource,
-      readers: [metricReader],
-    });
-
-    try {
-      metrics.setGlobalMeterProvider(this.meterProvider);
-      console.log("OTel SDK initialized");
-    } catch (error) {
-      console.error("Error initializing OTel SDK", error);
-    }
   }
 
   private parseHeaders(headersString: string): Record<string, string> {
