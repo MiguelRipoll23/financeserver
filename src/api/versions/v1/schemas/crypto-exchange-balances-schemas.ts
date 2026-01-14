@@ -116,12 +116,13 @@ export const UpdateCryptoExchangeBalanceRequestSchema = z.object({
     .optional()
     .openapi({ example: "BTC" })
     .describe("Asset symbol (e.g., BTC, ETH)"),
-  investedAmount: MonetaryStringSchema.optional().describe(
+  investedAmount: MonetaryStringSchema.nullable().optional().describe(
     "Amount originally invested"
   ),
   investedCurrencyCode: z
     .string()
     .length(3)
+    .nullable()
     .optional()
     .openapi({ example: "USD" })
     .describe("ISO 4217 currency code of the invested amount"),

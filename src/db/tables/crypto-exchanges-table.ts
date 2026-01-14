@@ -1,10 +1,11 @@
 import {
   bigserial,
-  index,
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 export const cryptoExchangesTable = pgTable(
   "crypto_exchanges",
@@ -18,7 +19,9 @@ export const cryptoExchangesTable = pgTable(
       .defaultNow()
       .notNull(),
   },
-  (table) => [index("crypto_exchanges_name_idx").on(table.name)]
+  (table) => [
+    uniqueIndex("crypto_exchanges_name_unique").on(sql`lower(${table.name})`),
+  ]
 );
 
 export type CryptoExchangeEntity = typeof cryptoExchangesTable.$inferSelect;

@@ -14,7 +14,8 @@ export class FilterCryptoExchangesToolService {
       name: "crypto_exchanges.filter",
       meta: {
         title: "Filter crypto exchanges",
-        description: "Search and list crypto exchanges with optional filters.",
+        description:
+          "Use this when you need to search and list crypto exchanges with optional filters.",
         inputSchema: FilterCryptoExchangesToolSchema.shape,
         annotations: {
           readOnlyHint: true,
@@ -35,7 +36,9 @@ export class FilterCryptoExchangesToolService {
         });
 
         const text = `Found ${result.data.length} crypto exchanges.${
-          result.nextCursor ? " There are more results available." : ""
+          result.nextCursor
+            ? ` The response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`
+            : ""
         }`;
 
         return {

@@ -14,7 +14,8 @@ export class UpdateCryptoExchangeToolService {
       name: "crypto_exchanges.update",
       meta: {
         title: "Update crypto exchange",
-        description: "Updates an existing crypto exchange's details.",
+        description:
+          "Use this when you need to update an existing crypto exchange's details.",
         inputSchema: UpdateCryptoExchangeToolSchema.shape,
         annotations: {
           readOnlyHint: false,

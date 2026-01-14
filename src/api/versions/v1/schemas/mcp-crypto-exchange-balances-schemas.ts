@@ -92,11 +92,13 @@ export const UpdateCryptoExchangeBalanceToolSchema = z.object({
       MonetaryRegex,
       "Invested amount must be a valid monetary value (format: 123.45, no currency symbol, dot as decimal separator)"
     )
+    .nullable()
     .optional()
     .describe("The amount originally invested (format: 123.45, optional)"),
   investedCurrencyCode: z
     .string()
     .length(3, "Currency code must be exactly 3 characters (ISO 4217 format)")
+    .nullable()
     .optional()
     .describe("ISO 4217 currency code of the invested amount (e.g., EUR, USD)"),
 });

@@ -15,7 +15,7 @@ export class DeleteCryptoExchangeToolService {
       meta: {
         title: "Delete crypto exchange",
         description:
-          "Permanently deletes a crypto exchange and all its balances.",
+          "Use this when you need to permanently delete a crypto exchange and all its balances.",
         inputSchema: DeleteCryptoExchangeToolSchema.shape,
         annotations: {
           readOnlyHint: false,
