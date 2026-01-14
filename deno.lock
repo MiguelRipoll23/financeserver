@@ -7,10 +7,15 @@
     "npm:@hono/mcp@0.2.3": "0.2.3_@modelcontextprotocol+sdk@1.25.2__zod@4.3.5__hono@4.11.3__ajv@8.17.1__express@5.1.0_hono@4.11.3_hono-rate-limiter@0.4.2__hono@4.11.3_zod@4.3.5",
     "npm:@hono/zod-openapi@^1.2.0": "1.2.0_hono@4.11.3_zod@4.3.5",
     "npm:@modelcontextprotocol/sdk@^1.25.2": "1.25.2_zod@4.3.5_hono@4.11.3_ajv@8.17.1_express@5.1.0",
+    "npm:@opentelemetry/api-logs@0.209": "0.209.0",
+    "npm:@opentelemetry/api-logs@0.209.0": "0.209.0",
     "npm:@opentelemetry/api@^1.9.0": "1.9.0",
+    "npm:@opentelemetry/exporter-logs-otlp-http@0.209": "0.209.0_@opentelemetry+api@1.9.0",
     "npm:@opentelemetry/exporter-metrics-otlp-http@0.209": "0.209.0_@opentelemetry+api@1.9.0",
     "npm:@opentelemetry/resources@2.3.0": "2.3.0_@opentelemetry+api@1.9.0",
     "npm:@opentelemetry/resources@^2.3.0": "2.3.0_@opentelemetry+api@1.9.0",
+    "npm:@opentelemetry/sdk-logs@0.209": "0.209.0_@opentelemetry+api@1.9.0",
+    "npm:@opentelemetry/sdk-logs@0.209.0": "0.209.0_@opentelemetry+api@1.9.0",
     "npm:@opentelemetry/sdk-metrics@^2.3.0": "2.3.0_@opentelemetry+api@1.9.0",
     "npm:@opentelemetry/semantic-conventions@^1.38.0": "1.38.0",
     "npm:@scalar/hono-api-reference@~0.9.32": "0.9.32_hono@4.11.3",
@@ -370,6 +375,17 @@
       "dependencies": [
         "@opentelemetry/api",
         "@opentelemetry/semantic-conventions"
+      ]
+    },
+    "@opentelemetry/exporter-logs-otlp-http@0.209.0_@opentelemetry+api@1.9.0": {
+      "integrity": "sha512-8sI1bDnoIRzCmT5zX2pNY2I+jD0UEoBr54dzvuzi1oz8Tt0Q9H6d8Bfn5+WoJJaGByewbSwoe8EtaBgSK74jKQ==",
+      "dependencies": [
+        "@opentelemetry/api",
+        "@opentelemetry/api-logs",
+        "@opentelemetry/core",
+        "@opentelemetry/otlp-exporter-base",
+        "@opentelemetry/otlp-transformer",
+        "@opentelemetry/sdk-logs"
       ]
     },
     "@opentelemetry/exporter-metrics-otlp-http@0.209.0_@opentelemetry+api@1.9.0": {
@@ -1225,9 +1241,12 @@
       "npm:@hono/mcp@0.2.3",
       "npm:@hono/zod-openapi@^1.2.0",
       "npm:@modelcontextprotocol/sdk@^1.25.2",
+      "npm:@opentelemetry/api-logs@0.209",
       "npm:@opentelemetry/api@^1.9.0",
+      "npm:@opentelemetry/exporter-logs-otlp-http@0.209",
       "npm:@opentelemetry/exporter-metrics-otlp-http@0.209",
       "npm:@opentelemetry/resources@^2.3.0",
+      "npm:@opentelemetry/sdk-logs@0.209",
       "npm:@opentelemetry/sdk-metrics@^2.3.0",
       "npm:@opentelemetry/semantic-conventions@^1.38.0",
       "npm:@scalar/hono-api-reference@~0.9.32",
