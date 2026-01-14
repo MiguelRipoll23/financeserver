@@ -286,7 +286,7 @@ export class CryptoExchangesService {
 
     // Verify balance exists
     const existingBalance = await db
-      .select()
+      .select({ id: cryptoExchangeBalancesTable.id })
       .from(cryptoExchangeBalancesTable)
       .where(eq(cryptoExchangeBalancesTable.id, balanceId))
       .limit(1)
