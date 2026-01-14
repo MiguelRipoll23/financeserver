@@ -40,8 +40,8 @@ export class MCPService {
     ]);
   }
 
-  public createBankingServer(): McpServer {
-    return this.createServer("banking-mcp", [
+  public createPortfolioServer(): McpServer {
+    return this.createServer("portfolio-mcp", [
       this.bankAccountsMCPService,
       this.bankAccountBalancesMCPService,
       this.cryptoExchangesMCPService,

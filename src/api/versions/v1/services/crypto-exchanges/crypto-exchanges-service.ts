@@ -34,9 +34,14 @@ import type {
   UpdateCryptoExchangeBalanceResponse,
 } from "../../schemas/crypto-exchange-balances-schemas.ts";
 
+import { CryptoExchangesOTelService } from "./crypto-exchanges-otel-service.ts";
+
 @injectable()
 export class CryptoExchangesService {
-  constructor(private databaseService = inject(DatabaseService)) {}
+  constructor(
+    private databaseService = inject(DatabaseService),
+    private _otelService = inject(CryptoExchangesOTelService)
+  ) {}
 
   public async createCryptoExchange(
     payload: CreateCryptoExchangeRequest
