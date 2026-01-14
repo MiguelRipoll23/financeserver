@@ -5,7 +5,7 @@ import { Resource, resourceFromAttributes } from "@opentelemetry/resources";
 import {
   MeterProvider,
   MetricReader,
-  PushMetricExporter,
+  PeriodicExportingMetricReader,
 } from "@opentelemetry/sdk-metrics";
 import { ATTR_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import {
@@ -44,8 +44,9 @@ export class OTelService {
   private createMetricReader(endpoint: string, headers: string): MetricReader {
     const metricExporter = this.createMetricExporter(endpoint, headers);
 
-    return new PushMetricExporter({
+    return new PeriodicExportingMetricReader({
       exporter: metricExporter,
+      exportIntervalMillis: 5000,
     });
   }
 
@@ -81,6 +82,13 @@ export class OTelService {
     }
 
     return resourceFromAttributes(attributes);
+  }
+
+  public async shutdown(): Promise<void> {
+    console.log("[OTel] Sending metrics...");
+    await this.meterProvider?.forceFlush();
+    await this.meterProvider?.shutdown();
+    console.log("[OTel] Metrics sent.");
   }
 
   private initializeSdk(metricReader: MetricReader, resource: Resource): void {
