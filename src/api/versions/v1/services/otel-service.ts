@@ -6,6 +6,9 @@ import {
   MeterProvider,
   MetricReader,
   PeriodicExportingMetricReader,
+  MetricExporter,
+  ResourceMetrics,
+  ExportResult,
 } from "@opentelemetry/sdk-metrics";
 import { ATTR_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import {
@@ -53,13 +56,15 @@ export class OTelService {
   private createMetricExporter(
     endpoint: string,
     headers: string
-  ): OTLPMetricExporter {
+  ): MetricExporter {
     const normalizedEndpoint = endpoint.replace(/\/+$/, "");
 
-    return new OTLPMetricExporter({
+    const otlpExporter = new OTLPMetricExporter({
       url: `${normalizedEndpoint}/v1/metrics`,
       headers: this.parseHeaders(headers),
     });
+
+    return new LoggingMetricExporter(otlpExporter);
   }
 
   private async createResource(): Promise<Resource> {
@@ -198,5 +203,25 @@ export class OTelService {
       .map((byte) => byte.toString(16).padStart(2, "0"))
       .join("");
     return hashHex;
+  }
+}
+
+class LoggingMetricExporter implements MetricExporter {
+  constructor(private readonly exporter: OTLPMetricExporter) {}
+
+  public async export(
+    metrics: ResourceMetrics,
+    resultCallback: (result: ExportResult) => void
+  ): Promise<void> {
+    console.log("[OTel] Periodically sending metrics...", metrics);
+    return this.exporter.export(metrics, resultCallback);
+  }
+
+  public async forceFlush(): Promise<void> {
+    return this.exporter.forceFlush();
+  }
+
+  public async shutdown(): Promise<void> {
+    return this.exporter.shutdown();
   }
 }
