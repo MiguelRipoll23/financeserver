@@ -65,14 +65,15 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
     const clientId = Deno.env.get(ENV_GITHUB_CLIENT_ID);
     const clientSecret = Deno.env.get(ENV_GITHUB_CLIENT_SECRET);
 
-    const credentialsValid = this.validateCredentials(clientId, clientSecret);
-    this.isEnabled = credentialsValid;
-    this.clientId = credentialsValid ? clientId! : null;
-    this.clientSecret = credentialsValid ? clientSecret! : null;
-
-    if (!credentialsValid) {
+    if (this.validateCredentials(clientId, clientSecret)) {
+      this.isEnabled = true;
+      this.clientId = clientId!;
+      this.clientSecret = clientSecret!;
+    } else {
+      this.clientId = null;
+      this.clientSecret = null;
       console.warn(
-        "GitHub OAuth is disabled: GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET environment variables are not defined"
+        "GitHub OAuth is disabled: GITHUB_CLIENT_ID and/or GITHUB_CLIENT_SECRET environment variables are not defined or are empty"
       );
     }
 
