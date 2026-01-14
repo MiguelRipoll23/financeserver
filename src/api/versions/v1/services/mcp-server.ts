@@ -7,6 +7,7 @@ import { SubscriptionsMCPService } from "./subscriptions/subscriptions-mcp-servi
 import { MerchantsMCPService } from "./merchants/merchants-mcp-service.ts";
 import { BankAccountsMCPService } from "./bank-accounts/bank-accounts-mcp-service.ts";
 import { BankAccountBalancesMCPService } from "./bank-account-balances/bank-account-balances-mcp-service.ts";
+import { CryptoExchangesMCPService } from "./crypto-exchanges/crypto-exchanges-mcp-service.ts";
 import { McpToolDefinition } from "../interfaces/mcp/mcp-tool-interface.ts";
 import { McpProvider } from "../types/mcp/mcp-provider-type.ts";
 import { McpServerWithContext } from "../types/mcp/mcp-server-with-context-type.ts";
@@ -22,7 +23,8 @@ export class MCPService {
     private bankAccountsMCPService = inject(BankAccountsMCPService),
     private bankAccountBalancesMCPService = inject(
       BankAccountBalancesMCPService
-    )
+    ),
+    private cryptoExchangesMCPService = inject(CryptoExchangesMCPService)
   ) {}
 
   public createUnifiedServer(): McpServer {
@@ -34,6 +36,7 @@ export class MCPService {
       this.merchantsMCPService,
       this.bankAccountsMCPService,
       this.bankAccountBalancesMCPService,
+      this.cryptoExchangesMCPService,
     ]);
   }
 
@@ -41,6 +44,7 @@ export class MCPService {
     return this.createServer("banking-mcp", [
       this.bankAccountsMCPService,
       this.bankAccountBalancesMCPService,
+      this.cryptoExchangesMCPService,
     ]);
   }
 

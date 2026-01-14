@@ -9,6 +9,8 @@ import { AuthenticatedSubscriptionsRouter } from "./authenticated/authenticated-
 import { AuthenticatedMerchantsRouter } from "./authenticated/authenticated-merchants-router.ts";
 import { AuthenticatedBankAccountsRouter } from "./authenticated/authenticated-bank-accounts-router.ts";
 import { AuthenticatedBankAccountBalancesRouter } from "./authenticated/authenticated-bank-account-balances-router.ts";
+import { AuthenticatedCryptoExchangesRouter } from "./authenticated/authenticated-crypto-exchanges-router.ts";
+import { AuthenticatedCryptoExchangeBalancesRouter } from "./authenticated/authenticated-crypto-exchange-balances-router.ts";
 import { AuthenticatedMCPRouter } from "./authenticated/authenticated-mcp-router.ts";
 import { AuthenticatedUsersRouter } from "./authenticated/authenticated-users-router.ts";
 import { HonoVariables } from "../../../../core/types/hono/hono-variables-type.ts";
@@ -28,6 +30,10 @@ export class V1AuthenticatedRouter {
     private bankAccountsRouter = inject(AuthenticatedBankAccountsRouter),
     private bankAccountBalancesRouter = inject(
       AuthenticatedBankAccountBalancesRouter
+    ),
+    private cryptoExchangesRouter = inject(AuthenticatedCryptoExchangesRouter),
+    private cryptoExchangeBalancesRouter = inject(
+      AuthenticatedCryptoExchangeBalancesRouter
     ),
     private receiptsRouter = inject(AuthenticatedReceiptsRouter),
     private productsRouter = inject(AuthenticatedProductsRouter)
@@ -64,6 +70,14 @@ export class V1AuthenticatedRouter {
     this.app.route(
       "/bank-account-balances",
       this.bankAccountBalancesRouter.getRouter()
+    );
+    this.app.route(
+      "/crypto-exchanges",
+      this.cryptoExchangesRouter.getRouter()
+    );
+    this.app.route(
+      "/crypto-exchange-balances",
+      this.cryptoExchangeBalancesRouter.getRouter()
     );
     this.app.route("/receipts", this.receiptsRouter.getRouter());
     this.app.route("/products", this.productsRouter.getRouter());
