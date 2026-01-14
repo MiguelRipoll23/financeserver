@@ -5,7 +5,7 @@ import { Resource, resourceFromAttributes } from "@opentelemetry/resources";
 import {
   MeterProvider,
   MetricReader,
-  PeriodicExportingMetricReader,
+  PushMetricExporter,
 } from "@opentelemetry/sdk-metrics";
 import { ATTR_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import {
@@ -44,9 +44,8 @@ export class OTelService {
   private createMetricReader(endpoint: string, headers: string): MetricReader {
     const metricExporter = this.createMetricExporter(endpoint, headers);
 
-    return new PeriodicExportingMetricReader({
+    return new PushMetricExporter({
       exporter: metricExporter,
-      exportIntervalMillis: 60000,
     });
   }
 
