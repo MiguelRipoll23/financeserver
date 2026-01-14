@@ -38,11 +38,12 @@ import {
 import { Base64Utils } from "../../../../../core/utils/base64-utils.ts";
 import { OAuthClientRegistryService } from "./oauth-client-registry-service.ts";
 import { UrlUtils } from "../../../../../core/utils/url-utils.ts";
+import { BaseOAuthProviderService } from "./base-oauth-provider-service.ts";
 
 @injectable()
-export class GitHubOAuthService {
-  private readonly clientId: string;
-  private readonly clientSecret: string;
+export class GitHubOAuthService extends BaseOAuthProviderService {
+  private readonly clientId: string | null;
+  private readonly clientSecret: string | null;
   private readonly redirectUri: string;
   private readonly requestedScope: string;
   private readonly clientRegistry: OAuthClientRegistryService;
@@ -60,8 +61,21 @@ export class GitHubOAuthService {
     clientRegistry = inject(OAuthClientRegistryService),
     databaseService = inject(DatabaseService)
   ) {
-    this.clientId = this.getEnvironmentVariable(ENV_GITHUB_CLIENT_ID);
-    this.clientSecret = this.getEnvironmentVariable(ENV_GITHUB_CLIENT_SECRET);
+    super();
+    const clientId = Deno.env.get(ENV_GITHUB_CLIENT_ID);
+    const clientSecret = Deno.env.get(ENV_GITHUB_CLIENT_SECRET);
+
+    const credentialsValid = this.validateCredentials(clientId, clientSecret);
+    this.isEnabled = credentialsValid;
+    this.clientId = credentialsValid ? clientId! : null;
+    this.clientSecret = credentialsValid ? clientSecret! : null;
+
+    if (!credentialsValid) {
+      console.warn(
+        "GitHub OAuth is disabled: GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET environment variables are not defined"
+      );
+    }
+
     const applicationBaseURL = UrlUtils.getApplicationBaseURL();
     this.redirectUri = new URL(
       GITHUB_OAUTH_CALLBACK_PATH,
@@ -76,6 +90,7 @@ export class GitHubOAuthService {
   }
 
   public async getAuthenticatedUser(accessToken: string): Promise<GitHubUser> {
+    this.assertEnabled("GitHub");
     await this.assertTokenValidity(accessToken);
     return await this.fetchUser(accessToken);
   }
@@ -130,6 +145,7 @@ export class GitHubOAuthService {
   public async createAuthorizationRedirect(
     query: OAuthAuthorizeQuery
   ): Promise<string> {
+    this.assertEnabled("GitHub");
     await this.assertClient(query.client_id);
     await this.assertRedirectUri(query.client_id, query.redirect_uri);
 
@@ -147,7 +163,7 @@ export class GitHubOAuthService {
     });
 
     const authorizeUrl = new URL(GITHUB_OAUTH_AUTHORIZE_URL);
-    authorizeUrl.searchParams.set("client_id", this.clientId);
+    authorizeUrl.searchParams.set("client_id", this.clientId!);
     authorizeUrl.searchParams.set("redirect_uri", this.redirectUri);
     authorizeUrl.searchParams.set("scope", scope);
     authorizeUrl.searchParams.set("state", stateToken);
@@ -159,6 +175,7 @@ export class GitHubOAuthService {
   public async createCallbackRedirect(
     query: GitHubCallbackQuery
   ): Promise<string> {
+    this.assertEnabled("GitHub");
     const statePayload = await this.parseSignedState(query.state);
     await this.assertClient(statePayload.clientId);
     await this.assertRedirectUri(
@@ -211,6 +228,7 @@ export class GitHubOAuthService {
   public async exchangeAuthorizationCode(
     request: OAuthTokenRequest
   ): Promise<OAuthTokenResponse> {
+    this.assertEnabled("GitHub");
     if (request.grant_type === "authorization_code") {
       return await this.handleAuthorizationCodeGrant(request);
     } else if (request.grant_type === "refresh_token") {
@@ -300,6 +318,7 @@ export class GitHubOAuthService {
   }
 
   public async revokeToken(request: OAuthRevokeRequest): Promise<void> {
+    this.assertEnabled("GitHub");
     await this.assertClient(request.client_id);
 
     // Try to revoke as refresh token first (most common case)
@@ -632,8 +651,8 @@ export class GitHubOAuthService {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          client_id: this.clientId,
-          client_secret: this.clientSecret,
+          client_id: this.clientId!,
+          client_secret: this.clientSecret!,
           code,
           redirect_uri: this.redirectUri,
         }),
@@ -912,7 +931,8 @@ export class GitHubOAuthService {
       return await this.stateKeyPromise;
     }
 
-    const keyData = new TextEncoder().encode(this.clientSecret);
+    // clientSecret is guaranteed to be non-null when GitHub OAuth is enabled
+    const keyData = new TextEncoder().encode(this.clientSecret!);
     this.stateKeyPromise = crypto.subtle.importKey(
       "raw",
       keyData,
