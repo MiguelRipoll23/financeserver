@@ -1,7 +1,7 @@
 import { injectable } from "@needle-di/core";
-import { metrics, Meter } from "@opentelemetry/api";
+import { metrics, Meter, diag, DiagConsoleLogger, DiagLogLevel } from "@opentelemetry/api";
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-http";
-import { Resource } from "@opentelemetry/resources";
+import { Resource, resourceFromAttributes } from "@opentelemetry/resources";
 import {
   MeterProvider,
   MetricReader,
@@ -28,6 +28,8 @@ export class OTelService {
       console.warn("OTel SDK not initialized (missing configuration)");
       return;
     }
+
+    diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO);
 
     const metricReader = this.createMetricReader(endpoint, headers);
     const resource = await this.createResource();
@@ -79,7 +81,7 @@ export class OTelService {
       attributes["deployment.id"] = deploymentId;
     }
 
-    return new Resource(attributes);
+    return resourceFromAttributes(attributes);
   }
 
   private initializeSdk(metricReader: MetricReader, resource: Resource): void {
