@@ -17,6 +17,8 @@ export { oauthAuthorizationCodes } from "./tables/oauth-authorization-codes-tabl
 export { oauthConnections } from "./tables/oauth-connections-table.ts";
 export { bankAccountsTable } from "./tables/bank-accounts-table.ts";
 export { bankAccountBalancesTable } from "./tables/bank-account-balances-table.ts";
+export { cryptoExchangesTable } from "./tables/crypto-exchanges-table.ts";
+export { cryptoExchangeBalancesTable } from "./tables/crypto-exchange-balances-table.ts";
 
 // Export RLS roles and helpers
 export * from "./rls.ts";

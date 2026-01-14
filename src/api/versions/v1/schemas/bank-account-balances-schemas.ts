@@ -70,10 +70,10 @@ export type BankAccountBalanceIdParam = z.infer<
 
 export const GetBankAccountBalancesRequestSchema = PaginationQuerySchema.extend(
   {
-    bankAccountId: z.coerce
+    bankAccountId: z
       .number()
       .int()
-      .openapi({ example: 1 })
+      .openapi({ example: 1, type: "integer" })
       .describe("Bank account identifier"),
     sortOrder: z
       .nativeEnum(SortOrder)

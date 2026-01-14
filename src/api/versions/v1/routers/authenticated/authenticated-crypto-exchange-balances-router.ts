@@ -1,24 +1,24 @@
 import { inject, injectable } from "@needle-di/core";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import type { Context } from "hono";
-import { BankAccountsService } from "../../services/bank-accounts/bank-accounts-service.ts";
+import { CryptoExchangesService } from "../../services/crypto-exchanges/crypto-exchanges-service.ts";
 import {
-  CreateBankAccountBalanceRequestSchema,
-  CreateBankAccountBalanceResponseSchema,
-  GetBankAccountBalancesRequestSchema,
-  GetBankAccountBalancesResponseSchema,
-  UpdateBankAccountBalanceRequestSchema,
-  UpdateBankAccountBalanceResponseSchema,
-  BankAccountBalanceIdParamSchema,
-} from "../../schemas/bank-account-balances-schemas.ts";
+  CreateCryptoExchangeBalanceRequestSchema,
+  CreateCryptoExchangeBalanceResponseSchema,
+  GetCryptoExchangeBalancesRequestSchema,
+  GetCryptoExchangeBalancesResponseSchema,
+  CryptoExchangeBalanceIdParamSchema,
+  UpdateCryptoExchangeBalanceRequestSchema,
+  UpdateCryptoExchangeBalanceResponseSchema,
+} from "../../schemas/crypto-exchange-balances-schemas.ts";
 import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
 import { ServerResponse } from "../../models/server-response.ts";
 
 @injectable()
-export class AuthenticatedBankAccountBalancesRouter {
+export class AuthenticatedCryptoExchangeBalancesRouter {
   private app: OpenAPIHono<{ Variables: HonoVariables }>;
 
-  constructor(private bankAccountsService = inject(BankAccountsService)) {
+  constructor(private cryptoExchangesService = inject(CryptoExchangesService)) {
     this.app = new OpenAPIHono();
     this.setRoutes();
   }
@@ -28,26 +28,26 @@ export class AuthenticatedBankAccountBalancesRouter {
   }
 
   private setRoutes(): void {
-    this.registerListBankAccountBalancesRoute();
-    this.registerCreateBankAccountBalanceRoute();
-    this.registerUpdateBankAccountBalanceRoute();
-    this.registerDeleteBankAccountBalanceRoute();
+    this.registerListBalancesRoute();
+    this.registerCreateBalanceRoute();
+    this.registerUpdateBalanceRoute();
+    this.registerDeleteBalanceRoute();
   }
 
-  private registerCreateBankAccountBalanceRoute(): void {
+  private registerCreateBalanceRoute(): void {
     this.app.openapi(
       createRoute({
         method: "post",
         path: "/",
-        summary: "Create bank account balance",
+        summary: "Create crypto exchange balance",
         description:
-          "Records a new balance entry for a bank account. Creates a historical record of the account balance.",
-        tags: ["Bank account balances"],
+          "Adds a new balance entry for a specific crypto exchange.",
+        tags: ["Crypto exchange balances"],
         request: {
           body: {
             content: {
               "application/json": {
-                schema: CreateBankAccountBalanceRequestSchema,
+                schema: CreateCryptoExchangeBalanceRequestSchema,
               },
             },
           },
@@ -57,7 +57,7 @@ export class AuthenticatedBankAccountBalancesRouter {
             description: "Balance created successfully",
             content: {
               "application/json": {
-                schema: CreateBankAccountBalanceResponseSchema,
+                schema: CreateCryptoExchangeBalanceResponseSchema,
               },
             },
           },
@@ -67,74 +67,79 @@ export class AuthenticatedBankAccountBalancesRouter {
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
-        const body = CreateBankAccountBalanceRequestSchema.parse(
+        const body = CreateCryptoExchangeBalanceRequestSchema.parse(
           await context.req.json()
         );
         const result =
-          await this.bankAccountsService.createBankAccountBalance(body);
+          await this.cryptoExchangesService.createCryptoExchangeBalance(body);
 
         return context.json(result, 201);
       }
     );
   }
 
-  private registerListBankAccountBalancesRoute(): void {
+  private registerListBalancesRoute(): void {
     this.app.openapi(
       createRoute({
         method: "post",
         path: "/find",
-        summary: "List bank account balances",
-        description:
-          "Returns paginated balance history for a specific bank account with optional filters.",
-        tags: ["Bank account balances"],
+        summary: "List crypto exchange balances",
+        description: "Returns paginated balances for a specific crypto exchange.",
+        tags: ["Crypto exchange balances"],
         request: {
           body: {
             content: {
               "application/json": {
-                schema: GetBankAccountBalancesRequestSchema,
+                schema: GetCryptoExchangeBalancesRequestSchema,
               },
             },
           },
         },
         responses: {
           200: {
-            description: "Bank account balances page",
+            description: "Balances page",
             content: {
               "application/json": {
-                schema: GetBankAccountBalancesResponseSchema,
+                schema: GetCryptoExchangeBalancesResponseSchema,
               },
             },
           },
+          ...ServerResponse.BadRequest,
           ...ServerResponse.Unauthorized,
           ...ServerResponse.NotFound,
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
-        const payload = await this.readJsonOrEmpty(context);
-        const body = GetBankAccountBalancesRequestSchema.parse(payload);
+        const body = GetCryptoExchangeBalancesRequestSchema.parse(
+          await context.req.json()
+        );
         const result =
-          await this.bankAccountsService.getBankAccountBalances(body);
+          await this.cryptoExchangesService.getCryptoExchangeBalances({
+            cryptoExchangeId: body.cryptoExchangeId,
+            limit: body.limit,
+            cursor: body.cursor,
+            sortOrder: body.sortOrder,
+          });
 
         return context.json(result, 200);
       }
     );
   }
 
-  private registerUpdateBankAccountBalanceRoute(): void {
+  private registerUpdateBalanceRoute(): void {
     this.app.openapi(
       createRoute({
         method: "patch",
         path: "/{id}",
-        summary: "Update bank account balance",
-        description:
-          "Updates an existing bank account balance record by identifier.",
-        tags: ["Bank account balances"],
+        summary: "Update crypto exchange balance",
+        description: "Updates a specific balance entry.",
+        tags: ["Crypto exchange balances"],
         request: {
-          params: BankAccountBalanceIdParamSchema,
+          params: CryptoExchangeBalanceIdParamSchema,
           body: {
             content: {
               "application/json": {
-                schema: UpdateBankAccountBalanceRequestSchema,
+                schema: UpdateCryptoExchangeBalanceRequestSchema,
               },
             },
           },
@@ -144,7 +149,7 @@ export class AuthenticatedBankAccountBalancesRouter {
             description: "Balance updated successfully",
             content: {
               "application/json": {
-                schema: UpdateBankAccountBalanceResponseSchema,
+                schema: UpdateCryptoExchangeBalanceResponseSchema,
               },
             },
           },
@@ -154,32 +159,33 @@ export class AuthenticatedBankAccountBalancesRouter {
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
-        const { id } = BankAccountBalanceIdParamSchema.parse(
+        const { id } = CryptoExchangeBalanceIdParamSchema.parse(
           context.req.param()
         );
-        const body = UpdateBankAccountBalanceRequestSchema.parse(
+        const body = UpdateCryptoExchangeBalanceRequestSchema.parse(
           await context.req.json()
         );
-        const result = await this.bankAccountsService.updateBankAccountBalance(
-          parseInt(id, 10),
-          body
-        );
+        const result =
+          await this.cryptoExchangesService.updateCryptoExchangeBalance(
+            parseInt(id, 10),
+            body
+          );
 
         return context.json(result, 200);
       }
     );
   }
 
-  private registerDeleteBankAccountBalanceRoute(): void {
+  private registerDeleteBalanceRoute(): void {
     this.app.openapi(
       createRoute({
         method: "delete",
         path: "/{id}",
-        summary: "Delete bank account balance",
-        description: "Permanently deletes a bank account balance record.",
-        tags: ["Bank account balances"],
+        summary: "Delete crypto exchange balance",
+        description: "Permanently deletes a specific balance entry.",
+        tags: ["Crypto exchange balances"],
         request: {
-          params: BankAccountBalanceIdParamSchema,
+          params: CryptoExchangeBalanceIdParamSchema,
         },
         responses: {
           204: {
@@ -190,25 +196,15 @@ export class AuthenticatedBankAccountBalancesRouter {
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
-        const { id } = BankAccountBalanceIdParamSchema.parse(
+        const { id } = CryptoExchangeBalanceIdParamSchema.parse(
           context.req.param()
         );
-        await this.bankAccountsService.deleteBankAccountBalance(
+        await this.cryptoExchangesService.deleteCryptoExchangeBalance(
           parseInt(id, 10)
         );
 
         return context.body(null, 204);
       }
     );
-  }
-
-  private async readJsonOrEmpty(
-    context: Context<{ Variables: HonoVariables }>
-  ): Promise<unknown> {
-    try {
-      return await context.req.json();
-    } catch {
-      return {};
-    }
   }
 }
