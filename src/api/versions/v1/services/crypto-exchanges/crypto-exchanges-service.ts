@@ -40,7 +40,7 @@ import { CryptoExchangesOTelService } from "./crypto-exchanges-otel-service.ts";
 export class CryptoExchangesService {
   constructor(
     private databaseService = inject(DatabaseService),
-    private otelService = inject(CryptoExchangesOTelService)
+    private _otelService = inject(CryptoExchangesOTelService)
   ) {}
 
   public async createCryptoExchange(
