@@ -13,3 +13,15 @@ databaseService.init();
 
 const httpService = container.get(HTTPService);
 await httpService.listen();
+
+Deno.addSignalListener("SIGTERM", async () => {
+  console.log("SIGTERM received. Shutting down gracefully...");
+  await otelService.shutdown();
+  Deno.exit(0);
+});
+
+Deno.addSignalListener("SIGINT", async () => {
+  console.log("SIGINT received. Shutting down gracefully...");
+  await otelService.shutdown();
+  Deno.exit(0);
+});

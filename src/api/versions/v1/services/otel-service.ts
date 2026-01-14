@@ -1,21 +1,15 @@
 import { injectable } from "@needle-di/core";
 import { metrics, Meter, diag, DiagConsoleLogger, DiagLogLevel } from "@opentelemetry/api";
-import { logs, Logger } from "@opentelemetry/api-logs";
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-http";
-import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-http";
 import { Resource, resourceFromAttributes } from "@opentelemetry/resources";
 import {
-  ConsoleMetricExporter,
   MeterProvider,
   MetricReader,
   PeriodicExportingMetricReader,
+  MetricExporter,
+  ResourceMetrics,
+  ExportResult,
 } from "@opentelemetry/sdk-metrics";
-import {
-  LoggerProvider,
-  SimpleLogRecordProcessor,
-  ConsoleLogRecordExporter,
-  LogRecordProcessor,
-} from "@opentelemetry/sdk-logs";
 import { ATTR_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import {
   ENV_APP_OTEL_EXPORTER_OTLP_ENDPOINT,
@@ -28,7 +22,6 @@ import {
 export class OTelService {
   private static readonly SERVICE_NAME = "financeserver";
   private meterProvider: MeterProvider | null = null;
-  private loggerProvider: LoggerProvider | null = null;
 
   public async init(): Promise<void> {
     const endpoint = Deno.env.get(ENV_APP_OTEL_EXPORTER_OTLP_ENDPOINT);
@@ -39,37 +32,16 @@ export class OTelService {
       return;
     }
 
-    diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
+    diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO);
 
     const metricReader = this.createMetricReader(endpoint, headers);
-    const consoleReader = new PeriodicExportingMetricReader({
-      exporter: new ConsoleMetricExporter(),
-      exportIntervalMillis: 10000,
-    });
-
-    const logExporter = this.createLogExporter(endpoint, headers);
-    const logProcessors: LogRecordProcessor[] = [
-      new SimpleLogRecordProcessor(logExporter),
-      new SimpleLogRecordProcessor(new ConsoleLogRecordExporter()),
-    ];
-
     const resource = await this.createResource();
 
-    this.initializeSdk([metricReader, consoleReader], logProcessors, resource);
-
-    const logger = logs.getLogger("otel-service");
-    logger.emit({
-      body: "OTel SDK initialized and logging enabled",
-      attributes: { "service.name": OTelService.SERVICE_NAME },
-    });
+    this.initializeSdk(metricReader, resource);
   }
 
   public getMeter(name: string, version?: string): Meter {
     return metrics.getMeter(name, version);
-  }
-
-  public getLogger(name: string, version?: string): Logger {
-    return logs.getLogger(name, version);
   }
 
   private createMetricReader(endpoint: string, headers: string): MetricReader {
@@ -77,32 +49,22 @@ export class OTelService {
 
     return new PeriodicExportingMetricReader({
       exporter: metricExporter,
-      exportIntervalMillis: 60000,
+      exportIntervalMillis: 5000,
     });
   }
 
   private createMetricExporter(
     endpoint: string,
     headers: string
-  ): OTLPMetricExporter {
+  ): MetricExporter {
     const normalizedEndpoint = endpoint.replace(/\/+$/, "");
 
-    return new OTLPMetricExporter({
+    const otlpExporter = new OTLPMetricExporter({
       url: `${normalizedEndpoint}/v1/metrics`,
       headers: this.parseHeaders(headers),
     });
-  }
 
-  private createLogExporter(
-    endpoint: string,
-    headers: string
-  ): OTLPLogExporter {
-    const normalizedEndpoint = endpoint.replace(/\/+$/, "");
-
-    return new OTLPLogExporter({
-      url: `${normalizedEndpoint}/v1/logs`,
-      headers: this.parseHeaders(headers),
-    });
+    return new LoggingMetricExporter(otlpExporter);
   }
 
   private async createResource(): Promise<Resource> {
@@ -127,24 +89,21 @@ export class OTelService {
     return resourceFromAttributes(attributes);
   }
 
-  private initializeSdk(
-    metricReaders: MetricReader[],
-    logProcessors: LogRecordProcessor[],
-    resource: Resource
-  ): void {
+  public async shutdown(): Promise<void> {
+    console.log("[OTel] Sending metrics...");
+    await this.meterProvider?.forceFlush();
+    await this.meterProvider?.shutdown();
+    console.log("[OTel] Metrics sent.");
+  }
+
+  private initializeSdk(metricReader: MetricReader, resource: Resource): void {
     this.meterProvider = new MeterProvider({
       resource: resource,
-      readers: metricReaders,
-    });
-
-    this.loggerProvider = new LoggerProvider({
-      resource: resource,
-      processors: logProcessors,
+      readers: [metricReader],
     });
 
     try {
       metrics.setGlobalMeterProvider(this.meterProvider);
-      logs.setGlobalLoggerProvider(this.loggerProvider);
       console.log("OTel SDK initialized");
     } catch (error) {
       console.error("Error initializing OTel SDK", error);
@@ -244,5 +203,25 @@ export class OTelService {
       .map((byte) => byte.toString(16).padStart(2, "0"))
       .join("");
     return hashHex;
+  }
+}
+
+class LoggingMetricExporter implements MetricExporter {
+  constructor(private readonly exporter: OTLPMetricExporter) {}
+
+  public async export(
+    metrics: ResourceMetrics,
+    resultCallback: (result: ExportResult) => void
+  ): Promise<void> {
+    console.log("[OTel] Periodically sending metrics...", metrics);
+    return this.exporter.export(metrics, resultCallback);
+  }
+
+  public async forceFlush(): Promise<void> {
+    return this.exporter.forceFlush();
+  }
+
+  public async shutdown(): Promise<void> {
+    return this.exporter.shutdown();
   }
 }
