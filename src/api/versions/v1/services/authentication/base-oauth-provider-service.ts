@@ -13,9 +13,7 @@ export abstract class BaseOAuthProviderService {
   protected validateCredentials(
     ...credentials: Array<string | undefined>
   ): boolean {
-    return credentials.every(
-      (credential) => credential !== undefined && credential.length > 0
-    );
+    return credentials.every(Boolean);
   }
 
   /**
