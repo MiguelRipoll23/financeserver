@@ -41,7 +41,7 @@ import { BankAccountsOTelService } from "./bank-accounts-otel-service.ts";
 export class BankAccountsService {
   constructor(
     private databaseService = inject(DatabaseService),
-    private otelService = inject(BankAccountsOTelService)
+    private _otelService = inject(BankAccountsOTelService)
   ) {}
 
   public async createBankAccount(
