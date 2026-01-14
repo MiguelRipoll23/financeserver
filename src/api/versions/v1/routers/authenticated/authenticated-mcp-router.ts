@@ -31,10 +31,10 @@ export class AuthenticatedMCPRouter {
     );
 
     this.registerMcpRoutes(
-      "/banking",
-      "Connect banking",
-      "Establishes a banking-focused streaming Model Context Protocol session for bank accounts and balances.",
-      () => this.mcpService.createBankingServer()
+      "/portfolio",
+      "Connect portfolio",
+      "Establishes a portfolio-focused streaming Model Context Protocol session for bank accounts, crypto exchanges, and balances.",
+      () => this.mcpService.createPortfolioServer()
     );
 
     this.registerMcpRoutes(
