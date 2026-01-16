@@ -35,13 +35,13 @@ import type {
   UpdateBankAccountBalanceResponse,
 } from "../../schemas/bank-account-balances-schemas.ts";
 
-import { BankAccountsOTelService } from "./bank-accounts-otel-service.ts";
+
 
 @injectable()
 export class BankAccountsService {
   constructor(
     private databaseService = inject(DatabaseService),
-    private _otelService = inject(BankAccountsOTelService)
+
   ) {}
 
   public async createBankAccount(

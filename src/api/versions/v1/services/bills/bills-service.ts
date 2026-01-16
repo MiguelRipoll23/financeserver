@@ -20,7 +20,7 @@ import { SortOrder } from "../../enums/sort-order-enum.ts";
 import { BillSortField } from "../../enums/bill-sort-field-enum.ts";
 import { BillsFilter } from "../../interfaces/bills/bills-filter-interface.ts";
 import { BillSummary } from "../../interfaces/bills/bill-summary-interface.ts";
-import { BillsOTelService } from "./bills-otel-service.ts";
+
 import type {
   GetBillsResponse,
   UpsertBillRequest,
@@ -36,7 +36,7 @@ type NormalizedCategoryInput = {
 export class BillsService {
   constructor(
     private databaseService = inject(DatabaseService),
-    private otelService = inject(BillsOTelService)
+
   ) {}
 
   public async createBill(
@@ -102,11 +102,6 @@ export class BillsService {
       return await this.loadBillResponse(tx, billId);
     });
 
-    this.recordBillTelemetry(
-      categoryInput.name,
-      totalAmountCents / 100,
-      payload.currencyCode
-    );
 
     return billResponse;
   }
@@ -187,13 +182,7 @@ export class BillsService {
       return await this.loadBillResponse(tx, billId);
     });
 
-    if (isNewBill) {
-      this.recordBillTelemetry(
-        categoryInput.name,
-        totalAmountCents / 100,
-        payload.currencyCode
-      );
-    }
+
 
     return billResponse;
   }
@@ -681,16 +670,5 @@ export class BillsService {
     );
   }
 
-  private recordBillTelemetry(
-    categoryName: string,
-    totalAmount: number,
-    currencyCode: string
-  ): void {
-    // Record telemetry outside transaction to avoid rollback on failure
-    try {
-      this.otelService.recordBill(categoryName, totalAmount, currencyCode);
-    } catch (error) {
-      console.warn("Failed to record bill telemetry:", error);
-    }
-  }
+
 }
