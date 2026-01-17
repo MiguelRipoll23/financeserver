@@ -10,12 +10,9 @@ import {
   ENV_APP_OTEL_EXPORTER_OTLP_HEADERS,
   ENV_DATABASE_URL,
 } from "../constants/environment-constants.ts";
+import { DomainOTelService } from "../interfaces/otel/domain-otel-service-interface.ts";
 
 const { resourceFromAttributes } = resourcesModule;
-
-interface DomainOTelService {
-  pushAllBalanceMetrics(): Promise<void>;
-}
 
 @injectable()
 export class OTelService {
@@ -73,7 +70,7 @@ export class OTelService {
 
   public async pushAllMetrics(): Promise<void> {
     for (const service of this.domainServices) {
-      await service.pushAllBalanceMetrics();
+      await service.pushAllMetrics();
     }
   }
 

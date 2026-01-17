@@ -74,7 +74,7 @@ export class BankAccountBalancesOTelService {
     await this.otelService.forceFlush();
   }
 
-  public async pushAllBalanceMetrics(): Promise<void> {
+  public async pushAllMetrics(): Promise<void> {
     const db = this.databaseService.get();
 
     const balances = await db
