@@ -34,6 +34,7 @@ export const FilterBankAccountInterestRatesToolSchema = z.object({
     .number()
     .int()
     .positive()
+    .optional()
     .describe("ID of the bank account to get interest rates for"),
   sortOrder: z.nativeEnum(SortOrder).optional().describe("Sort order"),
   pageSize: z

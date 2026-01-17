@@ -48,7 +48,7 @@ export class AuthenticatedBankAccountInterestRatesRouter {
         tags: ["Bank account interest rates"],
         request: {
           body: {
-            required: false,
+            required: true,
             content: {
               "application/json": {
                 schema: GetBankAccountInterestRatesRequestSchema,

@@ -80,7 +80,7 @@ export class BankAccountInterestRatesService {
   }
 
   public async getBankAccountInterestRates(payload: {
-    bankAccountId: number;
+    bankAccountId?: number;
     limit?: number;
     cursor?: string;
     sortOrder?: SortOrder;
@@ -91,20 +91,22 @@ export class BankAccountInterestRatesService {
     const cursor = payload.cursor;
     const sortOrder = payload.sortOrder ?? SortOrder.Desc;
 
-    // Verify bank account exists
-    const account = await db
-      .select({ id: bankAccountsTable.id })
-      .from(bankAccountsTable)
-      .where(eq(bankAccountsTable.id, accountId))
-      .limit(1)
-      .then((rows) => rows[0]);
+    // Verify bank account exists if provided
+    if (accountId) {
+      const account = await db
+        .select({ id: bankAccountsTable.id })
+        .from(bankAccountsTable)
+        .where(eq(bankAccountsTable.id, accountId))
+        .limit(1)
+        .then((rows) => rows[0]);
 
-    if (!account) {
-      throw new ServerError(
-        "BANK_ACCOUNT_NOT_FOUND",
-        `Bank account with ID ${accountId} not found`,
-        404
-      );
+      if (!account) {
+        throw new ServerError(
+          "BANK_ACCOUNT_NOT_FOUND",
+          `Bank account with ID ${accountId} not found`,
+          404
+        );
+      }
     }
 
     const size = Math.min(pageSize, MAX_PAGE_SIZE);
@@ -112,10 +114,17 @@ export class BankAccountInterestRatesService {
 
     const orderDirection = sortOrder === SortOrder.Asc ? asc : desc;
 
+    const conditions: SQL[] = [];
+    if (accountId) {
+      conditions.push(eq(bankAccountInterestRatesTable.bankAccountId, accountId));
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
     const [{ count }] = await db
       .select({ count: sql<number>`COUNT(*)` })
       .from(bankAccountInterestRatesTable)
-      .where(eq(bankAccountInterestRatesTable.bankAccountId, accountId));
+      .where(whereClause);
 
     const total = Number(count ?? 0);
 
@@ -129,7 +138,7 @@ export class BankAccountInterestRatesService {
     const results = await db
       .select()
       .from(bankAccountInterestRatesTable)
-      .where(eq(bankAccountInterestRatesTable.bankAccountId, accountId))
+      .where(whereClause)
       .orderBy(
         orderDirection(bankAccountInterestRatesTable.createdAt),
         orderDirection(bankAccountInterestRatesTable.id)

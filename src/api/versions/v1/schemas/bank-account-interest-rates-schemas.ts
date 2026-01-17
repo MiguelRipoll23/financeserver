@@ -82,6 +82,7 @@ export const GetBankAccountInterestRatesRequestSchema = PaginationQuerySchema.ex
     bankAccountId: z
       .number()
       .int()
+      .optional()
       .openapi({ example: 1, type: "integer" })
       .describe("Bank account identifier"),
     sortOrder: z
