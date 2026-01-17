@@ -75,6 +75,11 @@ export class BankAccountBalancesOTelService {
   }
 
   public async pushAllMetrics(): Promise<void> {
+    const counter = await this.getOrCreateCounter();
+    if (!counter) {
+      return;
+    }
+
     const db = this.databaseService.get();
 
     const balances = await db
@@ -82,8 +87,18 @@ export class BankAccountBalancesOTelService {
       .from(bankAccountBalancesTable);
 
     for (const balance of balances) {
-      await this.pushBalanceMetric(balance.id);
+      const metric = await this.collectBalanceMetric(balance.id);
+      if (metric) {
+        counter.add(parseFloat(metric.balance), {
+          balance_id: metric.balanceId.toString(),
+          bank_account_name: metric.bankAccountName,
+          currency_code: metric.currencyCode,
+          interest_rate: metric.interestRate ?? "0",
+        });
+      }
     }
+
+    await this.otelService.forceFlush();
   }
 
   private async collectBalanceMetric(

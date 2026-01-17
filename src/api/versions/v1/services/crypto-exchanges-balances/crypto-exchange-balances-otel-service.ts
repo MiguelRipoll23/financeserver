@@ -77,6 +77,11 @@ export class CryptoExchangeBalancesOTelService {
   }
 
   public async pushAllMetrics(): Promise<void> {
+    const counter = await this.getOrCreateCounter();
+    if (!counter) {
+      return;
+    }
+
     const db = this.databaseService.get();
 
     const balances = await db
@@ -84,8 +89,19 @@ export class CryptoExchangeBalancesOTelService {
       .from(cryptoExchangeBalancesTable);
 
     for (const balance of balances) {
-      await this.pushBalanceMetric(balance.id);
+      const metric = await this.collectBalanceMetric(balance.id);
+      if (metric) {
+        counter.add(parseFloat(metric.balance), {
+          balance_id: metric.balanceId.toString(),
+          crypto_exchange_name: metric.cryptoExchangeName,
+          symbol_code: metric.symbolCode,
+          invested_amount: metric.investedAmount ?? "0",
+          invested_currency_code: metric.investedCurrencyCode ?? "none",
+        });
+      }
     }
+
+    await this.otelService.forceFlush();
   }
 
   private async collectBalanceMetric(
