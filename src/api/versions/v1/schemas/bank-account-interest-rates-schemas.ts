@@ -18,7 +18,7 @@ export const CreateBankAccountInterestRateRequestSchema = z.object({
   interestRateStartDate: DateOnlyStringSchema.describe(
     "Start date of interest rate period in YYYY-MM-DD format"
   ),
-  interestRateEndDate: DateOnlyStringSchema.optional().describe(
+  interestRateEndDate: DateOnlyStringSchema.nullable().optional().describe(
     "End date of interest rate period in YYYY-MM-DD format"
   ),
 });
@@ -102,7 +102,7 @@ export const UpdateBankAccountInterestRateRequestSchema = z.object({
   interestRateStartDate: DateOnlyStringSchema.optional().describe(
     "Start date of interest rate period in YYYY-MM-DD format"
   ),
-  interestRateEndDate: DateOnlyStringSchema.optional().describe(
+  interestRateEndDate: DateOnlyStringSchema.nullable().optional().describe(
     "End date of interest rate period in YYYY-MM-DD format"
   ),
 });
