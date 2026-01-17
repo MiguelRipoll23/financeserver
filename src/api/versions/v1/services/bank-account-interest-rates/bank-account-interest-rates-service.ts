@@ -213,10 +213,12 @@ export class BankAccountInterestRatesService {
       const newStartDate =
         payload.interestRateStartDate ?? existingRate.interestRateStartDate;
       const newEndDate =
-        payload.interestRateEndDate ?? existingRate.interestRateEndDate;
+        payload.interestRateEndDate !== undefined
+          ? payload.interestRateEndDate
+          : existingRate.interestRateEndDate;
 
       // Treat null end date as far future
-      const effectiveEndDate = newEndDate ?? "9999-12-31";
+      const effectiveEndDate = newEndDate === null ? "9999-12-31" : newEndDate;
 
       if (
         payload.interestRateStartDate !== undefined ||
