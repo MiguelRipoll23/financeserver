@@ -1,6 +1,6 @@
 import { inject, injectable } from "@needle-di/core";
 import { eq } from "drizzle-orm";
-import type { Counter } from "@opentelemetry/api";
+import type { UpDownCounter } from "@opentelemetry/api";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import {
   bankAccountsTable,
@@ -21,7 +21,7 @@ export class BankAccountBalancesOTelService {
   private static readonly METER_NAME = "bank-accounts";
   private static readonly COUNTER_NAME = "balance";
 
-  private counter: Counter | null = null;
+  private counter: UpDownCounter | null = null;
 
   constructor(
     private databaseService = inject(DatabaseService),
@@ -43,7 +43,7 @@ export class BankAccountBalancesOTelService {
     const meter = meterProvider.getMeter(
       BankAccountBalancesOTelService.METER_NAME,
     );
-    this.counter = meter.createCounter(
+    this.counter = meter.createUpDownCounter(
       BankAccountBalancesOTelService.COUNTER_NAME,
       {
         description: "Bank account balance metric",

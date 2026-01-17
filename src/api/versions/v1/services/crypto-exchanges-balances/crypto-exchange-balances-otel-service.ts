@@ -1,6 +1,6 @@
 import { inject, injectable } from "@needle-di/core";
 import { eq } from "drizzle-orm";
-import type { Counter } from "@opentelemetry/api";
+import type { UpDownCounter } from "@opentelemetry/api";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import {
   cryptoExchangesTable,
@@ -22,7 +22,7 @@ export class CryptoExchangeBalancesOTelService {
   private static readonly METER_NAME = "crypto-exchanges";
   private static readonly COUNTER_NAME = "balance";
 
-  private counter: Counter | null = null;
+  private counter: UpDownCounter | null = null;
 
   constructor(
     private databaseService = inject(DatabaseService),
@@ -44,7 +44,7 @@ export class CryptoExchangeBalancesOTelService {
     const meter = meterProvider.getMeter(
       CryptoExchangeBalancesOTelService.METER_NAME,
     );
-    this.counter = meter.createCounter(
+    this.counter = meter.createUpDownCounter(
       CryptoExchangeBalancesOTelService.COUNTER_NAME,
       {
         description: "Crypto exchange balance metric",
