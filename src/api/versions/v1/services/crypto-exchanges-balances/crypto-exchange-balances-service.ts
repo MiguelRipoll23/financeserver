@@ -204,21 +204,27 @@ export class CryptoExchangeBalancesService {
   public async deleteCryptoExchangeBalance(balanceId: number): Promise<void> {
     const db = this.databaseService.get();
 
-    // Push metric before deletion (while balance still exists)
-    await this.cryptoExchangeBalancesOTelService.pushBalanceMetric(balanceId);
-
-    const result = await db
-      .delete(cryptoExchangeBalancesTable)
+    // Verify balance exists before pushing telemetry
+    const existing = await db
+      .select({ id: cryptoExchangeBalancesTable.id })
+      .from(cryptoExchangeBalancesTable)
       .where(eq(cryptoExchangeBalancesTable.id, balanceId))
-      .returning({ id: cryptoExchangeBalancesTable.id });
+      .limit(1);
 
-    if (result.length === 0) {
+    if (existing.length === 0) {
       throw new ServerError(
         "BALANCE_NOT_FOUND",
         `Balance with ID ${balanceId} not found`,
         404,
       );
     }
+
+    // Push metric before deletion (while balance still exists)
+    await this.cryptoExchangeBalancesOTelService.pushBalanceMetric(balanceId);
+
+    await db
+      .delete(cryptoExchangeBalancesTable)
+      .where(eq(cryptoExchangeBalancesTable.id, balanceId));
   }
 
   private mapBalanceToResponse(

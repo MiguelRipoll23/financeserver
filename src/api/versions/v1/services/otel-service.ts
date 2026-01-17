@@ -3,7 +3,7 @@ import {
   PeriodicExportingMetricReader,
 } from "@opentelemetry/sdk-metrics";
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-http";
-import resourcesModule from "@opentelemetry/resources";
+import { resourceFromAttributes } from "@opentelemetry/resources";
 import { injectable } from "@needle-di/core";
 import {
   ENV_APP_OTEL_EXPORTER_OTLP_METRICS_ENDPOINT,
@@ -11,8 +11,6 @@ import {
   ENV_DATABASE_URL,
 } from "../constants/environment-constants.ts";
 import { DomainOTelService } from "../interfaces/otel/domain-otel-service-interface.ts";
-
-const { resourceFromAttributes } = resourcesModule;
 
 @injectable()
 export class OTelService {
@@ -87,7 +85,6 @@ export class OTelService {
       console.log("OTel metrics flushed successfully");
     } catch (error) {
       console.error("Failed to flush OTel metrics:", error);
-      throw error;
     }
   }
 
@@ -141,7 +138,20 @@ export class OTelService {
 
     const databaseUrl = Deno.env.get(ENV_DATABASE_URL);
     if (databaseUrl) {
-      attributes["database_hash"] = await this.hashStringSha256(databaseUrl);
+      try {
+        const url = new URL(databaseUrl);
+        const hostname = url.hostname;
+        const dbName = url.pathname.replace(/^\//, ""); // Remove leading slash
+
+        if (hostname && dbName) {
+          const nonSecretIdentifier = `${hostname}/${dbName}`;
+          attributes["database_hash"] =
+            await this.hashStringSha256(nonSecretIdentifier);
+        }
+      } catch (error) {
+        console.error("Failed to parse DATABASE_URL for telemetry:", error);
+        // Skip database_hash attribute if URL is invalid
+      }
     }
 
     return resourceFromAttributes(attributes);
