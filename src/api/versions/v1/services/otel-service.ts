@@ -159,7 +159,7 @@ export class OTelService {
 
     const databaseUrl = Deno.env.get(ENV_DATABASE_URL);
     if (databaseUrl) {
-      attributes["database.hash"] = await this.hashStringSha256(databaseUrl);
+      attributes["database_hash"] = await this.hashStringSha256(databaseUrl);
     }
 
     return resourceFromAttributes(attributes);
