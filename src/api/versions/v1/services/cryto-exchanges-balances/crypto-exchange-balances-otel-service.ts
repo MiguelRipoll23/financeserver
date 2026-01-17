@@ -31,12 +31,12 @@ export class CryptoExchangeBalancesOTelService {
     this.otelService.registerDomainService(this);
   }
 
-  private getCounter(): Counter | null {
+  private async getOrCreateCounter() {
     if (this.counter) {
       return this.counter;
     }
 
-    const meterProvider = this.otelService.getMeterProvider();
+    const meterProvider = await this.otelService.getMeterProvider();
     if (!meterProvider) {
       return null;
     }
@@ -55,7 +55,7 @@ export class CryptoExchangeBalancesOTelService {
   }
 
   public async pushBalanceMetric(balanceId: number): Promise<void> {
-    const counter = this.getCounter();
+    const counter = await this.getOrCreateCounter();
     if (!counter) {
       return;
     }

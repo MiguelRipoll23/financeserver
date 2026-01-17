@@ -3,11 +3,15 @@ import {
   PeriodicExportingMetricReader,
 } from "@opentelemetry/sdk-metrics";
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-http";
+import resourcesModule from "@opentelemetry/resources";
 import { injectable } from "@needle-di/core";
 import {
   ENV_APP_OTEL_EXPORTER_OTLP_METRICS_ENDPOINT,
   ENV_APP_OTEL_EXPORTER_OTLP_HEADERS,
+  ENV_DATABASE_URL,
 } from "../constants/environment-constants.ts";
+
+const { resourceFromAttributes } = resourcesModule;
 
 interface DomainOTelService {
   pushAllBalanceMetrics(): Promise<void>;
@@ -28,7 +32,7 @@ export class OTelService {
     this.domainServices.push(service);
   }
 
-  public init(): void {
+  public async init(): Promise<void> {
     if (this.isInitialized) {
       return;
     }
@@ -47,8 +51,10 @@ export class OTelService {
         exportIntervalMillis: OTelService.EXPORT_INTERVAL_MS,
       });
 
+      const resource = await this.createResource();
       this.meterProvider = new MeterProvider({
         readers: [reader],
+        resource,
       });
 
       this.isInitialized = true;
@@ -58,9 +64,9 @@ export class OTelService {
     }
   }
 
-  public getMeterProvider(): MeterProvider | null {
+  public async getMeterProvider(): Promise<MeterProvider | null> {
     if (!this.isInitialized) {
-      this.init();
+      await this.init();
     }
     return this.meterProvider;
   }
@@ -73,7 +79,7 @@ export class OTelService {
 
   public async forceFlush(): Promise<void> {
     if (!this.isInitialized) {
-      this.init();
+      await this.init();
     }
 
     if (!this.meterProvider) {
@@ -146,6 +152,31 @@ export class OTelService {
     }
 
     return headers;
+  }
+
+  private async createResource() {
+    const attributes: Record<string, string> = {};
+
+    const databaseUrl = Deno.env.get(ENV_DATABASE_URL);
+    if (databaseUrl) {
+      attributes["database.hash"] = await this.hashStringSha256(databaseUrl);
+    }
+
+    return resourceFromAttributes(attributes);
+  }
+
+  private async hashStringSha256(value: string): Promise<string> {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(value);
+
+    // Use Deno's crypto API for proper SHA-256 hashing
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray
+      .map((byte) => byte.toString(16).padStart(2, "0"))
+      .join("");
+
+    return hashHex;
   }
 
   private createExporter(

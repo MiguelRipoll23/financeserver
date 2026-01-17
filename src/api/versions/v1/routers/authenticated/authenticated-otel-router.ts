@@ -26,7 +26,7 @@ export class AuthenticatedOTelRouter {
       createRoute({
         method: "post",
         path: "/push",
-        summary: "Push all balance metrics",
+        summary: "Push metrics",
         description:
           "Collects and pushes metrics to the configured exported endpoint.",
         tags: ["OTel"],
