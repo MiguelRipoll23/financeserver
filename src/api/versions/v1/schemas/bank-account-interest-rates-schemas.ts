@@ -110,20 +110,34 @@ export type GetBankAccountInterestRatesResponse = z.infer<
   typeof GetBankAccountInterestRatesResponseSchema
 >;
 
-export const UpdateBankAccountInterestRateRequestSchema = z.object({
-  interestRate: z
-    .string()
-    .regex(/^[0-9]+(\.[0-9]{1,2})?$/)
-    .optional()
-    .openapi({ example: "2.50" })
-    .describe("Interest rate percentage (e.g., 2.50 for 2.50%)"),
-  interestRateStartDate: DateOnlyStringSchema.optional().describe(
-    "Start date of interest rate period in YYYY-MM-DD format"
-  ),
-  interestRateEndDate: DateOnlyStringSchema.nullable().optional().describe(
-    "End date of interest rate period in YYYY-MM-DD format"
-  ),
-});
+export const UpdateBankAccountInterestRateRequestSchema = z
+  .object({
+    interestRate: z
+      .string()
+      .regex(/^[0-9]+(\.[0-9]{1,2})?$/)
+      .optional()
+      .openapi({ example: "2.50" })
+      .describe("Interest rate percentage (e.g., 2.50 for 2.50%)"),
+    interestRateStartDate: DateOnlyStringSchema.optional().describe(
+      "Start date of interest rate period in YYYY-MM-DD format"
+    ),
+    interestRateEndDate: DateOnlyStringSchema.nullable().optional().describe(
+      "End date of interest rate period in YYYY-MM-DD format"
+    ),
+  })
+  .refine(
+    (data) => {
+      if (!data.interestRateStartDate || !data.interestRateEndDate) return true;
+      return (
+        new Date(data.interestRateEndDate) >=
+        new Date(data.interestRateStartDate)
+      );
+    },
+    {
+      message: "End date cannot be before start date",
+      path: ["interestRateEndDate"],
+    }
+  );
 
 export type UpdateBankAccountInterestRateRequest = z.infer<
   typeof UpdateBankAccountInterestRateRequestSchema
