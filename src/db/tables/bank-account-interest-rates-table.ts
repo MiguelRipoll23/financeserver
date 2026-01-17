@@ -1,12 +1,14 @@
 import {
   bigint,
   bigserial,
+  check,
   date,
   index,
   numeric,
   pgTable,
   timestamp,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { bankAccountsTable } from "./bank-accounts-table.ts";
 
 export const bankAccountInterestRatesTable = pgTable(
@@ -35,6 +37,10 @@ export const bankAccountInterestRatesTable = pgTable(
       table.bankAccountId,
       table.interestRateStartDate,
       table.interestRateEndDate
+    ),
+    check(
+      "interest_rate_end_date_check",
+      sql`${table.interestRateEndDate} IS NULL OR ${table.interestRateEndDate} >= ${table.interestRateStartDate}`
     ),
   ]
 );

@@ -55,26 +55,28 @@ export class BankAccountInterestRatesService {
       );
     }
 
-    // Validate interest rate period
-    await this.validateNoOverlappingInterestRates(
-      db,
-      accountId,
-      payload.interestRateStartDate,
-      payload.interestRateEndDate ?? "9999-12-31", // Treat null end date as far future for overlap check
-      null
-    );
+    return await db.transaction(async (tx) => {
+      // Validate interest rate period
+      await this.validateNoOverlappingInterestRates(
+        tx,
+        accountId,
+        payload.interestRateStartDate,
+        payload.interestRateEndDate ?? "9999-12-31", // Treat null end date as far future for overlap check
+        null
+      );
 
-    const [result] = await db
-      .insert(bankAccountInterestRatesTable)
-      .values({
-        bankAccountId: accountId,
-        interestRate: payload.interestRate,
-        interestRateStartDate: payload.interestRateStartDate,
-        interestRateEndDate: payload.interestRateEndDate ?? null,
-      })
-      .returning();
+      const [result] = await tx
+        .insert(bankAccountInterestRatesTable)
+        .values({
+          bankAccountId: accountId,
+          interestRate: payload.interestRate,
+          interestRateStartDate: payload.interestRateStartDate,
+          interestRateEndDate: payload.interestRateEndDate ?? null,
+        })
+        .returning();
 
-    return this.mapInterestRateToResponse(result);
+      return this.mapInterestRateToResponse(result);
+    });
   }
 
   public async getBankAccountInterestRates(payload: {
@@ -197,35 +199,37 @@ export class BankAccountInterestRatesService {
       updateValues.interestRateEndDate = payload.interestRateEndDate;
     }
 
-    // Validate interest rate period if being updated
-    const newStartDate =
-      payload.interestRateStartDate ?? existingRate.interestRateStartDate;
-    const newEndDate =
-      payload.interestRateEndDate ?? existingRate.interestRateEndDate;
-    
-    // Treat null end date as far future
-    const effectiveEndDate = newEndDate ?? "9999-12-31";
+    return await db.transaction(async (tx) => {
+      // Validate interest rate period if being updated
+      const newStartDate =
+        payload.interestRateStartDate ?? existingRate.interestRateStartDate;
+      const newEndDate =
+        payload.interestRateEndDate ?? existingRate.interestRateEndDate;
 
-    if (
+      // Treat null end date as far future
+      const effectiveEndDate = newEndDate ?? "9999-12-31";
+
+      if (
         payload.interestRateStartDate !== undefined ||
         payload.interestRateEndDate !== undefined
-    ) {
-      await this.validateNoOverlappingInterestRates(
-        db,
-        accountId,
-        newStartDate,
-        effectiveEndDate,
-        rateId
-      );
-    }
+      ) {
+        await this.validateNoOverlappingInterestRates(
+          tx,
+          accountId,
+          newStartDate,
+          effectiveEndDate,
+          rateId
+        );
+      }
 
-    const [result] = await db
-      .update(bankAccountInterestRatesTable)
-      .set(updateValues)
-      .where(eq(bankAccountInterestRatesTable.id, rateId))
-      .returning();
+      const [result] = await tx
+        .update(bankAccountInterestRatesTable)
+        .set(updateValues)
+        .where(eq(bankAccountInterestRatesTable.id, rateId))
+        .returning();
 
-    return this.mapInterestRateToResponse(result);
+      return this.mapInterestRateToResponse(result);
+    });
   }
 
   public async deleteBankAccountInterestRate(rateId: number): Promise<void> {
@@ -246,7 +250,7 @@ export class BankAccountInterestRatesService {
   }
 
   private async validateNoOverlappingInterestRates(
-    db: NodePgDatabase<Record<string, never>>,
+    db: NodePgDatabase<Record<string, never>> | Parameters<Parameters<NodePgDatabase<Record<string, never>>['transaction']>[0]>[0],
     bankAccountId: number,
     startDate: string,
     endDate: string,
