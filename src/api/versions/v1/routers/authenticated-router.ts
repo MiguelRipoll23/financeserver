@@ -13,6 +13,7 @@ import { AuthenticatedCryptoExchangesRouter } from "./authenticated/authenticate
 import { AuthenticatedCryptoExchangeBalancesRouter } from "./authenticated/authenticated-crypto-exchange-balances-router.ts";
 import { AuthenticatedMCPRouter } from "./authenticated/authenticated-mcp-router.ts";
 import { AuthenticatedUsersRouter } from "./authenticated/authenticated-users-router.ts";
+import { AuthenticatedOTelRouter } from "./authenticated/authenticated-otel-router.ts";
 import { HonoVariables } from "../../../../core/types/hono/hono-variables-type.ts";
 
 @injectable()
@@ -24,19 +25,20 @@ export class V1AuthenticatedRouter {
     private authorizationMiddleware = inject(AuthorizationMiddleware),
     private usersRouter = inject(AuthenticatedUsersRouter),
     private mcpRouter = inject(AuthenticatedMCPRouter),
+    private otelRouter = inject(AuthenticatedOTelRouter),
     private billsRouter = inject(AuthenticatedBillsRouter),
     private subscriptionsRouter = inject(AuthenticatedSubscriptionsRouter),
     private merchantsRouter = inject(AuthenticatedMerchantsRouter),
     private bankAccountsRouter = inject(AuthenticatedBankAccountsRouter),
     private bankAccountBalancesRouter = inject(
-      AuthenticatedBankAccountBalancesRouter
+      AuthenticatedBankAccountBalancesRouter,
     ),
     private cryptoExchangesRouter = inject(AuthenticatedCryptoExchangesRouter),
     private cryptoExchangeBalancesRouter = inject(
-      AuthenticatedCryptoExchangeBalancesRouter
+      AuthenticatedCryptoExchangeBalancesRouter,
     ),
     private receiptsRouter = inject(AuthenticatedReceiptsRouter),
-    private productsRouter = inject(AuthenticatedProductsRouter)
+    private productsRouter = inject(AuthenticatedProductsRouter),
   ) {
     this.app = new OpenAPIHono();
     this.setMiddlewares();
@@ -61,24 +63,22 @@ export class V1AuthenticatedRouter {
   }
 
   private setRoutes(): void {
-    this.app.route("/users", this.usersRouter.getRouter());
+    this.app.route("/otel", this.otelRouter.getRouter());
     this.app.route("/mcp", this.mcpRouter.getRouter());
-    this.app.route("/bills", this.billsRouter.getRouter());
-    this.app.route("/subscriptions", this.subscriptionsRouter.getRouter());
-    this.app.route("/merchants", this.merchantsRouter.getRouter());
+    this.app.route("/users", this.usersRouter.getRouter());
     this.app.route("/bank-accounts", this.bankAccountsRouter.getRouter());
     this.app.route(
       "/bank-account-balances",
-      this.bankAccountBalancesRouter.getRouter()
+      this.bankAccountBalancesRouter.getRouter(),
     );
-    this.app.route(
-      "/crypto-exchanges",
-      this.cryptoExchangesRouter.getRouter()
-    );
+    this.app.route("/crypto-exchanges", this.cryptoExchangesRouter.getRouter());
     this.app.route(
       "/crypto-exchange-balances",
-      this.cryptoExchangeBalancesRouter.getRouter()
+      this.cryptoExchangeBalancesRouter.getRouter(),
     );
+    this.app.route("/bills", this.billsRouter.getRouter());
+    this.app.route("/subscriptions", this.subscriptionsRouter.getRouter());
+    this.app.route("/merchants", this.merchantsRouter.getRouter());
     this.app.route("/receipts", this.receiptsRouter.getRouter());
     this.app.route("/products", this.productsRouter.getRouter());
   }

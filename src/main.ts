@@ -2,10 +2,7 @@ import { Container } from "@needle-di/core";
 import { HTTPService } from "./core/services/http-service.ts";
 import { DatabaseService } from "./core/services/database-service.ts";
 
-
 const container = new Container();
-
-
 
 const databaseService = container.get(DatabaseService);
 databaseService.init();

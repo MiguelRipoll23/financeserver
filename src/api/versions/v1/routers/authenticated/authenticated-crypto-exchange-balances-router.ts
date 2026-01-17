@@ -1,7 +1,7 @@
 import { inject, injectable } from "@needle-di/core";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import type { Context } from "hono";
-import { CryptoExchangesService } from "../../services/crypto-exchanges/crypto-exchanges-service.ts";
+import { CryptoExchangeBalancesService } from "../../services/crypto-exchanges-balances/crypto-exchange-balances-service.ts";
 import {
   CreateCryptoExchangeBalanceRequestSchema,
   CreateCryptoExchangeBalanceResponseSchema,
@@ -18,7 +18,11 @@ import { ServerResponse } from "../../models/server-response.ts";
 export class AuthenticatedCryptoExchangeBalancesRouter {
   private app: OpenAPIHono<{ Variables: HonoVariables }>;
 
-  constructor(private cryptoExchangesService = inject(CryptoExchangesService)) {
+  constructor(
+    private cryptoExchangeBalancesService = inject(
+      CryptoExchangeBalancesService,
+    ),
+  ) {
     this.app = new OpenAPIHono();
     this.setRoutes();
   }
@@ -40,8 +44,7 @@ export class AuthenticatedCryptoExchangeBalancesRouter {
         method: "post",
         path: "/",
         summary: "Create crypto exchange balance",
-        description:
-          "Adds a new balance entry for a specific crypto exchange.",
+        description: "Adds a new balance entry for a specific crypto exchange.",
         tags: ["Crypto exchange balances"],
         request: {
           body: {
@@ -68,13 +71,16 @@ export class AuthenticatedCryptoExchangeBalancesRouter {
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
         const body = CreateCryptoExchangeBalanceRequestSchema.parse(
-          await context.req.json()
+          await context.req.json(),
         );
         const result =
-          await this.cryptoExchangesService.createCryptoExchangeBalance(body);
+          await this.cryptoExchangeBalancesService.createCryptoExchangeBalance(
+            body.cryptoExchangeId,
+            body,
+          );
 
         return context.json(result, 201);
-      }
+      },
     );
   }
 
@@ -84,7 +90,8 @@ export class AuthenticatedCryptoExchangeBalancesRouter {
         method: "post",
         path: "/find",
         summary: "List crypto exchange balances",
-        description: "Returns paginated balances for a specific crypto exchange.",
+        description:
+          "Returns paginated balances for a specific crypto exchange.",
         tags: ["Crypto exchange balances"],
         request: {
           body: {
@@ -111,10 +118,10 @@ export class AuthenticatedCryptoExchangeBalancesRouter {
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
         const body = GetCryptoExchangeBalancesRequestSchema.parse(
-          await context.req.json()
+          await context.req.json(),
         );
         const result =
-          await this.cryptoExchangesService.getCryptoExchangeBalances({
+          await this.cryptoExchangeBalancesService.getCryptoExchangeBalances({
             cryptoExchangeId: body.cryptoExchangeId,
             limit: body.limit,
             cursor: body.cursor,
@@ -122,7 +129,7 @@ export class AuthenticatedCryptoExchangeBalancesRouter {
           });
 
         return context.json(result, 200);
-      }
+      },
     );
   }
 
@@ -160,19 +167,19 @@ export class AuthenticatedCryptoExchangeBalancesRouter {
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
         const { id } = CryptoExchangeBalanceIdParamSchema.parse(
-          context.req.param()
+          context.req.param(),
         );
         const body = UpdateCryptoExchangeBalanceRequestSchema.parse(
-          await context.req.json()
+          await context.req.json(),
         );
         const result =
-          await this.cryptoExchangesService.updateCryptoExchangeBalance(
+          await this.cryptoExchangeBalancesService.updateCryptoExchangeBalance(
             parseInt(id, 10),
-            body
+            body,
           );
 
         return context.json(result, 200);
-      }
+      },
     );
   }
 
@@ -197,14 +204,14 @@ export class AuthenticatedCryptoExchangeBalancesRouter {
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
         const { id } = CryptoExchangeBalanceIdParamSchema.parse(
-          context.req.param()
+          context.req.param(),
         );
-        await this.cryptoExchangesService.deleteCryptoExchangeBalance(
-          parseInt(id, 10)
+        await this.cryptoExchangeBalancesService.deleteCryptoExchangeBalance(
+          parseInt(id, 10),
         );
 
         return context.body(null, 204);
-      }
+      },
     );
   }
 }

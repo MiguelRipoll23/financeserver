@@ -4,38 +4,38 @@ import { CreateCryptoExchangeToolService } from "./tools/create-crypto-exchange-
 import { UpdateCryptoExchangeToolService } from "./tools/update-crypto-exchange-tool-service.ts";
 import { DeleteCryptoExchangeToolService } from "./tools/delete-crypto-exchange-tool-service.ts";
 import { FilterCryptoExchangesToolService } from "./tools/filter-crypto-exchanges-tool-service.ts";
-import { CreateCryptoExchangeBalanceToolService } from "./tools/create-crypto-exchange-balance-tool-service.ts";
-import { UpdateCryptoExchangeBalanceToolService } from "./tools/update-crypto-exchange-balance-tool-service.ts";
-import { DeleteCryptoExchangeBalanceToolService } from "./tools/delete-crypto-exchange-balance-tool-service.ts";
-import { FilterCryptoExchangeBalancesToolService } from "./tools/filter-crypto-exchange-balances-tool-service.ts";
+import { CreateCryptoExchangeBalanceToolService } from "../crypto-exchanges-balances/tools/create-crypto-exchange-balance-tool-service.ts";
+import { UpdateCryptoExchangeBalanceToolService } from "../crypto-exchanges-balances/tools/update-crypto-exchange-balance-tool-service.ts";
+import { DeleteCryptoExchangeBalanceToolService } from "../crypto-exchanges-balances/tools/delete-crypto-exchange-balance-tool-service.ts";
+import { FilterCryptoExchangeBalancesToolService } from "../crypto-exchanges-balances/tools/filter-crypto-exchange-balances-tool-service.ts";
 
 @injectable()
 export class CryptoExchangesMCPService {
   constructor(
     private createCryptoExchangeToolService = inject(
-      CreateCryptoExchangeToolService
+      CreateCryptoExchangeToolService,
     ),
     private updateCryptoExchangeToolService = inject(
-      UpdateCryptoExchangeToolService
+      UpdateCryptoExchangeToolService,
     ),
     private deleteCryptoExchangeToolService = inject(
-      DeleteCryptoExchangeToolService
+      DeleteCryptoExchangeToolService,
     ),
     private filterCryptoExchangesToolService = inject(
-      FilterCryptoExchangesToolService
+      FilterCryptoExchangesToolService,
     ),
     private createCryptoExchangeBalanceToolService = inject(
-      CreateCryptoExchangeBalanceToolService
+      CreateCryptoExchangeBalanceToolService,
     ),
     private updateCryptoExchangeBalanceToolService = inject(
-      UpdateCryptoExchangeBalanceToolService
+      UpdateCryptoExchangeBalanceToolService,
     ),
     private deleteCryptoExchangeBalanceToolService = inject(
-      DeleteCryptoExchangeBalanceToolService
+      DeleteCryptoExchangeBalanceToolService,
     ),
     private filterCryptoExchangeBalancesToolService = inject(
-      FilterCryptoExchangeBalancesToolService
-    )
+      FilterCryptoExchangeBalancesToolService,
+    ),
   ) {}
 
   public getTools(): McpToolDefinition[] {
