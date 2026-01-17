@@ -21,7 +21,6 @@ export class OTelService {
   private meterProvider: MeterProvider | null = null;
   private isInitialized = false;
   private domainServices: DomainOTelService[] = [];
-  private lastExportError: unknown = null;
 
   constructor() {}
 
@@ -83,25 +82,11 @@ export class OTelService {
       return;
     }
 
-    this.lastExportError = null;
-
     try {
       await this.meterProvider.forceFlush();
-
-      if (this.lastExportError) {
-        const errorMessage =
-          this.lastExportError instanceof Error
-            ? this.lastExportError.message
-            : String(this.lastExportError);
-        console.error("Failed to export OTel metrics:", errorMessage);
-        throw this.lastExportError;
-      }
-
       console.log("OTel metrics flushed successfully");
     } catch (error) {
-      if (error !== this.lastExportError) {
-        console.error("Failed to flush OTel metrics:", error);
-      }
+      console.error("Failed to flush OTel metrics:", error);
       throw error;
     }
   }
@@ -180,22 +165,10 @@ export class OTelService {
     endpoint: string,
     headers: Record<string, string>,
   ): OTLPMetricExporter {
-    const exporter = new OTLPMetricExporter({
+    return new OTLPMetricExporter({
       url: endpoint,
       headers,
       concurrencyLimit: 1,
     });
-
-    const originalExport = exporter.export.bind(exporter);
-    exporter.export = (metrics, resultCallback) => {
-      originalExport(metrics, (result) => {
-        if (result.error) {
-          this.lastExportError = result.error;
-        }
-        resultCallback(result);
-      });
-    };
-
-    return exporter;
   }
 }
