@@ -32,54 +32,10 @@ export class AuthenticatedBankAccountInterestRatesRouter {
   }
 
   private setRoutes(): void {
-    this.registerCreateBankAccountInterestRateRoute();
     this.registerListBankAccountInterestRatesRoute();
+    this.registerCreateBankAccountInterestRateRoute();
     this.registerUpdateBankAccountInterestRateRoute();
     this.registerDeleteBankAccountInterestRateRoute();
-  }
-
-  private registerCreateBankAccountInterestRateRoute(): void {
-    this.app.openapi(
-      createRoute({
-        method: "post",
-        path: "/",
-        summary: "Create bank account interest rate",
-        description: "Create a new bank account interest rate",
-        tags: ["Bank account interest rates"],
-        request: {
-          body: {
-            content: {
-              "application/json": {
-                schema: CreateBankAccountInterestRateRequestSchema,
-              },
-            },
-          },
-        },
-        responses: {
-          200: {
-            description: "Bank account interest rate created successfully",
-            content: {
-              "application/json": {
-                schema: CreateBankAccountInterestRateResponseSchema,
-              },
-            },
-          },
-          ...ServerResponse.BadRequest,
-          ...ServerResponse.Unauthorized,
-          ...ServerResponse.NotFound,
-        },
-      }),
-      async (c: Context<{ Variables: HonoVariables }>) => {
-        const body = CreateBankAccountInterestRateRequestSchema.parse(
-          await c.req.json()
-        );
-        const result =
-          await this.bankAccountInterestRatesService.createBankAccountInterestRate(
-            body
-          );
-        return c.json(result, 200);
-      }
-    );
   }
 
   private registerListBankAccountInterestRatesRoute(): void {
@@ -130,14 +86,48 @@ export class AuthenticatedBankAccountInterestRatesRouter {
     );
   }
 
-  private async readJsonOrEmpty(
-    context: Context<{ Variables: HonoVariables }>
-  ): Promise<unknown> {
-    try {
-      return await context.req.json();
-    } catch {
-      return {};
-    }
+  private registerCreateBankAccountInterestRateRoute(): void {
+    this.app.openapi(
+      createRoute({
+        method: "post",
+        path: "/",
+        summary: "Create bank account interest rate",
+        description: "Create a new bank account interest rate",
+        tags: ["Bank account interest rates"],
+        request: {
+          body: {
+            content: {
+              "application/json": {
+                schema: CreateBankAccountInterestRateRequestSchema,
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "Bank account interest rate created successfully",
+            content: {
+              "application/json": {
+                schema: CreateBankAccountInterestRateResponseSchema,
+              },
+            },
+          },
+          ...ServerResponse.BadRequest,
+          ...ServerResponse.Unauthorized,
+          ...ServerResponse.NotFound,
+        },
+      }),
+      async (c: Context<{ Variables: HonoVariables }>) => {
+        const body = CreateBankAccountInterestRateRequestSchema.parse(
+          await c.req.json()
+        );
+        const result =
+          await this.bankAccountInterestRatesService.createBankAccountInterestRate(
+            body
+          );
+        return c.json(result, 200);
+      }
+    );
   }
 
   private registerUpdateBankAccountInterestRateRoute(): void {
@@ -215,5 +205,15 @@ export class AuthenticatedBankAccountInterestRatesRouter {
         return c.body(null, 204);
       }
     );
+  }
+
+  private async readJsonOrEmpty(
+    context: Context<{ Variables: HonoVariables }>
+  ): Promise<unknown> {
+    try {
+      return await context.req.json();
+    } catch {
+      return {};
+    }
   }
 }
