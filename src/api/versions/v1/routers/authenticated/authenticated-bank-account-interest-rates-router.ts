@@ -70,12 +70,14 @@ export class AuthenticatedBankAccountInterestRatesRouter {
         },
       }),
       async (c: Context<{ Variables: HonoVariables }>) => {
-        const body = await c.req.json();
+        const body = CreateBankAccountInterestRateRequestSchema.parse(
+          await c.req.json()
+        );
         const result =
           await this.bankAccountInterestRatesService.createBankAccountInterestRate(
             body
           );
-        return c.json(result);
+        return c.json(result, 200);
       }
     );
   }
@@ -106,15 +108,33 @@ export class AuthenticatedBankAccountInterestRatesRouter {
         },
       }),
       async (c: Context<{ Variables: HonoVariables }>) => {
-        const query = c.req.valid("query");
+        const query = c.req.query();
+        // Since getBankAccountInterestRates takes specific params, we map them manually or parse if we had a query schema parser helper.
+        // The service expects { bankAccountId, limit, cursor, sortOrder }.
+        // Previous implementation used c.req.valid('query').
+        // To avoid magic strings but stick to Schema.parse, we would need to parse the query object.
+        // However, Zod schemas for query params often require preprocessing because query params are strings.
+        // Given the prompt "I want to use schema.parse", I will use the schema to parse the query object.
+        // NOTE: Hono's c.req.query() returns Record<string, string>.
+        // We might need to ensure the schema handles coercion (z.coerce) which GetBankAccountInterestRatesRequestSchema likely extends from PaginationQuerySchema which does.
+        
+        // However, simpler here to just match the other files. 
+        // Let's check how other files handle GETs. 
+        // e.g., AuthenticatedBankAccountsRouter uses GetBankAccountsRequestSchema.parse(payload) where payload is from body for POST /find.
+        // This is a GET route.
+        // I'll stick to manual extraction or reuse the validation logic if available, but to strictly follow "schema.parse":
+        
+        // Wait, GetBankAccountInterestRatesRequestSchema is a Zod schema.
+        const parsedQuery = GetBankAccountInterestRatesRequestSchema.parse(c.req.query());
+        
         const result =
           await this.bankAccountInterestRatesService.getBankAccountInterestRates({
-            bankAccountId: query.bankAccountId,
-            limit: query.limit ? parseInt(query.limit) : undefined,
-            cursor: query.cursor,
-            sortOrder: query.sortOrder,
+            bankAccountId: parsedQuery.bankAccountId,
+            limit: parsedQuery.limit,
+            cursor: parsedQuery.cursor,
+            sortOrder: parsedQuery.sortOrder,
           });
-        return c.json(result);
+        return c.json(result, 200);
       }
     );
   }
@@ -152,14 +172,16 @@ export class AuthenticatedBankAccountInterestRatesRouter {
         },
       }),
       async (c: Context<{ Variables: HonoVariables }>) => {
-        const id = parseInt(c.req.param("id"));
-        const body = await c.req.json();
+        const params = BankAccountInterestRateIdParamSchema.parse(c.req.param());
+        const body = UpdateBankAccountInterestRateRequestSchema.parse(
+          await c.req.json()
+        );
         const result =
           await this.bankAccountInterestRatesService.updateBankAccountInterestRate(
-            id,
+            parseInt(params.id),
             body
           );
-        return c.json(result);
+        return c.json(result, 200);
       }
     );
   }
@@ -185,9 +207,9 @@ export class AuthenticatedBankAccountInterestRatesRouter {
         },
       }),
       async (c: Context<{ Variables: HonoVariables }>) => {
-        const id = parseInt(c.req.param("id"));
+        const params = BankAccountInterestRateIdParamSchema.parse(c.req.param());
         await this.bankAccountInterestRatesService.deleteBankAccountInterestRate(
-          id
+          parseInt(params.id)
         );
         return c.body(null, 204);
       }

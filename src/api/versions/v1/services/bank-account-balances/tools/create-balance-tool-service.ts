@@ -4,12 +4,12 @@ import { BankAccountsService } from "../../bank-accounts/bank-accounts-service.t
 import { CreateBankAccountBalanceToolSchema } from "../../../schemas/mcp-bank-account-balances-schemas.ts";
 
 @injectable()
-export class AddBalanceToolService {
+export class CreateBalanceToolService {
   constructor(private bankAccountsService = inject(BankAccountsService)) {}
 
   public getDefinition(): McpToolDefinition {
     return {
-      name: "bank_accounts.add_balance",
+      name: "bank_accounts.create_balance",
       meta: {
         title: "Add bank account balance",
         description:

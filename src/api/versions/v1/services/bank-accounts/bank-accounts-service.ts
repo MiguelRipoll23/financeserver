@@ -1,5 +1,5 @@
 import { inject, injectable } from "@needle-di/core";
-import { and, asc, desc, eq, ilike, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, sql, type SQL, getTableColumns } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import {
@@ -265,7 +265,7 @@ export class BankAccountsService {
 
     const results = await db
       .select({
-        ...bankAccountBalancesTable,
+        ...getTableColumns(bankAccountBalancesTable),
         interestRate: bankAccountInterestRatesTable.interestRate,
       })
       .from(bankAccountBalancesTable)

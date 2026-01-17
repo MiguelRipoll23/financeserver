@@ -13,7 +13,7 @@ export class DeleteCryptoExchangeBalanceToolService {
 
   public getDefinition(): McpToolDefinition {
     return {
-      name: "crypto_exchange_balances.delete",
+      name: "crypto_exchanges.delete_balance",
       meta: {
         title: "Delete crypto exchange balance",
         description:
