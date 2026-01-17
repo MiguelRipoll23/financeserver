@@ -9,6 +9,7 @@ import { AuthenticatedSubscriptionsRouter } from "./authenticated/authenticated-
 import { AuthenticatedMerchantsRouter } from "./authenticated/authenticated-merchants-router.ts";
 import { AuthenticatedBankAccountsRouter } from "./authenticated/authenticated-bank-accounts-router.ts";
 import { AuthenticatedBankAccountBalancesRouter } from "./authenticated/authenticated-bank-account-balances-router.ts";
+import { AuthenticatedBankAccountInterestRatesRouter } from "./authenticated/authenticated-bank-account-interest-rates-router.ts";
 import { AuthenticatedCryptoExchangesRouter } from "./authenticated/authenticated-crypto-exchanges-router.ts";
 import { AuthenticatedCryptoExchangeBalancesRouter } from "./authenticated/authenticated-crypto-exchange-balances-router.ts";
 import { AuthenticatedMCPRouter } from "./authenticated/authenticated-mcp-router.ts";
@@ -30,6 +31,9 @@ export class V1AuthenticatedRouter {
     private bankAccountsRouter = inject(AuthenticatedBankAccountsRouter),
     private bankAccountBalancesRouter = inject(
       AuthenticatedBankAccountBalancesRouter,
+    ),
+    private bankAccountInterestRatesRouter = inject(
+      AuthenticatedBankAccountInterestRatesRouter,
     ),
     private cryptoExchangesRouter = inject(AuthenticatedCryptoExchangesRouter),
     private cryptoExchangeBalancesRouter = inject(
@@ -67,6 +71,10 @@ export class V1AuthenticatedRouter {
     this.app.route(
       "/bank-account-balances",
       this.bankAccountBalancesRouter.getRouter(),
+    );
+    this.app.route(
+      "/bank-account-interest-rates",
+      this.bankAccountInterestRatesRouter.getRouter(),
     );
     this.app.route("/crypto-exchanges", this.cryptoExchangesRouter.getRouter());
     this.app.route(

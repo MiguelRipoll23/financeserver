@@ -30,9 +30,6 @@ export class UpdateBalanceToolService {
           {
             balance: parsed.balance,
             currencyCode: parsed.currencyCode,
-            interestRate: parsed.interestRate,
-            interestRateStartDate: parsed.interestRateStartDate,
-            interestRateEndDate: parsed.interestRateEndDate,
           }
         );
 

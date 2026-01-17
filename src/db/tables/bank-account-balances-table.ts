@@ -19,9 +19,6 @@ export const bankAccountBalancesTable = pgTable(
       .references(() => bankAccountsTable.id, { onDelete: "cascade" }),
     balance: numeric("balance", { precision: 15, scale: 2 }).notNull(),
     currencyCode: varchar("currency_code", { length: 3 }).notNull(),
-    interestRate: numeric("interest_rate", { precision: 5, scale: 2 }),
-    interestRateStartDate: date("interest_rate_start_date"),
-    interestRateEndDate: date("interest_rate_end_date"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),

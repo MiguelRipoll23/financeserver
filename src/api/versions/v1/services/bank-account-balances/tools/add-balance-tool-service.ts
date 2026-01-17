@@ -29,16 +29,9 @@ export class AddBalanceToolService {
           bankAccountId: parsed.bankAccountId,
           balance: parsed.balance,
           currencyCode: parsed.currencyCode,
-          interestRate: parsed.interestRate,
-          interestRateStartDate: parsed.interestRateStartDate,
-          interestRateEndDate: parsed.interestRateEndDate,
         });
 
-        const interestInfo = result.interestRate
-          ? ` with ${result.interestRate}% interest rate`
-          : "";
-
-        const text = `Balance recorded successfully: ${result.balance} ${result.currencyCode}${interestInfo} (ID: ${result.id})`;
+        const text = `Balance recorded successfully: ${result.balance} ${result.currencyCode} (ID: ${result.id})`;
 
         return {
           text,
