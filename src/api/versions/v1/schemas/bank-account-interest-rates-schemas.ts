@@ -60,13 +60,17 @@ export type CreateBankAccountInterestRateResponse = z.infer<
 >;
 
 export const BankAccountInterestRateIdParamSchema = z.object({
-  id: z.string().openapi({
-    param: {
-      name: "id",
-      in: "path",
-    },
-    example: "1",
-  }),
+  id: z.coerce
+    .number()
+    .int()
+    .positive()
+    .openapi({
+      param: {
+        name: "id",
+        in: "path",
+      },
+      example: 1,
+    }),
 });
 
 export type BankAccountInterestRateIdParam = z.infer<

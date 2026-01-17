@@ -169,7 +169,7 @@ export class AuthenticatedBankAccountInterestRatesRouter {
         );
         const result =
           await this.bankAccountInterestRatesService.updateBankAccountInterestRate(
-            parseInt(params.id),
+            params.id,
             body
           );
         return c.json(result, 200);
@@ -200,7 +200,7 @@ export class AuthenticatedBankAccountInterestRatesRouter {
       async (c: Context<{ Variables: HonoVariables }>) => {
         const params = BankAccountInterestRateIdParamSchema.parse(c.req.param());
         await this.bankAccountInterestRatesService.deleteBankAccountInterestRate(
-          parseInt(params.id)
+          params.id
         );
         return c.body(null, 204);
       }
