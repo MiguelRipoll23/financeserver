@@ -78,21 +78,28 @@ export class BankAccountBalancesOTelService {
     const db = this.databaseService.get();
     const databaseEndpoint = this.otelService.getDatabaseEndpoint();
 
-    const balances = await db
-      .select({ id: bankAccountBalancesTable.id })
-      .from(bankAccountBalancesTable);
+    const metrics = await db
+      .select({
+        balanceId: bankAccountBalancesTable.id,
+        balance: bankAccountBalancesTable.balance,
+        bankAccountName: bankAccountsTable.name,
+        currencyCode: bankAccountBalancesTable.currencyCode,
+        interestRate: bankAccountBalancesTable.interestRate,
+      })
+      .from(bankAccountBalancesTable)
+      .innerJoin(
+        bankAccountsTable,
+        eq(bankAccountBalancesTable.bankAccountId, bankAccountsTable.id),
+      );
 
-    for (const balance of balances) {
-      const metric = await this.collectBalanceMetric(balance.id);
-      if (metric) {
-        counter.add(parseFloat(metric.balance), {
-          balance_id: metric.balanceId.toString(),
-          bank_account_name: metric.bankAccountName,
-          currency_code: metric.currencyCode,
-          interest_rate: metric.interestRate ?? "0",
-          database_endpoint: databaseEndpoint ?? "unknown",
-        });
-      }
+    for (const metric of metrics) {
+      counter.add(parseFloat(metric.balance), {
+        balance_id: metric.balanceId.toString(),
+        bank_account_name: metric.bankAccountName,
+        currency_code: metric.currencyCode,
+        interest_rate: metric.interestRate ?? "0",
+        database_endpoint: databaseEndpoint ?? "unknown",
+      });
     }
 
     await this.otelService.forceFlush();

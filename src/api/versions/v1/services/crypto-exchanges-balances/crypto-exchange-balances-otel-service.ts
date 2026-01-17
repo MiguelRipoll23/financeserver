@@ -79,22 +79,33 @@ export class CryptoExchangeBalancesOTelService {
     const db = this.databaseService.get();
     const databaseEndpoint = this.otelService.getDatabaseEndpoint();
 
-    const balances = await db
-      .select({ id: cryptoExchangeBalancesTable.id })
-      .from(cryptoExchangeBalancesTable);
+    const metrics = await db
+      .select({
+        balanceId: cryptoExchangeBalancesTable.id,
+        balance: cryptoExchangeBalancesTable.balance,
+        cryptoExchangeName: cryptoExchangesTable.name,
+        symbolCode: cryptoExchangeBalancesTable.symbolCode,
+        investedAmount: cryptoExchangeBalancesTable.investedAmount,
+        investedCurrencyCode: cryptoExchangeBalancesTable.investedCurrencyCode,
+      })
+      .from(cryptoExchangeBalancesTable)
+      .innerJoin(
+        cryptoExchangesTable,
+        eq(
+          cryptoExchangeBalancesTable.cryptoExchangeId,
+          cryptoExchangesTable.id,
+        ),
+      );
 
-    for (const balance of balances) {
-      const metric = await this.collectBalanceMetric(balance.id);
-      if (metric) {
-        counter.add(parseFloat(metric.balance), {
-          balance_id: metric.balanceId.toString(),
-          crypto_exchange_name: metric.cryptoExchangeName,
-          symbol_code: metric.symbolCode,
-          invested_amount: metric.investedAmount ?? "0",
-          invested_currency_code: metric.investedCurrencyCode ?? "none",
-          database_endpoint: databaseEndpoint ?? "unknown",
-        });
-      }
+    for (const metric of metrics) {
+      counter.add(parseFloat(metric.balance), {
+        balance_id: metric.balanceId.toString(),
+        crypto_exchange_name: metric.cryptoExchangeName,
+        symbol_code: metric.symbolCode,
+        invested_amount: metric.investedAmount ?? "0",
+        invested_currency_code: metric.investedCurrencyCode ?? "none",
+        database_endpoint: databaseEndpoint ?? "unknown",
+      });
     }
 
     await this.otelService.forceFlush();

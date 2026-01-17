@@ -57,7 +57,7 @@ export class OTelService {
 
   public async getMeterProvider(): Promise<MeterProvider | null> {
     if (!this.isInitialized) {
-      await this.init();
+      this.init();
     }
     return this.meterProvider;
   }
@@ -67,9 +67,9 @@ export class OTelService {
   }
 
   public async pushAllMetrics(): Promise<void> {
-    for (const service of this.domainServices) {
-      await service.pushAllMetrics();
-    }
+    await Promise.all(
+      this.domainServices.map((service) => service.pushAllMetrics()),
+    );
   }
 
   public async forceFlush(): Promise<void> {

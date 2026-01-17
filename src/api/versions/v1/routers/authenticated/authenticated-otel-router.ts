@@ -2,7 +2,6 @@ import { inject, injectable } from "@needle-di/core";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { OTelService } from "../../services/otel-service.ts";
 import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
-import { PushMetricsResponseSchema } from "../../schemas/otel-schemas.ts";
 
 @injectable()
 export class AuthenticatedOTelRouter {
@@ -33,11 +32,6 @@ export class AuthenticatedOTelRouter {
         responses: {
           202: {
             description: "Metrics collection accepted",
-            content: {
-              "application/json": {
-                schema: PushMetricsResponseSchema,
-              },
-            },
           },
         },
       }),
@@ -46,13 +40,7 @@ export class AuthenticatedOTelRouter {
           console.error("Background metrics collection failed:", error);
         });
 
-        return context.json(
-          {
-            success: true,
-            message: "Metrics collection accepted",
-          },
-          202,
-        );
+        return context.body(null, 202);
       },
     );
   }
