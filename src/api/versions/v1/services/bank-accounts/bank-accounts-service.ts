@@ -276,8 +276,8 @@ export class BankAccountsService {
             bankAccountInterestRatesTable.bankAccountId,
             bankAccountBalancesTable.bankAccountId,
           ),
-          sql`DATE(${bankAccountBalancesTable.createdAt}) >= ${bankAccountInterestRatesTable.interestRateStartDate}`,
-          sql`(DATE(${bankAccountBalancesTable.createdAt}) <= ${bankAccountInterestRatesTable.interestRateEndDate} OR ${bankAccountInterestRatesTable.interestRateEndDate} IS NULL)`,
+          sql`${bankAccountBalancesTable.createdAt} >= ${bankAccountInterestRatesTable.interestRateStartDate}`,
+          sql`(${bankAccountBalancesTable.createdAt} < (${bankAccountInterestRatesTable.interestRateEndDate} + interval '1 day') OR ${bankAccountInterestRatesTable.interestRateEndDate} IS NULL)`,
         ),
       )
       .where(eq(bankAccountBalancesTable.bankAccountId, accountId))
