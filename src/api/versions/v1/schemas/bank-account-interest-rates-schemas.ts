@@ -14,9 +14,9 @@ export const CreateBankAccountInterestRateRequestSchema = z
     interestRate: z
       .string()
       .regex(/^[0-9]+(\.[0-9]{1,2})?$/)
-      .refine((val) => {
-        const num = parseFloat(val);
-        return num >= 0 && num <= 999.99;
+      .refine((value) => {
+        const numericValue = parseFloat(value);
+        return numericValue >= 0 && numericValue <= 999.99;
       }, "Interest rate must be between 0 and 999.99")
       .openapi({ example: "2.50" })
       .describe("Interest rate percentage (e.g., 2.50 for 2.50%)"),
@@ -120,6 +120,14 @@ export const UpdateBankAccountInterestRateRequestSchema = z
     interestRate: z
       .string()
       .regex(/^[0-9]+(\.[0-9]{1,2})?$/)
+      .refine((value) => {
+        const numericValue = Number(value);
+        return (
+          Number.isFinite(numericValue) &&
+          numericValue >= 0 &&
+          numericValue <= 999.99
+        );
+      }, "Interest rate must be between 0 and 999.99")
       .optional()
       .openapi({ example: "2.50" })
       .describe("Interest rate percentage (e.g., 2.50 for 2.50%)"),
@@ -131,15 +139,12 @@ export const UpdateBankAccountInterestRateRequestSchema = z
     ),
   })
   .refine(
-    (data) => {
-      if (!data.interestRateStartDate || !data.interestRateEndDate) return true;
-      return (
-        new Date(data.interestRateEndDate) >=
-        new Date(data.interestRateStartDate)
-      );
-    },
+    (value) =>
+      !value.interestRateStartDate ||
+      !value.interestRateEndDate ||
+      value.interestRateEndDate >= value.interestRateStartDate,
     {
-      message: "End date cannot be before start date",
+      message: "interestRateEndDate must be on or after interestRateStartDate",
       path: ["interestRateEndDate"],
     }
   );

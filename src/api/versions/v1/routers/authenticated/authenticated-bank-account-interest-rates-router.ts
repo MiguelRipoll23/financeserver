@@ -20,8 +20,8 @@ export class AuthenticatedBankAccountInterestRatesRouter {
 
   constructor(
     private bankAccountInterestRatesService = inject(
-      BankAccountInterestRatesService
-    )
+      BankAccountInterestRatesService,
+    ),
   ) {
     this.app = new OpenAPIHono();
     this.setRoutes();
@@ -48,7 +48,6 @@ export class AuthenticatedBankAccountInterestRatesRouter {
         tags: ["Bank account interest rates"],
         request: {
           body: {
-            required: true,
             content: {
               "application/json": {
                 schema: GetBankAccountInterestRatesRequestSchema,
@@ -70,18 +69,19 @@ export class AuthenticatedBankAccountInterestRatesRouter {
           ...ServerResponse.NotFound,
         },
       }),
-      async (c: Context<{ Variables: HonoVariables }>) => {
-        const payload = await this.readJsonOrEmpty(c);
+      async (context: Context<{ Variables: HonoVariables }>) => {
+        const payload = await this.readJsonOrEmpty(context);
         const body = GetBankAccountInterestRatesRequestSchema.parse(payload);
 
         const result =
-          await this.bankAccountInterestRatesService.getBankAccountInterestRates({
-            bankAccountId: body.bankAccountId,
-            limit: body.limit,
-            cursor: body.cursor,
-            sortOrder: body.sortOrder,
+          await this.bankAccountInterestRatesService.getBankAccountInterestRates(
+            {
+              bankAccountId: body.bankAccountId,
+              limit: body.limit,
+              cursor: body.cursor,
+              sortOrder: body.sortOrder,
           });
-        return c.json(result, 200);
+        return context.json(result, 200);
       }
     );
   }
@@ -117,16 +117,16 @@ export class AuthenticatedBankAccountInterestRatesRouter {
           ...ServerResponse.NotFound,
         },
       }),
-      async (c: Context<{ Variables: HonoVariables }>) => {
+      async (context: Context<{ Variables: HonoVariables }>) => {
         const body = CreateBankAccountInterestRateRequestSchema.parse(
-          await c.req.json()
+          await context.req.json(),
         );
         const result =
           await this.bankAccountInterestRatesService.createBankAccountInterestRate(
-            body
+            body,
           );
-        return c.json(result, 200);
-      }
+        return context.json(result, 200);
+      },
     );
   }
 
@@ -162,18 +162,20 @@ export class AuthenticatedBankAccountInterestRatesRouter {
           ...ServerResponse.NotFound,
         },
       }),
-      async (c: Context<{ Variables: HonoVariables }>) => {
-        const params = BankAccountInterestRateIdParamSchema.parse(c.req.param());
+      async (context: Context<{ Variables: HonoVariables }>) => {
+        const params = BankAccountInterestRateIdParamSchema.parse(
+          context.req.param(),
+        );
         const body = UpdateBankAccountInterestRateRequestSchema.parse(
-          await c.req.json()
+          await context.req.json(),
         );
         const result =
           await this.bankAccountInterestRatesService.updateBankAccountInterestRate(
             params.id,
-            body
+            body,
           );
-        return c.json(result, 200);
-      }
+        return context.json(result, 200);
+      },
     );
   }
 
@@ -197,18 +199,20 @@ export class AuthenticatedBankAccountInterestRatesRouter {
           ...ServerResponse.NotFound,
         },
       }),
-      async (c: Context<{ Variables: HonoVariables }>) => {
-        const params = BankAccountInterestRateIdParamSchema.parse(c.req.param());
-        await this.bankAccountInterestRatesService.deleteBankAccountInterestRate(
-          params.id
+      async (context: Context<{ Variables: HonoVariables }>) => {
+        const params = BankAccountInterestRateIdParamSchema.parse(
+          context.req.param(),
         );
-        return c.body(null, 204);
-      }
+        await this.bankAccountInterestRatesService.deleteBankAccountInterestRate(
+          params.id,
+        );
+        return context.body(null, 204);
+      },
     );
   }
 
   private async readJsonOrEmpty(
-    context: Context<{ Variables: HonoVariables }>
+    context: Context<{ Variables: HonoVariables }>,
   ): Promise<unknown> {
     try {
       return await context.req.json();
