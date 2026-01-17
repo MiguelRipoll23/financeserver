@@ -20,8 +20,6 @@ export class OTelService {
   private isInitialized = false;
   private domainServices: DomainOTelService[] = [];
 
-  constructor() {}
-
   public registerDomainService(service: DomainOTelService): void {
     this.domainServices.push(service);
   }
