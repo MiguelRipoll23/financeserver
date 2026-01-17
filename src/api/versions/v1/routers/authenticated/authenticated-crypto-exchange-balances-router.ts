@@ -1,7 +1,7 @@
 import { inject, injectable } from "@needle-di/core";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import type { Context } from "hono";
-import { CryptoExchangeBalancesService } from "../../services/cryto-exchanges-balances/crypto-exchange-balances-service.ts";
+import { CryptoExchangeBalancesService } from "../../services/crypto-exchanges-balances/crypto-exchange-balances-service.ts";
 import {
   CreateCryptoExchangeBalanceRequestSchema,
   CreateCryptoExchangeBalanceResponseSchema,

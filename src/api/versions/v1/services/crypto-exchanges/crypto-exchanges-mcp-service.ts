@@ -4,10 +4,10 @@ import { CreateCryptoExchangeToolService } from "./tools/create-crypto-exchange-
 import { UpdateCryptoExchangeToolService } from "./tools/update-crypto-exchange-tool-service.ts";
 import { DeleteCryptoExchangeToolService } from "./tools/delete-crypto-exchange-tool-service.ts";
 import { FilterCryptoExchangesToolService } from "./tools/filter-crypto-exchanges-tool-service.ts";
-import { CreateCryptoExchangeBalanceToolService } from "../cryto-exchanges-balances/tools/create-crypto-exchange-balance-tool-service.ts";
-import { UpdateCryptoExchangeBalanceToolService } from "../cryto-exchanges-balances/tools/update-crypto-exchange-balance-tool-service.ts";
-import { DeleteCryptoExchangeBalanceToolService } from "../cryto-exchanges-balances/tools/delete-crypto-exchange-balance-tool-service.ts";
-import { FilterCryptoExchangeBalancesToolService } from "../cryto-exchanges-balances/tools/filter-crypto-exchange-balances-tool-service.ts";
+import { CreateCryptoExchangeBalanceToolService } from "../crypto-exchanges-balances/tools/create-crypto-exchange-balance-tool-service.ts";
+import { UpdateCryptoExchangeBalanceToolService } from "../crypto-exchanges-balances/tools/update-crypto-exchange-balance-tool-service.ts";
+import { DeleteCryptoExchangeBalanceToolService } from "../crypto-exchanges-balances/tools/delete-crypto-exchange-balance-tool-service.ts";
+import { FilterCryptoExchangeBalancesToolService } from "../crypto-exchanges-balances/tools/filter-crypto-exchange-balances-tool-service.ts";
 
 @injectable()
 export class CryptoExchangesMCPService {
