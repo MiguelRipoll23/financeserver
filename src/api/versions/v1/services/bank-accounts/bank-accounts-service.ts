@@ -281,7 +281,10 @@ export class BankAccountsService {
         ),
       )
       .where(eq(bankAccountBalancesTable.bankAccountId, accountId))
-      .orderBy(orderDirection(orderColumn))
+      .orderBy(
+        orderDirection(orderColumn),
+        orderDirection(bankAccountBalancesTable.id)
+      )
       .limit(size)
       .offset(offset);
 

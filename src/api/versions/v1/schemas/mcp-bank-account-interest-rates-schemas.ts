@@ -49,7 +49,7 @@ export const FilterBankAccountInterestRatesToolSchema = z.object({
     .describe("Cursor for pagination (from nextCursor in previous response)"),
 });
 
-export const DeleteInterestRateToolSchema = z.object({
+export const DeleteBankAccountInterestRateToolSchema = z.object({
   id: z
     .number()
     .int()
@@ -57,7 +57,7 @@ export const DeleteInterestRateToolSchema = z.object({
     .describe("ID of the interest rate record to delete"),
 });
 
-export const UpdateInterestRateToolSchema = z.object({
+export const UpdateBankAccountInterestRateToolSchema = z.object({
   id: z
     .number()
     .int()

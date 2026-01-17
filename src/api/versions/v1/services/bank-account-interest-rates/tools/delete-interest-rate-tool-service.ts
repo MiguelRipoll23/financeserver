@@ -1,7 +1,7 @@
 import { inject, injectable } from "@needle-di/core";
 import { McpToolDefinition } from "../../../interfaces/mcp/mcp-tool-interface.ts";
 import { BankAccountInterestRatesService } from "../../bank-account-interest-rates/bank-account-interest-rates-service.ts";
-import { DeleteInterestRateToolSchema } from "../../../schemas/mcp-bank-account-interest-rates-schemas.ts";
+import { DeleteBankAccountInterestRateToolSchema } from "../../../schemas/mcp-bank-account-interest-rates-schemas.ts";
 
 @injectable()
 export class DeleteInterestRateToolService {
@@ -18,7 +18,7 @@ export class DeleteInterestRateToolService {
         title: "Delete bank account interest rate",
         description:
           "Use this when you need to delete an existing interest rate record.",
-        inputSchema: DeleteInterestRateToolSchema.shape,
+        inputSchema: DeleteBankAccountInterestRateToolSchema.shape,
         annotations: {
           readOnlyHint: false,
           idempotentHint: false,
@@ -27,7 +27,7 @@ export class DeleteInterestRateToolService {
         },
       },
       run: async (input: unknown) => {
-        const parsed = DeleteInterestRateToolSchema.parse(input);
+        const parsed = DeleteBankAccountInterestRateToolSchema.parse(input);
 
         await this.bankAccountInterestRatesService.deleteBankAccountInterestRate(
           parsed.id

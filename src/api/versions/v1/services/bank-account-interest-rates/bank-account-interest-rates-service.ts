@@ -128,7 +128,10 @@ export class BankAccountInterestRatesService {
       .select()
       .from(bankAccountInterestRatesTable)
       .where(eq(bankAccountInterestRatesTable.bankAccountId, accountId))
-      .orderBy(orderDirection(bankAccountInterestRatesTable.createdAt))
+      .orderBy(
+        orderDirection(bankAccountInterestRatesTable.createdAt),
+        orderDirection(bankAccountInterestRatesTable.id)
+      )
       .limit(size)
       .offset(offset);
 
