@@ -7,15 +7,7 @@ import {
   cryptoExchangeBalancesTable,
 } from "../../../../../db/schema.ts";
 import { OTelService } from "../otel-service.ts";
-
-interface CryptoExchangeBalanceMetric {
-  balanceId: number;
-  balance: string;
-  cryptoExchangeName: string;
-  symbolCode: string;
-  investedAmount: string | null;
-  investedCurrencyCode: string | null;
-}
+import { CryptoExchangeBalanceMetric } from "../../../../../core/interfaces/crypto-exchanges-balances/crypto-exchange-balance-metric-interface.ts";
 
 @injectable()
 export class CryptoExchangeBalancesOTelService {

@@ -7,14 +7,7 @@ import {
   bankAccountBalancesTable,
 } from "../../../../../db/schema.ts";
 import { OTelService } from "../otel-service.ts";
-
-interface BankAccountBalanceMetric {
-  balanceId: number;
-  balance: string;
-  bankAccountName: string;
-  currencyCode: string;
-  interestRate: string | null;
-}
+import { BankAccountBalanceMetric } from "../../../../../core/interfaces/bank-account-balances/bank-account-balance-metric-interface.ts";
 
 @injectable()
 export class BankAccountBalancesOTelService {
