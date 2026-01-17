@@ -31,6 +31,11 @@ export const bankAccountInterestRatesTable = pgTable(
       table.bankAccountId
     ),
     index("bank_account_interest_rates_created_at_idx").on(table.createdAt),
+    index("bank_account_interest_rates_period_idx").on(
+      table.bankAccountId,
+      table.interestRateStartDate,
+      table.interestRateEndDate
+    ),
   ]
 );
 
