@@ -33,7 +33,7 @@ export class AuthenticatedBankAccountInterestRatesRouter {
 
   private setRoutes(): void {
     this.registerCreateBankAccountInterestRateRoute();
-    this.registerGetBankAccountInterestRatesRoute();
+    this.registerListBankAccountInterestRatesRoute();
     this.registerUpdateBankAccountInterestRateRoute();
     this.registerDeleteBankAccountInterestRateRoute();
   }
@@ -82,16 +82,23 @@ export class AuthenticatedBankAccountInterestRatesRouter {
     );
   }
 
-  private registerGetBankAccountInterestRatesRoute(): void {
+  private registerListBankAccountInterestRatesRoute(): void {
     this.app.openapi(
       createRoute({
-        method: "get",
-        path: "/",
-        summary: "Get bank account interest rates",
-        description: "Get bank account interest rates",
+        method: "post",
+        path: "/find",
+        summary: "List bank account interest rates",
+        description: "List bank account interest rates",
         tags: ["Bank account interest rates"],
         request: {
-          query: GetBankAccountInterestRatesRequestSchema,
+          body: {
+            required: false,
+            content: {
+              "application/json": {
+                schema: GetBankAccountInterestRatesRequestSchema,
+              },
+            },
+          },
         },
         responses: {
           200: {
@@ -108,35 +115,29 @@ export class AuthenticatedBankAccountInterestRatesRouter {
         },
       }),
       async (c: Context<{ Variables: HonoVariables }>) => {
-        const query = c.req.query();
-        // Since getBankAccountInterestRates takes specific params, we map them manually or parse if we had a query schema parser helper.
-        // The service expects { bankAccountId, limit, cursor, sortOrder }.
-        // Previous implementation used c.req.valid('query').
-        // To avoid magic strings but stick to Schema.parse, we would need to parse the query object.
-        // However, Zod schemas for query params often require preprocessing because query params are strings.
-        // Given the prompt "I want to use schema.parse", I will use the schema to parse the query object.
-        // NOTE: Hono's c.req.query() returns Record<string, string>.
-        // We might need to ensure the schema handles coercion (z.coerce) which GetBankAccountInterestRatesRequestSchema likely extends from PaginationQuerySchema which does.
-        
-        // However, simpler here to just match the other files. 
-        // Let's check how other files handle GETs. 
-        // e.g., AuthenticatedBankAccountsRouter uses GetBankAccountsRequestSchema.parse(payload) where payload is from body for POST /find.
-        // This is a GET route.
-        // I'll stick to manual extraction or reuse the validation logic if available, but to strictly follow "schema.parse":
-        
-        // Wait, GetBankAccountInterestRatesRequestSchema is a Zod schema.
-        const parsedQuery = GetBankAccountInterestRatesRequestSchema.parse(c.req.query());
-        
+        const payload = await this.readJsonOrEmpty(c);
+        const body = GetBankAccountInterestRatesRequestSchema.parse(payload);
+
         const result =
           await this.bankAccountInterestRatesService.getBankAccountInterestRates({
-            bankAccountId: parsedQuery.bankAccountId,
-            limit: parsedQuery.limit,
-            cursor: parsedQuery.cursor,
-            sortOrder: parsedQuery.sortOrder,
+            bankAccountId: body.bankAccountId,
+            limit: body.limit,
+            cursor: body.cursor,
+            sortOrder: body.sortOrder,
           });
         return c.json(result, 200);
       }
     );
+  }
+
+  private async readJsonOrEmpty(
+    context: Context<{ Variables: HonoVariables }>
+  ): Promise<unknown> {
+    try {
+      return await context.req.json();
+    } catch {
+      return {};
+    }
   }
 
   private registerUpdateBankAccountInterestRateRoute(): void {
