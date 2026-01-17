@@ -13,7 +13,7 @@ export class UpdateCryptoExchangeBalanceToolService {
 
   public getDefinition(): McpToolDefinition {
     return {
-      name: "crypto_exchange_balances.update",
+      name: "crypto_exchanges.update_balance",
       meta: {
         title: "Update crypto exchange balance",
         description:

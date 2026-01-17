@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { SortOrder } from "../enums/sort-order-enum.ts";
+import { BankAccountBalanceSortField } from "../enums/bank-account-balance-sort-field-enum.ts";
 
 const DateOnlyRegex = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
 const MonetaryRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
@@ -19,28 +20,6 @@ export const CreateBankAccountBalanceToolSchema = z.object({
     .string()
     .length(3, "Currency code must be exactly 3 characters (ISO 4217 format)")
     .describe("ISO 4217 currency code (e.g., EUR, USD, GBP)"),
-  interestRate: z
-    .string()
-    .regex(
-      PercentageRegex,
-      "Interest rate must be a valid percentage (format: 2.50 for 2.50%)"
-    )
-    .optional()
-    .describe("Interest rate percentage (format: 2.50 for 2.50%, optional)"),
-  interestRateStartDate: z
-    .string()
-    .regex(DateOnlyRegex, "Date must be in YYYY-MM-DD format")
-    .optional()
-    .describe(
-      "Start date of interest rate period (format: YYYY-MM-DD, optional)"
-    ),
-  interestRateEndDate: z
-    .string()
-    .regex(DateOnlyRegex, "Date must be in YYYY-MM-DD format")
-    .optional()
-    .describe(
-      "End date of interest rate period (format: YYYY-MM-DD, optional)"
-    ),
 });
 
 export const FilterBankAccountBalancesToolSchema = z.object({
@@ -49,6 +28,10 @@ export const FilterBankAccountBalancesToolSchema = z.object({
     .int()
     .positive()
     .describe("ID of the bank account to get balances for"),
+  sortField: z
+    .nativeEnum(BankAccountBalanceSortField)
+    .optional()
+    .describe("Sort field (default: created_at)"),
   sortOrder: z.nativeEnum(SortOrder).optional().describe("Sort order"),
   pageSize: z
     .number()
@@ -92,26 +75,4 @@ export const UpdateBalanceToolSchema = z.object({
     .length(3, "Currency code must be exactly 3 characters (ISO 4217 format)")
     .optional()
     .describe("ISO 4217 currency code (e.g., EUR, USD, GBP)"),
-  interestRate: z
-    .string()
-    .regex(
-      PercentageRegex,
-      "Interest rate must be a valid percentage (format: 2.50 for 2.50%)"
-    )
-    .optional()
-    .describe("Interest rate percentage (format: 2.50 for 2.50%, optional)"),
-  interestRateStartDate: z
-    .string()
-    .regex(DateOnlyRegex, "Date must be in YYYY-MM-DD format")
-    .optional()
-    .describe(
-      "Start date of interest rate period (format: YYYY-MM-DD, optional)"
-    ),
-  interestRateEndDate: z
-    .string()
-    .regex(DateOnlyRegex, "Date must be in YYYY-MM-DD format")
-    .optional()
-    .describe(
-      "End date of interest rate period (format: YYYY-MM-DD, optional)"
-    ),
 });

@@ -29,15 +29,18 @@ export class FilterBalancesToolService {
           bankAccountId: parsed.bankAccountId,
           limit: parsed.pageSize,
           cursor: parsed.cursor,
+          sortField: parsed.sortField,
           sortOrder: parsed.sortOrder,
         });
 
         const count = result.data.length;
         const balancesList = result.data
-          .map(
-            (balance) =>
-              `- ${balance.balance} ${balance.currencyCode} (${balance.createdAt})`
-          )
+          .map((balance) => {
+            const interestPart = balance.interestRate
+              ? ` [Interest: ${balance.interestRate}%]`
+              : "";
+            return `- ${balance.balance} ${balance.currencyCode}${interestPart} (${balance.createdAt})`;
+          })
           .join("\n");
 
         let text = `Found ${count} balance record${count !== 1 ? "s" : ""}`;

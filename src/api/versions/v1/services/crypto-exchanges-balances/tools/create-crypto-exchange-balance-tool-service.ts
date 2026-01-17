@@ -13,7 +13,7 @@ export class CreateCryptoExchangeBalanceToolService {
 
   public getDefinition(): McpToolDefinition {
     return {
-      name: "crypto_exchange_balances.create",
+      name: "crypto_exchanges.create_balance",
       meta: {
         title: "Create crypto exchange balance",
         description:

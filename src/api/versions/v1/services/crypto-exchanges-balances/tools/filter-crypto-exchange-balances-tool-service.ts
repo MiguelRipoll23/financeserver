@@ -13,7 +13,7 @@ export class FilterCryptoExchangeBalancesToolService {
 
   public getDefinition(): McpToolDefinition {
     return {
-      name: "crypto_exchange_balances.filter",
+      name: "crypto_exchanges.filter_balances",
       meta: {
         title: "Filter crypto exchange balances",
         description:
