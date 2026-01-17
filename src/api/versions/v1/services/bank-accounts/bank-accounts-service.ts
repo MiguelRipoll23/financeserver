@@ -34,18 +34,19 @@ import type {
   UpdateBankAccountBalanceRequest,
   UpdateBankAccountBalanceResponse,
 } from "../../schemas/bank-account-balances-schemas.ts";
-
-
+import { BankAccountBalancesOTelService } from "../bank-account-balances/bank-account-balances-otel-service.ts";
 
 @injectable()
 export class BankAccountsService {
   constructor(
     private databaseService = inject(DatabaseService),
-
+    private bankAccountBalancesOTelService = inject(
+      BankAccountBalancesOTelService,
+    ),
   ) {}
 
   public async createBankAccount(
-    payload: CreateBankAccountRequest
+    payload: CreateBankAccountRequest,
   ): Promise<CreateBankAccountResponse> {
     const db = this.databaseService.get();
 
@@ -61,7 +62,7 @@ export class BankAccountsService {
 
   public async updateBankAccount(
     accountId: number,
-    payload: UpdateBankAccountRequest
+    payload: UpdateBankAccountRequest,
   ): Promise<UpdateBankAccountResponse> {
     const db = this.databaseService.get();
 
@@ -78,7 +79,7 @@ export class BankAccountsService {
       throw new ServerError(
         "BANK_ACCOUNT_NOT_FOUND",
         `Bank account with ID ${accountId} not found`,
-        404
+        404,
       );
     }
 
@@ -97,19 +98,19 @@ export class BankAccountsService {
       throw new ServerError(
         "BANK_ACCOUNT_NOT_FOUND",
         `Bank account with ID ${accountId} not found`,
-        404
+        404,
       );
     }
   }
 
   public async getBankAccounts(
-    filter: BankAccountsFilter
+    filter: BankAccountsFilter,
   ): Promise<GetBankAccountsResponse> {
     const db = this.databaseService.get();
 
     const pageSize = Math.min(
       filter.pageSize ?? DEFAULT_PAGE_SIZE,
-      MAX_PAGE_SIZE
+      MAX_PAGE_SIZE,
     );
 
     const offset = filter.cursor ? decodeCursor(filter.cursor) : 0;
@@ -152,14 +153,14 @@ export class BankAccountsService {
       .offset(offset);
 
     const data: BankAccountSummary[] = results.map((account) =>
-      this.mapBankAccountToSummary(account)
+      this.mapBankAccountToSummary(account),
     );
 
     const pagination = createOffsetPagination<BankAccountSummary>(
       data,
       pageSize,
       offset,
-      total
+      total,
     );
 
     return {
@@ -169,7 +170,7 @@ export class BankAccountsService {
   }
 
   public async createBankAccountBalance(
-    payload: CreateBankAccountBalanceRequest
+    payload: CreateBankAccountBalanceRequest,
   ): Promise<CreateBankAccountBalanceResponse> {
     const db = this.databaseService.get();
     const accountId = payload.bankAccountId;
@@ -186,7 +187,7 @@ export class BankAccountsService {
       throw new ServerError(
         "BANK_ACCOUNT_NOT_FOUND",
         `Bank account with ID ${accountId} not found`,
-        404
+        404,
       );
     }
 
@@ -201,14 +202,14 @@ export class BankAccountsService {
         accountId,
         payload.interestRateStartDate,
         payload.interestRateEndDate,
-        null
+        null,
       );
     }
 
     const balanceString = this.validateAndFormatAmount(
       payload.balance,
       "INVALID_BALANCE",
-      "Balance must be a valid monetary value"
+      "Balance must be a valid monetary value",
     );
 
     const [result] = await db
@@ -222,6 +223,9 @@ export class BankAccountsService {
         interestRateEndDate: payload.interestRateEndDate ?? null,
       })
       .returning();
+
+    // Push metric to OTel
+    await this.bankAccountBalancesOTelService.pushBalanceMetric(result.id);
 
     return this.mapBalanceToResponse(result);
   }
@@ -250,7 +254,7 @@ export class BankAccountsService {
       throw new ServerError(
         "BANK_ACCOUNT_NOT_FOUND",
         `Bank account with ID ${accountId} not found`,
-        404
+        404,
       );
     }
 
@@ -282,14 +286,14 @@ export class BankAccountsService {
       .offset(offset);
 
     const data: BankAccountBalanceSummary[] = results.map((balance) =>
-      this.mapBalanceToSummary(balance)
+      this.mapBalanceToSummary(balance),
     );
 
     const pagination = createOffsetPagination<BankAccountBalanceSummary>(
       data,
       size,
       offset,
-      total
+      total,
     );
 
     return {
@@ -300,7 +304,7 @@ export class BankAccountsService {
 
   public async updateBankAccountBalance(
     balanceId: number,
-    payload: UpdateBankAccountBalanceRequest
+    payload: UpdateBankAccountBalanceRequest,
   ): Promise<UpdateBankAccountBalanceResponse> {
     const db = this.databaseService.get();
 
@@ -316,7 +320,7 @@ export class BankAccountsService {
       throw new ServerError(
         "BALANCE_NOT_FOUND",
         `Balance with ID ${balanceId} not found`,
-        404
+        404,
       );
     }
 
@@ -337,7 +341,7 @@ export class BankAccountsService {
       updateValues.balance = this.validateAndFormatAmount(
         payload.balance,
         "INVALID_BALANCE",
-        "Balance must be a valid monetary value"
+        "Balance must be a valid monetary value",
       );
     }
 
@@ -370,7 +374,7 @@ export class BankAccountsService {
         accountId,
         newStartDate,
         newEndDate,
-        balanceId
+        balanceId,
       );
     }
 
@@ -380,11 +384,17 @@ export class BankAccountsService {
       .where(eq(bankAccountBalancesTable.id, balanceId))
       .returning();
 
+    // Push metric to OTel
+    await this.bankAccountBalancesOTelService.pushBalanceMetric(balanceId);
+
     return this.mapBalanceToResponse(result);
   }
 
   public async deleteBankAccountBalance(balanceId: number): Promise<void> {
     const db = this.databaseService.get();
+
+    // Push metric before deletion (while balance still exists)
+    await this.bankAccountBalancesOTelService.pushBalanceMetric(balanceId);
 
     const result = await db
       .delete(bankAccountBalancesTable)
@@ -395,7 +405,7 @@ export class BankAccountsService {
       throw new ServerError(
         "BALANCE_NOT_FOUND",
         `Balance with ID ${balanceId} not found`,
-        404
+        404,
       );
     }
   }
@@ -405,7 +415,7 @@ export class BankAccountsService {
     bankAccountId: number,
     startDate: string,
     endDate: string,
-    excludeBalanceId: number | null
+    excludeBalanceId: number | null,
   ): Promise<void> {
     // Check if the new period overlaps with any existing periods
     const conditions: SQL[] = [
@@ -422,7 +432,7 @@ export class BankAccountsService {
     // Exclude the current balance being updated
     if (excludeBalanceId !== null) {
       conditions.push(
-        sql`${bankAccountBalancesTable.id} != ${excludeBalanceId}`
+        sql`${bankAccountBalancesTable.id} != ${excludeBalanceId}`,
       );
     }
 
@@ -441,7 +451,7 @@ export class BankAccountsService {
       throw new ServerError(
         "OVERLAPPING_INTEREST_RATE_PERIOD",
         `Interest rate period ${startDate} to ${endDate} overlaps with existing period ${existing.startDate} to ${existing.endDate}`,
-        400
+        400,
       );
     }
   }
@@ -460,7 +470,7 @@ export class BankAccountsService {
   }
 
   private mapBankAccountToResponse(
-    account: typeof bankAccountsTable.$inferSelect
+    account: typeof bankAccountsTable.$inferSelect,
   ): CreateBankAccountResponse {
     return {
       id: account.id,
@@ -471,7 +481,7 @@ export class BankAccountsService {
   }
 
   private mapBankAccountToSummary(
-    account: typeof bankAccountsTable.$inferSelect
+    account: typeof bankAccountsTable.$inferSelect,
   ): BankAccountSummary {
     return {
       id: account.id,
@@ -482,7 +492,7 @@ export class BankAccountsService {
   }
 
   private mapBalanceToResponse(
-    balance: typeof bankAccountBalancesTable.$inferSelect
+    balance: typeof bankAccountBalancesTable.$inferSelect,
   ): CreateBankAccountBalanceResponse {
     return {
       id: balance.id,
@@ -498,7 +508,7 @@ export class BankAccountsService {
   }
 
   private mapBalanceToSummary(
-    balance: typeof bankAccountBalancesTable.$inferSelect
+    balance: typeof bankAccountBalancesTable.$inferSelect,
   ): BankAccountBalanceSummary {
     return {
       id: balance.id,
@@ -516,7 +526,7 @@ export class BankAccountsService {
   private validateAndFormatAmount(
     amount: string,
     errorCode: string,
-    errorMessage: string
+    errorMessage: string,
   ): string {
     const parsed = parseFloat(amount);
 

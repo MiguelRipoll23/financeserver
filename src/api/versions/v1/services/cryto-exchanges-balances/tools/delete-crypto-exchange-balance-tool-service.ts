@@ -1,12 +1,14 @@
 import { inject, injectable } from "@needle-di/core";
 import { McpToolDefinition } from "../../../interfaces/mcp/mcp-tool-interface.ts";
-import { CryptoExchangesService } from "../crypto-exchanges-service.ts";
+import { CryptoExchangeBalancesService } from "../crypto-exchange-balances-service.ts";
 import { DeleteCryptoExchangeBalanceToolSchema } from "../../../schemas/mcp-crypto-exchange-balances-schemas.ts";
 
 @injectable()
 export class DeleteCryptoExchangeBalanceToolService {
   constructor(
-    private cryptoExchangesService = inject(CryptoExchangesService)
+    private cryptoExchangeBalancesService = inject(
+      CryptoExchangeBalancesService,
+    ),
   ) {}
 
   public getDefinition(): McpToolDefinition {
@@ -27,7 +29,9 @@ export class DeleteCryptoExchangeBalanceToolService {
       run: async (input: unknown) => {
         const { id } = DeleteCryptoExchangeBalanceToolSchema.parse(input);
 
-        await this.cryptoExchangesService.deleteCryptoExchangeBalance(id);
+        await this.cryptoExchangeBalancesService.deleteCryptoExchangeBalance(
+          id,
+        );
 
         const text = `Crypto exchange balance with ID ${id} deleted successfully.`;
 

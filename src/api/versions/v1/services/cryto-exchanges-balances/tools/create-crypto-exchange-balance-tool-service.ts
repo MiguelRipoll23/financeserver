@@ -1,12 +1,14 @@
 import { inject, injectable } from "@needle-di/core";
 import { McpToolDefinition } from "../../../interfaces/mcp/mcp-tool-interface.ts";
-import { CryptoExchangesService } from "../crypto-exchanges-service.ts";
+import { CryptoExchangeBalancesService } from "../crypto-exchange-balances-service.ts";
 import { CreateCryptoExchangeBalanceToolSchema } from "../../../schemas/mcp-crypto-exchange-balances-schemas.ts";
 
 @injectable()
 export class CreateCryptoExchangeBalanceToolService {
   constructor(
-    private cryptoExchangesService = inject(CryptoExchangesService)
+    private cryptoExchangeBalancesService = inject(
+      CryptoExchangeBalancesService,
+    ),
   ) {}
 
   public getDefinition(): McpToolDefinition {
@@ -28,7 +30,10 @@ export class CreateCryptoExchangeBalanceToolService {
         const parsed = CreateCryptoExchangeBalanceToolSchema.parse(input);
 
         const result =
-          await this.cryptoExchangesService.createCryptoExchangeBalance(parsed);
+          await this.cryptoExchangeBalancesService.createCryptoExchangeBalance(
+            parsed.cryptoExchangeId,
+            parsed,
+          );
 
         const text = `Balance for ${result.symbolCode} created successfully on exchange ID ${result.cryptoExchangeId}. (ID: ${result.id})`;
 
