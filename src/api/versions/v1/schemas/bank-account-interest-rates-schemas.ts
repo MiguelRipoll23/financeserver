@@ -4,24 +4,42 @@ import { SortOrder } from "../enums/sort-order-enum.ts";
 import { DateOnlyStringSchema } from "./date-only-string-schema.ts";
 
 // Bank Account Interest Rate schemas
-export const CreateBankAccountInterestRateRequestSchema = z.object({
-  bankAccountId: z
-    .number()
-    .int()
-    .openapi({ example: 1 })
-    .describe("Bank account identifier"),
-  interestRate: z
-    .string()
-    .regex(/^[0-9]+(\.[0-9]{1,2})?$/)
-    .openapi({ example: "2.50" })
-    .describe("Interest rate percentage (e.g., 2.50 for 2.50%)"),
-  interestRateStartDate: DateOnlyStringSchema.describe(
-    "Start date of interest rate period in YYYY-MM-DD format"
-  ),
-  interestRateEndDate: DateOnlyStringSchema.nullable().optional().describe(
-    "End date of interest rate period in YYYY-MM-DD format"
-  ),
-});
+export const CreateBankAccountInterestRateRequestSchema = z
+  .object({
+    bankAccountId: z
+      .number()
+      .int()
+      .openapi({ example: 1 })
+      .describe("Bank account identifier"),
+    interestRate: z
+      .string()
+      .regex(/^[0-9]+(\.[0-9]{1,2})?$/)
+      .refine((val) => {
+        const num = parseFloat(val);
+        return num >= 0 && num <= 999.99;
+      }, "Interest rate must be between 0 and 999.99")
+      .openapi({ example: "2.50" })
+      .describe("Interest rate percentage (e.g., 2.50 for 2.50%)"),
+    interestRateStartDate: DateOnlyStringSchema.describe(
+      "Start date of interest rate period in YYYY-MM-DD format"
+    ),
+    interestRateEndDate: DateOnlyStringSchema.nullable().optional().describe(
+      "End date of interest rate period in YYYY-MM-DD format"
+    ),
+  })
+  .refine(
+    (data) => {
+      if (!data.interestRateEndDate) return true;
+      return (
+        new Date(data.interestRateEndDate) >=
+        new Date(data.interestRateStartDate)
+      );
+    },
+    {
+      message: "End date cannot be before start date",
+      path: ["interestRateEndDate"],
+    }
+  );
 
 export type CreateBankAccountInterestRateRequest = z.infer<
   typeof CreateBankAccountInterestRateRequestSchema
