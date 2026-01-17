@@ -12,7 +12,7 @@ import { CryptoExchangeBalanceMetric } from "../../../../../core/interfaces/cryp
 @injectable()
 export class CryptoExchangeBalancesOTelService {
   private static readonly METER_NAME = "crypto-exchanges";
-  private static readonly COUNTER_NAME = "balance";
+  private static readonly COUNTER_NAME = "crypto_exchange_balance";
 
   private counter: UpDownCounter | null = null;
 
@@ -23,12 +23,12 @@ export class CryptoExchangeBalancesOTelService {
     this.otelService.registerDomainService(this);
   }
 
-  private async getOrCreateCounter() {
+  private getOrCreateCounter() {
     if (this.counter) {
       return this.counter;
     }
 
-    const meterProvider = await this.otelService.getMeterProvider();
+    const meterProvider = this.otelService.getMeterProvider();
     if (!meterProvider) {
       return null;
     }
@@ -47,7 +47,7 @@ export class CryptoExchangeBalancesOTelService {
   }
 
   public async pushBalanceMetric(balanceId: number): Promise<void> {
-    const counter = await this.getOrCreateCounter();
+    const counter = this.getOrCreateCounter();
     if (!counter) {
       return;
     }
@@ -71,7 +71,7 @@ export class CryptoExchangeBalancesOTelService {
   }
 
   public async pushAllMetrics(): Promise<void> {
-    const counter = await this.getOrCreateCounter();
+    const counter = this.getOrCreateCounter();
     if (!counter) {
       return;
     }
