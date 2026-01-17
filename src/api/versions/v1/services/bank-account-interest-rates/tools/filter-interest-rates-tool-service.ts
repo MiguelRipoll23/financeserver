@@ -37,8 +37,25 @@ export class FilterInterestRatesToolService {
             cursor: parsed.cursor,
           });
 
+        const count = result.data.length;
+        const ratesList = result.data
+          .map(
+            (rate) =>
+              `- ${rate.interestRate}% from ${rate.interestRateStartDate}${rate.interestRateEndDate ? ` to ${rate.interestRateEndDate}` : " (ongoing)"} (ID: ${rate.id})`
+          )
+          .join("\n");
+
+        let text = `Found ${count} interest rate record${count !== 1 ? "s" : ""}`;
+        if (count > 0) {
+          text += `:\n${ratesList}`;
+        }
+
+        if (result.nextCursor) {
+          text += `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
+        }
+
         return {
-          text: `Found ${result.data.length} interest rate records`,
+          text,
           structured: result,
         };
       },
