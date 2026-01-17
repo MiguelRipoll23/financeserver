@@ -65,12 +65,14 @@ export class CryptoExchangeBalancesOTelService {
       return;
     }
 
+    const databaseEndpoint = this.otelService.getDatabaseEndpoint();
     counter.add(parseFloat(metric.balance), {
       balance_id: metric.balanceId.toString(),
       crypto_exchange_name: metric.cryptoExchangeName,
       symbol_code: metric.symbolCode,
       invested_amount: metric.investedAmount ?? "0",
       invested_currency_code: metric.investedCurrencyCode ?? "none",
+      database_endpoint: databaseEndpoint ?? "unknown",
     });
 
     await this.otelService.forceFlush();
@@ -83,6 +85,7 @@ export class CryptoExchangeBalancesOTelService {
     }
 
     const db = this.databaseService.get();
+    const databaseEndpoint = this.otelService.getDatabaseEndpoint();
 
     const balances = await db
       .select({ id: cryptoExchangeBalancesTable.id })
@@ -97,6 +100,7 @@ export class CryptoExchangeBalancesOTelService {
           symbol_code: metric.symbolCode,
           invested_amount: metric.investedAmount ?? "0",
           invested_currency_code: metric.investedCurrencyCode ?? "none",
+          database_endpoint: databaseEndpoint ?? "unknown",
         });
       }
     }

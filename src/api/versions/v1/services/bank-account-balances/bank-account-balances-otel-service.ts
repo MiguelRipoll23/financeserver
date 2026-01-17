@@ -64,11 +64,13 @@ export class BankAccountBalancesOTelService {
       return;
     }
 
+    const databaseEndpoint = this.otelService.getDatabaseEndpoint();
     counter.add(parseFloat(metric.balance), {
       balance_id: metric.balanceId.toString(),
       bank_account_name: metric.bankAccountName,
       currency_code: metric.currencyCode,
       interest_rate: metric.interestRate ?? "0",
+      database_endpoint: databaseEndpoint ?? "unknown",
     });
 
     await this.otelService.forceFlush();
@@ -81,6 +83,7 @@ export class BankAccountBalancesOTelService {
     }
 
     const db = this.databaseService.get();
+    const databaseEndpoint = this.otelService.getDatabaseEndpoint();
 
     const balances = await db
       .select({ id: bankAccountBalancesTable.id })
@@ -94,6 +97,7 @@ export class BankAccountBalancesOTelService {
           bank_account_name: metric.bankAccountName,
           currency_code: metric.currencyCode,
           interest_rate: metric.interestRate ?? "0",
+          database_endpoint: databaseEndpoint ?? "unknown",
         });
       }
     }

@@ -3,7 +3,6 @@ import {
   PeriodicExportingMetricReader,
 } from "@opentelemetry/sdk-metrics";
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-http";
-import { resourceFromAttributes } from "@opentelemetry/resources";
 import { injectable } from "@needle-di/core";
 import {
   ENV_APP_OTEL_EXPORTER_OTLP_METRICS_ENDPOINT,
@@ -19,12 +18,13 @@ export class OTelService {
   private meterProvider: MeterProvider | null = null;
   private isInitialized = false;
   private domainServices: DomainOTelService[] = [];
+  private databaseEndpoint: string | null = null;
 
   public registerDomainService(service: DomainOTelService): void {
     this.domainServices.push(service);
   }
 
-  public async init(): Promise<void> {
+  public init(): void {
     if (this.isInitialized) {
       return;
     }
@@ -43,10 +43,9 @@ export class OTelService {
         exportIntervalMillis: OTelService.EXPORT_INTERVAL_MS,
       });
 
-      const resource = await this.createResource();
+      this.setDatabaseAttributeValue();
       this.meterProvider = new MeterProvider({
         readers: [reader],
-        resource,
       });
 
       this.isInitialized = true;
@@ -61,6 +60,10 @@ export class OTelService {
       await this.init();
     }
     return this.meterProvider;
+  }
+
+  public getDatabaseEndpoint(): string | null {
+    return this.databaseEndpoint;
   }
 
   public async pushAllMetrics(): Promise<void> {
@@ -131,42 +134,25 @@ export class OTelService {
     return headers;
   }
 
-  private async createResource() {
-    const attributes: Record<string, string> = {};
-
+  private setDatabaseAttributeValue(): void {
     const databaseUrl = Deno.env.get(ENV_DATABASE_URL);
-    if (databaseUrl) {
-      try {
-        const url = new URL(databaseUrl);
-        const hostname = url.hostname;
-        const dbName = url.pathname.replace(/^\//, ""); // Remove leading slash
 
-        if (hostname && dbName) {
-          const nonSecretIdentifier = `${hostname}/${dbName}`;
-          attributes["database_hash"] =
-            await this.hashStringSha256(nonSecretIdentifier);
-        }
-      } catch (error) {
-        console.error("Failed to parse DATABASE_URL for telemetry:", error);
-        // Skip database_hash attribute if URL is invalid
-      }
+    if (!databaseUrl) {
+      return;
     }
 
-    return resourceFromAttributes(attributes);
-  }
+    try {
+      const url = new URL(databaseUrl);
+      const hostname = url.hostname;
+      const dbName = url.pathname.replace(/^\//, ""); // Remove leading slash
 
-  private async hashStringSha256(value: string): Promise<string> {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(value);
-
-    // Use Deno's crypto API for proper SHA-256 hashing
-    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray
-      .map((byte) => byte.toString(16).padStart(2, "0"))
-      .join("");
-
-    return hashHex;
+      if (hostname && dbName) {
+        this.databaseEndpoint = `${hostname}/${dbName}`;
+        console.log(`OTel database_endpoint set: ${this.databaseEndpoint}`);
+      }
+    } catch (error) {
+      console.error("Failed to parse DATABASE_URL for telemetry:", error);
+    }
   }
 
   private createExporter(
