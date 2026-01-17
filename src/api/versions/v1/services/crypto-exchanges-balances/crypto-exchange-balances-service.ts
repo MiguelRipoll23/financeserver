@@ -22,15 +22,12 @@ import type {
   UpdateCryptoExchangeBalanceRequest,
   UpdateCryptoExchangeBalanceResponse,
 } from "../../schemas/crypto-exchange-balances-schemas.ts";
-import { CryptoExchangeBalancesOTelService } from "./crypto-exchange-balances-otel-service.ts";
+
 
 @injectable()
 export class CryptoExchangeBalancesService {
   constructor(
     private databaseService = inject(DatabaseService),
-    private cryptoExchangeBalancesOTelService = inject(
-      CryptoExchangeBalancesOTelService,
-    ),
   ) {}
 
   public async createCryptoExchangeBalance(
@@ -65,8 +62,7 @@ export class CryptoExchangeBalancesService {
       })
       .returning();
 
-    // Push metric to OTel
-    await this.cryptoExchangeBalancesOTelService.pushBalanceMetric(result.id);
+
 
     return this.mapBalanceToResponse(result);
   }
@@ -195,8 +191,7 @@ export class CryptoExchangeBalancesService {
       .where(eq(cryptoExchangeBalancesTable.id, balanceId))
       .returning();
 
-    // Push metric to OTel
-    await this.cryptoExchangeBalancesOTelService.pushBalanceMetric(balanceId);
+
 
     return this.mapBalanceToResponse(result);
   }
@@ -219,8 +214,7 @@ export class CryptoExchangeBalancesService {
       );
     }
 
-    // Push metric before deletion (while balance still exists)
-    await this.cryptoExchangeBalancesOTelService.pushBalanceMetric(balanceId);
+
 
     await db
       .delete(cryptoExchangeBalancesTable)

@@ -34,15 +34,12 @@ import type {
   UpdateBankAccountBalanceRequest,
   UpdateBankAccountBalanceResponse,
 } from "../../schemas/bank-account-balances-schemas.ts";
-import { BankAccountBalancesOTelService } from "../bank-account-balances/bank-account-balances-otel-service.ts";
+
 
 @injectable()
 export class BankAccountsService {
   constructor(
     private databaseService = inject(DatabaseService),
-    private bankAccountBalancesOTelService = inject(
-      BankAccountBalancesOTelService,
-    ),
   ) {}
 
   public async createBankAccount(
@@ -224,8 +221,7 @@ export class BankAccountsService {
       })
       .returning();
 
-    // Push metric to OTel
-    await this.bankAccountBalancesOTelService.pushBalanceMetric(result.id);
+
 
     return this.mapBalanceToResponse(result);
   }
@@ -384,8 +380,7 @@ export class BankAccountsService {
       .where(eq(bankAccountBalancesTable.id, balanceId))
       .returning();
 
-    // Push metric to OTel
-    await this.bankAccountBalancesOTelService.pushBalanceMetric(balanceId);
+
 
     return this.mapBalanceToResponse(result);
   }
@@ -393,8 +388,7 @@ export class BankAccountsService {
   public async deleteBankAccountBalance(balanceId: number): Promise<void> {
     const db = this.databaseService.get();
 
-    // Push metric before deletion (while balance still exists)
-    await this.bankAccountBalancesOTelService.pushBalanceMetric(balanceId);
+
 
     const result = await db
       .delete(bankAccountBalancesTable)

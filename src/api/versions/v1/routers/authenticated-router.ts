@@ -13,7 +13,6 @@ import { AuthenticatedCryptoExchangesRouter } from "./authenticated/authenticate
 import { AuthenticatedCryptoExchangeBalancesRouter } from "./authenticated/authenticated-crypto-exchange-balances-router.ts";
 import { AuthenticatedMCPRouter } from "./authenticated/authenticated-mcp-router.ts";
 import { AuthenticatedUsersRouter } from "./authenticated/authenticated-users-router.ts";
-import { AuthenticatedOTelRouter } from "./authenticated/authenticated-otel-router.ts";
 import { HonoVariables } from "../../../../core/types/hono/hono-variables-type.ts";
 
 @injectable()
@@ -25,7 +24,6 @@ export class V1AuthenticatedRouter {
     private authorizationMiddleware = inject(AuthorizationMiddleware),
     private usersRouter = inject(AuthenticatedUsersRouter),
     private mcpRouter = inject(AuthenticatedMCPRouter),
-    private otelRouter = inject(AuthenticatedOTelRouter),
     private billsRouter = inject(AuthenticatedBillsRouter),
     private subscriptionsRouter = inject(AuthenticatedSubscriptionsRouter),
     private merchantsRouter = inject(AuthenticatedMerchantsRouter),
@@ -63,7 +61,6 @@ export class V1AuthenticatedRouter {
   }
 
   private setRoutes(): void {
-    this.app.route("/otel", this.otelRouter.getRouter());
     this.app.route("/mcp", this.mcpRouter.getRouter());
     this.app.route("/users", this.usersRouter.getRouter());
     this.app.route("/bank-accounts", this.bankAccountsRouter.getRouter());
