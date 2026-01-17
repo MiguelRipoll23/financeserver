@@ -55,7 +55,7 @@ export class OTelService {
     }
   }
 
-  public async getMeterProvider(): Promise<MeterProvider | null> {
+  public getMeterProvider(): MeterProvider | null {
     if (!this.isInitialized) {
       this.init();
     }
@@ -74,7 +74,7 @@ export class OTelService {
 
   public async forceFlush(): Promise<void> {
     if (!this.isInitialized) {
-      await this.init();
+      this.init();
     }
 
     if (!this.meterProvider) {

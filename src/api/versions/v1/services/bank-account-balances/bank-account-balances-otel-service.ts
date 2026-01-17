@@ -12,7 +12,7 @@ import { BankAccountBalanceMetric } from "../../../../../core/interfaces/bank-ac
 @injectable()
 export class BankAccountBalancesOTelService {
   private static readonly METER_NAME = "bank-accounts";
-  private static readonly COUNTER_NAME = "balance";
+  private static readonly COUNTER_NAME = "bank_account_balance";
 
   private counter: UpDownCounter | null = null;
 
@@ -23,12 +23,12 @@ export class BankAccountBalancesOTelService {
     this.otelService.registerDomainService(this);
   }
 
-  private async getOrCreateCounter() {
+  private getOrCreateCounter() {
     if (this.counter) {
       return this.counter;
     }
 
-    const meterProvider = await this.otelService.getMeterProvider();
+    const meterProvider = this.otelService.getMeterProvider();
     if (!meterProvider) {
       return null;
     }
@@ -47,7 +47,7 @@ export class BankAccountBalancesOTelService {
   }
 
   public async pushBalanceMetric(balanceId: number): Promise<void> {
-    const counter = await this.getOrCreateCounter();
+    const counter = this.getOrCreateCounter();
     if (!counter) {
       return;
     }
@@ -70,7 +70,7 @@ export class BankAccountBalancesOTelService {
   }
 
   public async pushAllMetrics(): Promise<void> {
-    const counter = await this.getOrCreateCounter();
+    const counter = this.getOrCreateCounter();
     if (!counter) {
       return;
     }
