@@ -165,20 +165,7 @@ export class CashService {
     const cashId = payload.cashId;
 
     // Verify cash source exists
-    const cash = await db
-      .select({ id: cashTable.id })
-      .from(cashTable)
-      .where(eq(cashTable.id, cashId))
-      .limit(1)
-      .then((rows) => rows[0]);
-
-    if (!cash) {
-      throw new ServerError(
-        "CASH_NOT_FOUND",
-        `Cash source with ID ${cashId} not found`,
-        404,
-      );
-    }
+    await this.verifyCashExists(db, cashId);
 
     const balanceString = this.validateAndFormatAmount(
       payload.balance,
@@ -213,20 +200,7 @@ export class CashService {
     const sortOrder = payload.sortOrder ?? SortOrder.Desc;
 
     // Verify cash source exists
-    const cash = await db
-      .select({ id: cashTable.id })
-      .from(cashTable)
-      .where(eq(cashTable.id, cashId))
-      .limit(1)
-      .then((rows) => rows[0]);
-
-    if (!cash) {
-      throw new ServerError(
-        "CASH_NOT_FOUND",
-        `Cash source with ID ${cashId} not found`,
-        404,
-      );
-    }
+    await this.verifyCashExists(db, cashId);
 
     const size = Math.min(pageSize, MAX_PAGE_SIZE);
     const offset = cursor ? decodeCursor(cursor) : 0;
@@ -365,6 +339,26 @@ export class CashService {
         return cashBalancesTable.createdAt;
       default:
         return cashBalancesTable.createdAt;
+    }
+  }
+
+  private async verifyCashExists(
+    db: ReturnType<DatabaseService["get"]>,
+    cashId: number,
+  ): Promise<void> {
+    const cash = await db
+      .select({ id: cashTable.id })
+      .from(cashTable)
+      .where(eq(cashTable.id, cashId))
+      .limit(1)
+      .then((rows) => rows[0]);
+
+    if (!cash) {
+      throw new ServerError(
+        "CASH_NOT_FOUND",
+        `Cash source with ID ${cashId} not found`,
+        404,
+      );
     }
   }
 

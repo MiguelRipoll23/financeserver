@@ -6,6 +6,9 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 
+// Note: The label column does not have a uniqueness constraint to allow users
+// to create multiple cash sources with the same label (e.g., multiple "Wallet"
+// entries for different currencies or purposes), similar to bank accounts.
 export const cashTable = pgTable(
   "cash",
   {
@@ -18,7 +21,7 @@ export const cashTable = pgTable(
       .defaultNow()
       .notNull(),
   },
-  (table) => [index("cash_label_idx").on(table.label)]
+  (table) => [index("cash_label_idx").on(table.label)],
 );
 
 export type CashEntity = typeof cashTable.$inferSelect;
