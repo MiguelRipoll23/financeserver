@@ -70,7 +70,7 @@ export class AuthenticatedCashRouter {
         const result = await this.cashService.createCash(body);
 
         return context.json(result, 201);
-      }
+      },
     );
   }
 
@@ -118,7 +118,7 @@ export class AuthenticatedCashRouter {
         const result = await this.cashService.getCash(filter);
 
         return context.json(result, 200);
-      }
+      },
     );
   }
 
@@ -157,13 +157,10 @@ export class AuthenticatedCashRouter {
       async (context: Context<{ Variables: HonoVariables }>) => {
         const { id } = CashIdParamSchema.parse(context.req.param());
         const body = UpdateCashRequestSchema.parse(await context.req.json());
-        const result = await this.cashService.updateCash(
-          parseInt(id, 10),
-          body
-        );
+        const result = await this.cashService.updateCash(id, body);
 
         return context.json(result, 200);
-      }
+      },
     );
   }
 
@@ -188,15 +185,15 @@ export class AuthenticatedCashRouter {
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
         const { id } = CashIdParamSchema.parse(context.req.param());
-        await this.cashService.deleteCash(parseInt(id, 10));
+        await this.cashService.deleteCash(id);
 
         return context.body(null, 204);
-      }
+      },
     );
   }
 
   private async readJsonOrEmpty(
-    context: Context<{ Variables: HonoVariables }>
+    context: Context<{ Variables: HonoVariables }>,
   ): Promise<unknown> {
     try {
       return await context.req.json();

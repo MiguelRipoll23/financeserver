@@ -29,13 +29,17 @@ export const CreateCashResponseSchema = z.object({
 export type CreateCashResponse = z.infer<typeof CreateCashResponseSchema>;
 
 export const CashIdParamSchema = z.object({
-  id: z.string().openapi({
-    param: {
-      name: "id",
-      in: "path",
-    },
-    example: "1",
-  }),
+  id: z.coerce
+    .number()
+    .int()
+    .positive()
+    .openapi({
+      param: {
+        name: "id",
+        in: "path",
+      },
+      example: "1",
+    }),
 });
 
 export type CashIdParam = z.infer<typeof CashIdParamSchema>;

@@ -1,10 +1,7 @@
 import { inject, injectable } from "@needle-di/core";
 import { asc, desc, eq, ilike, sql, type SQL } from "drizzle-orm";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
-import {
-  cashTable,
-  cashBalancesTable,
-} from "../../../../../db/schema.ts";
+import { cashTable, cashBalancesTable } from "../../../../../db/schema.ts";
 import { ServerError } from "../../models/server-error.ts";
 import { decodeCursor } from "../../utils/cursor-utils.ts";
 import { createOffsetPagination } from "../../utils/pagination-utils.ts";
@@ -37,9 +34,7 @@ import type {
 
 @injectable()
 export class CashService {
-  constructor(
-    private databaseService = inject(DatabaseService),
-  ) {}
+  constructor(private databaseService = inject(DatabaseService)) {}
 
   public async createCash(
     payload: CreateCashRequest,
@@ -99,9 +94,7 @@ export class CashService {
     }
   }
 
-  public async getCash(
-    filter: CashFilter,
-  ): Promise<GetCashResponse> {
+  public async getCash(filter: CashFilter): Promise<GetCashResponse> {
     const db = this.databaseService.get();
 
     const pageSize = Math.min(
@@ -239,14 +232,13 @@ export class CashService {
     const offset = cursor ? decodeCursor(cursor) : 0;
 
     const orderDirection = sortOrder === SortOrder.Asc ? asc : desc;
-    // Currently only CreatedAt is supported for balances
-    const orderColumn = cashBalancesTable.createdAt;
+    const orderColumn = this.getCashBalanceSortColumn(sortField);
 
     const countResult = await db
       .select({ count: sql<number>`COUNT(*)` })
       .from(cashBalancesTable)
       .where(eq(cashBalancesTable.cashId, cashId));
-    
+
     const count = countResult[0]?.count;
 
     const total = Number(count ?? 0);
@@ -262,7 +254,10 @@ export class CashService {
       .select()
       .from(cashBalancesTable)
       .where(eq(cashBalancesTable.cashId, cashId))
-      .orderBy(orderDirection(orderColumn), orderDirection(cashBalancesTable.id))
+      .orderBy(
+        orderDirection(orderColumn),
+        orderDirection(cashBalancesTable.id),
+      )
       .limit(size)
       .offset(offset);
 
@@ -364,6 +359,15 @@ export class CashService {
     }
   }
 
+  private getCashBalanceSortColumn(sortField: CashBalanceSortField) {
+    switch (sortField) {
+      case CashBalanceSortField.CreatedAt:
+        return cashBalancesTable.createdAt;
+      default:
+        return cashBalancesTable.createdAt;
+    }
+  }
+
   private mapCashToResponse(
     cash: typeof cashTable.$inferSelect,
   ): CreateCashResponse {
@@ -375,9 +379,7 @@ export class CashService {
     };
   }
 
-  private mapCashToSummary(
-    cash: typeof cashTable.$inferSelect,
-  ): CashSummary {
+  private mapCashToSummary(cash: typeof cashTable.$inferSelect): CashSummary {
     return {
       id: cash.id,
       label: cash.label,

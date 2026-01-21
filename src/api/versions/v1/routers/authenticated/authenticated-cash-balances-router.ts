@@ -68,12 +68,12 @@ export class AuthenticatedCashBalancesRouter {
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
         const body = CreateCashBalanceRequestSchema.parse(
-          await context.req.json()
+          await context.req.json(),
         );
         const result = await this.cashService.createCashBalance(body);
 
         return context.json(result, 201);
-      }
+      },
     );
   }
 
@@ -114,7 +114,7 @@ export class AuthenticatedCashBalancesRouter {
         const result = await this.cashService.getCashBalances(body);
 
         return context.json(result, 200);
-      }
+      },
     );
   }
 
@@ -153,15 +153,12 @@ export class AuthenticatedCashBalancesRouter {
       async (context: Context<{ Variables: HonoVariables }>) => {
         const { id } = CashBalanceIdParamSchema.parse(context.req.param());
         const body = UpdateCashBalanceRequestSchema.parse(
-          await context.req.json()
+          await context.req.json(),
         );
-        const result = await this.cashService.updateCashBalance(
-          parseInt(id, 10),
-          body
-        );
+        const result = await this.cashService.updateCashBalance(id, body);
 
         return context.json(result, 200);
-      }
+      },
     );
   }
 
@@ -186,15 +183,15 @@ export class AuthenticatedCashBalancesRouter {
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
         const { id } = CashBalanceIdParamSchema.parse(context.req.param());
-        await this.cashService.deleteCashBalance(parseInt(id, 10));
+        await this.cashService.deleteCashBalance(id);
 
         return context.body(null, 204);
-      }
+      },
     );
   }
 
   private async readJsonOrEmpty(
-    context: Context<{ Variables: HonoVariables }>
+    context: Context<{ Variables: HonoVariables }>,
   ): Promise<unknown> {
     try {
       return await context.req.json();

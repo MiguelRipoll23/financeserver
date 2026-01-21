@@ -37,13 +37,17 @@ export type CreateCashBalanceResponse = z.infer<
 >;
 
 export const CashBalanceIdParamSchema = z.object({
-  id: z.string().openapi({
-    param: {
-      name: "id",
-      in: "path",
-    },
-    example: "1",
-  }),
+  id: z.coerce
+    .number()
+    .int()
+    .positive()
+    .openapi({
+      param: {
+        name: "id",
+        in: "path",
+      },
+      example: "1",
+    }),
 });
 
 export type CashBalanceIdParam = z.infer<typeof CashBalanceIdParamSchema>;
