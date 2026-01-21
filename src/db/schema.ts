@@ -1,5 +1,7 @@
 export { billEmailsTable } from "./tables/bill-emails-table.ts";
 export { billCategoriesTable } from "./tables/bill-categories-table.ts";
+export { cashTable } from "./tables/cash-table.ts";
+export { cashBalancesTable } from "./tables/cash-balances-table.ts";
 export { billsTable } from "./tables/bills-table.ts";
 export { receiptsTable } from "./tables/receipts-table.ts";
 export { merchantsTable } from "./tables/merchants-table.ts";

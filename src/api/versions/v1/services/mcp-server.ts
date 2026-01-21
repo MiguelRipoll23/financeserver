@@ -9,6 +9,8 @@ import { BankAccountsMCPService } from "./bank-accounts/bank-accounts-mcp-servic
 import { BankAccountBalancesMCPService } from "./bank-account-balances/bank-account-balances-mcp-service.ts";
 import { BankAccountInterestRatesMCPService } from "./bank-account-interest-rates/bank-account-interest-rates-mcp-service.ts";
 import { CryptoExchangesMCPService } from "./crypto-exchanges/crypto-exchanges-mcp-service.ts";
+import { CashMCPService } from "./cash/cash-mcp-service.ts";
+import { CashBalancesMCPService } from "./cash-balances/cash-balances-mcp-service.ts";
 import { McpToolDefinition } from "../interfaces/mcp/mcp-tool-interface.ts";
 import { McpProvider } from "../types/mcp/mcp-provider-type.ts";
 import { McpServerWithContext } from "../types/mcp/mcp-server-with-context-type.ts";
@@ -28,7 +30,9 @@ export class MCPService {
     private bankAccountInterestRatesMCPService = inject(
       BankAccountInterestRatesMCPService
     ),
-    private cryptoExchangesMCPService = inject(CryptoExchangesMCPService)
+    private cryptoExchangesMCPService = inject(CryptoExchangesMCPService),
+    private cashMCPService = inject(CashMCPService),
+    private cashBalancesMCPService = inject(CashBalancesMCPService)
   ) {}
 
   public createUnifiedServer(): McpServer {
@@ -37,6 +41,8 @@ export class MCPService {
       this.productsMCPService,
       this.billsMCPService,
       this.subscriptionsMCPService,
+      this.cashMCPService,
+      this.cashBalancesMCPService,
       this.bankAccountsMCPService,
       this.bankAccountBalancesMCPService,
       this.bankAccountInterestRatesMCPService,
@@ -46,6 +52,8 @@ export class MCPService {
 
   public createPortfolioServer(): McpServer {
     return this.createServer("portfolio-mcp", [
+      this.cashMCPService,
+      this.cashBalancesMCPService,
       this.bankAccountsMCPService,
       this.bankAccountBalancesMCPService,
       this.bankAccountInterestRatesMCPService,
