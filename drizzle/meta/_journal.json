@@ -120,6 +120,13 @@
       "when": 1768422697021,
       "tag": "0016_illegal_cable",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1768933843293,
+      "tag": "0017_living_lord_hawal",
+      "breakpoints": true
     }
   ]
 }
