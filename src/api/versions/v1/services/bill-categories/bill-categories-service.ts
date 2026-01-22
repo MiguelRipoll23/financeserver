@@ -7,7 +7,7 @@ import { ServerError } from "../../models/server-error.ts";
 import { decodeCursor } from "../../utils/cursor-utils.ts";
 import { createOffsetPagination } from "../../utils/pagination-utils.ts";
 import { buildAndFilters } from "../../utils/sql-utils.ts";
-import { toISOStringSafe } from "../../utils/date-utils.ts";
+import { toISOStringNullable, toISOStringSafe } from "../../utils/date-utils.ts";
 import {
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
@@ -262,7 +262,7 @@ export class BillCategoriesService {
       id: entity.id,
       name: entity.name,
       normalizedName: entity.normalizedName,
-      favoritedAt: toISOStringSafe(entity.favoritedAt),
+      favoritedAt: toISOStringNullable(entity.favoritedAt),
       createdAt: toISOStringSafe(entity.createdAt),
       updatedAt: toISOStringSafe(entity.updatedAt),
     };

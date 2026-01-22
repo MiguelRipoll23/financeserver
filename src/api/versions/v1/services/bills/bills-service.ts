@@ -11,7 +11,7 @@ import { ServerError } from "../../models/server-error.ts";
 import { decodeCursor } from "../../utils/cursor-utils.ts";
 import { createOffsetPagination } from "../../utils/pagination-utils.ts";
 import { buildAndFilters } from "../../utils/sql-utils.ts";
-import { toISOStringSafe } from "../../utils/date-utils.ts";
+import { toISOStringNullable, toISOStringSafe } from "../../utils/date-utils.ts";
 import {
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
@@ -296,7 +296,7 @@ export class BillsService {
       ),
       currencyCode: row.currencyCode,
       updatedAt: toISOStringSafe(row.updatedAt),
-      favoritedAt: toISOStringSafe(row.favoritedAt),
+      favoritedAt: toISOStringNullable(row.favoritedAt),
     }));
 
     return createOffsetPagination<BillSummary>(
@@ -496,7 +496,7 @@ export class BillsService {
       ),
       currencyCode: billRow.currencyCode,
       updatedAt: toISOStringSafe(billRow.updatedAt),
-      favoritedAt: toISOStringSafe(billRow.favoritedAt),
+      favoritedAt: toISOStringNullable(billRow.favoritedAt),
     } satisfies UpsertBillResponse;
   }
 
