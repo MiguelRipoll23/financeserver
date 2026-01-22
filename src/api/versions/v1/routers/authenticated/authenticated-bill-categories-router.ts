@@ -30,7 +30,6 @@ export class AuthenticatedBillCategoriesRouter {
 
   private setRoutes(): void {
     this.registerListBillCategoriesRoute();
-    this.registerGetBillCategoryByIdRoute();
     this.registerCreateBillCategoryRoute();
     this.registerUpdateBillCategoryRoute();
     this.registerDeleteBillCategoryRoute();
@@ -63,41 +62,6 @@ export class AuthenticatedBillCategoriesRouter {
         const query = GetBillCategoriesRequestSchema.parse(context.req.query());
         const result = await this.billCategoriesService.getBillCategories(
           query,
-        );
-
-        return context.json(result, 200);
-      },
-    );
-  }
-
-  private registerGetBillCategoryByIdRoute(): void {
-    this.app.openapi(
-      createRoute({
-        method: "get",
-        path: "/{id}",
-        summary: "Get bill category by ID",
-        description: "Returns a single bill category by its unique identifier.",
-        tags: ["Bill Categories"],
-        request: {
-          params: BillCategoryIdParamSchema,
-        },
-        responses: {
-          200: {
-            description: "Bill category details",
-            content: {
-              "application/json": {
-                schema: BillCategorySchema,
-              },
-            },
-          },
-          ...ServerResponse.NotFound,
-          ...ServerResponse.Unauthorized,
-        },
-      }),
-      async (context: Context<{ Variables: HonoVariables }>) => {
-        const params = BillCategoryIdParamSchema.parse(context.req.param());
-        const result = await this.billCategoriesService.getBillCategoryById(
-          params.id,
         );
 
         return context.json(result, 200);

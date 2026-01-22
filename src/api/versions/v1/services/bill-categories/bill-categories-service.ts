@@ -142,28 +142,6 @@ export class BillCategoriesService {
     ) as GetBillCategoriesResponse;
   }
 
-  public async getBillCategoryById(
-    id: number,
-  ): Promise<BillCategoryResponse> {
-    const db = this.databaseService.get();
-
-    const [billCategory] = await db
-      .select()
-      .from(billCategoriesTable)
-      .where(eq(billCategoriesTable.id, id))
-      .limit(1);
-
-    if (!billCategory) {
-      throw new ServerError(
-        "BILL_CATEGORY_NOT_FOUND",
-        `Bill category with ID ${id} not found`,
-        404,
-      );
-    }
-
-    return this.mapBillCategoryToResponse(billCategory);
-  }
-
   public async updateBillCategory(
     id: number,
     payload: UpdateBillCategoryRequest,
