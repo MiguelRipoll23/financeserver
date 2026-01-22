@@ -37,10 +37,10 @@ export const billsTable = pgTable(
     uniqueIndex("bills_bill_date_unique").on(table.billDate),
     index("bills_category_id_idx").on(table.categoryId),
     index("bills_total_amount_idx").on(table.totalAmount),
-    index("bills_bill_date_category_id_idx").on(
-      table.billDate,
-      table.categoryId
-    ),
+    // Sorting index (for DESC load)
+    index("idx_bills_date").on(table.billDate.desc()),
+    // Composite index for category/date queries
+    index("idx_bills_date_category").on(table.billDate.desc(), table.categoryId),
   ]
 );
 

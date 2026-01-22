@@ -4,6 +4,7 @@ import {
   text,
   timestamp,
   uniqueIndex,
+  index,
 } from "drizzle-orm/pg-core";
 
 export const billCategoriesTable = pgTable(
@@ -22,6 +23,11 @@ export const billCategoriesTable = pgTable(
   },
   (table) => [
     uniqueIndex("bill_category_normalized_name_key").on(table.normalizedName),
+    // Sorting index for name ASC
+    index("idx_bill_categories_name").on(table.name.asc()),
+    // Partial/favorited index (if needed in the future)
+    // index("idx_bill_categories_favorited").on(table.name.asc()),
+    //   .where(sql`${table.favoritedAt} IS NOT NULL`),
   ]
 );
 

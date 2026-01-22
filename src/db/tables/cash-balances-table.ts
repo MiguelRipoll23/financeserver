@@ -26,8 +26,10 @@ export const cashBalancesTable = pgTable(
       .notNull(),
   },
   (table) => [
-    index("cash_balances_cash_id_idx").on(table.cashId),
-    index("cash_balances_created_at_idx").on(table.createdAt),
+    // Composite index for filtered queries (per cash)
+    index("idx_cash_balances_cash_created").on(table.cashId, table.createdAt.desc()),
+    // Index for full table scans (Dashboard load)
+    index("idx_cash_balances_created").on(table.createdAt.desc()),
   ]
 );
 

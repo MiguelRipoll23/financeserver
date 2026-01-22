@@ -6,6 +6,8 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 
+import { index } from "drizzle-orm/pg-core";
+
 export const salaryChangesTable = pgTable("salary_changes", {
   id: bigserial("id", { mode: "number" }).primaryKey(),
   recurrence: text("recurrence").notNull(),
@@ -17,7 +19,11 @@ export const salaryChangesTable = pgTable("salary_changes", {
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
-});
+},
+(table) => [
+  // Sorting index for descending queries
+  index("idx_salary_changes_created").on(table.createdAt.desc()),
+]);
 
 export type SalaryChangeEntity = typeof salaryChangesTable.$inferSelect;
 export type SalaryChangeInsertEntity = typeof salaryChangesTable.$inferInsert;
