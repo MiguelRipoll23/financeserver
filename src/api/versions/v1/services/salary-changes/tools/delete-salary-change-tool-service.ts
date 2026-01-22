@@ -3,8 +3,6 @@ import { McpToolDefinition } from "../../../interfaces/mcp/mcp-tool-interface.ts
 import { SalaryChangesService } from "../salary-changes-service.ts";
 import { DeleteSalaryChangeToolSchema } from "../../../schemas/mcp-salary-changes-schemas.ts";
 import { ServerError } from "../../../models/server-error.ts";
-import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
-import { Context } from "hono";
 
 @injectable()
 export class DeleteSalaryChangeToolService {
@@ -25,11 +23,11 @@ export class DeleteSalaryChangeToolService {
           openWorldHint: false,
         },
       },
-      run: async (input: unknown, context: Context<{ Variables: HonoVariables }>) => {
+      run: async (input: unknown) => {
         const parsed = DeleteSalaryChangeToolSchema.parse(input);
 
         try {
-          await this.salaryChangesService.deleteSalaryChange(parsed.id, context);
+          await this.salaryChangesService.deleteSalaryChange(parsed.id);
         } catch (error) {
           if (
             error instanceof ServerError &&

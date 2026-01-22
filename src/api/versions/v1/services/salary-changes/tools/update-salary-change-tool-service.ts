@@ -3,8 +3,6 @@ import { McpToolDefinition } from "../../../interfaces/mcp/mcp-tool-interface.ts
 import { SalaryChangesService } from "../salary-changes-service.ts";
 import { UpdateSalaryChangeToolSchema } from "../../../schemas/mcp-salary-changes-schemas.ts";
 import { getCurrencySymbolForCode } from "../../../utils/currency-utils.ts";
-import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
-import { Context } from "hono";
 
 @injectable()
 export class UpdateSalaryChangeToolService {
@@ -25,7 +23,7 @@ export class UpdateSalaryChangeToolService {
           openWorldHint: false,
         },
       },
-      run: async (input: unknown, context: Context<{ Variables: HonoVariables }>) => {
+      run: async (input: unknown) => {
         const parsed = UpdateSalaryChangeToolSchema.parse(input);
 
         const result = await this.salaryChangesService.updateSalaryChange(
@@ -35,7 +33,6 @@ export class UpdateSalaryChangeToolService {
             netAmount: parsed.netAmount,
             currencyCode: parsed.currencyCode,
           },
-          context,
         );
 
         const currencySymbol = getCurrencySymbolForCode(result.currencyCode);

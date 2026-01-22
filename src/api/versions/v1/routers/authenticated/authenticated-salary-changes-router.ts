@@ -61,10 +61,7 @@ export class AuthenticatedSalaryChangesRouter {
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
         const query = GetSalaryChangesRequestSchema.parse(context.req.query());
-        const result = await this.salaryChangesService.getSalaryChanges(
-          query,
-          context,
-        );
+        const result = await this.salaryChangesService.getSalaryChanges(query);
 
         return context.json(result, 200);
       },
@@ -99,7 +96,6 @@ export class AuthenticatedSalaryChangesRouter {
         const params = SalaryChangeIdParamSchema.parse(context.req.param());
         const result = await this.salaryChangesService.getSalaryChangeById(
           params.id,
-          context,
         );
 
         return context.json(result, 200);
@@ -141,10 +137,7 @@ export class AuthenticatedSalaryChangesRouter {
         const body = CreateSalaryChangeRequestSchema.parse(
           await context.req.json(),
         );
-        const result = await this.salaryChangesService.createSalaryChange(
-          body,
-          context,
-        );
+        const result = await this.salaryChangesService.createSalaryChange(body);
 
         return context.json(result, 201);
       },
@@ -192,7 +185,6 @@ export class AuthenticatedSalaryChangesRouter {
         const result = await this.salaryChangesService.updateSalaryChange(
           params.id,
           body,
-          context,
         );
 
         return context.json(result, 200);
@@ -219,7 +211,7 @@ export class AuthenticatedSalaryChangesRouter {
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
         const params = SalaryChangeIdParamSchema.parse(context.req.param());
-        await this.salaryChangesService.deleteSalaryChange(params.id, context);
+        await this.salaryChangesService.deleteSalaryChange(params.id);
 
         return context.body(null, 204);
       },

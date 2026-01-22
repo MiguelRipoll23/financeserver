@@ -1,19 +1,15 @@
 import {
   bigserial,
-  integer,
+  numeric,
   pgTable,
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
-import { usersTable } from "./users-table.ts";
 
 export const salaryChangesTable = pgTable("salary_change", {
   id: bigserial("id", { mode: "number" }).primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => usersTable.id, { onDelete: "cascade" }),
   description: text("description").notNull(),
-  netAmount: integer("net_amount").notNull(),
+  netAmount: numeric("net_amount", { precision: 12, scale: 2 }).notNull(),
   currencyCode: text("currency_code").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()

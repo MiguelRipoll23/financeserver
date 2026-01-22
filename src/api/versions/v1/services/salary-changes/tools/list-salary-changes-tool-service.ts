@@ -3,8 +3,6 @@ import { McpToolDefinition } from "../../../interfaces/mcp/mcp-tool-interface.ts
 import { SalaryChangesService } from "../salary-changes-service.ts";
 import { ListSalaryChangesToolSchema } from "../../../schemas/mcp-salary-changes-schemas.ts";
 import { getCurrencySymbolForCode } from "../../../utils/currency-utils.ts";
-import { HonoVariables } from "../../../../core/types/hono/hono-variables-type.ts";
-import { Context } from "hono";
 
 @injectable()
 export class ListSalaryChangesToolService {
@@ -25,21 +23,18 @@ export class ListSalaryChangesToolService {
           openWorldHint: false,
         },
       },
-      run: async (input: unknown, context: Context<{ Variables: HonoVariables }>)=>{
+      run: async (input: unknown) => {
         const parsed = ListSalaryChangesToolSchema.parse(input);
 
-        const result = await this.salaryChangesService.getSalaryChanges(
-          {
-            cursor: parsed.cursor,
-            limit: parsed.limit,
-            description: parsed.description,
-            minimumNetAmount: parsed.minimumNetAmount,
-            maximumNetAmount: parsed.maximumNetAmount,
-            sortField: parsed.sortField,
-            sortOrder: parsed.sortOrder,
-          },
-          context,
-        );
+        const result = await this.salaryChangesService.getSalaryChanges({
+          cursor: parsed.cursor,
+          limit: parsed.limit,
+          description: parsed.description,
+          minimumNetAmount: parsed.minimumNetAmount,
+          maximumNetAmount: parsed.maximumNetAmount,
+          sortField: parsed.sortField,
+          sortOrder: parsed.sortOrder,
+        });
 
         let text = "";
 
@@ -70,3 +65,4 @@ export class ListSalaryChangesToolService {
     };
   }
 }
+

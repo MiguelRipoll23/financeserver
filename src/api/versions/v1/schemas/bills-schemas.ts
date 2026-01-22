@@ -79,6 +79,8 @@ export const BillSummarySchema = UpsertBillResponseSchema.extend({
     .nullable()
     .openapi({ example: "2025-03-14T12:34:56.000Z" })
     .describe("Timestamp when the bill category was favorited, or null"),
+});
+
 export type BillSummaryResponse = z.infer<typeof BillSummarySchema>;
 
 export const BillIdParamSchema = z.object({

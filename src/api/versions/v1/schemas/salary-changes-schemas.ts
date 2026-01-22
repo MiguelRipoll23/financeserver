@@ -10,11 +10,6 @@ export const SalaryChangeSchema = z.object({
     .int()
     .openapi({ example: 1 })
     .describe("Unique identifier for the salary change"),
-  userId: z
-    .string()
-    .uuid()
-    .openapi({ example: "a1b2c3d4-e5f6-7890-1234-567890abcdef" })
-    .describe("ID of the user associated with the salary change"),
   description: z
     .string()
     .min(1)

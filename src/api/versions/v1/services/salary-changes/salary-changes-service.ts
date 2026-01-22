@@ -1,5 +1,5 @@
 import { inject, injectable } from "@needle-di/core";
-import { and, asc, desc, eq, gte, lte, sql, type SQL } from "drizzle-orm";
+import { asc, desc, eq, gte, lte, sql, type SQL } from "drizzle-orm";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import { salaryChangesTable } from "../../../../../db/schema.ts";
 import { ServerError } from "../../models/server-error.ts";
@@ -20,8 +20,6 @@ import type {
   SalaryChangeResponse,
   UpdateSalaryChangeRequest,
 } from "../../schemas/salary-changes-schemas.ts";
-import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
-import { Context } from "hono";
 
 @injectable()
 export class SalaryChangesService {
@@ -29,10 +27,8 @@ export class SalaryChangesService {
 
   public async createSalaryChange(
     payload: CreateSalaryChangeRequest,
-    context: Context<{ Variables: HonoVariables }>,
   ): Promise<SalaryChangeResponse> {
     const db = this.databaseService.get();
-    const userId = context.get("user")!.id;
 
     const netAmountCents = this.parseAmountToCents(
       payload.netAmount,
@@ -44,7 +40,6 @@ export class SalaryChangesService {
     const [insertedSalaryChange] = await db
       .insert(salaryChangesTable)
       .values({
-        userId,
         description: payload.description,
         netAmount: netAmountString,
         currencyCode: payload.currencyCode,
@@ -54,7 +49,7 @@ export class SalaryChangesService {
     if (!insertedSalaryChange) {
       throw new ServerError(
         "SALARY_CHANGE_CREATION_FAILED",
-        `Failed to create salary change for user ${userId}`,
+        "Failed to create salary change",
         500,
       );
     }
@@ -72,14 +67,12 @@ export class SalaryChangesService {
       limit?: number;
       cursor?: string;
     },
-    context: Context<{ Variables: HonoVariables }>,
   ): Promise<GetSalaryChangesResponse> {
     const db = this.databaseService.get();
-    const userId = context.get("user")!.id;
     const limit = this.resolveLimit(filters.limit);
     const offset = decodeCursor(filters.cursor);
 
-    const conditions: SQL[] = [eq(salaryChangesTable.userId, userId)];
+    const conditions: SQL[] = [];
 
     const filteredDescription = filters.description?.trim();
     if (filteredDescription) {
@@ -139,7 +132,7 @@ export class SalaryChangesService {
       .limit(limit)
       .offset(offset);
 
-    const salaryChanges = rows.map(this.mapSalaryChangeToResponse);
+    const salaryChanges = rows.map((row) => this.mapSalaryChangeToResponse(row));
 
     return createOffsetPagination<SalaryChangeResponse>(
       salaryChanges,
@@ -151,15 +144,13 @@ export class SalaryChangesService {
 
   public async getSalaryChangeById(
     id: number,
-    context: Context<{ Variables: HonoVariables }>,
   ): Promise<SalaryChangeResponse> {
     const db = this.databaseService.get();
-    const userId = context.get("user")!.id;
 
     const [salaryChange] = await db
       .select()
       .from(salaryChangesTable)
-      .where(and(eq(salaryChangesTable.id, id), eq(salaryChangesTable.userId, userId)))
+      .where(eq(salaryChangesTable.id, id))
       .limit(1);
 
     if (!salaryChange) {
@@ -176,15 +167,13 @@ export class SalaryChangesService {
   public async updateSalaryChange(
     id: number,
     payload: UpdateSalaryChangeRequest,
-    context: Context<{ Variables: HonoVariables }>,
   ): Promise<SalaryChangeResponse> {
     const db = this.databaseService.get();
-    const userId = context.get("user")!.id;
 
     const existingSalaryChange = await db
       .select()
       .from(salaryChangesTable)
-      .where(and(eq(salaryChangesTable.id, id), eq(salaryChangesTable.userId, userId)))
+      .where(eq(salaryChangesTable.id, id))
       .limit(1);
 
     if (!existingSalaryChange) {
@@ -219,7 +208,7 @@ export class SalaryChangesService {
     const [updatedSalaryChange] = await db
       .update(salaryChangesTable)
       .set(updateData)
-      .where(and(eq(salaryChangesTable.id, id), eq(salaryChangesTable.userId, userId)))
+      .where(eq(salaryChangesTable.id, id))
       .returning();
 
     if (!updatedSalaryChange) {
@@ -235,14 +224,12 @@ export class SalaryChangesService {
 
   public async deleteSalaryChange(
     id: number,
-    context: Context<{ Variables: HonoVariables }>,
   ): Promise<void> {
     const db = this.databaseService.get();
-    const userId = context.get("user")!.id;
 
     const [deletedSalaryChange] = await db
       .delete(salaryChangesTable)
-      .where(and(eq(salaryChangesTable.id, id), eq(salaryChangesTable.userId, userId)))
+      .where(eq(salaryChangesTable.id, id))
       .returning();
 
     if (!deletedSalaryChange) {
@@ -289,7 +276,7 @@ export class SalaryChangesService {
 
     if (!Number.isFinite(numeric) || numeric < 0) {
       throw new ServerError(errorCode, errorMessage, 400);
-    }
+    };
 
     return Math.round(numeric * 100);
   }
@@ -303,9 +290,8 @@ export class SalaryChangesService {
   ): SalaryChangeResponse {
     return {
       id: entity.id,
-      userId: entity.userId,
       description: entity.description,
-      netAmount: this.formatAmount(Number.parseFloat(entity.netAmount)),
+      netAmount: entity.netAmount,
       currencyCode: entity.currencyCode,
       createdAt: toISOStringSafe(entity.createdAt),
       updatedAt: toISOStringSafe(entity.updatedAt),
