@@ -26,15 +26,15 @@ export class MCPService {
     private merchantsMCPService = inject(MerchantsMCPService),
     private bankAccountsMCPService = inject(BankAccountsMCPService),
     private bankAccountBalancesMCPService = inject(
-      BankAccountBalancesMCPService
+      BankAccountBalancesMCPService,
     ),
     private bankAccountInterestRatesMCPService = inject(
-      BankAccountInterestRatesMCPService
+      BankAccountInterestRatesMCPService,
     ),
     private cryptoExchangesMCPService = inject(CryptoExchangesMCPService),
     private cashMCPService = inject(CashMCPService),
     private cashBalancesMCPService = inject(CashBalancesMCPService),
-    private salaryChangesMCPService = inject(SalaryChangesMCPService)
+    private salaryChangesMCPService = inject(SalaryChangesMCPService),
   ) {}
 
   public createUnifiedServer(): McpServer {
@@ -91,7 +91,7 @@ export class MCPService {
         const formattedInput = JSON.stringify(input, null, 2);
 
         console.log(
-          `Tool ${tool.name} called by ${userId} with input:\n${formattedInput}`
+          `Tool ${tool.name} called by ${userId} with input:\n${formattedInput}`,
         );
 
         const startTime = Date.now();
@@ -104,7 +104,7 @@ export class MCPService {
             : "";
 
           console.log(
-            `Tool ${tool.name} executed by ${userId} (${executionTime}ms) with output:\n${result.text}${structuredOutput}`
+            `Tool ${tool.name} executed by ${userId} (${executionTime}ms) with output:\n${result.text}${structuredOutput}`,
           );
 
           const structured =
