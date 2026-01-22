@@ -38,13 +38,21 @@ export class AuthenticatedBillCategoriesRouter {
   private registerListBillCategoriesRoute(): void {
     this.app.openapi(
       createRoute({
-        method: "get",
-        path: "/",
+        method: "post",
+        path: "/find",
         summary: "List bill categories",
-        description: "Returns paginated bill categories with optional filters.",
+        description:
+          "Returns paginated bill categories with optional filters supplied via JSON body.",
         tags: ["Bill Categories"],
         request: {
-          query: GetBillCategoriesRequestSchema,
+          body: {
+            required: false,
+            content: {
+              "application/json": {
+                schema: GetBillCategoriesRequestSchema,
+              },
+            },
+          },
         },
         responses: {
           200: {
@@ -59,7 +67,8 @@ export class AuthenticatedBillCategoriesRouter {
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
-        const query = GetBillCategoriesRequestSchema.parse(context.req.query());
+        const payload = await this.readJsonOrEmpty(context);
+        const query = GetBillCategoriesRequestSchema.parse(payload);
         const result = await this.billCategoriesService.getBillCategories(
           query,
         );
@@ -67,6 +76,16 @@ export class AuthenticatedBillCategoriesRouter {
         return context.json(result, 200);
       },
     );
+  }
+
+  private async readJsonOrEmpty(
+    context: Context<{ Variables: HonoVariables }>,
+  ): Promise<unknown> {
+    try {
+      return await context.req.json();
+    } catch {
+      return {};
+    }
   }
 
   private registerCreateBillCategoryRoute(): void {
