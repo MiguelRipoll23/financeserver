@@ -23,12 +23,9 @@ import type {
   UpdateCryptoExchangeBalanceResponse,
 } from "../../schemas/crypto-exchange-balances-schemas.ts";
 
-
 @injectable()
 export class CryptoExchangeBalancesService {
-  constructor(
-    private databaseService = inject(DatabaseService),
-  ) {}
+  constructor(private databaseService = inject(DatabaseService)) {}
 
   public async createCryptoExchangeBalance(
     exchangeId: number,
@@ -61,8 +58,6 @@ export class CryptoExchangeBalancesService {
         investedCurrencyCode: payload.investedCurrencyCode ?? null,
       })
       .returning();
-
-
 
     return this.mapBalanceToResponse(result);
   }
@@ -199,8 +194,6 @@ export class CryptoExchangeBalancesService {
       .where(eq(cryptoExchangeBalancesTable.id, balanceId))
       .returning();
 
-
-
     return this.mapBalanceToResponse(result);
   }
 
@@ -221,8 +214,6 @@ export class CryptoExchangeBalancesService {
         404,
       );
     }
-
-
 
     await db
       .delete(cryptoExchangeBalancesTable)

@@ -21,11 +21,11 @@ export const CreateBankAccountInterestRateRequestSchema = z
       .openapi({ example: "2.50" })
       .describe("Interest rate percentage (e.g., 2.50 for 2.50%)"),
     interestRateStartDate: DateOnlyStringSchema.describe(
-      "Start date of interest rate period in YYYY-MM-DD format"
+      "Start date of interest rate period in YYYY-MM-DD format",
     ),
-    interestRateEndDate: DateOnlyStringSchema.nullable().optional().describe(
-      "End date of interest rate period in YYYY-MM-DD format"
-    ),
+    interestRateEndDate: DateOnlyStringSchema.nullable()
+      .optional()
+      .describe("End date of interest rate period in YYYY-MM-DD format"),
   })
   .refine(
     (data) => {
@@ -38,7 +38,7 @@ export const CreateBankAccountInterestRateRequestSchema = z
     {
       message: "End date cannot be before start date",
       path: ["interestRateEndDate"],
-    }
+    },
   );
 
 export type CreateBankAccountInterestRateRequest = z.infer<
@@ -77,8 +77,8 @@ export type BankAccountInterestRateIdParam = z.infer<
   typeof BankAccountInterestRateIdParamSchema
 >;
 
-export const GetBankAccountInterestRatesRequestSchema = PaginationQuerySchema.extend(
-  {
+export const GetBankAccountInterestRatesRequestSchema =
+  PaginationQuerySchema.extend({
     bankAccountId: z
       .number()
       .int()
@@ -89,8 +89,7 @@ export const GetBankAccountInterestRatesRequestSchema = PaginationQuerySchema.ex
       .nativeEnum(SortOrder)
       .optional()
       .openapi({ example: SortOrder.Desc }),
-  }
-);
+  });
 
 export type GetBankAccountInterestRatesRequest = z.infer<
   typeof GetBankAccountInterestRatesRequestSchema
@@ -147,11 +146,11 @@ export const UpdateBankAccountInterestRateRequestSchema = z
       .openapi({ example: "2.50" })
       .describe("Interest rate percentage (e.g., 2.50 for 2.50%)"),
     interestRateStartDate: DateOnlyStringSchema.optional().describe(
-      "Start date of interest rate period in YYYY-MM-DD format"
+      "Start date of interest rate period in YYYY-MM-DD format",
     ),
-    interestRateEndDate: DateOnlyStringSchema.nullable().optional().describe(
-      "End date of interest rate period in YYYY-MM-DD format"
-    ),
+    interestRateEndDate: DateOnlyStringSchema.nullable()
+      .optional()
+      .describe("End date of interest rate period in YYYY-MM-DD format"),
   })
   .refine(
     (value) =>
@@ -161,7 +160,7 @@ export const UpdateBankAccountInterestRateRequestSchema = z
     {
       message: "interestRateEndDate must be on or after interestRateStartDate",
       path: ["interestRateEndDate"],
-    }
+    },
   );
 
 export type UpdateBankAccountInterestRateRequest = z.infer<

@@ -66,7 +66,7 @@ export const GetBankAccountBalancesRequestSchema = PaginationQuerySchema.extend(
       .nativeEnum(SortOrder)
       .optional()
       .openapi({ example: SortOrder.Desc }),
-  }
+  },
 );
 
 export type GetBankAccountBalancesRequest = z.infer<

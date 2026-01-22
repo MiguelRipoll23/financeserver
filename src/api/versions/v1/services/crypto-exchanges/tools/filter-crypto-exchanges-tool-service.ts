@@ -6,7 +6,7 @@ import { FilterCryptoExchangesToolSchema } from "../../../schemas/mcp-crypto-exc
 @injectable()
 export class FilterCryptoExchangesToolService {
   constructor(
-    private cryptoExchangesService = inject(CryptoExchangesService)
+    private cryptoExchangesService = inject(CryptoExchangesService),
   ) {}
 
   public getDefinition(): McpToolDefinition {

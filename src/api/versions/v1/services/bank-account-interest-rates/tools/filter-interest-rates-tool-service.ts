@@ -7,8 +7,8 @@ import { FilterBankAccountInterestRatesToolSchema } from "../../../schemas/mcp-b
 export class FilterInterestRatesToolService {
   constructor(
     private bankAccountInterestRatesService = inject(
-      BankAccountInterestRatesService
-    )
+      BankAccountInterestRatesService,
+    ),
   ) {}
 
   public getDefinition(): McpToolDefinition {
@@ -30,18 +30,20 @@ export class FilterInterestRatesToolService {
         const parsed = FilterBankAccountInterestRatesToolSchema.parse(input);
 
         const result =
-          await this.bankAccountInterestRatesService.getBankAccountInterestRates({
-            bankAccountId: parsed.bankAccountId,
-            sortOrder: parsed.sortOrder,
-            limit: parsed.pageSize,
-            cursor: parsed.cursor,
-          });
+          await this.bankAccountInterestRatesService.getBankAccountInterestRates(
+            {
+              bankAccountId: parsed.bankAccountId,
+              sortOrder: parsed.sortOrder,
+              limit: parsed.pageSize,
+              cursor: parsed.cursor,
+            },
+          );
 
         const count = result.results.length;
         const ratesList = result.results
           .map(
             (rate) =>
-              `- ${rate.interestRate}% from ${rate.interestRateStartDate}${rate.interestRateEndDate ? ` to ${rate.interestRateEndDate}` : " (ongoing)"} (ID: ${rate.id})`
+              `- ${rate.interestRate}% from ${rate.interestRateStartDate}${rate.interestRateEndDate ? ` to ${rate.interestRateEndDate}` : " (ongoing)"} (ID: ${rate.id})`,
           )
           .join("\n");
 

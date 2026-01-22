@@ -34,7 +34,7 @@ export class BankAccountInterestRatesService {
   constructor(private databaseService = inject(DatabaseService)) {}
 
   public async createBankAccountInterestRate(
-    payload: CreateBankAccountInterestRateRequest
+    payload: CreateBankAccountInterestRateRequest,
   ): Promise<CreateBankAccountInterestRateResponse> {
     const db = this.databaseService.get();
     const accountId = payload.bankAccountId;
@@ -51,7 +51,7 @@ export class BankAccountInterestRatesService {
       throw new ServerError(
         "BANK_ACCOUNT_NOT_FOUND",
         `Bank account with ID ${accountId} not found`,
-        404
+        404,
       );
     }
 
@@ -62,7 +62,7 @@ export class BankAccountInterestRatesService {
         accountId,
         payload.interestRateStartDate,
         payload.interestRateEndDate ?? "9999-12-31", // Treat null end date as far future for overlap check
-        null
+        null,
       );
 
       const [result] = await tx
@@ -104,7 +104,7 @@ export class BankAccountInterestRatesService {
         throw new ServerError(
           "BANK_ACCOUNT_NOT_FOUND",
           `Bank account with ID ${accountId} not found`,
-          404
+          404,
         );
       }
     }
@@ -116,7 +116,9 @@ export class BankAccountInterestRatesService {
 
     const conditions: SQL[] = [];
     if (accountId) {
-      conditions.push(eq(bankAccountInterestRatesTable.bankAccountId, accountId));
+      conditions.push(
+        eq(bankAccountInterestRatesTable.bankAccountId, accountId),
+      );
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
@@ -145,20 +147,20 @@ export class BankAccountInterestRatesService {
       .where(whereClause)
       .orderBy(
         orderDirection(bankAccountInterestRatesTable.createdAt),
-        orderDirection(bankAccountInterestRatesTable.id)
+        orderDirection(bankAccountInterestRatesTable.id),
       )
       .limit(size)
       .offset(offset);
 
     const data: BankAccountInterestRateSummary[] = results.map((rate) =>
-      this.mapInterestRateToSummary(rate)
+      this.mapInterestRateToSummary(rate),
     );
 
     const pagination = createOffsetPagination<BankAccountInterestRateSummary>(
       data,
       size,
       offset,
-      total
+      total,
     );
 
     return {
@@ -173,7 +175,7 @@ export class BankAccountInterestRatesService {
 
   public async updateBankAccountInterestRate(
     rateId: number,
-    payload: UpdateBankAccountInterestRateRequest
+    payload: UpdateBankAccountInterestRateRequest,
   ): Promise<UpdateBankAccountInterestRateResponse> {
     const db = this.databaseService.get();
 
@@ -189,7 +191,7 @@ export class BankAccountInterestRatesService {
       throw new ServerError(
         "INTEREST_RATE_NOT_FOUND",
         `Interest rate with ID ${rateId} not found`,
-        404
+        404,
       );
     }
 
@@ -237,7 +239,7 @@ export class BankAccountInterestRatesService {
           accountId,
           newStartDate,
           effectiveEndDate,
-          rateId
+          rateId,
         );
       }
 
@@ -263,41 +265,45 @@ export class BankAccountInterestRatesService {
       throw new ServerError(
         "INTEREST_RATE_NOT_FOUND",
         `Interest rate with ID ${rateId} not found`,
-        404
+        404,
       );
     }
   }
 
   private async validateNoOverlappingInterestRates(
-    db: NodePgDatabase<Record<string, never>> | Parameters<Parameters<NodePgDatabase<Record<string, never>>['transaction']>[0]>[0],
+    db:
+      | NodePgDatabase<Record<string, never>>
+      | Parameters<
+          Parameters<NodePgDatabase<Record<string, never>>["transaction"]>[0]
+        >[0],
     bankAccountId: number,
     startDate: string,
     endDate: string,
-    excludeRateId: number | null
+    excludeRateId: number | null,
   ): Promise<void> {
     // Check if the new period overlaps with any existing periods
     const conditions: SQL[] = [
       eq(bankAccountInterestRatesTable.bankAccountId, bankAccountId),
       // Overlap condition:
       // new_start <= existing_end (or infinity) AND new_end (or infinity) >= existing_start
-      
+
       // We need to handle null end dates in DB as infinity
       // Using COALESCE is one way, or logic
-      
+
       // Complex overlap logic in SQL:
       // (start1 <= end2) and (end1 >= start2)
       // where end can be null (infinity)
-      
+
       sql`
         (${startDate} <= COALESCE(${bankAccountInterestRatesTable.interestRateEndDate}, '9999-12-31'))
         AND
         (${endDate} >= ${bankAccountInterestRatesTable.interestRateStartDate})
-      `
+      `,
     ];
 
     if (excludeRateId !== null) {
       conditions.push(
-        sql`${bankAccountInterestRatesTable.id} != ${excludeRateId}`
+        sql`${bankAccountInterestRatesTable.id} != ${excludeRateId}`,
       );
     }
 
@@ -316,13 +322,13 @@ export class BankAccountInterestRatesService {
       throw new ServerError(
         "OVERLAPPING_INTEREST_RATE_PERIOD",
         `Interest rate period ${startDate} to ${endDate} overlaps with existing period ${existing.startDate} to ${existing.endDate ?? "ongoing"}`,
-        400
+        400,
       );
     }
   }
 
   private mapInterestRateToResponse(
-    rate: typeof bankAccountInterestRatesTable.$inferSelect
+    rate: typeof bankAccountInterestRatesTable.$inferSelect,
   ): CreateBankAccountInterestRateResponse {
     return {
       id: rate.id,
@@ -336,7 +342,7 @@ export class BankAccountInterestRatesService {
   }
 
   private mapInterestRateToSummary(
-    rate: typeof bankAccountInterestRatesTable.$inferSelect
+    rate: typeof bankAccountInterestRatesTable.$inferSelect,
   ): BankAccountInterestRateSummary {
     return {
       id: rate.id,
