@@ -56,17 +56,15 @@ export class SalaryChangesService {
     return this.mapSalaryChangeToResponse(insertedSalaryChange);
   }
 
-  public async getSalaryChanges(
-    filters: {
-      description?: string;
-      minimumNetAmount?: string;
-      maximumNetAmount?: string;
-      sortField?: SalaryChangeSortField;
-      sortOrder?: SortOrder;
-      limit?: number;
-      cursor?: string;
-    },
-  ): Promise<GetSalaryChangesResponse> {
+  public async getSalaryChanges(filters: {
+    description?: string;
+    minimumNetAmount?: string;
+    maximumNetAmount?: string;
+    sortField?: SalaryChangeSortField;
+    sortOrder?: SortOrder;
+    limit?: number;
+    cursor?: string;
+  }): Promise<GetSalaryChangesResponse> {
     const db = this.databaseService.get();
     const limit = this.resolveLimit(filters.limit);
     const offset = decodeCursor(filters.cursor);
@@ -85,7 +83,10 @@ export class SalaryChangesService {
         "Minimum net amount filter must be a non-negative monetary value",
       );
       conditions.push(
-        gte(salaryChangesTable.netAmount, this.formatAmount(minimumCents / 100)),
+        gte(
+          salaryChangesTable.netAmount,
+          this.formatAmount(minimumCents / 100),
+        ),
       );
     }
 
@@ -96,7 +97,10 @@ export class SalaryChangesService {
         "Maximum net amount filter must be a non-negative monetary value",
       );
       conditions.push(
-        lte(salaryChangesTable.netAmount, this.formatAmount(maximumCents / 100)),
+        lte(
+          salaryChangesTable.netAmount,
+          this.formatAmount(maximumCents / 100),
+        ),
       );
     }
 
@@ -131,7 +135,9 @@ export class SalaryChangesService {
       .limit(limit)
       .offset(offset);
 
-    const salaryChanges = rows.map((row) => this.mapSalaryChangeToResponse(row));
+    const salaryChanges = rows.map((row) =>
+      this.mapSalaryChangeToResponse(row),
+    );
 
     return createOffsetPagination<SalaryChangeResponse>(
       salaryChanges,
@@ -141,9 +147,7 @@ export class SalaryChangesService {
     ) as GetSalaryChangesResponse;
   }
 
-  public async getSalaryChangeById(
-    id: number,
-  ): Promise<SalaryChangeResponse> {
+  public async getSalaryChangeById(id: number): Promise<SalaryChangeResponse> {
     const db = this.databaseService.get();
 
     const [salaryChange] = await db
@@ -220,9 +224,7 @@ export class SalaryChangesService {
     return this.mapSalaryChangeToResponse(updatedSalaryChange);
   }
 
-  public async deleteSalaryChange(
-    id: number,
-  ): Promise<void> {
+  public async deleteSalaryChange(id: number): Promise<void> {
     const db = this.databaseService.get();
 
     const [deletedSalaryChange] = await db
@@ -247,10 +249,7 @@ export class SalaryChangesService {
     return Math.min(Math.max(requested, 1), MAX_PAGE_SIZE);
   }
 
-  private resolveSortField(
-    field: SalaryChangeSortField,
-    order: SortOrder,
-  ) {
+  private resolveSortField(field: SalaryChangeSortField, order: SortOrder) {
     const column =
       field === SalaryChangeSortField.NetAmount
         ? salaryChangesTable.netAmount

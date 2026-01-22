@@ -6,7 +6,10 @@ import { ServerError } from "../../models/server-error.ts";
 import { decodeCursor } from "../../utils/cursor-utils.ts";
 import { createOffsetPagination } from "../../utils/pagination-utils.ts";
 import { buildAndFilters } from "../../utils/sql-utils.ts";
-import { toISOStringNullable, toISOStringSafe } from "../../utils/date-utils.ts";
+import {
+  toISOStringNullable,
+  toISOStringSafe,
+} from "../../utils/date-utils.ts";
 import {
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
@@ -77,15 +80,13 @@ export class BillCategoriesService {
     return this.mapBillCategoryToResponse(insertedCategory);
   }
 
-  public async getBillCategories(
-    filters: {
-      name?: string;
-      sortField?: BillCategorySortField;
-      sortOrder?: SortOrder;
-      limit?: number;
-      cursor?: string;
-    },
-  ): Promise<GetBillCategoriesResponse> {
+  public async getBillCategories(filters: {
+    name?: string;
+    sortField?: BillCategorySortField;
+    sortOrder?: SortOrder;
+    limit?: number;
+    cursor?: string;
+  }): Promise<GetBillCategoriesResponse> {
     const db = this.databaseService.get();
     const limit = this.resolveLimit(filters.limit);
     const offset = decodeCursor(filters.cursor);
@@ -94,7 +95,8 @@ export class BillCategoriesService {
 
     const filteredCategoryName = filters.name?.trim();
     if (filteredCategoryName) {
-      const normalizedFilter = this.normalizeCategoryInput(filteredCategoryName);
+      const normalizedFilter =
+        this.normalizeCategoryInput(filteredCategoryName);
       conditions.push(
         eq(billCategoriesTable.normalizedName, normalizedFilter.normalized),
       );
