@@ -56,8 +56,11 @@ export const GetCashBalancesRequestSchema = PaginationQuerySchema.extend({
   cashId: z
     .number()
     .int()
+    .optional()
     .openapi({ example: 1, type: "integer" })
-    .describe("Cash source identifier"),
+    .describe(
+      "Cash source identifier (optional - if not provided, returns all balances)",
+    ),
   sortField: z
     .nativeEnum(CashBalanceSortField)
     .optional()
@@ -82,7 +85,9 @@ export const CashBalanceSummarySchema = z.object({
 });
 
 export const GetCashBalancesResponseSchema = z.object({
-  results: z.array(CashBalanceSummarySchema).describe("List of cash balance summaries"),
+  results: z
+    .array(CashBalanceSummarySchema)
+    .describe("List of cash balance summaries"),
   limit: z.number().int().describe("Maximum number of results returned"),
   offset: z.number().int().describe("Number of results skipped"),
   total: z

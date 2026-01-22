@@ -7,10 +7,7 @@ import { SortOrder } from "../enums/sort-order-enum.ts";
 export const CreateCashBalanceToolSchema = z.object({
   cashId: z.number().int().positive().describe("Cash source identifier"),
   balance: MonetaryStringSchema.describe("Current balance amount"),
-  currencyCode: z
-    .string()
-    .length(3)
-    .describe("ISO 4217 currency code"),
+  currencyCode: z.string().length(3).describe("ISO 4217 currency code"),
 });
 
 export const UpdateCashBalanceToolSchema = z.object({
@@ -28,7 +25,14 @@ export const DeleteCashBalanceToolSchema = z.object({
 });
 
 export const FilterCashBalancesToolSchema = PaginationQuerySchema.extend({
-  cashId: z.number().int().positive().describe("Cash source identifier"),
+  cashId: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .describe(
+      "Cash source identifier (optional - if not provided, returns all balances)",
+    ),
   sortField: z
     .nativeEnum(CashBalanceSortField)
     .optional()

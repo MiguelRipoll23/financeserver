@@ -63,7 +63,7 @@ export class CryptoExchangeBalancesService {
   }
 
   public async getCryptoExchangeBalances(payload: {
-    cryptoExchangeId: number;
+    cryptoExchangeId?: number;
     limit?: number;
     cursor?: string;
     sortOrder?: SortOrder;
@@ -74,19 +74,22 @@ export class CryptoExchangeBalancesService {
     const cursor = payload.cursor;
     const sortOrder = payload.sortOrder ?? SortOrder.Desc;
 
-    const exchange = await db
-      .select({ id: cryptoExchangesTable.id })
-      .from(cryptoExchangesTable)
-      .where(eq(cryptoExchangesTable.id, exchangeId))
-      .limit(1)
-      .then((rows) => rows[0]);
+    // Verify crypto exchange exists if exchangeId is provided
+    if (exchangeId !== undefined) {
+      const exchange = await db
+        .select({ id: cryptoExchangesTable.id })
+        .from(cryptoExchangesTable)
+        .where(eq(cryptoExchangesTable.id, exchangeId))
+        .limit(1)
+        .then((rows) => rows[0]);
 
-    if (!exchange) {
-      throw new ServerError(
-        "CRYPTO_EXCHANGE_NOT_FOUND",
-        `Crypto exchange with ID ${exchangeId} not found`,
-        404,
-      );
+      if (!exchange) {
+        throw new ServerError(
+          "CRYPTO_EXCHANGE_NOT_FOUND",
+          `Crypto exchange with ID ${exchangeId} not found`,
+          404,
+        );
+      }
     }
 
     const size = Math.min(pageSize, MAX_PAGE_SIZE);
@@ -94,10 +97,17 @@ export class CryptoExchangeBalancesService {
 
     const orderDirection = sortOrder === SortOrder.Asc ? asc : desc;
 
-    const [{ count }] = await db
+    const countQuery = db
       .select({ count: sql<number>`COUNT(*)` })
-      .from(cryptoExchangeBalancesTable)
-      .where(eq(cryptoExchangeBalancesTable.cryptoExchangeId, exchangeId));
+      .from(cryptoExchangeBalancesTable);
+
+    if (exchangeId !== undefined) {
+      countQuery.where(
+        eq(cryptoExchangeBalancesTable.cryptoExchangeId, exchangeId),
+      );
+    }
+
+    const [{ count }] = await countQuery;
 
     const total = Number(count ?? 0);
 
@@ -112,10 +122,13 @@ export class CryptoExchangeBalancesService {
       };
     }
 
-    const results = await db
-      .select()
-      .from(cryptoExchangeBalancesTable)
-      .where(eq(cryptoExchangeBalancesTable.cryptoExchangeId, exchangeId))
+    const query = db.select().from(cryptoExchangeBalancesTable);
+
+    if (exchangeId !== undefined) {
+      query.where(eq(cryptoExchangeBalancesTable.cryptoExchangeId, exchangeId));
+    }
+
+    const results = await query
       .orderBy(orderDirection(cryptoExchangeBalancesTable.createdAt))
       .limit(size)
       .offset(offset);
