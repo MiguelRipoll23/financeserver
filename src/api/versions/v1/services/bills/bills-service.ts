@@ -271,6 +271,7 @@ export class BillsService {
         currencyCode: billsTable.currencyCode,
         updatedAt: billsTable.updatedAt,
         senderEmail: billEmailsTable.email,
+        favoritedAt: billCategoriesTable.favoritedAt,
       })
       .from(billsTable)
       .innerJoin(
@@ -295,6 +296,7 @@ export class BillsService {
       ),
       currencyCode: row.currencyCode,
       updatedAt: toISOStringSafe(row.updatedAt),
+      favoritedAt: toISOStringSafe(row.favoritedAt),
     }));
 
     return createOffsetPagination<BillSummary>(
@@ -462,6 +464,7 @@ export class BillsService {
         currencyCode: billsTable.currencyCode,
         updatedAt: billsTable.updatedAt,
         senderEmail: billEmailsTable.email,
+        favoritedAt: billCategoriesTable.favoritedAt,
       })
       .from(billsTable)
       .innerJoin(
@@ -493,6 +496,7 @@ export class BillsService {
       ),
       currencyCode: billRow.currencyCode,
       updatedAt: toISOStringSafe(billRow.updatedAt),
+      favoritedAt: toISOStringSafe(billRow.favoritedAt),
     } satisfies UpsertBillResponse;
   }
 

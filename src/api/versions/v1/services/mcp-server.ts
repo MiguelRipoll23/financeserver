@@ -11,6 +11,7 @@ import { BankAccountInterestRatesMCPService } from "./bank-account-interest-rate
 import { CryptoExchangesMCPService } from "./crypto-exchanges/crypto-exchanges-mcp-service.ts";
 import { CashMCPService } from "./cash/cash-mcp-service.ts";
 import { CashBalancesMCPService } from "./cash-balances/cash-balances-mcp-service.ts";
+import { SalaryChangesMCPService } from "./salary-changes/salary-changes-mcp-service.ts";
 import { McpToolDefinition } from "../interfaces/mcp/mcp-tool-interface.ts";
 import { McpProvider } from "../types/mcp/mcp-provider-type.ts";
 import { McpServerWithContext } from "../types/mcp/mcp-server-with-context-type.ts";
@@ -32,7 +33,8 @@ export class MCPService {
     ),
     private cryptoExchangesMCPService = inject(CryptoExchangesMCPService),
     private cashMCPService = inject(CashMCPService),
-    private cashBalancesMCPService = inject(CashBalancesMCPService)
+    private cashBalancesMCPService = inject(CashBalancesMCPService),
+    private salaryChangesMCPService = inject(SalaryChangesMCPService)
   ) {}
 
   public createUnifiedServer(): McpServer {
@@ -47,6 +49,7 @@ export class MCPService {
       this.bankAccountBalancesMCPService,
       this.bankAccountInterestRatesMCPService,
       this.cryptoExchangesMCPService,
+      this.salaryChangesMCPService,
     ]);
   }
 
