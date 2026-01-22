@@ -9,6 +9,7 @@ import {
   uniqueIndex,
   varchar,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { billEmailsTable } from "./bill-emails-table.ts";
 import { billCategoriesTable } from "./bill-categories-table.ts";
 
@@ -41,6 +42,8 @@ export const billsTable = pgTable(
       table.billDate,
       table.categoryId
     ),
+    index("bills_bill_date_desc_idx").on(sql`${table.billDate} DESC`),
+    ,
   ]
 );
 

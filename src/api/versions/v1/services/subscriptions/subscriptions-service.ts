@@ -56,9 +56,10 @@ export class SubscriptionsService {
     const amountString = this.formatAmount(amountCents / 100);
 
     // Insert subscription
-    const subscriptionValues = {
+const subscriptionValues = {
       name: payload.name.trim(),
       category: payload.category.trim(),
+      isActive: true,
     };
 
     const [{ id: subscriptionId }] = await db
@@ -178,24 +179,8 @@ export class SubscriptionsService {
       );
     }
 
-    if (filters.isActive !== undefined) {
-      if (filters.isActive) {
-        // Active subscriptions: started and either no end date OR end date is in the future
-        conditions.push(
-          sql`${subscriptionPricesTable.effectiveFrom} <= CURRENT_DATE`
-        );
-        conditions.push(
-          or(
-            isNull(subscriptionPricesTable.effectiveUntil),
-            sql`${subscriptionPricesTable.effectiveUntil} >= CURRENT_DATE`
-          )!
-        );
-      } else {
-        // Inactive subscriptions: end date is in the past
-        conditions.push(
-          sql`${subscriptionPricesTable.effectiveUntil} IS NOT NULL AND ${subscriptionPricesTable.effectiveUntil} < CURRENT_DATE`
-        );
-      }
+if (filters.isActive !== undefined) {
+      conditions.push(sql`${subscriptionsTable.isActive} = ${filters.isActive}`);
     }
 
     // When no isActive filter is provided, get the most recent price for each subscription

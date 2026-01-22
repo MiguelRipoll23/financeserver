@@ -8,6 +8,7 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { bankAccountsTable } from "./bank-accounts-table.ts";
 
 export const bankAccountBalancesTable = pgTable(
@@ -29,6 +30,15 @@ export const bankAccountBalancesTable = pgTable(
   (table) => [
     index("bank_account_balances_bank_account_id_idx").on(table.bankAccountId),
     index("bank_account_balances_created_at_idx").on(table.createdAt),
+    index("bank_account_balances_composite_idx").on(
+      table.bankAccountId,
+      sql`${table.createdAt} DESC`
+    ),
+    index("bank_account_balances_covering_idx").using(
+      "btree",
+      table.bankAccountId,
+      sql`${table.createdAt} DESC`
+    ),
   ]
 );
 

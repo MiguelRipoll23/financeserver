@@ -8,6 +8,7 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { merchantsTable } from "./merchants-table.ts";
 
 export const receiptsTable = pgTable(
@@ -34,6 +35,8 @@ export const receiptsTable = pgTable(
     index("receipts_receipt_date_idx").on(table.receiptDate),
     index("receipts_total_amount_idx").on(table.totalAmount),
     index("receipts_merchant_id_idx").on(table.merchantId),
+    index("receipts_receipt_date_desc_idx").on(sql`${table.receiptDate} DESC`),
+
   ]
 );
 

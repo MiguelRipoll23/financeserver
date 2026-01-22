@@ -7,6 +7,7 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { cryptoExchangesTable } from "./crypto-exchanges-table.ts";
 
 export const cryptoExchangeBalancesTable = pgTable(
@@ -34,6 +35,11 @@ export const cryptoExchangeBalancesTable = pgTable(
       table.cryptoExchangeId
     ),
     index("crypto_exchange_balances_symbol_code_idx").on(table.symbolCode),
+    index("crypto_exchange_balances_created_at_idx").on(table.createdAt),
+    index("crypto_exchange_balances_composite_idx").on(
+      table.cryptoExchangeId,
+      sql`${table.createdAt} DESC`
+    ),
   ]
 );
 

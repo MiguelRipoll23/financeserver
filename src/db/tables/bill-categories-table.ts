@@ -1,10 +1,12 @@
 import {
   bigserial,
+  index,
   pgTable,
   text,
   timestamp,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 export const billCategoriesTable = pgTable(
   "bill_category",
@@ -22,6 +24,9 @@ export const billCategoriesTable = pgTable(
   },
   (table) => [
     uniqueIndex("bill_category_normalized_name_key").on(table.normalizedName),
+    index("bill_category_favorited_idx").on(table.name).where(
+      sql`${table.favoritedAt} IS NOT NULL`
+    ),
   ]
 );
 
