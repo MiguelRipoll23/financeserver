@@ -29,7 +29,7 @@ export class UpdateSalaryChangeToolService {
         const result = await this.salaryChangesService.updateSalaryChange(
           parsed.id,
           {
-            description: parsed.description,
+            recurrence: parsed.recurrence,
             netAmount: parsed.netAmount,
             currencyCode: parsed.currencyCode,
           },
@@ -37,7 +37,7 @@ export class UpdateSalaryChangeToolService {
 
         const currencySymbol = getCurrencySymbolForCode(result.currencyCode);
 
-        const text = `Salary change (ID: ${result.id}) updated successfully: ${result.description} - ${result.netAmount}${currencySymbol}`;
+        const text = `Salary change (ID: ${result.id}) updated successfully: [${result.recurrence}] ${result.netAmount}${currencySymbol}`;
 
         return {
           text,

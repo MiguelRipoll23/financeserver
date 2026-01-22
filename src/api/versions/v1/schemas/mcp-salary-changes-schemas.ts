@@ -1,15 +1,14 @@
 import { z } from "zod";
 import { SortOrder } from "../enums/sort-order-enum.ts";
 import { SalaryChangeSortField } from "../enums/salary-change-sort-field-enum.ts";
+import { Recurrence } from "../enums/recurrence-enum.ts";
 
 const MonetaryRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
 
 export const CreateSalaryChangeToolSchema = z.object({
-  description: z
-    .string()
-    .min(1)
-    .max(256)
-    .describe("Description of the new salary change"),
+  recurrence: z
+    .nativeEnum(Recurrence)
+    .describe("Recurrence of the salary change (weekly, bi-weekly, monthly, yearly)"),
   netAmount: z
     .string()
     .regex(
@@ -39,12 +38,10 @@ export const DeleteSalaryChangeToolSchema = z.object({
 });
 
 export const ListSalaryChangesToolSchema = z.object({
-  description: z
-    .string()
-    .min(1)
-    .max(256)
+  recurrence: z
+    .nativeEnum(Recurrence)
     .optional()
-    .describe("Filter salary changes by description (exact match)"),
+    .describe("Filter salary changes by recurrence"),
   minimumNetAmount: z
     .string()
     .regex(MonetaryRegex)

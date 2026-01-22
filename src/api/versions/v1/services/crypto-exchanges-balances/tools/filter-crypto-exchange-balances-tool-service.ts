@@ -37,7 +37,7 @@ export class FilterCryptoExchangeBalancesToolService {
             cursor: parsed.cursor,
           });
 
-        const text = `Found ${result.data.length} balance entries.${
+        const text = `Found ${result.results.length} balance entries.${
           result.nextCursor
             ? ` The response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`
             : ""

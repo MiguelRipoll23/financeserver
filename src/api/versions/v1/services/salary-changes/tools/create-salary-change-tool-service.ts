@@ -27,14 +27,14 @@ export class CreateSalaryChangeToolService {
         const parsed = CreateSalaryChangeToolSchema.parse(input);
 
         const result = await this.salaryChangesService.createSalaryChange({
-          description: parsed.description,
+          recurrence: parsed.recurrence,
           netAmount: parsed.netAmount,
           currencyCode: parsed.currencyCode,
         });
 
         const currencySymbol = getCurrencySymbolForCode(result.currencyCode);
 
-        const text = `Salary change recorded successfully: ${result.description} - ${result.netAmount}${currencySymbol} (ID: ${result.id})`;
+        const text = `Salary change recorded successfully: [${result.recurrence}] ${result.netAmount}${currencySymbol} (ID: ${result.id})`;
 
         return {
           text,

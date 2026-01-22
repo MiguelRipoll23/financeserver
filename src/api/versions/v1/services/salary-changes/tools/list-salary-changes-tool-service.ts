@@ -29,7 +29,7 @@ export class ListSalaryChangesToolService {
         const result = await this.salaryChangesService.getSalaryChanges({
           cursor: parsed.cursor,
           limit: parsed.limit,
-          description: parsed.description,
+          recurrence: parsed.recurrence,
           minimumNetAmount: parsed.minimumNetAmount,
           maximumNetAmount: parsed.maximumNetAmount,
           sortField: parsed.sortField,
@@ -47,7 +47,7 @@ export class ListSalaryChangesToolService {
               const currencySymbol = getCurrencySymbolForCode(
                 salaryChange.currencyCode,
               );
-              return `• ${salaryChange.description}: ${amount}${currencySymbol}`;
+              return `• [${salaryChange.recurrence}] Salary Change ID ${salaryChange.id}: ${amount}${currencySymbol}`;
             })
             .join("\n");
 

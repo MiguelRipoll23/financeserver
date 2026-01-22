@@ -3,6 +3,7 @@ import { PaginationQuerySchema } from "./pagination-schemas.ts";
 import { SortOrder } from "../enums/sort-order-enum.ts";
 import { MonetaryStringSchema } from "./monetary-string-schema.ts";
 import { SalaryChangeSortField } from "../enums/salary-change-sort-field-enum.ts";
+import { Recurrence } from "../enums/recurrence-enum.ts";
 
 export const SalaryChangeSchema = z.object({
   id: z
@@ -10,12 +11,10 @@ export const SalaryChangeSchema = z.object({
     .int()
     .openapi({ example: 1 })
     .describe("Unique identifier for the salary change"),
-  description: z
-    .string()
-    .min(1)
-    .max(256)
-    .openapi({ example: "Monthly salary" })
-    .describe("Description of the salary change"),
+  recurrence: z
+    .nativeEnum(Recurrence)
+    .openapi({ example: Recurrence.Monthly })
+    .describe("Recurrence of the salary change"),
   netAmount: MonetaryStringSchema.describe(
     "Net amount of the salary change as a string"
   ),
@@ -39,12 +38,10 @@ export const SalaryChangeSchema = z.object({
 export type SalaryChangeResponse = z.infer<typeof SalaryChangeSchema>;
 
 export const CreateSalaryChangeRequestSchema = z.object({
-  description: z
-    .string()
-    .min(1)
-    .max(256)
-    .openapi({ example: "New Monthly Salary" })
-    .describe("Description of the new salary change"),
+  recurrence: z
+    .nativeEnum(Recurrence)
+    .openapi({ example: Recurrence.Monthly })
+    .describe("Recurrence of the salary change"),
   netAmount: MonetaryStringSchema.describe(
     "Net amount of the salary change as a string"
   ),
@@ -66,12 +63,10 @@ export type CreateSalaryChangeResponse = z.infer<
 >;
 
 export const UpdateSalaryChangeRequestSchema = z.object({
-  description: z
-    .string()
-    .min(1)
-    .max(256)
-    .openapi({ example: "Updated Monthly Salary" })
-    .describe("Updated description for the salary change")
+  recurrence: z
+    .nativeEnum(Recurrence)
+    .openapi({ example: Recurrence.Monthly })
+    .describe("Updated recurrence for the salary change")
     .optional(),
   netAmount: MonetaryStringSchema.describe(
     "Net amount of the salary change as a string"
@@ -106,12 +101,10 @@ export const SalaryChangeIdParamSchema = z.object({
 export type SalaryChangeIdParams = z.infer<typeof SalaryChangeIdParamSchema>;
 
 export const GetSalaryChangesRequestSchema = PaginationQuerySchema.extend({
-  description: z
-    .string()
-    .min(1)
-    .max(256)
-    .openapi({ example: "Monthly" })
-    .describe("Filter by salary change description")
+  recurrence: z
+    .nativeEnum(Recurrence)
+    .openapi({ example: Recurrence.Monthly })
+    .describe("Filter by salary change recurrence")
     .optional(),
   minimumNetAmount: MonetaryStringSchema.optional().describe(
     "Filter salary changes with net amount greater than or equal to this value"
@@ -133,6 +126,54 @@ export const GetSalaryChangesRequestSchema = PaginationQuerySchema.extend({
 
 export type GetSalaryChangesRequest = z.infer<
   typeof GetSalaryChangesRequestSchema
+>;
+
+export const ListSalaryChangesRequestBodySchema = z.object({
+  limit: z
+    .number()
+    .int()
+    .min(1)
+    .max(100)
+    .openapi({ example: 20 })
+    .describe("Maximum number of results to return")
+    .optional(),
+  offset: z
+    .number()
+    .int()
+    .min(0)
+    .openapi({ example: 0 })
+    .describe("Number of results to skip")
+    .optional(),
+  cursor: z
+    .string()
+    .openapi({ example: "abc123" })
+    .describe("Cursor for pagination")
+    .optional(),
+  recurrence: z
+    .nativeEnum(Recurrence)
+    .openapi({ example: Recurrence.Monthly })
+    .describe("Filter by salary change recurrence")
+    .optional(),
+  minimumNetAmount: MonetaryStringSchema.optional().describe(
+    "Filter salary changes with net amount greater than or equal to this value"
+  ),
+  maximumNetAmount: MonetaryStringSchema.optional().describe(
+    "Filter salary changes with net amount less than or equal to this value"
+  ),
+  sortField: z
+    .nativeEnum(SalaryChangeSortField)
+    .openapi({ example: SalaryChangeSortField.CreatedAt })
+    .describe("Field to sort salary changes by")
+    .optional(),
+  sortOrder: z
+    .nativeEnum(SortOrder)
+    .openapi({ example: SortOrder.Desc })
+    .describe("Sort order (ascending or descending)")
+    .optional(),
+});
+
+export type ListSalaryChangesRequestBody = z.infer<
+  typeof ListSalaryChangesRequestBodySchema
 >;
 
 export const GetSalaryChangesResponseSchema = z.object({

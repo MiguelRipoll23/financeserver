@@ -8,6 +8,7 @@ import {
   CreateSalaryChangeResponseSchema,
   GetSalaryChangesRequestSchema,
   GetSalaryChangesResponseSchema,
+  ListSalaryChangesRequestBodySchema,
   SalaryChangeSchema,
   UpdateSalaryChangeRequestSchema,
   UpdateSalaryChangeResponseSchema,
@@ -30,7 +31,6 @@ export class AuthenticatedSalaryChangesRouter {
 
   private setRoutes(): void {
     this.registerListSalaryChangesRoute();
-    this.registerGetSalaryChangeByIdRoute();
     this.registerCreateSalaryChangeRoute();
     this.registerUpdateSalaryChangeRoute();
     this.registerDeleteSalaryChangeRoute();
@@ -39,13 +39,19 @@ export class AuthenticatedSalaryChangesRouter {
   private registerListSalaryChangesRoute(): void {
     this.app.openapi(
       createRoute({
-        method: "get",
-        path: "/",
+        method: "post",
+        path: "/list",
         summary: "List salary changes",
         description: "Returns paginated salary changes with optional filters.",
-        tags: ["Salary Changes"],
+        tags: ["Salary changes"],
         request: {
-          query: GetSalaryChangesRequestSchema,
+          body: {
+            content: {
+              "application/json": {
+                schema: ListSalaryChangesRequestBodySchema,
+              },
+            },
+          },
         },
         responses: {
           200: {
@@ -60,43 +66,10 @@ export class AuthenticatedSalaryChangesRouter {
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
-        const query = GetSalaryChangesRequestSchema.parse(context.req.query());
-        const result = await this.salaryChangesService.getSalaryChanges(query);
-
-        return context.json(result, 200);
-      },
-    );
-  }
-
-  private registerGetSalaryChangeByIdRoute(): void {
-    this.app.openapi(
-      createRoute({
-        method: "get",
-        path: "/{id}",
-        summary: "Get salary change by ID",
-        description: "Returns a single salary change by its unique identifier.",
-        tags: ["Salary Changes"],
-        request: {
-          params: SalaryChangeIdParamSchema,
-        },
-        responses: {
-          200: {
-            description: "Salary change details",
-            content: {
-              "application/json": {
-                schema: SalaryChangeSchema,
-              },
-            },
-          },
-          ...ServerResponse.NotFound,
-          ...ServerResponse.Unauthorized,
-        },
-      }),
-      async (context: Context<{ Variables: HonoVariables }>) => {
-        const params = SalaryChangeIdParamSchema.parse(context.req.param());
-        const result = await this.salaryChangesService.getSalaryChangeById(
-          params.id,
+        const body = ListSalaryChangesRequestBodySchema.parse(
+          await context.req.json(),
         );
+        const result = await this.salaryChangesService.getSalaryChanges(body);
 
         return context.json(result, 200);
       },
@@ -110,7 +83,7 @@ export class AuthenticatedSalaryChangesRouter {
         path: "/",
         summary: "Create salary change",
         description: "Creates a new salary change.",
-        tags: ["Salary Changes"],
+        tags: ["Salary changes"],
         request: {
           body: {
             content: {
@@ -151,7 +124,7 @@ export class AuthenticatedSalaryChangesRouter {
         path: "/{id}",
         summary: "Update salary change",
         description: "Updates an existing salary change by its unique identifier.",
-        tags: ["Salary Changes"],
+        tags: ["Salary changes"],
         request: {
           params: SalaryChangeIdParamSchema,
           body: {
@@ -199,7 +172,7 @@ export class AuthenticatedSalaryChangesRouter {
         path: "/{id}",
         summary: "Delete salary change",
         description: "Deletes a salary change by its unique identifier.",
-        tags: ["Salary Changes"],
+        tags: ["Salary changes"],
         request: {
           params: SalaryChangeIdParamSchema,
         },

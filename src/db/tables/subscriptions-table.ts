@@ -8,6 +8,7 @@ import {
 
 export const recurrenceEnum = pgEnum("recurrence", [
   "weekly",
+  "bi-weekly",
   "monthly",
   "yearly",
 ]);

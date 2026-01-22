@@ -84,8 +84,23 @@ export const BankAccountBalanceSummarySchema = z.object({
 });
 
 export const GetBankAccountBalancesResponseSchema = z.object({
-  data: z.array(BankAccountBalanceSummarySchema),
-  nextCursor: z.string().nullable(),
+  results: z
+    .array(BankAccountBalanceSummarySchema)
+    .describe("List of bank account balance summaries"),
+  limit: z.number().int().describe("Maximum number of results returned"),
+  offset: z.number().int().describe("Number of results skipped"),
+  total: z
+    .number()
+    .int()
+    .describe("Total number of bank account balances matching the query"),
+  nextCursor: z
+    .string()
+    .nullable()
+    .describe("Cursor for the next page of results or null"),
+  previousCursor: z
+    .string()
+    .nullable()
+    .describe("Cursor for the previous page of results or null"),
 });
 
 export type GetBankAccountBalancesResponse = z.infer<

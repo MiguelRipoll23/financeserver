@@ -37,8 +37,8 @@ export class FilterInterestRatesToolService {
             cursor: parsed.cursor,
           });
 
-        const count = result.data.length;
-        const ratesList = result.data
+        const count = result.results.length;
+        const ratesList = result.results
           .map(
             (rate) =>
               `- ${rate.interestRate}% from ${rate.interestRateStartDate}${rate.interestRateEndDate ? ` to ${rate.interestRateEndDate}` : " (ongoing)"} (ID: ${rate.id})`

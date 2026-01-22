@@ -33,10 +33,10 @@ export class FilterCashBalancesToolService {
           sortOrder: parsed.sortOrder,
         });
 
-        const count = result.data.length;
-        const balancesList = result.data
+        const count = result.results.length;
+        const balancesList = result.results
           .map(
-            (balance) =>
+            (balance: any) =>
               `- ${balance.balance} ${balance.currencyCode} (ID: ${balance.id}, Created: ${balance.createdAt})`,
           )
           .join("\n");

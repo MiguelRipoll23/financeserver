@@ -13,6 +13,7 @@ import {
 } from "../../constants/pagination-constants.ts";
 import { SortOrder } from "../../enums/sort-order-enum.ts";
 import { SalaryChangeSortField } from "../../enums/salary-change-sort-field-enum.ts";
+import { Recurrence } from "../../enums/recurrence-enum.ts";
 
 import type {
   CreateSalaryChangeRequest,
@@ -39,7 +40,7 @@ export class SalaryChangesService {
     const [insertedSalaryChange] = await db
       .insert(salaryChangesTable)
       .values({
-        description: payload.description,
+        recurrence: payload.recurrence,
         netAmount: netAmountString,
         currencyCode: payload.currencyCode,
       })
@@ -57,7 +58,7 @@ export class SalaryChangesService {
   }
 
   public async getSalaryChanges(filters: {
-    description?: string;
+    recurrence?: Recurrence;
     minimumNetAmount?: string;
     maximumNetAmount?: string;
     sortField?: SalaryChangeSortField;
@@ -71,9 +72,8 @@ export class SalaryChangesService {
 
     const conditions: SQL[] = [];
 
-    const filteredDescription = filters.description?.trim();
-    if (filteredDescription) {
-      conditions.push(eq(salaryChangesTable.description, filteredDescription));
+    if (filters.recurrence) {
+      conditions.push(eq(salaryChangesTable.recurrence, filters.recurrence));
     }
 
     if (filters.minimumNetAmount !== undefined) {
@@ -147,26 +147,6 @@ export class SalaryChangesService {
     ) as GetSalaryChangesResponse;
   }
 
-  public async getSalaryChangeById(id: number): Promise<SalaryChangeResponse> {
-    const db = this.databaseService.get();
-
-    const [salaryChange] = await db
-      .select()
-      .from(salaryChangesTable)
-      .where(eq(salaryChangesTable.id, id))
-      .limit(1);
-
-    if (!salaryChange) {
-      throw new ServerError(
-        "SALARY_CHANGE_NOT_FOUND",
-        `Salary change with ID ${id} not found`,
-        404,
-      );
-    }
-
-    return this.mapSalaryChangeToResponse(salaryChange);
-  }
-
   public async updateSalaryChange(
     id: number,
     payload: UpdateSalaryChangeRequest,
@@ -191,8 +171,8 @@ export class SalaryChangesService {
       updatedAt: new Date(),
     };
 
-    if (payload.description !== undefined) {
-      updateData.description = payload.description;
+    if (payload.recurrence !== undefined) {
+      updateData.recurrence = payload.recurrence;
     }
 
     if (payload.netAmount !== undefined) {
@@ -305,7 +285,7 @@ export class SalaryChangesService {
   ): SalaryChangeResponse {
     return {
       id: entity.id,
-      description: entity.description,
+      recurrence: entity.recurrence as Recurrence,
       netAmount: entity.netAmount,
       currencyCode: entity.currencyCode,
       createdAt: toISOStringSafe(entity.createdAt),

@@ -82,8 +82,21 @@ export const CashBalanceSummarySchema = z.object({
 });
 
 export const GetCashBalancesResponseSchema = z.object({
-  data: z.array(CashBalanceSummarySchema),
-  nextCursor: z.string().nullable(),
+  results: z.array(CashBalanceSummarySchema).describe("List of cash balance summaries"),
+  limit: z.number().int().describe("Maximum number of results returned"),
+  offset: z.number().int().describe("Number of results skipped"),
+  total: z
+    .number()
+    .int()
+    .describe("Total number of cash balances matching the query"),
+  nextCursor: z
+    .string()
+    .nullable()
+    .describe("Cursor for the next page of results or null"),
+  previousCursor: z
+    .string()
+    .nullable()
+    .describe("Cursor for the previous page of results or null"),
 });
 
 export type GetCashBalancesResponse = z.infer<

@@ -35,7 +35,7 @@ export class FilterCryptoExchangesToolService {
           cursor: parsed.cursor,
         });
 
-        const text = `Found ${result.data.length} crypto exchanges.${
+        const text = `Found ${result.results.length} crypto exchanges.${
           result.nextCursor
             ? ` The response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`
             : ""

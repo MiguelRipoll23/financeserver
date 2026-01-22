@@ -107,8 +107,23 @@ export const BankAccountInterestRateSummarySchema = z.object({
 });
 
 export const GetBankAccountInterestRatesResponseSchema = z.object({
-  data: z.array(BankAccountInterestRateSummarySchema),
-  nextCursor: z.string().nullable(),
+  results: z
+    .array(BankAccountInterestRateSummarySchema)
+    .describe("List of bank account interest rate summaries"),
+  limit: z.number().int().describe("Maximum number of results returned"),
+  offset: z.number().int().describe("Number of results skipped"),
+  total: z
+    .number()
+    .int()
+    .describe("Total number of bank account interest rates matching the query"),
+  nextCursor: z
+    .string()
+    .nullable()
+    .describe("Cursor for the next page of results or null"),
+  previousCursor: z
+    .string()
+    .nullable()
+    .describe("Cursor for the previous page of results or null"),
 });
 
 export type GetBankAccountInterestRatesResponse = z.infer<
