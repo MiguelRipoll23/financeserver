@@ -15,7 +15,7 @@ export const CreateCryptoExchangeBalanceToolSchema = z.object({
     .string()
     .regex(
       CryptoBalanceRegex,
-      "Balance must be a valid crypto balance value (up to 8 decimal places, format: 1.23456789, no symbol, dot as decimal separator)"
+      "Balance must be a valid crypto balance value (up to 8 decimal places, format: 1.23456789, no symbol, dot as decimal separator)",
     )
     .describe("The current balance (format: 1.23456789, no symbol)"),
   symbolCode: z
@@ -27,7 +27,7 @@ export const CreateCryptoExchangeBalanceToolSchema = z.object({
     .string()
     .regex(
       MonetaryRegex,
-      "Invested amount must be a valid monetary value (format: 123.45, no currency symbol, dot as decimal separator)"
+      "Invested amount must be a valid monetary value (format: 123.45, no currency symbol, dot as decimal separator)",
     )
     .optional()
     .describe("The amount originally invested (format: 123.45, optional)"),
@@ -44,7 +44,9 @@ export const FilterCryptoExchangeBalancesToolSchema = z.object({
     .int()
     .positive()
     .optional()
-    .describe("ID of the crypto exchange to get balances for (optional - if not provided, returns all balances)"),
+    .describe(
+      "ID of the crypto exchange to get balances for (optional - if not provided, returns all balances)",
+    ),
   sortOrder: z.nativeEnum(SortOrder).optional().describe("Sort order"),
   pageSize: z
     .number()
@@ -77,7 +79,7 @@ export const UpdateCryptoExchangeBalanceToolSchema = z.object({
     .string()
     .regex(
       CryptoBalanceRegex,
-      "Balance must be a valid crypto balance value (up to 8 decimal places, format: 1.23456789, no symbol, dot as decimal separator)"
+      "Balance must be a valid crypto balance value (up to 8 decimal places, format: 1.23456789, no symbol, dot as decimal separator)",
     )
     .optional()
     .describe("The updated balance (format: 1.23456789, no symbol)"),
@@ -91,7 +93,7 @@ export const UpdateCryptoExchangeBalanceToolSchema = z.object({
     .string()
     .regex(
       MonetaryRegex,
-      "Invested amount must be a valid monetary value (format: 123.45, no currency symbol, dot as decimal separator)"
+      "Invested amount must be a valid monetary value (format: 123.45, no currency symbol, dot as decimal separator)",
     )
     .nullable()
     .optional()

@@ -13,7 +13,7 @@ export const CreateBankAccountBalanceToolSchema = z.object({
     .string()
     .regex(
       MonetaryRegex,
-      "Balance must be a valid monetary value (format: 123.45, no currency symbol, dot as decimal separator)"
+      "Balance must be a valid monetary value (format: 123.45, no currency symbol, dot as decimal separator)",
     )
     .describe("The current balance (format: 123.45, no currency symbol)"),
   currencyCode: z
@@ -28,7 +28,9 @@ export const FilterBankAccountBalancesToolSchema = z.object({
     .int()
     .positive()
     .optional()
-    .describe("ID of the bank account to get balances for (optional - if not provided, returns all balances)"),
+    .describe(
+      "ID of the bank account to get balances for (optional - if not provided, returns all balances)",
+    ),
   sortField: z
     .nativeEnum(BankAccountBalanceSortField)
     .optional()
@@ -67,7 +69,7 @@ export const UpdateBalanceToolSchema = z.object({
     .string()
     .regex(
       MonetaryRegex,
-      "Balance must be a valid monetary value (format: 123.45, no currency symbol, dot as decimal separator)"
+      "Balance must be a valid monetary value (format: 123.45, no currency symbol, dot as decimal separator)",
     )
     .optional()
     .describe("The updated balance (format: 123.45, no currency symbol)"),

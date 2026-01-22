@@ -102,7 +102,9 @@ export class CryptoExchangeBalancesService {
       .from(cryptoExchangeBalancesTable);
 
     if (exchangeId !== undefined) {
-      countQuery.where(eq(cryptoExchangeBalancesTable.cryptoExchangeId, exchangeId));
+      countQuery.where(
+        eq(cryptoExchangeBalancesTable.cryptoExchangeId, exchangeId),
+      );
     }
 
     const [{ count }] = await countQuery;
@@ -120,9 +122,7 @@ export class CryptoExchangeBalancesService {
       };
     }
 
-    const query = db
-      .select()
-      .from(cryptoExchangeBalancesTable);
+    const query = db.select().from(cryptoExchangeBalancesTable);
 
     if (exchangeId !== undefined) {
       query.where(eq(cryptoExchangeBalancesTable.cryptoExchangeId, exchangeId));

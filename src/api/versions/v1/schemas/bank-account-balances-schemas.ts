@@ -58,7 +58,9 @@ export const GetBankAccountBalancesRequestSchema = PaginationQuerySchema.extend(
       .int()
       .optional()
       .openapi({ example: 1, type: "integer" })
-      .describe("Bank account identifier (optional - if not provided, returns all balances)"),
+      .describe(
+        "Bank account identifier (optional - if not provided, returns all balances)",
+      ),
     sortField: z
       .nativeEnum(BankAccountBalanceSortField)
       .optional()

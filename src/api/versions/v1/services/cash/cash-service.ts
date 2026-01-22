@@ -243,9 +243,7 @@ export class CashService {
       };
     }
 
-    const query = db
-      .select()
-      .from(cashBalancesTable);
+    const query = db.select().from(cashBalancesTable);
 
     if (cashId !== undefined) {
       query.where(eq(cashBalancesTable.cashId, cashId));
