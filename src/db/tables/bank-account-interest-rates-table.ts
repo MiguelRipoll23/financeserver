@@ -29,15 +29,8 @@ export const bankAccountInterestRatesTable = pgTable(
       .notNull(),
   },
   (table) => [
-    index("bank_account_interest_rates_bank_account_id_idx").on(
-      table.bankAccountId
-    ),
-    index("bank_account_interest_rates_created_at_idx").on(table.createdAt),
-    index("bank_account_interest_rates_period_idx").on(
-      table.bankAccountId,
-      table.interestRateStartDate,
-      table.interestRateEndDate
-    ),
+    // Composite index for fast dashboard queries
+    index("idx_interest_rates_account_created").on(table.bankAccountId, table.createdAt.desc()),
     check(
       "interest_rate_end_date_check",
       sql`${table.interestRateEndDate} IS NULL OR ${table.interestRateEndDate} >= ${table.interestRateStartDate}`

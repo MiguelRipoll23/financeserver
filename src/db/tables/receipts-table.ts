@@ -31,7 +31,8 @@ export const receiptsTable = pgTable(
       .notNull(),
   },
   (table) => [
-    index("receipts_receipt_date_idx").on(table.receiptDate),
+    // Sorting index (for DESC load)
+    index("idx_receipts_date").on(table.receiptDate.desc()),
     index("receipts_total_amount_idx").on(table.totalAmount),
     index("receipts_merchant_id_idx").on(table.merchantId),
   ]

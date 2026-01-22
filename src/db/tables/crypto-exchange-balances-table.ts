@@ -30,10 +30,10 @@ export const cryptoExchangeBalancesTable = pgTable(
       .notNull(),
   },
   (table) => [
-    index("crypto_exchange_balances_crypto_exchange_id_idx").on(
-      table.cryptoExchangeId
-    ),
-    index("crypto_exchange_balances_symbol_code_idx").on(table.symbolCode),
+    // Composite index for filtered queries (per exchange)
+    index("idx_crypto_balances_exchange_created").on(table.cryptoExchangeId, table.createdAt.desc()),
+    // Index for full table scans (Dashboard load)
+    index("idx_crypto_balances_created").on(table.createdAt.desc()),
   ]
 );
 

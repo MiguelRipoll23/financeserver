@@ -27,8 +27,10 @@ export const bankAccountBalancesTable = pgTable(
       .notNull(),
   },
   (table) => [
-    index("bank_account_balances_bank_account_id_idx").on(table.bankAccountId),
-    index("bank_account_balances_created_at_idx").on(table.createdAt),
+    // Composite index for filtered queries (per account)
+    index("idx_bank_account_balances_account_created").on(table.bankAccountId, table.createdAt.desc()),
+    // Index for full table scans (Dashboard load)
+    index("idx_bank_account_balances_created").on(table.createdAt.desc()),
   ]
 );
 
