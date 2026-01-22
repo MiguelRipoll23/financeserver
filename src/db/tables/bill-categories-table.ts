@@ -12,6 +12,7 @@ export const billCategoriesTable = pgTable(
     id: bigserial("id", { mode: "number" }).primaryKey(),
     name: text("name").notNull(),
     normalizedName: text("normalized_name").notNull(),
+    favoritedAt: timestamp("favorited_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),

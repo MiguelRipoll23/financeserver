@@ -22,6 +22,7 @@ export { bankAccountBalancesTable } from "./tables/bank-account-balances-table.t
 export { bankAccountInterestRatesTable } from "./tables/bank-account-interest-rates-table.ts";
 export { cryptoExchangesTable } from "./tables/crypto-exchanges-table.ts";
 export { cryptoExchangeBalancesTable } from "./tables/crypto-exchange-balances-table.ts";
+export { salaryChangesTable } from "./tables/salary-changes-table.ts";
 
 // Export RLS roles and helpers
 export * from "./rls.ts";

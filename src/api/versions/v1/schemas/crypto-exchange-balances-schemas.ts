@@ -22,7 +22,7 @@ export const CreateCryptoExchangeBalanceRequestSchema = z.object({
     .openapi({ example: "BTC" })
     .describe("Asset symbol (e.g., BTC, ETH)"),
   investedAmount: MonetaryStringSchema.optional().describe(
-    "Amount originally invested"
+    "Amount originally invested",
   ),
   investedCurrencyCode: z
     .string()
@@ -70,8 +70,11 @@ export const GetCryptoExchangeBalancesRequestSchema =
     cryptoExchangeId: z
       .number()
       .int()
+      .optional()
       .openapi({ example: 1, type: "integer" })
-      .describe("Crypto exchange identifier"),
+      .describe(
+        "Crypto exchange identifier (optional - if not provided, returns all balances)",
+      ),
     sortOrder: z
       .nativeEnum(SortOrder)
       .optional()
@@ -94,8 +97,23 @@ export const CryptoExchangeBalanceSummarySchema = z.object({
 });
 
 export const GetCryptoExchangeBalancesResponseSchema = z.object({
-  data: z.array(CryptoExchangeBalanceSummarySchema),
-  nextCursor: z.string().nullable(),
+  results: z
+    .array(CryptoExchangeBalanceSummarySchema)
+    .describe("List of crypto exchange balance summaries"),
+  limit: z.number().int().describe("Maximum number of results returned"),
+  offset: z.number().int().describe("Number of results skipped"),
+  total: z
+    .number()
+    .int()
+    .describe("Total number of crypto exchange balances matching the query"),
+  nextCursor: z
+    .string()
+    .nullable()
+    .describe("Cursor for the next page of results or null"),
+  previousCursor: z
+    .string()
+    .nullable()
+    .describe("Cursor for the previous page of results or null"),
 });
 
 export type GetCryptoExchangeBalancesResponse = z.infer<
@@ -116,9 +134,9 @@ export const UpdateCryptoExchangeBalanceRequestSchema = z.object({
     .optional()
     .openapi({ example: "BTC" })
     .describe("Asset symbol (e.g., BTC, ETH)"),
-  investedAmount: MonetaryStringSchema.nullable().optional().describe(
-    "Amount originally invested"
-  ),
+  investedAmount: MonetaryStringSchema.nullable()
+    .optional()
+    .describe("Amount originally invested"),
   investedCurrencyCode: z
     .string()
     .length(3)

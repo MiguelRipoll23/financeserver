@@ -13,7 +13,7 @@ export class FilterCashBalancesToolService {
       meta: {
         title: "Filter cash balances",
         description:
-          "Use this when you need to search and filter cash balances for a specific cash source with optional sorting and pagination.",
+          "Use this when you need to search and filter cash balances with optional sorting and pagination. You can optionally specify a cashId to filter by a specific cash source, or omit it to retrieve all balances across all cash sources.",
         inputSchema: FilterCashBalancesToolSchema.shape,
         annotations: {
           readOnlyHint: true,
@@ -33,10 +33,10 @@ export class FilterCashBalancesToolService {
           sortOrder: parsed.sortOrder,
         });
 
-        const count = result.data.length;
-        const balancesList = result.data
+        const count = result.results.length;
+        const balancesList = result.results
           .map(
-            (balance) =>
+            (balance: any) =>
               `- ${balance.balance} ${balance.currencyCode} (ID: ${balance.id}, Created: ${balance.createdAt})`,
           )
           .join("\n");

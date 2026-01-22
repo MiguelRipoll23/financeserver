@@ -128,8 +128,12 @@ export class CashService {
 
     if (total === 0) {
       return {
-        data: [],
+        results: [],
+        limit: pageSize,
+        offset: offset,
+        total: 0,
         nextCursor: null,
+        previousCursor: null,
       };
     }
 
@@ -153,8 +157,12 @@ export class CashService {
     );
 
     return {
-      data: pagination.results,
+      results: pagination.results,
+      limit: pagination.limit,
+      offset: pagination.offset,
+      total: pagination.total,
       nextCursor: pagination.nextCursor,
+      previousCursor: pagination.previousCursor,
     };
   }
 
@@ -186,7 +194,7 @@ export class CashService {
   }
 
   public async getCashBalances(payload: {
-    cashId: number;
+    cashId?: number;
     limit?: number;
     cursor?: string;
     sortField?: CashBalanceSortField;
@@ -199,8 +207,10 @@ export class CashService {
     const sortField = payload.sortField ?? CashBalanceSortField.CreatedAt;
     const sortOrder = payload.sortOrder ?? SortOrder.Desc;
 
-    // Verify cash source exists
-    await this.verifyCashExists(db, cashId);
+    // Verify cash source exists if cashId is provided
+    if (cashId !== undefined) {
+      await this.verifyCashExists(db, cashId);
+    }
 
     const size = Math.min(pageSize, MAX_PAGE_SIZE);
     const offset = cursor ? decodeCursor(cursor) : 0;
@@ -208,10 +218,15 @@ export class CashService {
     const orderDirection = sortOrder === SortOrder.Asc ? asc : desc;
     const orderColumn = this.getCashBalanceSortColumn(sortField);
 
-    const countResult = await db
+    const countQuery = db
       .select({ count: sql<number>`COUNT(*)` })
-      .from(cashBalancesTable)
-      .where(eq(cashBalancesTable.cashId, cashId));
+      .from(cashBalancesTable);
+
+    if (cashId !== undefined) {
+      countQuery.where(eq(cashBalancesTable.cashId, cashId));
+    }
+
+    const countResult = await countQuery;
 
     const count = countResult[0]?.count;
 
@@ -219,15 +234,22 @@ export class CashService {
 
     if (total === 0) {
       return {
-        data: [],
+        results: [],
+        limit: size,
+        offset: offset,
+        total: 0,
         nextCursor: null,
+        previousCursor: null,
       };
     }
 
-    const results = await db
-      .select()
-      .from(cashBalancesTable)
-      .where(eq(cashBalancesTable.cashId, cashId))
+    const query = db.select().from(cashBalancesTable);
+
+    if (cashId !== undefined) {
+      query.where(eq(cashBalancesTable.cashId, cashId));
+    }
+
+    const results = await query
       .orderBy(
         orderDirection(orderColumn),
         orderDirection(cashBalancesTable.id),
@@ -247,8 +269,12 @@ export class CashService {
     );
 
     return {
-      data: pagination.results,
+      results: pagination.results,
+      limit: pagination.limit,
+      offset: pagination.offset,
+      total: pagination.total,
       nextCursor: pagination.nextCursor,
+      previousCursor: pagination.previousCursor,
     };
   }
 

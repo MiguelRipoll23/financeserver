@@ -17,7 +17,7 @@ export class FilterCryptoExchangeBalancesToolService {
       meta: {
         title: "Filter crypto exchange balances",
         description:
-          "Use this when you need to search and list balances for a specific crypto exchange.",
+          "Use this when you need to search and list balances for crypto exchanges. You can optionally specify a cryptoExchangeId to filter by a specific exchange, or omit it to retrieve all balances across all exchanges.",
         inputSchema: FilterCryptoExchangeBalancesToolSchema.shape,
         annotations: {
           readOnlyHint: true,
@@ -37,7 +37,7 @@ export class FilterCryptoExchangeBalancesToolService {
             cursor: parsed.cursor,
           });
 
-        const text = `Found ${result.data.length} balance entries.${
+        const text = `Found ${result.results.length} balance entries.${
           result.nextCursor
             ? ` The response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`
             : ""

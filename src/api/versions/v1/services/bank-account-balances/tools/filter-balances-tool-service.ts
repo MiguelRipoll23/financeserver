@@ -13,7 +13,7 @@ export class FilterBalancesToolService {
       meta: {
         title: "Filter bank account balances",
         description:
-          "Use this when you need to retrieve the balance history for a specific bank account with optional sorting and pagination.",
+          "Use this when you need to retrieve the balance history for bank accounts with optional sorting and pagination. You can optionally specify a bankAccountId to filter by a specific account, or omit it to retrieve all balances across all accounts. Do not use for creating, updating, or deleting bank account balances.",
         inputSchema: FilterBankAccountBalancesToolSchema.shape,
         annotations: {
           readOnlyHint: true,
@@ -33,13 +33,13 @@ export class FilterBalancesToolService {
           sortOrder: parsed.sortOrder,
         });
 
-        const count = result.data.length;
-        const balancesList = result.data
+        const count = result.results.length;
+        const balancesList = result.results
           .map((balance) => {
             const interestPart = balance.interestRate
               ? ` [Interest: ${balance.interestRate}%]`
               : "";
-            return `- ${balance.balance} ${balance.currencyCode}${interestPart} (${balance.createdAt})`;
+            return `- ${balance.balance} ${balance.currencyCode}${interestPart} (Account ID: ${balance.bankAccountId}, ${balance.createdAt})`;
           })
           .join("\n");
 

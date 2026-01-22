@@ -1,0 +1,1 @@
+ALTER TABLE "bill_category" ADD COLUMN "favorited_at" timestamp with time zone;
