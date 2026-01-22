@@ -1,6 +1,5 @@
 import { inject, injectable } from "@needle-di/core";
-import { and, asc, desc, eq, sql, type SQL } from "drizzle-orm";
-import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+import { asc, desc, eq, sql, type SQL } from "drizzle-orm";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import { billCategoriesTable } from "../../../../../db/schema.ts";
 import { ServerError } from "../../models/server-error.ts";
@@ -132,7 +131,7 @@ export class BillCategoriesService {
       .limit(limit)
       .offset(offset);
 
-    const categories = rows.map(this.mapBillCategoryToResponse);
+    const categories = rows.map((row) => this.mapBillCategoryToResponse(row));
 
     return createOffsetPagination<BillCategoryResponse>(
       categories,
@@ -148,7 +147,7 @@ export class BillCategoriesService {
   ): Promise<BillCategoryResponse> {
     const db = this.databaseService.get();
 
-    const existingCategory = await db
+    const [existingCategory] = await db
       .select()
       .from(billCategoriesTable)
       .where(eq(billCategoriesTable.id, id))

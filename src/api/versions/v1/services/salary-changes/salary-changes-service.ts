@@ -30,12 +30,11 @@ export class SalaryChangesService {
   ): Promise<SalaryChangeResponse> {
     const db = this.databaseService.get();
 
-    const netAmountCents = this.parseAmountToCents(
+    const netAmountString = this.normalizeAmount(
       payload.netAmount,
       "SALARY_CHANGE_NET_AMOUNT_INVALID",
       "Net amount must be a non-negative monetary value",
     );
-    const netAmountString = this.formatAmount(netAmountCents / 100);
 
     const [insertedSalaryChange] = await db
       .insert(salaryChangesTable)
@@ -170,7 +169,7 @@ export class SalaryChangesService {
   ): Promise<SalaryChangeResponse> {
     const db = this.databaseService.get();
 
-    const existingSalaryChange = await db
+    const [existingSalaryChange] = await db
       .select()
       .from(salaryChangesTable)
       .where(eq(salaryChangesTable.id, id))
@@ -193,12 +192,11 @@ export class SalaryChangesService {
     }
 
     if (payload.netAmount !== undefined) {
-      const netAmountCents = this.parseAmountToCents(
+      updateData.netAmount = this.normalizeAmount(
         payload.netAmount,
         "SALARY_CHANGE_NET_AMOUNT_INVALID",
         "Net amount must be a non-negative monetary value",
       );
-      updateData.netAmount = this.formatAmount(netAmountCents / 100);
     }
 
     if (payload.currencyCode !== undefined) {
@@ -263,6 +261,24 @@ export class SalaryChangesService {
     return order === SortOrder.Desc ? desc(column) : asc(column);
   }
 
+  private normalizeAmount(
+    amount: string,
+    errorCode: string,
+    errorMessage: string,
+  ): string {
+    if (!/^[0-9]+(\.[0-9]{1,2})?$/.test(amount)) {
+      throw new ServerError(errorCode, errorMessage, 400);
+    }
+
+    const numeric = Number.parseFloat(amount);
+
+    if (!Number.isFinite(numeric) || numeric < 0) {
+      throw new ServerError(errorCode, errorMessage, 400);
+    }
+
+    return this.formatAmount(numeric);
+  }
+
   private parseAmountToCents(
     amount: string,
     errorCode: string,
@@ -276,7 +292,7 @@ export class SalaryChangesService {
 
     if (!Number.isFinite(numeric) || numeric < 0) {
       throw new ServerError(errorCode, errorMessage, 400);
-    };
+    }
 
     return Math.round(numeric * 100);
   }

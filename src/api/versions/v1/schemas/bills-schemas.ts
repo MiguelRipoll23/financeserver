@@ -72,14 +72,7 @@ export const UpsertBillResponseSchema = z.object({
 
 export type UpsertBillResponse = z.infer<typeof UpsertBillResponseSchema>;
 
-export const BillSummarySchema = UpsertBillResponseSchema.extend({
-  favoritedAt: z
-    .string()
-    .datetime()
-    .nullable()
-    .openapi({ example: "2025-03-14T12:34:56.000Z" })
-    .describe("Timestamp when the bill category was favorited, or null"),
-});
+export const BillSummarySchema = UpsertBillResponseSchema;
 
 export type BillSummaryResponse = z.infer<typeof BillSummarySchema>;
 
