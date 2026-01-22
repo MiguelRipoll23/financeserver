@@ -33,8 +33,8 @@ export class FilterBankAccountsToolService {
           cursor: parsed.cursor,
         });
 
-        const count = result.data.length;
-        const accountsList = result.data
+        const count = result.results.length;
+        const accountsList = result.results
           .map((account) => `- ${account.name} (ID: ${account.id})`)
           .join("\n");
 

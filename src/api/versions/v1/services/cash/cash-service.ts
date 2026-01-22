@@ -128,8 +128,12 @@ export class CashService {
 
     if (total === 0) {
       return {
-        data: [],
+        results: [],
+        limit: pageSize,
+        offset: offset,
+        total: 0,
         nextCursor: null,
+        previousCursor: null,
       };
     }
 
@@ -153,8 +157,12 @@ export class CashService {
     );
 
     return {
-      data: pagination.results,
+      results: pagination.results,
+      limit: pagination.limit,
+      offset: pagination.offset,
+      total: pagination.total,
       nextCursor: pagination.nextCursor,
+      previousCursor: pagination.previousCursor,
     };
   }
 
@@ -219,8 +227,12 @@ export class CashService {
 
     if (total === 0) {
       return {
-        data: [],
+        results: [],
+        limit: size,
+        offset: offset,
+        total: 0,
         nextCursor: null,
+        previousCursor: null,
       };
     }
 
@@ -247,8 +259,12 @@ export class CashService {
     );
 
     return {
-      data: pagination.results,
+      results: pagination.results,
+      limit: pagination.limit,
+      offset: pagination.offset,
+      total: pagination.total,
       nextCursor: pagination.nextCursor,
+      previousCursor: pagination.previousCursor,
     };
   }
 

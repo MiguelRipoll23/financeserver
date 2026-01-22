@@ -33,9 +33,9 @@ export class FilterCashToolService {
           cursor: parsed.cursor,
         });
 
-        const count = result.data.length;
-        const cashList = result.data
-          .map((cash) => `- ${cash.label} (ID: ${cash.id})`)
+        const count = result.results.length;
+        const cashList = result.results
+          .map((cash: any) => `- ${cash.label} (ID: ${cash.id})`)
           .join("\n");
 
         let text = `Found ${count} cash source${count !== 1 ? "s" : ""}`;

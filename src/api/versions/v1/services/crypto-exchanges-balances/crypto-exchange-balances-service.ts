@@ -23,12 +23,9 @@ import type {
   UpdateCryptoExchangeBalanceResponse,
 } from "../../schemas/crypto-exchange-balances-schemas.ts";
 
-
 @injectable()
 export class CryptoExchangeBalancesService {
-  constructor(
-    private databaseService = inject(DatabaseService),
-  ) {}
+  constructor(private databaseService = inject(DatabaseService)) {}
 
   public async createCryptoExchangeBalance(
     exchangeId: number,
@@ -61,8 +58,6 @@ export class CryptoExchangeBalancesService {
         investedCurrencyCode: payload.investedCurrencyCode ?? null,
       })
       .returning();
-
-
 
     return this.mapBalanceToResponse(result);
   }
@@ -108,8 +103,12 @@ export class CryptoExchangeBalancesService {
 
     if (total === 0) {
       return {
-        data: [],
+        results: [],
+        limit: size,
+        offset: offset,
+        total: 0,
         nextCursor: null,
+        previousCursor: null,
       };
     }
 
@@ -133,8 +132,12 @@ export class CryptoExchangeBalancesService {
     );
 
     return {
-      data: pagination.results,
+      results: pagination.results,
+      limit: pagination.limit,
+      offset: pagination.offset,
+      total: pagination.total,
       nextCursor: pagination.nextCursor,
+      previousCursor: pagination.previousCursor,
     };
   }
 
@@ -191,8 +194,6 @@ export class CryptoExchangeBalancesService {
       .where(eq(cryptoExchangeBalancesTable.id, balanceId))
       .returning();
 
-
-
     return this.mapBalanceToResponse(result);
   }
 
@@ -213,8 +214,6 @@ export class CryptoExchangeBalancesService {
         404,
       );
     }
-
-
 
     await db
       .delete(cryptoExchangeBalancesTable)

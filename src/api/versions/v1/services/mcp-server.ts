@@ -11,6 +11,7 @@ import { BankAccountInterestRatesMCPService } from "./bank-account-interest-rate
 import { CryptoExchangesMCPService } from "./crypto-exchanges/crypto-exchanges-mcp-service.ts";
 import { CashMCPService } from "./cash/cash-mcp-service.ts";
 import { CashBalancesMCPService } from "./cash-balances/cash-balances-mcp-service.ts";
+import { SalaryChangesMCPService } from "./salary-changes/salary-changes-mcp-service.ts";
 import { McpToolDefinition } from "../interfaces/mcp/mcp-tool-interface.ts";
 import { McpProvider } from "../types/mcp/mcp-provider-type.ts";
 import { McpServerWithContext } from "../types/mcp/mcp-server-with-context-type.ts";
@@ -25,14 +26,15 @@ export class MCPService {
     private merchantsMCPService = inject(MerchantsMCPService),
     private bankAccountsMCPService = inject(BankAccountsMCPService),
     private bankAccountBalancesMCPService = inject(
-      BankAccountBalancesMCPService
+      BankAccountBalancesMCPService,
     ),
     private bankAccountInterestRatesMCPService = inject(
-      BankAccountInterestRatesMCPService
+      BankAccountInterestRatesMCPService,
     ),
     private cryptoExchangesMCPService = inject(CryptoExchangesMCPService),
     private cashMCPService = inject(CashMCPService),
-    private cashBalancesMCPService = inject(CashBalancesMCPService)
+    private cashBalancesMCPService = inject(CashBalancesMCPService),
+    private salaryChangesMCPService = inject(SalaryChangesMCPService),
   ) {}
 
   public createUnifiedServer(): McpServer {
@@ -47,6 +49,7 @@ export class MCPService {
       this.bankAccountBalancesMCPService,
       this.bankAccountInterestRatesMCPService,
       this.cryptoExchangesMCPService,
+      this.salaryChangesMCPService,
     ]);
   }
 
@@ -88,7 +91,7 @@ export class MCPService {
         const formattedInput = JSON.stringify(input, null, 2);
 
         console.log(
-          `Tool ${tool.name} called by ${userId} with input:\n${formattedInput}`
+          `Tool ${tool.name} called by ${userId} with input:\n${formattedInput}`,
         );
 
         const startTime = Date.now();
@@ -101,7 +104,7 @@ export class MCPService {
             : "";
 
           console.log(
-            `Tool ${tool.name} executed by ${userId} (${executionTime}ms) with output:\n${result.text}${structuredOutput}`
+            `Tool ${tool.name} executed by ${userId} (${executionTime}ms) with output:\n${result.text}${structuredOutput}`,
           );
 
           const structured =

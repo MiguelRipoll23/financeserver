@@ -1,5 +1,14 @@
 import { inject, injectable } from "@needle-di/core";
-import { and, asc, desc, eq, ilike, sql, type SQL, getTableColumns } from "drizzle-orm";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  ilike,
+  sql,
+  type SQL,
+  getTableColumns,
+} from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import {
@@ -37,12 +46,9 @@ import type {
   UpdateBankAccountBalanceResponse,
 } from "../../schemas/bank-account-balances-schemas.ts";
 
-
 @injectable()
 export class BankAccountsService {
-  constructor(
-    private databaseService = inject(DatabaseService),
-  ) {}
+  constructor(private databaseService = inject(DatabaseService)) {}
 
   public async createBankAccount(
     payload: CreateBankAccountRequest,
@@ -138,8 +144,12 @@ export class BankAccountsService {
 
     if (total === 0) {
       return {
-        data: [],
+        results: [],
+        limit: pageSize,
+        offset: offset,
+        total: 0,
         nextCursor: null,
+        previousCursor: null,
       };
     }
 
@@ -163,8 +173,12 @@ export class BankAccountsService {
     );
 
     return {
-      data: pagination.results,
+      results: pagination.results,
+      limit: pagination.limit,
+      offset: pagination.offset,
+      total: pagination.total,
       nextCursor: pagination.nextCursor,
+      previousCursor: pagination.previousCursor,
     };
   }
 
@@ -205,8 +219,6 @@ export class BankAccountsService {
       })
       .returning();
 
-
-
     return this.mapBalanceToResponse(result);
   }
 
@@ -221,7 +233,8 @@ export class BankAccountsService {
     const accountId = payload.bankAccountId;
     const pageSize = payload.limit ?? DEFAULT_PAGE_SIZE;
     const cursor = payload.cursor;
-    const sortField = payload.sortField ?? BankAccountBalanceSortField.CreatedAt;
+    const sortField =
+      payload.sortField ?? BankAccountBalanceSortField.CreatedAt;
     const sortOrder = payload.sortOrder ?? SortOrder.Desc;
 
     // Verify bank account exists
@@ -258,8 +271,12 @@ export class BankAccountsService {
 
     if (total === 0) {
       return {
-        data: [],
+        results: [],
+        limit: size,
+        offset: offset,
+        total: 0,
         nextCursor: null,
+        previousCursor: null,
       };
     }
 
@@ -283,7 +300,7 @@ export class BankAccountsService {
       .where(eq(bankAccountBalancesTable.bankAccountId, accountId))
       .orderBy(
         orderDirection(orderColumn),
-        orderDirection(bankAccountBalancesTable.id)
+        orderDirection(bankAccountBalancesTable.id),
       )
       .limit(size)
       .offset(offset);
@@ -300,8 +317,12 @@ export class BankAccountsService {
     );
 
     return {
-      data: pagination.results,
+      results: pagination.results,
+      limit: pagination.limit,
+      offset: pagination.offset,
+      total: pagination.total,
       nextCursor: pagination.nextCursor,
+      previousCursor: pagination.previousCursor,
     };
   }
 
@@ -353,15 +374,11 @@ export class BankAccountsService {
       .where(eq(bankAccountBalancesTable.id, balanceId))
       .returning();
 
-
-
     return this.mapBalanceToResponse(result);
   }
 
   public async deleteBankAccountBalance(balanceId: number): Promise<void> {
     const db = this.databaseService.get();
-
-
 
     const result = await db
       .delete(bankAccountBalancesTable)

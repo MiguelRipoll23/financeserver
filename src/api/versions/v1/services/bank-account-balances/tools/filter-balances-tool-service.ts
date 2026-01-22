@@ -33,8 +33,8 @@ export class FilterBalancesToolService {
           sortOrder: parsed.sortOrder,
         });
 
-        const count = result.data.length;
-        const balancesList = result.data
+        const count = result.results.length;
+        const balancesList = result.results
           .map((balance) => {
             const interestPart = balance.interestRate
               ? ` [Interest: ${balance.interestRate}%]`
