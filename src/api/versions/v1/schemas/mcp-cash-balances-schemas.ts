@@ -28,7 +28,7 @@ export const DeleteCashBalanceToolSchema = z.object({
 });
 
 export const FilterCashBalancesToolSchema = PaginationQuerySchema.extend({
-  cashId: z.number().int().positive().describe("Cash source identifier"),
+  cashId: z.number().int().positive().optional().describe("Cash source identifier (optional - if not provided, returns all balances)"),
   sortField: z
     .nativeEnum(CashBalanceSortField)
     .optional()

@@ -27,7 +27,8 @@ export const FilterBankAccountBalancesToolSchema = z.object({
     .number()
     .int()
     .positive()
-    .describe("ID of the bank account to get balances for"),
+    .optional()
+    .describe("ID of the bank account to get balances for (optional - if not provided, returns all balances)"),
   sortField: z
     .nativeEnum(BankAccountBalanceSortField)
     .optional()

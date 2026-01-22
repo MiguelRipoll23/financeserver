@@ -70,8 +70,9 @@ export const GetCryptoExchangeBalancesRequestSchema =
     cryptoExchangeId: z
       .number()
       .int()
+      .optional()
       .openapi({ example: 1, type: "integer" })
-      .describe("Crypto exchange identifier"),
+      .describe("Crypto exchange identifier (optional - if not provided, returns all balances)"),
     sortOrder: z
       .nativeEnum(SortOrder)
       .optional()

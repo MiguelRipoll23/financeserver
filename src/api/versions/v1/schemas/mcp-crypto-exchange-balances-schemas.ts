@@ -43,7 +43,8 @@ export const FilterCryptoExchangeBalancesToolSchema = z.object({
     .number()
     .int()
     .positive()
-    .describe("ID of the crypto exchange to get balances for"),
+    .optional()
+    .describe("ID of the crypto exchange to get balances for (optional - if not provided, returns all balances)"),
   sortOrder: z.nativeEnum(SortOrder).optional().describe("Sort order"),
   pageSize: z
     .number()

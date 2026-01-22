@@ -56,8 +56,9 @@ export const GetCashBalancesRequestSchema = PaginationQuerySchema.extend({
   cashId: z
     .number()
     .int()
+    .optional()
     .openapi({ example: 1, type: "integer" })
-    .describe("Cash source identifier"),
+    .describe("Cash source identifier (optional - if not provided, returns all balances)"),
   sortField: z
     .nativeEnum(CashBalanceSortField)
     .optional()
