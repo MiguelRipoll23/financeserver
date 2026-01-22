@@ -27,11 +27,10 @@ export const subscriptionsTable = pgTable("subscriptions", {
     .defaultNow()
     .notNull(),
   isActive: boolean("is_active").notNull().default(true),
-  effectiveFrom: timestamp("effective_from", { withTimezone: true }).defaultNow().notNull(),
 },
 (table) => [
-  // Composite index for active subscriptions ordering
-  index("idx_subscriptions_active_effective").on(table.isActive, table.effectiveFrom.desc()),
+  // Index for fast lookup/filtering by is_active (if needed)
+  index("idx_subscriptions_is_active").on(table.isActive),
 ]);
 
 export type SubscriptionEntity = typeof subscriptionsTable.$inferSelect;
