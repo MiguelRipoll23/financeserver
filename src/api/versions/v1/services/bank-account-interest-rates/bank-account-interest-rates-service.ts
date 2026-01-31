@@ -343,16 +343,20 @@ export class BankAccountInterestRatesService {
     bankAccountId: number,
     newRateStartDate: string,
   ): Promise<void> {
+    const endDate = new Date(newRateStartDate);
+    endDate.setDate(endDate.getDate() - 1);
+    const oldRateEndDate = endDate.toISOString().split("T")[0];
+
     await db
       .update(bankAccountInterestRatesTable)
       .set({
-        interestRateEndDate: newRateStartDate,
+        interestRateEndDate: oldRateEndDate,
         updatedAt: new Date(),
       })
       .where(
         and(
           eq(bankAccountInterestRatesTable.bankAccountId, bankAccountId),
-          sql`${bankAccountInterestRatesTable.interestRateStartDate} <= ${newRateStartDate}`,
+          sql`${bankAccountInterestRatesTable.interestRateStartDate} < ${newRateStartDate}`,
           sql`(${bankAccountInterestRatesTable.interestRateEndDate} IS NULL 
                OR ${bankAccountInterestRatesTable.interestRateEndDate} >= ${newRateStartDate})`,
         ),
