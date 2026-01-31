@@ -56,6 +56,13 @@ export class BankAccountInterestRatesService {
     }
 
     return await db.transaction(async (tx) => {
+      // End any active interest rate for this bank account
+      await this.endActiveInterestRate(
+        tx,
+        accountId,
+        payload.interestRateStartDate,
+      );
+
       // Validate interest rate period
       await this.validateNoOverlappingInterestRates(
         tx,
@@ -325,6 +332,34 @@ export class BankAccountInterestRatesService {
         400,
       );
     }
+  }
+
+  private async endActiveInterestRate(
+    db:
+      | NodePgDatabase<Record<string, never>>
+      | Parameters<
+          Parameters<NodePgDatabase<Record<string, never>>["transaction"]>[0]
+        >[0],
+    bankAccountId: number,
+    newRateStartDate: string,
+  ): Promise<void> {
+    const endDate = new Date(newRateStartDate);
+    endDate.setUTCDate(endDate.getUTCDate() - 1);
+    const oldRateEndDate = endDate.toISOString().split("T")[0];
+
+    await db
+      .update(bankAccountInterestRatesTable)
+      .set({
+        interestRateEndDate: oldRateEndDate,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(bankAccountInterestRatesTable.bankAccountId, bankAccountId),
+          sql`${bankAccountInterestRatesTable.interestRateStartDate} < ${newRateStartDate}`,
+          sql`${bankAccountInterestRatesTable.interestRateEndDate} IS NULL`,
+        ),
+      );
   }
 
   private mapInterestRateToResponse(
