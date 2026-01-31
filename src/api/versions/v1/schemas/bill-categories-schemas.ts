@@ -21,6 +21,13 @@ export const BillCategorySchema = z.object({
     .max(128)
     .openapi({ example: "groceries" })
     .describe("Normalized name of the bill category"),
+  hexColor: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/)
+    .max(7)
+    .nullable()
+    .openapi({ example: "#FF5733" })
+    .describe("Hex color code for the bill category, or null"),
   favoritedAt: z
     .string()
     .datetime()
@@ -48,6 +55,13 @@ export const CreateBillCategoryRequestSchema = z.object({
     .max(128)
     .openapi({ example: "Transportation" })
     .describe("Name of the new bill category"),
+  hexColor: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/)
+    .max(7)
+    .openapi({ example: "#FF5733" })
+    .describe("Hex color code for the bill category")
+    .optional(),
 });
 
 export type CreateBillCategoryRequest = z.infer<
@@ -67,6 +81,14 @@ export const UpdateBillCategoryRequestSchema = z.object({
     .max(128)
     .openapi({ example: "New Category Name" })
     .describe("Updated name for the bill category")
+    .optional(),
+  hexColor: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/)
+    .max(7)
+    .nullable()
+    .openapi({ example: "#FF5733" })
+    .describe("Hex color code for the bill category, or null to remove")
     .optional(),
   favoritedAt: z
     .string()

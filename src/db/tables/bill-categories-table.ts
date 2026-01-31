@@ -5,6 +5,7 @@ import {
   timestamp,
   uniqueIndex,
   index,
+  varchar,
 } from "drizzle-orm/pg-core";
 
 export const billCategoriesTable = pgTable(
@@ -13,6 +14,7 @@ export const billCategoriesTable = pgTable(
     id: bigserial("id", { mode: "number" }).primaryKey(),
     name: text("name").notNull(),
     normalizedName: text("normalized_name").notNull(),
+    hexColor: varchar("hex_color", { length: 7 }),
     favoritedAt: timestamp("favorited_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()

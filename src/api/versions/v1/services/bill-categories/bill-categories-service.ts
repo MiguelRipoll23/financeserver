@@ -52,6 +52,7 @@ export class BillCategoriesService {
       .values({
         name: categoryInput.name,
         normalizedName: categoryInput.normalized,
+        hexColor: payload.hexColor,
       })
       .onConflictDoNothing()
       .returning();
@@ -180,6 +181,10 @@ export class BillCategoriesService {
       updateData.normalizedName = categoryInput.normalized;
     }
 
+    if (payload.hexColor !== undefined) {
+      updateData.hexColor = payload.hexColor;
+    }
+
     if (payload.favoritedAt !== undefined) {
       updateData.favoritedAt = payload.favoritedAt
         ? new Date(payload.favoritedAt)
@@ -263,6 +268,7 @@ export class BillCategoriesService {
       id: entity.id,
       name: entity.name,
       normalizedName: entity.normalizedName,
+      hexColor: entity.hexColor,
       favoritedAt: toISOStringNullable(entity.favoritedAt),
       createdAt: toISOStringSafe(entity.createdAt),
       updatedAt: toISOStringSafe(entity.updatedAt),
