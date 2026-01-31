@@ -357,8 +357,7 @@ export class BankAccountInterestRatesService {
         and(
           eq(bankAccountInterestRatesTable.bankAccountId, bankAccountId),
           sql`${bankAccountInterestRatesTable.interestRateStartDate} < ${newRateStartDate}`,
-          sql`(${bankAccountInterestRatesTable.interestRateEndDate} IS NULL 
-               OR ${bankAccountInterestRatesTable.interestRateEndDate} >= ${newRateStartDate})`,
+          sql`${bankAccountInterestRatesTable.interestRateEndDate} IS NULL`,
         ),
       );
   }
