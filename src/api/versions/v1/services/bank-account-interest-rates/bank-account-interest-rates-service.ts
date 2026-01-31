@@ -56,6 +56,13 @@ export class BankAccountInterestRatesService {
     }
 
     return await db.transaction(async (tx) => {
+      // End any active interest rate for this bank account
+      await this.endActiveInterestRate(
+        tx,
+        accountId,
+        payload.interestRateStartDate,
+      );
+
       // Validate interest rate period
       await this.validateNoOverlappingInterestRates(
         tx,
@@ -324,6 +331,49 @@ export class BankAccountInterestRatesService {
         `Interest rate period ${startDate} to ${endDate} overlaps with existing period ${existing.startDate} to ${existing.endDate ?? "ongoing"}`,
         400,
       );
+    }
+  }
+
+  private async endActiveInterestRate(
+    db:
+      | NodePgDatabase<Record<string, never>>
+      | Parameters<
+          Parameters<NodePgDatabase<Record<string, never>>["transaction"]>[0]
+        >[0],
+    bankAccountId: number,
+    newRateStartDate: string,
+  ): Promise<void> {
+    const today = new Date();
+    const todayString = today.toISOString().split("T")[0];
+
+    const activeRates = await db
+      .select({
+        id: bankAccountInterestRatesTable.id,
+        startDate: bankAccountInterestRatesTable.interestRateStartDate,
+        endDate: bankAccountInterestRatesTable.interestRateEndDate,
+      })
+      .from(bankAccountInterestRatesTable)
+      .where(
+        and(
+          eq(bankAccountInterestRatesTable.bankAccountId, bankAccountId),
+          sql`(${bankAccountInterestRatesTable.interestRateEndDate} IS NULL 
+               OR ${bankAccountInterestRatesTable.interestRateEndDate} >= ${todayString})`,
+        ),
+      )
+      .limit(1);
+
+    if (activeRates.length > 0) {
+      const activeRate = activeRates[0];
+
+      if (!activeRate.endDate) {
+        await db
+          .update(bankAccountInterestRatesTable)
+          .set({
+            interestRateEndDate: newRateStartDate,
+            updatedAt: new Date(),
+          })
+          .where(eq(bankAccountInterestRatesTable.id, activeRate.id));
+      }
     }
   }
 
