@@ -344,7 +344,7 @@ export class BankAccountInterestRatesService {
     newRateStartDate: string,
   ): Promise<void> {
     const endDate = new Date(newRateStartDate);
-    endDate.setDate(endDate.getDate() - 1);
+    endDate.setUTCDate(endDate.getUTCDate() - 1);
     const oldRateEndDate = endDate.toISOString().split("T")[0];
 
     await db
