@@ -343,38 +343,18 @@ export class BankAccountInterestRatesService {
     bankAccountId: number,
     newRateStartDate: string,
   ): Promise<void> {
-    const today = new Date();
-    const todayString = today.toISOString().split("T")[0];
-
-    const activeRates = await db
-      .select({
-        id: bankAccountInterestRatesTable.id,
-        startDate: bankAccountInterestRatesTable.interestRateStartDate,
-        endDate: bankAccountInterestRatesTable.interestRateEndDate,
+    await db
+      .update(bankAccountInterestRatesTable)
+      .set({
+        interestRateEndDate: newRateStartDate,
+        updatedAt: new Date(),
       })
-      .from(bankAccountInterestRatesTable)
       .where(
         and(
           eq(bankAccountInterestRatesTable.bankAccountId, bankAccountId),
-          sql`(${bankAccountInterestRatesTable.interestRateEndDate} IS NULL 
-               OR ${bankAccountInterestRatesTable.interestRateEndDate} >= ${todayString})`,
+          sql`${bankAccountInterestRatesTable.interestRateEndDate} IS NULL`,
         ),
-      )
-      .limit(1);
-
-    if (activeRates.length > 0) {
-      const activeRate = activeRates[0];
-
-      if (!activeRate.endDate) {
-        await db
-          .update(bankAccountInterestRatesTable)
-          .set({
-            interestRateEndDate: newRateStartDate,
-            updatedAt: new Date(),
-          })
-          .where(eq(bankAccountInterestRatesTable.id, activeRate.id));
-      }
-    }
+      );
   }
 
   private mapInterestRateToResponse(
