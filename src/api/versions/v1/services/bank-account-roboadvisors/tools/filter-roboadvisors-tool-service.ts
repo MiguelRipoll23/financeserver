@@ -13,9 +13,9 @@ export class FilterRoboadvisorsToolService {
     return {
       name: "bank_accounts.roboadvisors.filter",
       meta: {
-        title: "Filter roboadvisor portfolios",
+        title: "Filter roboadvisors",
         description:
-          "Use this when you need to retrieve roboadvisor portfolios with optional filtering and pagination. You can filter by bank account or name",
+          "Use this when you need to retrieve roboadvisors with optional filtering and pagination. You can filter by bank account or name",
         inputSchema: FilterBankAccountRoboadvisorsToolSchema.shape,
         annotations: {
           readOnlyHint: true,
@@ -50,7 +50,7 @@ export class FilterRoboadvisorsToolService {
           })
           .join("\n");
 
-        let text = `Found ${count} roboadvisor portfolio${count !== 1 ? "s" : ""}`;
+        let text = `Found ${count} roboadvisor${count !== 1 ? "s" : ""}`;
         if (count > 0) {
           text += `:\n${roboadvisorsList}`;
         }

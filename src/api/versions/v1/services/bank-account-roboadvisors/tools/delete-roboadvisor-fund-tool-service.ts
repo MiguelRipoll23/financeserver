@@ -15,7 +15,7 @@ export class DeleteRoboadvisorFundToolService {
       meta: {
         title: "Delete roboadvisor fund allocation",
         description:
-          "Use this when you need to permanently remove a fund allocation from a roboadvisor portfolio",
+          "Use this when you need to permanently remove a fund allocation from a roboadvisor",
         inputSchema: DeleteBankAccountRoboadvisorFundToolSchema.shape,
         annotations: {
           readOnlyHint: false,

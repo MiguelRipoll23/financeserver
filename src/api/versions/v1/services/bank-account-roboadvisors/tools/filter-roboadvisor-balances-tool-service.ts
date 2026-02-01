@@ -15,7 +15,7 @@ export class FilterRoboadvisorBalancesToolService {
       meta: {
         title: "Filter roboadvisor balance entries",
         description:
-          "Use this when you need to retrieve balance history for roboadvisor portfolios with optional filtering and pagination.",
+          "Use this when you need to retrieve balance history for roboadvisors with optional filtering and pagination.",
         inputSchema: FilterBankAccountRoboadvisorBalancesToolSchema.shape,
         annotations: {
           readOnlyHint: true,

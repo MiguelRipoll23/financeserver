@@ -15,7 +15,7 @@ export class DeleteRoboadvisorBalanceToolService {
       meta: {
         title: "Delete roboadvisor balance entry",
         description:
-          "Use this when you need to permanently delete a balance entry from a roboadvisor portfolio. This action cannot be undone.",
+          "Use this when you need to permanently delete a balance entry from a roboadvisor. This action cannot be undone.",
         inputSchema: DeleteBankAccountRoboadvisorBalanceToolSchema.shape,
         annotations: {
           readOnlyHint: false,

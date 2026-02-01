@@ -9,8 +9,8 @@ export const CreateBankAccountRoboadvisorRequestSchema = z.object({
     .string()
     .min(1)
     .max(255)
-    .openapi({ example: "My Roboadvisor Portfolio" })
-    .describe("Name of the roboadvisor portfolio"),
+    .openapi({ example: "My Roboadvisor" })
+    .describe("Name of the roboadvisor"),
   bankAccountId: z
     .number()
     .int()
@@ -65,7 +65,7 @@ export type CreateBankAccountRoboadvisorRequest = z.infer<
 
 export const CreateBankAccountRoboadvisorResponseSchema = z.object({
   id: z.number().int().openapi({ example: 1 }),
-  name: z.string().openapi({ example: "My Roboadvisor Portfolio" }),
+  name: z.string().openapi({ example: "My Roboadvisor" }),
   bankAccountId: z.number().int().openapi({ example: 1 }),
   riskLevel: z.number().int().nullable().openapi({ example: 5 }),
   managementFeePercentage: z.string().openapi({ example: "0.0015" }),
@@ -107,7 +107,7 @@ export const GetBankAccountRoboadvisorsRequestSchema = PaginationQuerySchema.ext
   name: z
     .string()
     .optional()
-    .openapi({ example: "My Portfolio" })
+    .openapi({ example: "My Roboadvisor" })
     .describe("Filter by roboadvisor name"),
   sortField: z
     .nativeEnum(BankAccountRoboadvisorSortField)
@@ -125,7 +125,7 @@ export type GetBankAccountRoboadvisorsRequest = z.infer<
 
 export const BankAccountRoboadvisorSummarySchema = z.object({
   id: z.number().int().openapi({ example: 1 }),
-  name: z.string().openapi({ example: "My Roboadvisor Portfolio" }),
+  name: z.string().openapi({ example: "My Roboadvisor" }),
   bankAccountId: z.number().int().openapi({ example: 1 }),
   riskLevel: z.number().int().nullable().openapi({ example: 5 }),
   managementFeePercentage: z.string().openapi({ example: "0.0015" }),
@@ -160,8 +160,8 @@ export const UpdateBankAccountRoboadvisorRequestSchema = z.object({
     .min(1)
     .max(255)
     .optional()
-    .openapi({ example: "My Roboadvisor Portfolio" })
-    .describe("Name of the roboadvisor portfolio"),
+    .openapi({ example: "My Roboadvisor" })
+    .describe("Name of the roboadvisor"),
   riskLevel: z
     .number()
     .int()

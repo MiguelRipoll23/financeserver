@@ -13,7 +13,7 @@ export class CreateRoboadvisorFundToolService {
       meta: {
         title: "Create roboadvisor fund allocation",
         description:
-          "Use this when you need to add a fund allocation to a roboadvisor portfolio. This defines which ETFs or mutual funds the portfolio invests in and their target weights.",
+          "Use this when you need to add a fund allocation to a roboadvisor. This defines which ETFs or mutual funds the roboadvisor invests in and their target weights.",
         inputSchema: CreateBankAccountRoboadvisorFundToolSchema.shape,
         annotations: {
           readOnlyHint: false,

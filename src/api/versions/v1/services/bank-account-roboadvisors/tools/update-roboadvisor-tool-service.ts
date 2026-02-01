@@ -15,7 +15,7 @@ export class UpdateRoboadvisorToolService {
       meta: {
         title: "Update roboadvisor",
         description:
-          "Use this when you need to update an existing roboadvisor portfolio configuration. This includes modifying fees, risk level, or other settings",
+          "Use this when you need to update an existing roboadvisor configuration. This includes modifying fees, risk level, or other settings",
         inputSchema: UpdateBankAccountRoboadvisorToolSchema.shape,
         annotations: {
           readOnlyHint: false,
@@ -44,7 +44,7 @@ export class UpdateRoboadvisorToolService {
           );
 
         const feePct = (parseFloat(result.totalFeePercentage) * 100).toFixed(2);
-        const text = `Roboadvisor portfolio updated successfully: ${result.name} (ID: ${result.id}, Total Fee: ${feePct}%)`;
+        const text = `Roboadvisor updated successfully: ${result.name} (ID: ${result.id}, Total Fee: ${feePct}%)`;
 
         return {
           text,

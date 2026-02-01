@@ -15,7 +15,7 @@ export class DeleteRoboadvisorToolService {
       meta: {
         title: "Delete roboadvisor",
         description:
-          "Use this when you need to permanently delete a roboadvisor portfolio and all its associated data (balances, funds). This action cannot be undone",
+          "Use this when you need to permanently delete a roboadvisor and all its associated data (balances, funds). This action cannot be undone",
         inputSchema: DeleteBankAccountRoboadvisorToolSchema.shape,
         annotations: {
           readOnlyHint: false,
@@ -29,7 +29,7 @@ export class DeleteRoboadvisorToolService {
 
         await this.roboadvisorsService.deleteBankAccountRoboadvisor(parsed.id);
 
-        const text = `Roboadvisor portfolio with ID ${parsed.id} has been deleted successfully`;
+        const text = `Roboadvisor with ID ${parsed.id} has been deleted successfully`;
 
         return {
           text,

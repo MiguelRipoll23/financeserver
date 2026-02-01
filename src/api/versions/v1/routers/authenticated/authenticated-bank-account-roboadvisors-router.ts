@@ -40,9 +40,9 @@ export class AuthenticatedBankAccountRoboadvisorsRouter {
       createRoute({
         method: "post",
         path: "/",
-        summary: "Create roboadvisor portfolio",
+        summary: "Create roboadvisor",
         description:
-          "Creates a new roboadvisor portfolio with fee configuration and risk level. Associates it with a bank account for automated investment management.",
+          "Creates a new roboadvisor with fee configuration and risk level. Associates it with a bank account for automated investment management.",
         tags: ["Bank account roboadvisors"],
         request: {
           body: {
@@ -55,7 +55,7 @@ export class AuthenticatedBankAccountRoboadvisorsRouter {
         },
         responses: {
           201: {
-            description: "Roboadvisor portfolio created successfully",
+            description: "Roboadvisor created successfully",
             content: {
               "application/json": {
                 schema: CreateBankAccountRoboadvisorResponseSchema,
@@ -81,9 +81,9 @@ export class AuthenticatedBankAccountRoboadvisorsRouter {
       createRoute({
         method: "post",
         path: "/find",
-        summary: "List roboadvisor portfolios",
+        summary: "List roboadvisors",
         description:
-          "Returns paginated list of roboadvisor portfolios with optional filtering by bank account or name.",
+          "Returns paginated list of roboadvisors with optional filtering by bank account or name.",
         tags: ["Bank account roboadvisors"],
         request: {
           body: {
@@ -96,7 +96,7 @@ export class AuthenticatedBankAccountRoboadvisorsRouter {
         },
         responses: {
           200: {
-            description: "Roboadvisor portfolios page",
+            description: "Roboadvisors page",
             content: {
               "application/json": {
                 schema: GetBankAccountRoboadvisorsResponseSchema,
@@ -123,8 +123,8 @@ export class AuthenticatedBankAccountRoboadvisorsRouter {
       createRoute({
         method: "patch",
         path: "/{id}",
-        summary: "Update roboadvisor portfolio",
-        description: "Updates an existing roboadvisor portfolio configuration by identifier.",
+        summary: "Update roboadvisor",
+        description: "Updates an existing roboadvisor configuration by identifier.",
         tags: ["Bank account roboadvisors"],
         request: {
           params: BankAccountRoboadvisorIdParamSchema,
@@ -138,7 +138,7 @@ export class AuthenticatedBankAccountRoboadvisorsRouter {
         },
         responses: {
           200: {
-            description: "Roboadvisor portfolio updated successfully",
+            description: "Roboadvisor updated successfully",
             content: {
               "application/json": {
                 schema: UpdateBankAccountRoboadvisorResponseSchema,
@@ -168,15 +168,15 @@ export class AuthenticatedBankAccountRoboadvisorsRouter {
       createRoute({
         method: "delete",
         path: "/{id}",
-        summary: "Delete roboadvisor portfolio",
-        description: "Permanently deletes a roboadvisor portfolio and all associated data.",
+        summary: "Delete roboadvisor",
+        description: "Permanently deletes a roboadvisor and all associated data.",
         tags: ["Bank account roboadvisors"],
         request: {
           params: BankAccountRoboadvisorIdParamSchema,
         },
         responses: {
           204: {
-            description: "Roboadvisor portfolio deleted successfully",
+            description: "Roboadvisor deleted successfully",
           },
           ...ServerResponse.Unauthorized,
           ...ServerResponse.NotFound,

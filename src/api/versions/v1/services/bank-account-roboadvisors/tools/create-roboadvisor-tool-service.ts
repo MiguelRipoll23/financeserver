@@ -15,7 +15,7 @@ export class CreateRoboadvisorToolService {
       meta: {
         title: "Create roboadvisor",
         description:
-          "Use this when you need to create a new roboadvisor portfolio for automated investment management. This includes configuring fees, risk level, and linking it to a bank account.",
+          "Use this when you need to create a new roboadvisor for automated investment management. This includes configuring fees, risk level, and linking it to a bank account.",
         inputSchema: CreateBankAccountRoboadvisorToolSchema.shape,
         annotations: {
           readOnlyHint: false,
@@ -41,7 +41,7 @@ export class CreateRoboadvisorToolService {
             terPricedInNav: parsed.terPricedInNav ?? true,
           });
 
-        const text = `Roboadvisor portfolio created successfully: ${result.name} (ID: ${result.id}, Total Fee: ${(parseFloat(result.totalFeePercentage) * 100).toFixed(2)}%)`;
+        const text = `Roboadvisor created successfully: ${result.name} (ID: ${result.id}, Total Fee: ${(parseFloat(result.totalFeePercentage) * 100).toFixed(2)}%)`;
 
         return {
           text,

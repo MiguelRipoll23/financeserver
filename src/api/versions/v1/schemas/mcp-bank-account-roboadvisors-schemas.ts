@@ -10,7 +10,7 @@ export const CreateBankAccountRoboadvisorToolSchema = z.object({
     .string()
     .min(1)
     .max(255)
-    .describe("Name of the roboadvisor portfolio"),
+    .describe("Name of the roboadvisor"),
   bankAccountId: z
     .number()
     .int()
@@ -87,7 +87,7 @@ export const UpdateBankAccountRoboadvisorToolSchema = z.object({
     .min(1)
     .max(255)
     .optional()
-    .describe("Name of the roboadvisor portfolio"),
+    .describe("Name of the roboadvisor"),
   riskLevel: z
     .number()
     .int()

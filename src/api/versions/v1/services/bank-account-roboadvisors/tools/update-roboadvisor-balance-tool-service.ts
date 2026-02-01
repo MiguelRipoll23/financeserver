@@ -15,7 +15,7 @@ export class UpdateRoboadvisorBalanceToolService {
       meta: {
         title: "Update roboadvisor balance entry",
         description:
-          "Use this when you need to update an existing balance entry for a roboadvisor portfolio",
+          "Use this when you need to update an existing balance entry for a roboadvisor",
         inputSchema: UpdateBankAccountRoboadvisorBalanceToolSchema.shape,
         annotations: {
           readOnlyHint: false,

@@ -13,7 +13,7 @@ export class CreateRoboadvisorBalanceToolService {
       meta: {
         title: "Create roboadvisor balance entry",
         description:
-          "Use this when you need to record a deposit, withdrawal, or adjustment for a roboadvisor portfolio. This tracks the portfolio's cash movements over time.",
+          "Use this when you need to record a deposit, withdrawal, or adjustment for a roboadvisor. This tracks the roboadvisor's cash movements over time.",
         inputSchema: CreateBankAccountRoboadvisorBalanceToolSchema.shape,
         annotations: {
           readOnlyHint: false,

@@ -42,7 +42,7 @@ export class AuthenticatedBankAccountRoboadvisorBalancesRouter {
         path: "/",
         summary: "Create roboadvisor balance entry",
         description:
-          "Records a deposit, withdrawal, or adjustment for a roboadvisor portfolio. Tracks cash movements over time.",
+          "Records a deposit, withdrawal, or adjustment for a roboadvisor. Tracks cash movements over time.",
         tags: ["Bank account roboadvisor balances"],
         request: {
           body: {
@@ -85,7 +85,7 @@ export class AuthenticatedBankAccountRoboadvisorBalancesRouter {
         path: "/find",
         summary: "List roboadvisor balance entries",
         description:
-          "Returns paginated balance history for roboadvisor portfolios with optional filtering.",
+          "Returns paginated balance history for roboadvisors with optional filtering.",
         tags: ["Bank account roboadvisor balances"],
         request: {
           body: {
@@ -125,7 +125,7 @@ export class AuthenticatedBankAccountRoboadvisorBalancesRouter {
         method: "patch",
         path: "/{id}",
         summary: "Update roboadvisor balance entry",
-        description: "Updates an existing balance entry for a roboadvisor portfolio.",
+        description: "Updates an existing balance entry for a roboadvisor.",
         tags: ["Bank account roboadvisor balances"],
         request: {
           params: BankAccountRoboadvisorBalanceIdParamSchema,
@@ -172,7 +172,7 @@ export class AuthenticatedBankAccountRoboadvisorBalancesRouter {
         method: "delete",
         path: "/{id}",
         summary: "Delete roboadvisor balance entry",
-        description: "Permanently deletes a balance entry from a roboadvisor portfolio.",
+        description: "Permanently deletes a balance entry from a roboadvisor.",
         tags: ["Bank account roboadvisor balances"],
         request: {
           params: BankAccountRoboadvisorBalanceIdParamSchema,

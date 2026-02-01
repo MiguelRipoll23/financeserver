@@ -41,8 +41,8 @@ export class AuthenticatedBankAccountRoboadvisorFundsRouter {
         method: "post",
         path: "/",
         summary: "Create roboadvisor fund allocation",
-        description:
-          "Adds a fund allocation to a roboadvisor portfolio. Defines which ETFs or mutual funds the portfolio invests in.",
+description:
+          "Adds a fund allocation to a roboadvisor. Defines which ETFs or mutual funds the roboadvisor invests in.",
         tags: ["Bank account roboadvisor funds"],
         request: {
           body: {
@@ -123,7 +123,7 @@ export class AuthenticatedBankAccountRoboadvisorFundsRouter {
         method: "patch",
         path: "/{id}",
         summary: "Update roboadvisor fund allocation",
-        description: "Updates an existing fund allocation in a roboadvisor portfolio.",
+        description: "Updates an existing fund allocation in a roboadvisor.",
         tags: ["Bank account roboadvisor funds"],
         request: {
           params: BankAccountRoboadvisorFundIdParamSchema,
@@ -168,7 +168,7 @@ export class AuthenticatedBankAccountRoboadvisorFundsRouter {
         method: "delete",
         path: "/{id}",
         summary: "Delete roboadvisor fund allocation",
-        description: "Permanently removes a fund allocation from a roboadvisor portfolio.",
+        description: "Permanently removes a fund allocation from a roboadvisor.",
         tags: ["Bank account roboadvisor funds"],
         request: {
           params: BankAccountRoboadvisorFundIdParamSchema,
