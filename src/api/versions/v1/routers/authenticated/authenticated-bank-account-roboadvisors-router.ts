@@ -13,6 +13,7 @@ import {
 } from "../../schemas/bank-account-roboadvisors-schemas.ts";
 import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
 import { ServerResponse } from "../../models/server-response.ts";
+import { readJsonOrEmpty } from "../../utils/router-utils.ts";
 
 @injectable()
 export class AuthenticatedBankAccountRoboadvisorsRouter {
@@ -102,12 +103,13 @@ export class AuthenticatedBankAccountRoboadvisorsRouter {
               },
             },
           },
+          ...ServerResponse.BadRequest,
           ...ServerResponse.Unauthorized,
           ...ServerResponse.NotFound,
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
-        const payload = await this.readJsonOrEmpty(context);
+        const payload = await readJsonOrEmpty(context);
         const body = GetBankAccountRoboadvisorsRequestSchema.parse(payload);
         const result = await this.roboadvisorsService.getBankAccountRoboadvisors(body);
 
@@ -187,15 +189,5 @@ export class AuthenticatedBankAccountRoboadvisorsRouter {
         return context.body(null, 204);
       }
     );
-  }
-
-  private async readJsonOrEmpty(
-    context: Context<{ Variables: HonoVariables }>
-  ): Promise<unknown> {
-    try {
-      return await context.req.json();
-    } catch {
-      return {};
-    }
   }
 }

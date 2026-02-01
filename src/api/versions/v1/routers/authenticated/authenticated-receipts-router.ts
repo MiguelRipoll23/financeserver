@@ -14,6 +14,7 @@ import {
 import type { ReceiptsFilter } from "../../interfaces/receipts/receipts-filter-interface.ts";
 import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
 import { ServerResponse } from "../../models/server-response.ts";
+import { readJsonOrEmpty } from "../../utils/router-utils.ts";
 
 @injectable()
 export class AuthenticatedReceiptsRouter {
@@ -107,7 +108,7 @@ export class AuthenticatedReceiptsRouter {
         },
       }),
       async (c: Context<{ Variables: HonoVariables }>) => {
-        const payload = await this.readJsonOrEmpty(c);
+        const payload = await readJsonOrEmpty(c);
         const body = GetReceiptsRequestSchema.parse(payload);
         const result = await this.receiptsService.getReceipts(
           body as ReceiptsFilter
@@ -116,16 +117,6 @@ export class AuthenticatedReceiptsRouter {
         return c.json(result, 200);
       }
     );
-  }
-
-  private async readJsonOrEmpty(
-    context: Context<{ Variables: HonoVariables }>
-  ): Promise<unknown> {
-    try {
-      return await context.req.json();
-    } catch {
-      return {};
-    }
   }
 
   private registerUpdateReceiptRoute(): void {

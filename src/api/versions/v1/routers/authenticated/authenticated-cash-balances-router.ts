@@ -13,6 +13,7 @@ import {
 } from "../../schemas/cash-balances-schemas.ts";
 import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
 import { ServerResponse } from "../../models/server-response.ts";
+import { readJsonOrEmpty } from "../../utils/router-utils.ts";
 
 @injectable()
 export class AuthenticatedCashBalancesRouter {
@@ -109,7 +110,7 @@ export class AuthenticatedCashBalancesRouter {
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
-        const payload = await this.readJsonOrEmpty(context);
+        const payload = await readJsonOrEmpty(context);
         const body = GetCashBalancesRequestSchema.parse(payload);
         const result = await this.cashService.getCashBalances(body);
 
@@ -190,13 +191,4 @@ export class AuthenticatedCashBalancesRouter {
     );
   }
 
-  private async readJsonOrEmpty(
-    context: Context<{ Variables: HonoVariables }>,
-  ): Promise<unknown> {
-    try {
-      return await context.req.json();
-    } catch {
-      return {};
-    }
-  }
 }

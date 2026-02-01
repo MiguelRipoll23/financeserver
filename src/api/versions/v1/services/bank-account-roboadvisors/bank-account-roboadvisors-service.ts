@@ -145,7 +145,10 @@ export class BankAccountRoboadvisorsService {
       .select()
       .from(bankAccountRoboadvisors)
       .where(whereClause)
-      .orderBy(orderDirection(orderColumn))
+      .orderBy(
+        orderDirection(orderColumn),
+        orderDirection(bankAccountRoboadvisors.id)
+      )
       .limit(pageSize)
       .offset(offset);
 

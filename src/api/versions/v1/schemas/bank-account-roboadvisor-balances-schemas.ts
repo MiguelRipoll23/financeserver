@@ -3,6 +3,34 @@ import { PaginationQuerySchema } from "./pagination-schemas.ts";
 import { SortOrder } from "../enums/sort-order-enum.ts";
 import { BankAccountRoboadvisorBalanceSortField } from "../enums/bank-account-roboadvisor-balance-sort-field-enum.ts";
 
+// Helper function to validate date string is a real calendar date
+function isValidDateString(dateString: string): boolean {
+  const regex = /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/;
+  const match = dateString.match(regex);
+
+  if (!match) return false;
+
+  const year = parseInt(match[1], 10);
+  const month = parseInt(match[2], 10);
+  const day = parseInt(match[3], 10);
+
+  // Check month range
+  if (month < 1 || month > 12) return false;
+
+  // Check day range for each month
+  const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+  // Adjust for leap year
+  const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+  if (isLeapYear) {
+    daysInMonth[1] = 29;
+  }
+
+  if (day < 1 || day > daysInMonth[month - 1]) return false;
+
+  return true;
+}
+
 // Roboadvisor Balance schemas
 export const CreateBankAccountRoboadvisorBalanceRequestSchema = z.object({
   bankAccountRoboadvisorId: z
@@ -13,6 +41,9 @@ export const CreateBankAccountRoboadvisorBalanceRequestSchema = z.object({
   date: z
     .string()
     .regex(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/)
+    .refine((val) => isValidDateString(val), {
+      message: "Invalid calendar date. Please provide a valid date in YYYY-MM-DD format (e.g., 2026-01-15).",
+    })
     .openapi({ example: "2026-01-15" })
     .describe("Transaction date (YYYY-MM-DD)"),
   type: z
@@ -111,31 +142,35 @@ export type GetBankAccountRoboadvisorBalancesResponse = z.infer<
   typeof GetBankAccountRoboadvisorBalancesResponseSchema
 >;
 
-export const UpdateBankAccountRoboadvisorBalanceRequestSchema = z.object({
-  date: z
-    .string()
-    .regex(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/)
-    .optional()
-    .openapi({ example: "2026-01-15" })
-    .describe("Transaction date (YYYY-MM-DD)"),
-  type: z
-    .enum(["deposit", "withdrawal", "adjustment"])
-    .optional()
-    .openapi({ example: "deposit" })
-    .describe("Transaction type"),
-  amount: z
-    .string()
-    .regex(/^[0-9]+(\.[0-9]{1,2})?$/)
-    .optional()
-    .openapi({ example: "1000.00" })
-    .describe("Transaction amount"),
-  currencyCode: z
-    .string()
-    .length(3)
-    .optional()
-    .openapi({ example: "EUR" })
-    .describe("ISO 4217 currency code"),
-});
+export const UpdateBankAccountRoboadvisorBalanceRequestSchema = z
+  .object({
+    date: z
+      .string()
+      .regex(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/)
+      .optional()
+      .openapi({ example: "2026-01-15" })
+      .describe("Transaction date (YYYY-MM-DD)"),
+    type: z
+      .enum(["deposit", "withdrawal", "adjustment"])
+      .optional()
+      .openapi({ example: "deposit" })
+      .describe("Transaction type"),
+    amount: z
+      .string()
+      .regex(/^[0-9]+(\.[0-9]{1,2})?$/)
+      .optional()
+      .openapi({ example: "1000.00" })
+      .describe("Transaction amount"),
+    currencyCode: z
+      .string()
+      .length(3)
+      .optional()
+      .openapi({ example: "EUR" })
+      .describe("ISO 4217 currency code"),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "At least one field must be provided for update",
+  });
 
 export type UpdateBankAccountRoboadvisorBalanceRequest = z.infer<
   typeof UpdateBankAccountRoboadvisorBalanceRequestSchema

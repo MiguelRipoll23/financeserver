@@ -14,6 +14,7 @@ import {
 import type { BillsFilter } from "../../interfaces/bills/bills-filter-interface.ts";
 import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
 import { ServerResponse } from "../../models/server-response.ts";
+import { readJsonOrEmpty } from "../../utils/router-utils.ts";
 
 @injectable()
 export class AuthenticatedBillsRouter {
@@ -106,23 +107,13 @@ export class AuthenticatedBillsRouter {
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
-        const payload = await this.readJsonOrEmpty(context);
+        const payload = await readJsonOrEmpty(context);
         const body = GetBillsRequestSchema.parse(payload);
         const result = await this.billsService.getBills(body as BillsFilter);
 
         return context.json(result, 200);
       }
     );
-  }
-
-  private async readJsonOrEmpty(
-    context: Context<{ Variables: HonoVariables }>
-  ): Promise<unknown> {
-    try {
-      return await context.req.json();
-    } catch {
-      return {};
-    }
   }
 
   private registerUpdateBillRoute(): void {

@@ -37,7 +37,7 @@ export const CreateBankAccountRoboadvisorFundRequestSchema = z.object({
     .describe("Fund currency ISO 4217 code"),
   weight: z
     .string()
-    .regex(/^[0-9]+(\.[0-9]{1,5})?$/)
+    .regex(/^(1(\.0{1,5})?|0(\.\d{1,5})?)$/)
     .openapi({ example: "0.39" })
     .describe("Fund weight as decimal (0.39 = 39%)"),
 });
@@ -136,7 +136,7 @@ export const UpdateBankAccountRoboadvisorFundRequestSchema = z.object({
     .describe("Fund currency ISO 4217 code"),
   weight: z
     .string()
-    .regex(/^[0-9]+(\.[0-9]{1,5})?$/)
+    .regex(/^(1(\.0{1,5})?|0(\.\d{1,5})?)$/)
     .optional()
     .openapi({ example: "0.39" })
     .describe("Fund weight as decimal (0.39 = 39%)"),

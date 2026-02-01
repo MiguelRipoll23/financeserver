@@ -14,6 +14,7 @@ import {
 import type { MerchantsFilter } from "../../interfaces/merchants/merchants-filter-interface.ts";
 import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
 import { ServerResponse } from "../../models/server-response.ts";
+import { readJsonOrEmpty } from "../../utils/router-utils.ts";
 
 @injectable()
 export class AuthenticatedMerchantsRouter {
@@ -109,7 +110,7 @@ export class AuthenticatedMerchantsRouter {
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
-        const payload = await this.readJsonOrEmpty(context);
+        const payload = await readJsonOrEmpty(context);
         const body = GetMerchantsRequestSchema.parse(payload);
         const result = await this.merchantsService.getMerchants(
           body as MerchantsFilter
@@ -118,16 +119,6 @@ export class AuthenticatedMerchantsRouter {
         return context.json(result, 200);
       }
     );
-  }
-
-  private async readJsonOrEmpty(
-    context: Context<{ Variables: HonoVariables }>
-  ): Promise<unknown> {
-    try {
-      return await context.req.json();
-    } catch {
-      return {};
-    }
   }
 
   private registerUpdateMerchantRoute(): void {
