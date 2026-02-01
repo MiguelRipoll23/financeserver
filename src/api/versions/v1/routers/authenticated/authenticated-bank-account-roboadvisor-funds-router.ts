@@ -79,7 +79,7 @@ export class AuthenticatedBankAccountRoboadvisorFundsRouter {
     this.app.openapi(
       createRoute({
         method: "get",
-        path: "/roboadvisor/{roboadvisorId}",
+        path: "/roboadvisor/{id}",
         summary: "List roboadvisor fund allocations",
         description: "Returns all fund allocations for a specific roboadvisor portfolio.",
         tags: ["Bank account roboadvisor funds"],
