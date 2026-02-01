@@ -444,7 +444,7 @@ export class BankAccountsService {
     return {
       id: account.id,
       name: account.name,
-      type: account.type,
+      type: account.type as BankAccountType,
       createdAt: toISOStringSafe(account.createdAt),
       updatedAt: toISOStringSafe(account.updatedAt),
     };
@@ -456,7 +456,7 @@ export class BankAccountsService {
     return {
       id: account.id,
       name: account.name,
-      type: account.type,
+      type: account.type as BankAccountType,
       createdAt: toISOStringSafe(account.createdAt),
       updatedAt: toISOStringSafe(account.updatedAt),
     };
