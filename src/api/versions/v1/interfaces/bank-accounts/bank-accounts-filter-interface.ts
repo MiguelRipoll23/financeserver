@@ -1,14 +1,6 @@
 import { SortOrder } from "../../enums/sort-order-enum.ts";
 import { BankAccountSortField } from "../../enums/bank-account-sort-field-enum.ts";
-
-export type BankAccountType =
-  | "checking"
-  | "savings"
-  | "credit_card"
-  | "investment"
-  | "loan"
-  | "deposit"
-  | "other";
+import { BankAccountType } from "../../enums/bank-account-type-enum.ts";
 
 export interface BankAccountsFilter {
   pageSize?: number;
