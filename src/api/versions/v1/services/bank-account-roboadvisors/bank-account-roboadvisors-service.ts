@@ -19,8 +19,10 @@ import {
 import { SortOrder } from "../../enums/sort-order-enum.ts";
 import { BankAccountRoboadvisorSortField } from "../../enums/bank-account-roboadvisor-sort-field-enum.ts";
 import { BankAccountRoboadvisorBalanceSortField } from "../../enums/bank-account-roboadvisor-balance-sort-field-enum.ts";
+import { BankAccountRoboadvisorFundSortField } from "../../enums/bank-account-roboadvisor-fund-sort-field-enum.ts";
 import { BankAccountRoboadvisorsFilter } from "../../interfaces/bank-account-roboadvisors/bank-account-roboadvisors-filter-interface.ts";
 import { BankAccountRoboadvisorBalancesFilter } from "../../interfaces/bank-account-roboadvisors/bank-account-roboadvisor-balances-filter-interface.ts";
+import { BankAccountRoboadvisorFundsFilter } from "../../interfaces/bank-account-roboadvisors/bank-account-roboadvisor-funds-filter-interface.ts";
 import { BankAccountRoboadvisorSummary } from "../../interfaces/bank-account-roboadvisors/bank-account-roboadvisor-summary-interface.ts";
 import { BankAccountRoboadvisorBalanceSummary } from "../../interfaces/bank-account-roboadvisors/bank-account-roboadvisor-balance-summary-interface.ts";
 import { BankAccountRoboadvisorFundSummary } from "../../interfaces/bank-account-roboadvisors/bank-account-roboadvisor-fund-summary-interface.ts";
@@ -462,40 +464,114 @@ export class BankAccountRoboadvisorsService {
   }
 
   public async getBankAccountRoboadvisorFunds(
-    roboadvisorId: number,
+    filter: BankAccountRoboadvisorFundsFilter,
   ): Promise<GetBankAccountRoboadvisorFundsResponse> {
     const db = this.databaseService.get();
 
-    // Verify roboadvisor exists
-    const roboadvisor = await db
-      .select({ id: bankAccountRoboadvisors.id })
-      .from(bankAccountRoboadvisors)
-      .where(eq(bankAccountRoboadvisors.id, roboadvisorId))
-      .limit(1)
-      .then((rows) => rows[0]);
+    const pageSize = Math.min(
+      filter.pageSize ?? DEFAULT_PAGE_SIZE,
+      MAX_PAGE_SIZE,
+    );
+    const offset = filter.cursor ? decodeCursor(filter.cursor) : 0;
+    const sortField =
+      filter.sortField ?? BankAccountRoboadvisorFundSortField.Name;
+    const sortOrder = filter.sortOrder ?? SortOrder.Asc;
 
-    if (!roboadvisor) {
-      throw new ServerError(
-        "ROBOADVISOR_NOT_FOUND",
-        `Roboadvisor with ID ${roboadvisorId} not found`,
-        404,
+    const conditions: SQL[] = [];
+
+    if (filter.bankAccountRoboadvisorId !== undefined) {
+      conditions.push(
+        eq(
+          bankAccountRoboadvisorFunds.bankAccountRoboadvisorId,
+          filter.bankAccountRoboadvisorId,
+        ),
       );
+    }
+
+    if (filter.name) {
+      conditions.push(
+        ilike(bankAccountRoboadvisorFunds.name, `%${filter.name}%`),
+      );
+    }
+
+    if (filter.isin) {
+      conditions.push(
+        ilike(bankAccountRoboadvisorFunds.isin, `%${filter.isin}%`),
+      );
+    }
+
+    if (filter.assetClass) {
+      conditions.push(
+        ilike(bankAccountRoboadvisorFunds.assetClass, `%${filter.assetClass}%`),
+      );
+    }
+
+    if (filter.region) {
+      conditions.push(
+        ilike(bankAccountRoboadvisorFunds.region, `%${filter.region}%`),
+      );
+    }
+
+    if (filter.fundCurrencyCode) {
+      conditions.push(
+        eq(
+          bankAccountRoboadvisorFunds.fundCurrencyCode,
+          filter.fundCurrencyCode,
+        ),
+      );
+    }
+
+    const whereClause =
+      conditions.length > 0 ? buildAndFilters(conditions) : undefined;
+
+    const orderColumn = this.getFundSortColumn(sortField);
+    const orderDirection = sortOrder === SortOrder.Asc ? asc : desc;
+
+    const [{ count }] = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(bankAccountRoboadvisorFunds)
+      .where(whereClause);
+
+    const total = Number(count ?? 0);
+
+    if (total === 0) {
+      return {
+        results: [],
+        limit: pageSize,
+        offset: offset,
+        total: 0,
+        nextCursor: null,
+        previousCursor: null,
+      };
     }
 
     const results = await db
       .select()
       .from(bankAccountRoboadvisorFunds)
-      .where(
-        eq(bankAccountRoboadvisorFunds.bankAccountRoboadvisorId, roboadvisorId),
-      )
-      .orderBy(asc(bankAccountRoboadvisorFunds.name));
+      .where(whereClause)
+      .orderBy(orderDirection(orderColumn), orderDirection(bankAccountRoboadvisorFunds.id))
+      .limit(pageSize)
+      .offset(offset);
 
     const data: BankAccountRoboadvisorFundSummary[] = results.map((fund) =>
       this.mapFundToSummary(fund),
     );
 
+    const pagination =
+      createOffsetPagination<BankAccountRoboadvisorFundSummary>(
+        data,
+        pageSize,
+        offset,
+        total,
+      );
+
     return {
-      results: data,
+      results: pagination.results,
+      limit: pagination.limit,
+      offset: pagination.offset,
+      total: pagination.total,
+      nextCursor: pagination.nextCursor,
+      previousCursor: pagination.previousCursor,
     };
   }
 
@@ -689,5 +765,30 @@ export class BankAccountRoboadvisorsService {
       createdAt: toISOStringSafe(fund.createdAt),
       updatedAt: toISOStringSafe(fund.updatedAt),
     };
+  }
+
+  private getFundSortColumn(
+    sortField: BankAccountRoboadvisorFundSortField,
+  ) {
+    switch (sortField) {
+      case BankAccountRoboadvisorFundSortField.Name:
+        return bankAccountRoboadvisorFunds.name;
+      case BankAccountRoboadvisorFundSortField.Isin:
+        return bankAccountRoboadvisorFunds.isin;
+      case BankAccountRoboadvisorFundSortField.AssetClass:
+        return bankAccountRoboadvisorFunds.assetClass;
+      case BankAccountRoboadvisorFundSortField.Region:
+        return bankAccountRoboadvisorFunds.region;
+      case BankAccountRoboadvisorFundSortField.FundCurrencyCode:
+        return bankAccountRoboadvisorFunds.fundCurrencyCode;
+      case BankAccountRoboadvisorFundSortField.Weight:
+        return bankAccountRoboadvisorFunds.weight;
+      case BankAccountRoboadvisorFundSortField.CreatedAt:
+        return bankAccountRoboadvisorFunds.createdAt;
+      case BankAccountRoboadvisorFundSortField.UpdatedAt:
+        return bankAccountRoboadvisorFunds.updatedAt;
+      default:
+        return bankAccountRoboadvisorFunds.name;
+    }
   }
 }

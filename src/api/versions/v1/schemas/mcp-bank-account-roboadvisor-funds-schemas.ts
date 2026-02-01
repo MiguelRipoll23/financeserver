@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { BankAccountRoboadvisorFundSortField } from "../enums/bank-account-roboadvisor-fund-sort-field-enum.ts";
+import { SortOrder } from "../enums/sort-order-enum.ts";
 
 const DecimalRegex = /^[0-9]+(\.[0-9]{1,5})?$/;
 
@@ -32,6 +34,46 @@ export const FilterBankAccountRoboadvisorFundsToolSchema = z.object({
     .int()
     .positive()
     .describe("ID of the roboadvisor to get funds for"),
+  name: z
+    .string()
+    .optional()
+    .describe("Filter by fund name (partial match)"),
+  isin: z
+    .string()
+    .optional()
+    .describe("Filter by ISIN code"),
+  assetClass: z
+    .string()
+    .optional()
+    .describe("Filter by asset class"),
+  region: z
+    .string()
+    .optional()
+    .describe("Filter by region"),
+  fundCurrencyCode: z
+    .string()
+    .length(3)
+    .optional()
+    .describe("Filter by fund currency code"),
+  sortField: z
+    .nativeEnum(BankAccountRoboadvisorFundSortField)
+    .optional()
+    .describe("Sort field (default: name)"),
+  sortOrder: z
+    .nativeEnum(SortOrder)
+    .optional()
+    .describe("Sort order (default: asc)"),
+  pageSize: z
+    .number()
+    .int()
+    .min(1)
+    .max(100)
+    .optional()
+    .describe("Number of results per page (default: 10, max: 100)"),
+  cursor: z
+    .string()
+    .optional()
+    .describe("Cursor for pagination"),
 });
 
 export const UpdateBankAccountRoboadvisorFundToolSchema = z.object({

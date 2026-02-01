@@ -28,9 +28,18 @@ export class FilterRoboadvisorFundsToolService {
         const parsed = FilterBankAccountRoboadvisorFundsToolSchema.parse(input);
 
         const result =
-          await this.roboadvisorsService.getBankAccountRoboadvisorFunds(
-            parsed.bankAccountRoboadvisorId,
-          );
+          await this.roboadvisorsService.getBankAccountRoboadvisorFunds({
+            bankAccountRoboadvisorId: parsed.bankAccountRoboadvisorId,
+            name: parsed.name,
+            isin: parsed.isin,
+            assetClass: parsed.assetClass,
+            region: parsed.region,
+            fundCurrencyCode: parsed.fundCurrencyCode,
+            sortField: parsed.sortField,
+            sortOrder: parsed.sortOrder,
+            pageSize: parsed.pageSize,
+            cursor: parsed.cursor,
+          });
 
         const count = result.results.length;
         const fundsList = result.results
@@ -43,6 +52,10 @@ export class FilterRoboadvisorFundsToolService {
         let text = `Found ${count} fund allocation${count !== 1 ? "s" : ""} for roboadvisor ${parsed.bankAccountRoboadvisorId}`;
         if (count > 0) {
           text += `:\n${fundsList}`;
+        }
+
+        if (result.nextCursor) {
+          text += `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
         }
 
         return {

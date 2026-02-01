@@ -5,14 +5,15 @@ import { BankAccountRoboadvisorsService } from "../../services/bank-account-robo
 import {
   CreateBankAccountRoboadvisorFundRequestSchema,
   CreateBankAccountRoboadvisorFundResponseSchema,
+  GetBankAccountRoboadvisorFundsRequestSchema,
   GetBankAccountRoboadvisorFundsResponseSchema,
   UpdateBankAccountRoboadvisorFundRequestSchema,
   UpdateBankAccountRoboadvisorFundResponseSchema,
   BankAccountRoboadvisorFundIdParamSchema,
 } from "../../schemas/bank-account-roboadvisor-funds-schemas.ts";
-import { BankAccountRoboadvisorIdParamSchema } from "../../schemas/bank-account-roboadvisors-schemas.ts";
 import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
 import { ServerResponse } from "../../models/server-response.ts";
+import { readJsonOrEmpty } from "../../utils/router-utils.ts";
 
 @injectable()
 export class AuthenticatedBankAccountRoboadvisorFundsRouter {
@@ -78,13 +79,19 @@ export class AuthenticatedBankAccountRoboadvisorFundsRouter {
   private registerListRoboadvisorFundsRoute(): void {
     this.app.openapi(
       createRoute({
-        method: "get",
-        path: "/roboadvisor/{id}",
+        method: "post",
+        path: "/find",
         summary: "List roboadvisor fund allocations",
-        description: "Returns all fund allocations for a specific roboadvisor portfolio.",
+        description: "Returns paginated list of fund allocations with optional filtering by roboadvisor ID, name, ISIN, asset class, region, or currency.",
         tags: ["Bank account roboadvisor funds"],
         request: {
-          params: BankAccountRoboadvisorIdParamSchema,
+          body: {
+            content: {
+              "application/json": {
+                schema: GetBankAccountRoboadvisorFundsRequestSchema,
+              },
+            },
+          },
         },
         responses: {
           200: {
@@ -95,15 +102,15 @@ export class AuthenticatedBankAccountRoboadvisorFundsRouter {
               },
             },
           },
+          ...ServerResponse.BadRequest,
           ...ServerResponse.Unauthorized,
           ...ServerResponse.NotFound,
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
-        const { id } = BankAccountRoboadvisorIdParamSchema.parse(context.req.param());
-        const result = await this.roboadvisorsService.getBankAccountRoboadvisorFunds(
-          parseInt(id, 10)
-        );
+        const payload = await readJsonOrEmpty(context);
+        const body = GetBankAccountRoboadvisorFundsRequestSchema.parse(payload);
+        const result = await this.roboadvisorsService.getBankAccountRoboadvisorFunds(body);
 
         return context.json(result, 200);
       }
