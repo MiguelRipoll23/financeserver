@@ -39,7 +39,7 @@ export const bankAccountRoboadvisors = pgTable("bank_account_roboadvisors", {
     scale: 5,
   }).notNull(), // 0.0015 = 0.15%
 
-  fundTotalExpenseRatioPercentage: decimal("fund_total_expense_ratio_percentage", {
+  fundTerPercentage: decimal("fund_ter_percentage", {
     precision: 6,
     scale: 5,
   }).notNull(), // 0.0010 = 0.10%
@@ -55,7 +55,7 @@ export const bankAccountRoboadvisors = pgTable("bank_account_roboadvisors", {
 
   custodyFeeFrequency: feeFrequencyEnum("custody_fee_frequency").notNull(),
 
-  totalExpenseRatioPricedInNav: boolean("total_expense_ratio_priced_in_nav").notNull().default(true),
+  terPricedInNav: boolean("ter_priced_in_nav").notNull().default(true),
 
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()

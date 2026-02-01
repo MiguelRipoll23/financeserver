@@ -34,7 +34,7 @@ export const CreateBankAccountRoboadvisorRequestSchema = z.object({
     .regex(/^[0-9]+(\.[0-9]{1,5})?$/)
     .openapi({ example: "0.0015" })
     .describe("Annual custody fee as decimal (0.0015 = 0.15%)"),
-  fundTotalExpenseRatioPercentage: z
+  fundTerPercentage: z
     .string()
     .regex(/^[0-9]+(\.[0-9]{1,5})?$/)
     .openapi({ example: "0.0010" })
@@ -52,7 +52,7 @@ export const CreateBankAccountRoboadvisorRequestSchema = z.object({
     .enum(["monthly", "quarterly", "yearly"])
     .openapi({ example: "quarterly" })
     .describe("Custody fee billing frequency"),
-  totalExpenseRatioPricedInNav: z
+  terPricedInNav: z
     .boolean()
     .default(true)
     .openapi({ example: true })
@@ -70,11 +70,11 @@ export const CreateBankAccountRoboadvisorResponseSchema = z.object({
   riskLevel: z.number().int().nullable().openapi({ example: 5 }),
   managementFeePercentage: z.string().openapi({ example: "0.0015" }),
   custodyFeePercentage: z.string().openapi({ example: "0.0015" }),
-  fundTotalExpenseRatioPercentage: z.string().openapi({ example: "0.0010" }),
+  fundTerPercentage: z.string().openapi({ example: "0.0010" }),
   totalFeePercentage: z.string().openapi({ example: "0.0040" }),
   managementFeeFrequency: z.string().openapi({ example: "monthly" }),
   custodyFeeFrequency: z.string().openapi({ example: "quarterly" }),
-  totalExpenseRatioPricedInNav: z.boolean().openapi({ example: true }),
+  terPricedInNav: z.boolean().openapi({ example: true }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
 });
@@ -130,11 +130,11 @@ export const BankAccountRoboadvisorSummarySchema = z.object({
   riskLevel: z.number().int().nullable().openapi({ example: 5 }),
   managementFeePercentage: z.string().openapi({ example: "0.0015" }),
   custodyFeePercentage: z.string().openapi({ example: "0.0015" }),
-  fundTotalExpenseRatioPercentage: z.string().openapi({ example: "0.0010" }),
+  fundTerPercentage: z.string().openapi({ example: "0.0010" }),
   totalFeePercentage: z.string().openapi({ example: "0.0040" }),
   managementFeeFrequency: z.string().openapi({ example: "monthly" }),
   custodyFeeFrequency: z.string().openapi({ example: "quarterly" }),
-  totalExpenseRatioPricedInNav: z.boolean().openapi({ example: true }),
+  terPricedInNav: z.boolean().openapi({ example: true }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
 });
@@ -182,7 +182,7 @@ export const UpdateBankAccountRoboadvisorRequestSchema = z.object({
     .optional()
     .openapi({ example: "0.0015" })
     .describe("Annual custody fee as decimal (0.0015 = 0.15%)"),
-  fundTotalExpenseRatioPercentage: z
+  fundTerPercentage: z
     .string()
     .regex(/^[0-9]+(\.[0-9]{1,5})?$/)
     .optional()
@@ -204,7 +204,7 @@ export const UpdateBankAccountRoboadvisorRequestSchema = z.object({
     .optional()
     .openapi({ example: "quarterly" })
     .describe("Custody fee billing frequency"),
-  totalExpenseRatioPricedInNav: z
+  terPricedInNav: z
     .boolean()
     .optional()
     .openapi({ example: true })

@@ -169,6 +169,13 @@
       "when": 1769956337855,
       "tag": "0023_faithful_jimmy_woo",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1769956719294,
+      "tag": "0024_true_mathemanic",
+      "breakpoints": true
     }
   ]
 }

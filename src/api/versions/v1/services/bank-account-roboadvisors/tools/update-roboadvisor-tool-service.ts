@@ -35,11 +35,11 @@ export class UpdateRoboadvisorToolService {
               riskLevel: parsed.riskLevel,
               managementFeePercentage: parsed.managementFeePercentage,
               custodyFeePercentage: parsed.custodyFeePercentage,
-              fundTotalExpenseRatioPercentage: parsed.fundTotalExpenseRatioPercentage,
+              fundTerPercentage: parsed.fundTerPercentage,
               totalFeePercentage: parsed.totalFeePercentage,
               managementFeeFrequency: parsed.managementFeeFrequency,
               custodyFeeFrequency: parsed.custodyFeeFrequency,
-              totalExpenseRatioPricedInNav: parsed.totalExpenseRatioPricedInNav,
+              terPricedInNav: parsed.terPricedInNav,
             },
           );
 

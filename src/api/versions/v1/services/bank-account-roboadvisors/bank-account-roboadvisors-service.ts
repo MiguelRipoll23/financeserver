@@ -80,11 +80,11 @@ export class BankAccountRoboadvisorsService {
         riskLevel: payload.riskLevel ?? null,
         managementFeePercentage: payload.managementFeePercentage,
         custodyFeePercentage: payload.custodyFeePercentage,
-        fundTotalExpenseRatioPercentage: payload.fundTotalExpenseRatioPercentage,
+        fundTerPercentage: payload.fundTerPercentage,
         totalFeePercentage: payload.totalFeePercentage,
         managementFeeFrequency: payload.managementFeeFrequency,
         custodyFeeFrequency: payload.custodyFeeFrequency,
-        totalExpenseRatioPricedInNav: payload.totalExpenseRatioPricedInNav ?? true,
+        terPricedInNav: payload.terPricedInNav ?? true,
       })
       .returning();
 
@@ -206,16 +206,16 @@ export class BankAccountRoboadvisorsService {
       updateValues.managementFeePercentage = payload.managementFeePercentage;
     if (payload.custodyFeePercentage !== undefined)
       updateValues.custodyFeePercentage = payload.custodyFeePercentage;
-    if (payload.fundTotalExpenseRatioPercentage !== undefined)
-      updateValues.fundTotalExpenseRatioPercentage = payload.fundTotalExpenseRatioPercentage;
+    if (payload.fundTerPercentage !== undefined)
+      updateValues.fundTerPercentage = payload.fundTerPercentage;
     if (payload.totalFeePercentage !== undefined)
       updateValues.totalFeePercentage = payload.totalFeePercentage;
     if (payload.managementFeeFrequency !== undefined)
       updateValues.managementFeeFrequency = payload.managementFeeFrequency;
     if (payload.custodyFeeFrequency !== undefined)
       updateValues.custodyFeeFrequency = payload.custodyFeeFrequency;
-    if (payload.totalExpenseRatioPricedInNav !== undefined)
-      updateValues.totalExpenseRatioPricedInNav = payload.totalExpenseRatioPricedInNav;
+    if (payload.terPricedInNav !== undefined)
+      updateValues.terPricedInNav = payload.terPricedInNav;
 
     const [result] = await db
       .update(bankAccountRoboadvisors)
@@ -597,11 +597,11 @@ export class BankAccountRoboadvisorsService {
       riskLevel: roboadvisor.riskLevel,
       managementFeePercentage: roboadvisor.managementFeePercentage,
       custodyFeePercentage: roboadvisor.custodyFeePercentage,
-      fundTotalExpenseRatioPercentage: roboadvisor.fundTotalExpenseRatioPercentage,
+      fundTerPercentage: roboadvisor.fundTerPercentage,
       totalFeePercentage: roboadvisor.totalFeePercentage,
       managementFeeFrequency: roboadvisor.managementFeeFrequency,
       custodyFeeFrequency: roboadvisor.custodyFeeFrequency,
-      totalExpenseRatioPricedInNav: roboadvisor.totalExpenseRatioPricedInNav,
+      terPricedInNav: roboadvisor.terPricedInNav,
       createdAt: toISOStringSafe(roboadvisor.createdAt),
       updatedAt: toISOStringSafe(roboadvisor.updatedAt),
     };
@@ -617,11 +617,11 @@ export class BankAccountRoboadvisorsService {
       riskLevel: roboadvisor.riskLevel,
       managementFeePercentage: roboadvisor.managementFeePercentage,
       custodyFeePercentage: roboadvisor.custodyFeePercentage,
-      fundTotalExpenseRatioPercentage: roboadvisor.fundTotalExpenseRatioPercentage,
+      fundTerPercentage: roboadvisor.fundTerPercentage,
       totalFeePercentage: roboadvisor.totalFeePercentage,
       managementFeeFrequency: roboadvisor.managementFeeFrequency,
       custodyFeeFrequency: roboadvisor.custodyFeeFrequency,
-      totalExpenseRatioPricedInNav: roboadvisor.totalExpenseRatioPricedInNav,
+      terPricedInNav: roboadvisor.terPricedInNav,
       createdAt: toISOStringSafe(roboadvisor.createdAt),
       updatedAt: toISOStringSafe(roboadvisor.updatedAt),
     };
