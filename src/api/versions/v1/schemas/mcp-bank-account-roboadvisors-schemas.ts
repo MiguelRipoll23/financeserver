@@ -23,19 +23,19 @@ export const CreateBankAccountRoboadvisorToolSchema = z.object({
     .max(10)
     .optional()
     .describe("Risk level from 1 (conservative) to 10 (aggressive)"),
-  managementFeePct: z
+  managementFeePercentage: z
     .string()
     .regex(DecimalRegex, "Must be a decimal (e.g., 0.0015 for 0.15%)")
     .describe("Annual management fee as decimal (e.g., 0.0015 = 0.15%)"),
-  custodyFeePct: z
+  custodyFeePercentage: z
     .string()
     .regex(DecimalRegex, "Must be a decimal (e.g., 0.0015 for 0.15%)")
     .describe("Annual custody fee as decimal (e.g., 0.0015 = 0.15%)"),
-  fundTerPct: z
+  fundTotalExpenseRatioPercentage: z
     .string()
     .regex(DecimalRegex, "Must be a decimal (e.g., 0.0010 for 0.10%)")
     .describe("Fund TER as decimal (e.g., 0.0010 = 0.10%)"),
-  totalFeePct: z
+  totalFeePercentage: z
     .string()
     .regex(DecimalRegex, "Must be a decimal (e.g., 0.0040 for 0.40%)")
     .describe("Total annual fee as decimal (e.g., 0.0040 = 0.40%)"),
@@ -45,7 +45,7 @@ export const CreateBankAccountRoboadvisorToolSchema = z.object({
   custodyFeeFrequency: z
     .enum(["monthly", "quarterly", "yearly"])
     .describe("Custody fee billing frequency"),
-  terPricedInNav: z
+  totalExpenseRatioPricedInNetAssetValue: z
     .boolean()
     .optional()
     .describe("Whether TER is priced in NAV (default: true)"),
@@ -95,22 +95,22 @@ export const UpdateBankAccountRoboadvisorToolSchema = z.object({
     .max(10)
     .optional()
     .describe("Risk level from 1 (conservative) to 10 (aggressive)"),
-  managementFeePct: z
+  managementFeePercentage: z
     .string()
     .regex(DecimalRegex, "Must be a decimal (e.g., 0.0015 for 0.15%)")
     .optional()
     .describe("Annual management fee as decimal (e.g., 0.0015 = 0.15%)"),
-  custodyFeePct: z
+  custodyFeePercentage: z
     .string()
     .regex(DecimalRegex, "Must be a decimal (e.g., 0.0015 for 0.15%)")
     .optional()
     .describe("Annual custody fee as decimal (e.g., 0.0015 = 0.15%)"),
-  fundTerPct: z
+  fundTotalExpenseRatioPercentage: z
     .string()
     .regex(DecimalRegex, "Must be a decimal (e.g., 0.0010 for 0.10%)")
     .optional()
     .describe("Fund TER as decimal (e.g., 0.0010 = 0.10%)"),
-  totalFeePct: z
+  totalFeePercentage: z
     .string()
     .regex(DecimalRegex, "Must be a decimal (e.g., 0.0040 for 0.40%)")
     .optional()
@@ -123,7 +123,7 @@ export const UpdateBankAccountRoboadvisorToolSchema = z.object({
     .enum(["monthly", "quarterly", "yearly"])
     .optional()
     .describe("Custody fee billing frequency"),
-  terPricedInNav: z
+  totalExpenseRatioPricedInNetAssetValue: z
     .boolean()
     .optional()
     .describe("Whether TER is priced in NAV"),
