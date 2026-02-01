@@ -24,22 +24,22 @@ export const CreateBankAccountRoboadvisorRequestSchema = z.object({
     .optional()
     .openapi({ example: 5 })
     .describe("Risk level (1-10 scale)"),
-  managementFeePct: z
+  managementFeePercentage: z
     .string()
     .regex(/^[0-9]+(\.[0-9]{1,5})?$/)
     .openapi({ example: "0.0015" })
     .describe("Annual management fee as decimal (0.0015 = 0.15%)"),
-  custodyFeePct: z
+  custodyFeePercentage: z
     .string()
     .regex(/^[0-9]+(\.[0-9]{1,5})?$/)
     .openapi({ example: "0.0015" })
     .describe("Annual custody fee as decimal (0.0015 = 0.15%)"),
-  fundTerPct: z
+  fundTotalExpenseRatioPercentage: z
     .string()
     .regex(/^[0-9]+(\.[0-9]{1,5})?$/)
     .openapi({ example: "0.0010" })
     .describe("Fund TER as decimal (0.0010 = 0.10%)"),
-  totalFeePct: z
+  totalFeePercentage: z
     .string()
     .regex(/^[0-9]+(\.[0-9]{1,5})?$/)
     .openapi({ example: "0.0040" })
@@ -52,7 +52,7 @@ export const CreateBankAccountRoboadvisorRequestSchema = z.object({
     .enum(["monthly", "quarterly", "yearly"])
     .openapi({ example: "quarterly" })
     .describe("Custody fee billing frequency"),
-  terPricedInNav: z
+  totalExpenseRatioPricedInNav: z
     .boolean()
     .default(true)
     .openapi({ example: true })
@@ -68,13 +68,13 @@ export const CreateBankAccountRoboadvisorResponseSchema = z.object({
   name: z.string().openapi({ example: "My Roboadvisor Portfolio" }),
   bankAccountId: z.number().int().openapi({ example: 1 }),
   riskLevel: z.number().int().nullable().openapi({ example: 5 }),
-  managementFeePct: z.string().openapi({ example: "0.0015" }),
-  custodyFeePct: z.string().openapi({ example: "0.0015" }),
-  fundTerPct: z.string().openapi({ example: "0.0010" }),
-  totalFeePct: z.string().openapi({ example: "0.0040" }),
+  managementFeePercentage: z.string().openapi({ example: "0.0015" }),
+  custodyFeePercentage: z.string().openapi({ example: "0.0015" }),
+  fundTotalExpenseRatioPercentage: z.string().openapi({ example: "0.0010" }),
+  totalFeePercentage: z.string().openapi({ example: "0.0040" }),
   managementFeeFrequency: z.string().openapi({ example: "monthly" }),
   custodyFeeFrequency: z.string().openapi({ example: "quarterly" }),
-  terPricedInNav: z.boolean().openapi({ example: true }),
+  totalExpenseRatioPricedInNav: z.boolean().openapi({ example: true }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
 });
@@ -128,13 +128,13 @@ export const BankAccountRoboadvisorSummarySchema = z.object({
   name: z.string().openapi({ example: "My Roboadvisor Portfolio" }),
   bankAccountId: z.number().int().openapi({ example: 1 }),
   riskLevel: z.number().int().nullable().openapi({ example: 5 }),
-  managementFeePct: z.string().openapi({ example: "0.0015" }),
-  custodyFeePct: z.string().openapi({ example: "0.0015" }),
-  fundTerPct: z.string().openapi({ example: "0.0010" }),
-  totalFeePct: z.string().openapi({ example: "0.0040" }),
+  managementFeePercentage: z.string().openapi({ example: "0.0015" }),
+  custodyFeePercentage: z.string().openapi({ example: "0.0015" }),
+  fundTotalExpenseRatioPercentage: z.string().openapi({ example: "0.0010" }),
+  totalFeePercentage: z.string().openapi({ example: "0.0040" }),
   managementFeeFrequency: z.string().openapi({ example: "monthly" }),
   custodyFeeFrequency: z.string().openapi({ example: "quarterly" }),
-  terPricedInNav: z.boolean().openapi({ example: true }),
+  totalExpenseRatioPricedInNav: z.boolean().openapi({ example: true }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
 });
@@ -170,25 +170,25 @@ export const UpdateBankAccountRoboadvisorRequestSchema = z.object({
     .optional()
     .openapi({ example: 5 })
     .describe("Risk level (1-10 scale)"),
-  managementFeePct: z
+  managementFeePercentage: z
     .string()
     .regex(/^[0-9]+(\.[0-9]{1,5})?$/)
     .optional()
     .openapi({ example: "0.0015" })
     .describe("Annual management fee as decimal (0.0015 = 0.15%)"),
-  custodyFeePct: z
+  custodyFeePercentage: z
     .string()
     .regex(/^[0-9]+(\.[0-9]{1,5})?$/)
     .optional()
     .openapi({ example: "0.0015" })
     .describe("Annual custody fee as decimal (0.0015 = 0.15%)"),
-  fundTerPct: z
+  fundTotalExpenseRatioPercentage: z
     .string()
     .regex(/^[0-9]+(\.[0-9]{1,5})?$/)
     .optional()
     .openapi({ example: "0.0010" })
     .describe("Fund TER as decimal (0.0010 = 0.10%)"),
-  totalFeePct: z
+  totalFeePercentage: z
     .string()
     .regex(/^[0-9]+(\.[0-9]{1,5})?$/)
     .optional()
@@ -204,7 +204,7 @@ export const UpdateBankAccountRoboadvisorRequestSchema = z.object({
     .optional()
     .openapi({ example: "quarterly" })
     .describe("Custody fee billing frequency"),
-  terPricedInNav: z
+  totalExpenseRatioPricedInNav: z
     .boolean()
     .optional()
     .openapi({ example: true })

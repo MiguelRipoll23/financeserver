@@ -78,13 +78,13 @@ export class BankAccountRoboadvisorsService {
         name: payload.name,
         bankAccountId: payload.bankAccountId,
         riskLevel: payload.riskLevel ?? null,
-        managementFeePct: payload.managementFeePct,
-        custodyFeePct: payload.custodyFeePct,
-        fundTerPct: payload.fundTerPct,
-        totalFeePct: payload.totalFeePct,
+        managementFeePercentage: payload.managementFeePercentage,
+        custodyFeePercentage: payload.custodyFeePercentage,
+        fundTotalExpenseRatioPercentage: payload.fundTotalExpenseRatioPercentage,
+        totalFeePercentage: payload.totalFeePercentage,
         managementFeeFrequency: payload.managementFeeFrequency,
         custodyFeeFrequency: payload.custodyFeeFrequency,
-        terPricedInNav: payload.terPricedInNav ?? true,
+        totalExpenseRatioPricedInNav: payload.totalExpenseRatioPricedInNav ?? true,
       })
       .returning();
 
@@ -202,20 +202,20 @@ export class BankAccountRoboadvisorsService {
     if (payload.name !== undefined) updateValues.name = payload.name;
     if (payload.riskLevel !== undefined)
       updateValues.riskLevel = payload.riskLevel;
-    if (payload.managementFeePct !== undefined)
-      updateValues.managementFeePct = payload.managementFeePct;
-    if (payload.custodyFeePct !== undefined)
-      updateValues.custodyFeePct = payload.custodyFeePct;
-    if (payload.fundTerPct !== undefined)
-      updateValues.fundTerPct = payload.fundTerPct;
-    if (payload.totalFeePct !== undefined)
-      updateValues.totalFeePct = payload.totalFeePct;
+    if (payload.managementFeePercentage !== undefined)
+      updateValues.managementFeePercentage = payload.managementFeePercentage;
+    if (payload.custodyFeePercentage !== undefined)
+      updateValues.custodyFeePercentage = payload.custodyFeePercentage;
+    if (payload.fundTotalExpenseRatioPercentage !== undefined)
+      updateValues.fundTotalExpenseRatioPercentage = payload.fundTotalExpenseRatioPercentage;
+    if (payload.totalFeePercentage !== undefined)
+      updateValues.totalFeePercentage = payload.totalFeePercentage;
     if (payload.managementFeeFrequency !== undefined)
       updateValues.managementFeeFrequency = payload.managementFeeFrequency;
     if (payload.custodyFeeFrequency !== undefined)
       updateValues.custodyFeeFrequency = payload.custodyFeeFrequency;
-    if (payload.terPricedInNav !== undefined)
-      updateValues.terPricedInNav = payload.terPricedInNav;
+    if (payload.totalExpenseRatioPricedInNav !== undefined)
+      updateValues.totalExpenseRatioPricedInNav = payload.totalExpenseRatioPricedInNav;
 
     const [result] = await db
       .update(bankAccountRoboadvisors)
@@ -595,13 +595,13 @@ export class BankAccountRoboadvisorsService {
       name: roboadvisor.name,
       bankAccountId: roboadvisor.bankAccountId,
       riskLevel: roboadvisor.riskLevel,
-      managementFeePct: roboadvisor.managementFeePct,
-      custodyFeePct: roboadvisor.custodyFeePct,
-      fundTerPct: roboadvisor.fundTerPct,
-      totalFeePct: roboadvisor.totalFeePct,
+      managementFeePercentage: roboadvisor.managementFeePercentage,
+      custodyFeePercentage: roboadvisor.custodyFeePercentage,
+      fundTotalExpenseRatioPercentage: roboadvisor.fundTotalExpenseRatioPercentage,
+      totalFeePercentage: roboadvisor.totalFeePercentage,
       managementFeeFrequency: roboadvisor.managementFeeFrequency,
       custodyFeeFrequency: roboadvisor.custodyFeeFrequency,
-      terPricedInNav: roboadvisor.terPricedInNav,
+      totalExpenseRatioPricedInNav: roboadvisor.totalExpenseRatioPricedInNav,
       createdAt: toISOStringSafe(roboadvisor.createdAt),
       updatedAt: toISOStringSafe(roboadvisor.updatedAt),
     };
@@ -615,13 +615,13 @@ export class BankAccountRoboadvisorsService {
       name: roboadvisor.name,
       bankAccountId: roboadvisor.bankAccountId,
       riskLevel: roboadvisor.riskLevel,
-      managementFeePct: roboadvisor.managementFeePct,
-      custodyFeePct: roboadvisor.custodyFeePct,
-      fundTerPct: roboadvisor.fundTerPct,
-      totalFeePct: roboadvisor.totalFeePct,
+      managementFeePercentage: roboadvisor.managementFeePercentage,
+      custodyFeePercentage: roboadvisor.custodyFeePercentage,
+      fundTotalExpenseRatioPercentage: roboadvisor.fundTotalExpenseRatioPercentage,
+      totalFeePercentage: roboadvisor.totalFeePercentage,
       managementFeeFrequency: roboadvisor.managementFeeFrequency,
       custodyFeeFrequency: roboadvisor.custodyFeeFrequency,
-      terPricedInNav: roboadvisor.terPricedInNav,
+      totalExpenseRatioPricedInNav: roboadvisor.totalExpenseRatioPricedInNav,
       createdAt: toISOStringSafe(roboadvisor.createdAt),
       updatedAt: toISOStringSafe(roboadvisor.updatedAt),
     };

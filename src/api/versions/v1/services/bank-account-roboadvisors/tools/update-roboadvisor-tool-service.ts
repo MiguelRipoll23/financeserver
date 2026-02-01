@@ -33,17 +33,17 @@ export class UpdateRoboadvisorToolService {
             {
               name: parsed.name,
               riskLevel: parsed.riskLevel,
-              managementFeePct: parsed.managementFeePct,
-              custodyFeePct: parsed.custodyFeePct,
-              fundTerPct: parsed.fundTerPct,
-              totalFeePct: parsed.totalFeePct,
+              managementFeePercentage: parsed.managementFeePercentage,
+              custodyFeePercentage: parsed.custodyFeePercentage,
+              fundTotalExpenseRatioPercentage: parsed.fundTotalExpenseRatioPercentage,
+              totalFeePercentage: parsed.totalFeePercentage,
               managementFeeFrequency: parsed.managementFeeFrequency,
               custodyFeeFrequency: parsed.custodyFeeFrequency,
-              terPricedInNav: parsed.terPricedInNav,
+              totalExpenseRatioPricedInNav: parsed.totalExpenseRatioPricedInNav,
             },
           );
 
-        const feePct = (parseFloat(result.totalFeePct) * 100).toFixed(2);
+        const feePct = (parseFloat(result.totalFeePercentage) * 100).toFixed(2);
         const text = `Roboadvisor portfolio updated successfully: ${result.name} (ID: ${result.id}, Total Fee: ${feePct}%)`;
 
         return {

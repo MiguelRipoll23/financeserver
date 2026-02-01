@@ -45,7 +45,7 @@ export const CreateBankAccountRoboadvisorToolSchema = z.object({
   custodyFeeFrequency: z
     .enum(["monthly", "quarterly", "yearly"])
     .describe("Custody fee billing frequency"),
-  totalExpenseRatioPricedInNetAssetValue: z
+  totalExpenseRatioPricedInNav: z
     .boolean()
     .optional()
     .describe("Whether TER is priced in NAV (default: true)"),
@@ -123,7 +123,7 @@ export const UpdateBankAccountRoboadvisorToolSchema = z.object({
     .enum(["monthly", "quarterly", "yearly"])
     .optional()
     .describe("Custody fee billing frequency"),
-  totalExpenseRatioPricedInNetAssetValue: z
+  totalExpenseRatioPricedInNav: z
     .boolean()
     .optional()
     .describe("Whether TER is priced in NAV"),

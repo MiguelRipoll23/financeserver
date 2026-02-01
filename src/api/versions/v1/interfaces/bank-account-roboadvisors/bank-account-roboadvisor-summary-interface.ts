@@ -3,13 +3,13 @@ export interface BankAccountRoboadvisorSummary {
   name: string;
   bankAccountId: number;
   riskLevel: number | null;
-  managementFeePct: string;
-  custodyFeePct: string;
-  fundTerPct: string;
-  totalFeePct: string;
+  managementFeePercentage: string;
+  custodyFeePercentage: string;
+  fundTotalExpenseRatioPercentage: string;
+  totalFeePercentage: string;
   managementFeeFrequency: string;
   custodyFeeFrequency: string;
-  terPricedInNav: boolean;
+  totalExpenseRatioPricedInNav: boolean;
   createdAt: string;
   updatedAt: string;
 }

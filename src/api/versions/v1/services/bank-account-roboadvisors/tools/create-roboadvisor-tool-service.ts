@@ -32,16 +32,16 @@ export class CreateRoboadvisorToolService {
             name: parsed.name,
             bankAccountId: parsed.bankAccountId,
             riskLevel: parsed.riskLevel,
-            managementFeePct: parsed.managementFeePct,
-            custodyFeePct: parsed.custodyFeePct,
-            fundTerPct: parsed.fundTerPct,
-            totalFeePct: parsed.totalFeePct,
+            managementFeePercentage: parsed.managementFeePercentage,
+            custodyFeePercentage: parsed.custodyFeePercentage,
+            fundTotalExpenseRatioPercentage: parsed.fundTotalExpenseRatioPercentage,
+            totalFeePercentage: parsed.totalFeePercentage,
             managementFeeFrequency: parsed.managementFeeFrequency,
             custodyFeeFrequency: parsed.custodyFeeFrequency,
-            terPricedInNav: parsed.terPricedInNav ?? true,
+            totalExpenseRatioPricedInNav: parsed.totalExpenseRatioPricedInNav ?? true,
           });
 
-        const text = `Roboadvisor portfolio created successfully: ${result.name} (ID: ${result.id}, Total Fee: ${(parseFloat(result.totalFeePct) * 100).toFixed(2)}%)`;
+        const text = `Roboadvisor portfolio created successfully: ${result.name} (ID: ${result.id}, Total Fee: ${(parseFloat(result.totalFeePercentage) * 100).toFixed(2)}%)`;
 
         return {
           text,
