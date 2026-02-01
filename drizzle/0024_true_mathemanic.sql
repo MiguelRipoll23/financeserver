@@ -1,0 +1,2 @@
+ALTER TABLE "bank_account_roboadvisors" RENAME COLUMN "fund_total_expense_ratio_percentage" TO "fund_ter_percentage";--> statement-breakpoint
+ALTER TABLE "bank_account_roboadvisors" RENAME COLUMN "total_expense_ratio_priced_in_nav" TO "ter_priced_in_nav";

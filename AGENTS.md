@@ -17,8 +17,7 @@
 - Each MCP tool is a new service, under the tools subdirectory
 - MCP tools must follow naming convention: `domain.action` (e.g.,
   calendar.create_event)
-- MCP tool descriptions must start with "Use this when…" and include disallowed
-  cases (e.g., "Do not use for…")
+- MCP tool descriptions must start with "Use this when…"
 - Read-only MCP tools must be annotated with `readOnlyHint: true` so AI agents
   can streamline confirmation dialogs
 - Paginated MCP tool responses must include the pagination message when

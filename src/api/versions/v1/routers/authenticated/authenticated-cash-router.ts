@@ -14,6 +14,7 @@ import {
 import type { CashFilter } from "../../interfaces/cash/cash-filter-interface.ts";
 import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
 import { ServerResponse } from "../../models/server-response.ts";
+import { readJsonOrEmpty } from "../../utils/router-utils.ts";
 
 @injectable()
 export class AuthenticatedCashRouter {
@@ -106,7 +107,7 @@ export class AuthenticatedCashRouter {
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
-        const payload = await this.readJsonOrEmpty(context);
+        const payload = await readJsonOrEmpty(context);
         const body = GetCashRequestSchema.parse(payload);
         const filter: CashFilter = {
           pageSize: body.limit,
@@ -192,13 +193,4 @@ export class AuthenticatedCashRouter {
     );
   }
 
-  private async readJsonOrEmpty(
-    context: Context<{ Variables: HonoVariables }>,
-  ): Promise<unknown> {
-    try {
-      return await context.req.json();
-    } catch {
-      return {};
-    }
-  }
 }

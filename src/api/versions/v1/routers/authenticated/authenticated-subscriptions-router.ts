@@ -14,6 +14,7 @@ import {
 import type { SubscriptionsFilter } from "../../interfaces/subscriptions/subscriptions-filter-interface.ts";
 import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
 import { ServerResponse } from "../../models/server-response.ts";
+import { readJsonOrEmpty } from "../../utils/router-utils.ts";
 
 @injectable()
 export class AuthenticatedSubscriptionsRouter {
@@ -108,7 +109,7 @@ export class AuthenticatedSubscriptionsRouter {
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
-        const payload = await this.readJsonOrEmpty(context);
+        const payload = await readJsonOrEmpty(context);
         const body = GetSubscriptionsRequestSchema.parse(payload);
         const result = await this.subscriptionsService.getSubscriptions(
           body as SubscriptionsFilter
@@ -117,16 +118,6 @@ export class AuthenticatedSubscriptionsRouter {
         return context.json(result, 200);
       }
     );
-  }
-
-  private async readJsonOrEmpty(
-    context: Context<{ Variables: HonoVariables }>
-  ): Promise<unknown> {
-    try {
-      return await context.req.json();
-    } catch {
-      return {};
-    }
   }
 
   private registerUpdateSubscriptionRoute(): void {

@@ -18,6 +18,9 @@ import { AuthenticatedCashBalancesRouter } from "./authenticated/authenticated-c
 import { AuthenticatedMCPRouter } from "./authenticated/authenticated-mcp-router.ts";
 import { AuthenticatedUsersRouter } from "./authenticated/authenticated-users-router.ts";
 import { AuthenticatedSalaryChangesRouter } from "./authenticated/authenticated-salary-changes-router.ts";
+import { AuthenticatedBankAccountRoboadvisorsRouter } from "./authenticated/authenticated-bank-account-roboadvisors-router.ts";
+import { AuthenticatedBankAccountRoboadvisorBalancesRouter } from "./authenticated/authenticated-bank-account-roboadvisor-balances-router.ts";
+import { AuthenticatedBankAccountRoboadvisorFundsRouter } from "./authenticated/authenticated-bank-account-roboadvisor-funds-router.ts";
 import { HonoVariables } from "../../../../core/types/hono/hono-variables-type.ts";
 
 @injectable()
@@ -49,6 +52,13 @@ export class V1AuthenticatedRouter {
     private receiptsRouter = inject(AuthenticatedReceiptsRouter),
     private productsRouter = inject(AuthenticatedProductsRouter),
     private salaryChangesRouter = inject(AuthenticatedSalaryChangesRouter),
+    private bankAccountRoboadvisorsRouter = inject(AuthenticatedBankAccountRoboadvisorsRouter),
+    private bankAccountRoboadvisorBalancesRouter = inject(
+      AuthenticatedBankAccountRoboadvisorBalancesRouter,
+    ),
+    private bankAccountRoboadvisorFundsRouter = inject(
+      AuthenticatedBankAccountRoboadvisorFundsRouter,
+    ),
   ) {
     this.app = new OpenAPIHono();
     this.setMiddlewares();
@@ -101,5 +111,17 @@ export class V1AuthenticatedRouter {
     this.app.route("/receipts", this.receiptsRouter.getRouter());
     this.app.route("/products", this.productsRouter.getRouter());
     this.app.route("/salary-changes", this.salaryChangesRouter.getRouter());
+    this.app.route(
+      "/bank-account-roboadvisors",
+      this.bankAccountRoboadvisorsRouter.getRouter(),
+    );
+    this.app.route(
+      "/bank-account-roboadvisor-balances",
+      this.bankAccountRoboadvisorBalancesRouter.getRouter(),
+    );
+    this.app.route(
+      "/bank-account-roboadvisor-funds",
+      this.bankAccountRoboadvisorFundsRouter.getRouter(),
+    );
   }
 }

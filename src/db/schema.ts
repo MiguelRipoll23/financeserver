@@ -23,6 +23,15 @@ export { bankAccountInterestRatesTable } from "./tables/bank-account-interest-ra
 export { cryptoExchangesTable } from "./tables/crypto-exchanges-table.ts";
 export { cryptoExchangeBalancesTable } from "./tables/crypto-exchange-balances-table.ts";
 export { salaryChangesTable } from "./tables/salary-changes-table.ts";
+export {
+  bankAccountRoboadvisors,
+  feeFrequencyEnum,
+} from "./tables/bank-account-roboadvisors-table.ts";
+export {
+  bankAccountRoboadvisorBalances,
+  balanceTypeEnum,
+} from "./tables/bank-account-roboadvisor-balances-table.ts";
+export { bankAccountRoboadvisorFunds } from "./tables/bank-account-roboadvisor-funds-table.ts";
 
 // Export RLS roles and helpers
 export * from "./rls.ts";

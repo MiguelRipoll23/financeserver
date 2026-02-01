@@ -14,6 +14,7 @@ import {
 import type { BankAccountsFilter } from "../../interfaces/bank-accounts/bank-accounts-filter-interface.ts";
 import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
 import { ServerResponse } from "../../models/server-response.ts";
+import { readJsonOrEmpty } from "../../utils/router-utils.ts";
 
 @injectable()
 export class AuthenticatedBankAccountsRouter {
@@ -108,7 +109,7 @@ export class AuthenticatedBankAccountsRouter {
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
-        const payload = await this.readJsonOrEmpty(context);
+        const payload = await readJsonOrEmpty(context);
         const body = GetBankAccountsRequestSchema.parse(payload);
         const filter: BankAccountsFilter = {
           pageSize: body.limit,
@@ -199,13 +200,4 @@ export class AuthenticatedBankAccountsRouter {
     );
   }
 
-  private async readJsonOrEmpty(
-    context: Context<{ Variables: HonoVariables }>
-  ): Promise<unknown> {
-    try {
-      return await context.req.json();
-    } catch {
-      return {};
-    }
-  }
 }

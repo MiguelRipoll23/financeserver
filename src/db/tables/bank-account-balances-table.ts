@@ -1,7 +1,6 @@
 import {
   bigint,
   bigserial,
-  date,
   index,
   numeric,
   pgTable,
@@ -28,10 +27,13 @@ export const bankAccountBalancesTable = pgTable(
   },
   (table) => [
     // Composite index for filtered queries (per account)
-    index("idx_bank_account_balances_account_created").on(table.bankAccountId, table.createdAt.desc()),
+    index("idx_bank_account_balances_account_created").on(
+      table.bankAccountId,
+      table.createdAt.desc(),
+    ),
     // Index for full table scans (Dashboard load)
     index("idx_bank_account_balances_created").on(table.createdAt.desc()),
-  ]
+  ],
 );
 
 export type BankAccountBalanceEntity =

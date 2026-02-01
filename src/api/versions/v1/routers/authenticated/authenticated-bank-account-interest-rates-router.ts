@@ -13,6 +13,7 @@ import {
   UpdateBankAccountInterestRateResponseSchema,
 } from "../../schemas/bank-account-interest-rates-schemas.ts";
 import { ServerResponse } from "../../models/server-response.ts";
+import { readJsonOrEmpty } from "../../utils/router-utils.ts";
 
 @injectable()
 export class AuthenticatedBankAccountInterestRatesRouter {
@@ -70,7 +71,7 @@ export class AuthenticatedBankAccountInterestRatesRouter {
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
-        const payload = await this.readJsonOrEmpty(context);
+        const payload = await readJsonOrEmpty(context);
         const body = GetBankAccountInterestRatesRequestSchema.parse(payload);
 
         const result =
@@ -211,13 +212,4 @@ export class AuthenticatedBankAccountInterestRatesRouter {
     );
   }
 
-  private async readJsonOrEmpty(
-    context: Context<{ Variables: HonoVariables }>,
-  ): Promise<unknown> {
-    try {
-      return await context.req.json();
-    } catch {
-      return {};
-    }
-  }
 }
