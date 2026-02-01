@@ -20,10 +20,10 @@ export const CreateBankAccountRoboadvisorRequestSchema = z.object({
     .number()
     .int()
     .min(1)
-    .max(10)
+    .max(7)
     .optional()
     .openapi({ example: 5 })
-    .describe("Risk level (1-10 scale)"),
+    .describe("Risk level (1-7 scale)"),
   managementFeePercentage: z
     .string()
     .regex(/^[0-9]+(\.[0-9]{1,5})?$/)
@@ -166,10 +166,10 @@ export const UpdateBankAccountRoboadvisorRequestSchema = z.object({
     .number()
     .int()
     .min(1)
-    .max(10)
+    .max(7)
     .optional()
     .openapi({ example: 5 })
-    .describe("Risk level (1-10 scale)"),
+    .describe("Risk level (1-7 scale)"),
   managementFeePercentage: z
     .string()
     .regex(/^[0-9]+(\.[0-9]{1,5})?$/)

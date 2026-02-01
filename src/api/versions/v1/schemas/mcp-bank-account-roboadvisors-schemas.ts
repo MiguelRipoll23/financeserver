@@ -20,9 +20,9 @@ export const CreateBankAccountRoboadvisorToolSchema = z.object({
     .number()
     .int()
     .min(1)
-    .max(10)
+    .max(7)
     .optional()
-    .describe("Risk level from 1 (conservative) to 10 (aggressive)"),
+    .describe("Risk level from 1 (conservative) to 7 (aggressive)"),
   managementFeePercentage: z
     .string()
     .regex(DecimalRegex, "Must be a decimal (e.g., 0.0015 for 0.15%)")
@@ -92,9 +92,9 @@ export const UpdateBankAccountRoboadvisorToolSchema = z.object({
     .number()
     .int()
     .min(1)
-    .max(10)
+    .max(7)
     .optional()
-    .describe("Risk level from 1 (conservative) to 10 (aggressive)"),
+    .describe("Risk level from 1 (conservative) to 7 (aggressive)"),
   managementFeePercentage: z
     .string()
     .regex(DecimalRegex, "Must be a decimal (e.g., 0.0015 for 0.15%)")
