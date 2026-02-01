@@ -16,7 +16,7 @@ export const bankAccountRoboadvisorFunds = pgTable(
     bankAccountRoboadvisorId: bigint("bank_account_roboadvisor_id", {
       mode: "number",
     })
-      .references(() => bankAccountRoboadvisors.id)
+      .references(() => bankAccountRoboadvisors.id, { onDelete: "cascade" })
       .notNull(),
 
     name: varchar("name", { length: 255 }).notNull(),
