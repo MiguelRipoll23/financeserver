@@ -1,0 +1,53 @@
+import { inject, injectable } from "@needle-di/core";
+import { McpToolDefinition } from "../../../interfaces/mcp/mcp-tool-interface.ts";
+import { BankAccountRoboadvisorsService } from "../bank-account-roboadvisors-service.ts";
+import { CreateBankAccountRoboadvisorToolSchema } from "../../../schemas/mcp-bank-account-roboadvisors-schemas.ts";
+
+@injectable()
+export class CreateRoboadvisorToolService {
+  constructor(
+    private roboadvisorsService = inject(BankAccountRoboadvisorsService),
+  ) {}
+
+  public getDefinition(): McpToolDefinition {
+    return {
+      name: "bank_accounts.roboadvisors.create",
+      meta: {
+        title: "Create roboadvisor",
+        description:
+          "Use this when you need to create a new roboadvisor portfolio for automated investment management. This includes configuring fees, risk level, and linking it to a bank account.",
+        inputSchema: CreateBankAccountRoboadvisorToolSchema.shape,
+        annotations: {
+          readOnlyHint: false,
+          idempotentHint: false,
+          destructiveHint: false,
+          openWorldHint: false,
+        },
+      },
+      run: async (input: unknown) => {
+        const parsed = CreateBankAccountRoboadvisorToolSchema.parse(input);
+
+        const result =
+          await this.roboadvisorsService.createBankAccountRoboadvisor({
+            name: parsed.name,
+            bankAccountId: parsed.bankAccountId,
+            riskLevel: parsed.riskLevel,
+            managementFeePct: parsed.managementFeePct,
+            custodyFeePct: parsed.custodyFeePct,
+            fundTerPct: parsed.fundTerPct,
+            totalFeePct: parsed.totalFeePct,
+            managementFeeFrequency: parsed.managementFeeFrequency,
+            custodyFeeFrequency: parsed.custodyFeeFrequency,
+            terPricedInNav: parsed.terPricedInNav ?? true,
+          });
+
+        const text = `Roboadvisor portfolio created successfully: ${result.name} (ID: ${result.id}, Total Fee: ${(parseFloat(result.totalFeePct) * 100).toFixed(2)}%)`;
+
+        return {
+          text,
+          structured: result,
+        };
+      },
+    };
+  }
+}

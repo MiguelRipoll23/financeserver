@@ -8,6 +8,7 @@ import { MerchantsMCPService } from "./merchants/merchants-mcp-service.ts";
 import { BankAccountsMCPService } from "./bank-accounts/bank-accounts-mcp-service.ts";
 import { BankAccountBalancesMCPService } from "./bank-account-balances/bank-account-balances-mcp-service.ts";
 import { BankAccountInterestRatesMCPService } from "./bank-account-interest-rates/bank-account-interest-rates-mcp-service.ts";
+import { BankAccountRoboadvisorsMCPService } from "./bank-account-roboadvisors/bank-account-roboadvisors-mcp-service.ts";
 import { CryptoExchangesMCPService } from "./crypto-exchanges/crypto-exchanges-mcp-service.ts";
 import { CashMCPService } from "./cash/cash-mcp-service.ts";
 import { CashBalancesMCPService } from "./cash-balances/cash-balances-mcp-service.ts";
@@ -31,6 +32,7 @@ export class MCPService {
     private bankAccountInterestRatesMCPService = inject(
       BankAccountInterestRatesMCPService,
     ),
+    private bankAccountRoboadvisorsMCPService = inject(BankAccountRoboadvisorsMCPService),
     private cryptoExchangesMCPService = inject(CryptoExchangesMCPService),
     private cashMCPService = inject(CashMCPService),
     private cashBalancesMCPService = inject(CashBalancesMCPService),
@@ -48,6 +50,7 @@ export class MCPService {
       this.bankAccountsMCPService,
       this.bankAccountBalancesMCPService,
       this.bankAccountInterestRatesMCPService,
+      this.bankAccountRoboadvisorsMCPService,
       this.cryptoExchangesMCPService,
       this.salaryChangesMCPService,
     ]);
@@ -60,6 +63,7 @@ export class MCPService {
       this.bankAccountsMCPService,
       this.bankAccountBalancesMCPService,
       this.bankAccountInterestRatesMCPService,
+      this.bankAccountRoboadvisorsMCPService,
       this.cryptoExchangesMCPService,
     ]);
   }
