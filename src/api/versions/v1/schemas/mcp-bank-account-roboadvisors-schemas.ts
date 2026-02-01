@@ -3,12 +3,19 @@ import { SortOrder } from "../enums/sort-order-enum.ts";
 import { BankAccountRoboadvisorSortField } from "../enums/bank-account-roboadvisor-sort-field-enum.ts";
 
 const DecimalRegex = /^[0-9]+(\.[0-9]{1,5})?$/;
-const DateRegex = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
 
 // Roboadvisor Tool Schemas
 export const CreateBankAccountRoboadvisorToolSchema = z.object({
-  name: z.string().min(1).max(255).describe("Name of the roboadvisor portfolio"),
-  bankAccountId: z.number().int().positive().describe("ID of the associated bank account"),
+  name: z
+    .string()
+    .min(1)
+    .max(255)
+    .describe("Name of the roboadvisor portfolio"),
+  bankAccountId: z
+    .number()
+    .int()
+    .positive()
+    .describe("ID of the associated bank account"),
   riskLevel: z
     .number()
     .int()
@@ -59,7 +66,10 @@ export const FilterBankAccountRoboadvisorsToolSchema = z.object({
     .nativeEnum(BankAccountRoboadvisorSortField)
     .optional()
     .describe("Sort field (default: created_at)"),
-  sortOrder: z.nativeEnum(SortOrder).optional().describe("Sort order (default: desc)"),
+  sortOrder: z
+    .nativeEnum(SortOrder)
+    .optional()
+    .describe("Sort order (default: desc)"),
   pageSize: z
     .number()
     .int()
@@ -72,7 +82,12 @@ export const FilterBankAccountRoboadvisorsToolSchema = z.object({
 
 export const UpdateBankAccountRoboadvisorToolSchema = z.object({
   id: z.number().int().positive().describe("ID of the roboadvisor to update"),
-  name: z.string().min(1).max(255).optional().describe("Name of the roboadvisor portfolio"),
+  name: z
+    .string()
+    .min(1)
+    .max(255)
+    .optional()
+    .describe("Name of the roboadvisor portfolio"),
   riskLevel: z
     .number()
     .int()
@@ -108,7 +123,10 @@ export const UpdateBankAccountRoboadvisorToolSchema = z.object({
     .enum(["monthly", "quarterly", "yearly"])
     .optional()
     .describe("Custody fee billing frequency"),
-  terPricedInNav: z.boolean().optional().describe("Whether TER is priced in NAV"),
+  terPricedInNav: z
+    .boolean()
+    .optional()
+    .describe("Whether TER is priced in NAV"),
 });
 
 export const DeleteBankAccountRoboadvisorToolSchema = z.object({

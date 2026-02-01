@@ -1,6 +1,5 @@
 import { inject, injectable } from "@needle-di/core";
-import { and, asc, desc, eq, ilike, sql, type SQL } from "drizzle-orm";
-import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+import { asc, desc, eq, ilike, sql, type SQL } from "drizzle-orm";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import {
   bankAccountsTable,
@@ -53,7 +52,7 @@ export class BankAccountRoboadvisorsService {
 
   // Roboadvisor CRUD operations
   public async createBankAccountRoboadvisor(
-    payload: CreateBankAccountRoboadvisorRequest
+    payload: CreateBankAccountRoboadvisorRequest,
   ): Promise<CreateBankAccountRoboadvisorResponse> {
     const db = this.databaseService.get();
 
@@ -69,7 +68,7 @@ export class BankAccountRoboadvisorsService {
       throw new ServerError(
         "BANK_ACCOUNT_NOT_FOUND",
         `Bank account with ID ${payload.bankAccountId} not found`,
-        404
+        404,
       );
     }
 
@@ -93,26 +92,33 @@ export class BankAccountRoboadvisorsService {
   }
 
   public async getBankAccountRoboadvisors(
-    filter: BankAccountRoboadvisorsFilter
+    filter: BankAccountRoboadvisorsFilter,
   ): Promise<GetBankAccountRoboadvisorsResponse> {
     const db = this.databaseService.get();
 
-    const pageSize = Math.min(filter.pageSize ?? DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE);
+    const pageSize = Math.min(
+      filter.pageSize ?? DEFAULT_PAGE_SIZE,
+      MAX_PAGE_SIZE,
+    );
     const offset = filter.cursor ? decodeCursor(filter.cursor) : 0;
-    const sortField = filter.sortField ?? BankAccountRoboadvisorSortField.CreatedAt;
+    const sortField =
+      filter.sortField ?? BankAccountRoboadvisorSortField.CreatedAt;
     const sortOrder = filter.sortOrder ?? SortOrder.Desc;
 
     const conditions: SQL[] = [];
 
     if (filter.bankAccountId !== undefined) {
-      conditions.push(eq(bankAccountRoboadvisors.bankAccountId, filter.bankAccountId));
+      conditions.push(
+        eq(bankAccountRoboadvisors.bankAccountId, filter.bankAccountId),
+      );
     }
 
     if (filter.name) {
       conditions.push(ilike(bankAccountRoboadvisors.name, `%${filter.name}%`));
     }
 
-    const whereClause = conditions.length > 0 ? buildAndFilters(conditions) : undefined;
+    const whereClause =
+      conditions.length > 0 ? buildAndFilters(conditions) : undefined;
 
     const orderColumn = this.getRoboadvisorSortColumn(sortField);
     const orderDirection = sortOrder === SortOrder.Asc ? asc : desc;
@@ -144,14 +150,14 @@ export class BankAccountRoboadvisorsService {
       .offset(offset);
 
     const data: BankAccountRoboadvisorSummary[] = results.map((roboadvisor) =>
-      this.mapRoboadvisorToSummary(roboadvisor)
+      this.mapRoboadvisorToSummary(roboadvisor),
     );
 
     const pagination = createOffsetPagination<BankAccountRoboadvisorSummary>(
       data,
       pageSize,
       offset,
-      total
+      total,
     );
 
     return {
@@ -166,7 +172,7 @@ export class BankAccountRoboadvisorsService {
 
   public async updateBankAccountRoboadvisor(
     roboadvisorId: number,
-    payload: UpdateBankAccountRoboadvisorRequest
+    payload: UpdateBankAccountRoboadvisorRequest,
   ): Promise<UpdateBankAccountRoboadvisorResponse> {
     const db = this.databaseService.get();
 
@@ -182,7 +188,7 @@ export class BankAccountRoboadvisorsService {
       throw new ServerError(
         "ROBOADVISOR_NOT_FOUND",
         `Roboadvisor with ID ${roboadvisorId} not found`,
-        404
+        404,
       );
     }
 
@@ -191,13 +197,16 @@ export class BankAccountRoboadvisorsService {
     };
 
     if (payload.name !== undefined) updateValues.name = payload.name;
-    if (payload.riskLevel !== undefined) updateValues.riskLevel = payload.riskLevel;
+    if (payload.riskLevel !== undefined)
+      updateValues.riskLevel = payload.riskLevel;
     if (payload.managementFeePct !== undefined)
       updateValues.managementFeePct = payload.managementFeePct;
     if (payload.custodyFeePct !== undefined)
       updateValues.custodyFeePct = payload.custodyFeePct;
-    if (payload.fundTerPct !== undefined) updateValues.fundTerPct = payload.fundTerPct;
-    if (payload.totalFeePct !== undefined) updateValues.totalFeePct = payload.totalFeePct;
+    if (payload.fundTerPct !== undefined)
+      updateValues.fundTerPct = payload.fundTerPct;
+    if (payload.totalFeePct !== undefined)
+      updateValues.totalFeePct = payload.totalFeePct;
     if (payload.managementFeeFrequency !== undefined)
       updateValues.managementFeeFrequency = payload.managementFeeFrequency;
     if (payload.custodyFeeFrequency !== undefined)
@@ -214,7 +223,9 @@ export class BankAccountRoboadvisorsService {
     return this.mapRoboadvisorToResponse(result);
   }
 
-  public async deleteBankAccountRoboadvisor(roboadvisorId: number): Promise<void> {
+  public async deleteBankAccountRoboadvisor(
+    roboadvisorId: number,
+  ): Promise<void> {
     const db = this.databaseService.get();
 
     const result = await db
@@ -226,14 +237,14 @@ export class BankAccountRoboadvisorsService {
       throw new ServerError(
         "ROBOADVISOR_NOT_FOUND",
         `Roboadvisor with ID ${roboadvisorId} not found`,
-        404
+        404,
       );
     }
   }
 
   // Roboadvisor Balance CRUD operations
   public async createBankAccountRoboadvisorBalance(
-    payload: CreateBankAccountRoboadvisorBalanceRequest
+    payload: CreateBankAccountRoboadvisorBalanceRequest,
   ): Promise<CreateBankAccountRoboadvisorBalanceResponse> {
     const db = this.databaseService.get();
 
@@ -249,7 +260,7 @@ export class BankAccountRoboadvisorsService {
       throw new ServerError(
         "ROBOADVISOR_NOT_FOUND",
         `Roboadvisor with ID ${payload.bankAccountRoboadvisorId} not found`,
-        404
+        404,
       );
     }
 
@@ -268,24 +279,32 @@ export class BankAccountRoboadvisorsService {
   }
 
   public async getBankAccountRoboadvisorBalances(
-    filter: BankAccountRoboadvisorBalancesFilter
+    filter: BankAccountRoboadvisorBalancesFilter,
   ): Promise<GetBankAccountRoboadvisorBalancesResponse> {
     const db = this.databaseService.get();
 
-    const pageSize = Math.min(filter.pageSize ?? DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE);
+    const pageSize = Math.min(
+      filter.pageSize ?? DEFAULT_PAGE_SIZE,
+      MAX_PAGE_SIZE,
+    );
     const offset = filter.cursor ? decodeCursor(filter.cursor) : 0;
-    const sortField = filter.sortField ?? BankAccountRoboadvisorBalanceSortField.Date;
+    const sortField =
+      filter.sortField ?? BankAccountRoboadvisorBalanceSortField.Date;
     const sortOrder = filter.sortOrder ?? SortOrder.Desc;
 
     const conditions: SQL[] = [];
 
     if (filter.bankAccountRoboadvisorId !== undefined) {
       conditions.push(
-        eq(bankAccountRoboadvisorBalances.bankAccountRoboadvisorId, filter.bankAccountRoboadvisorId)
+        eq(
+          bankAccountRoboadvisorBalances.bankAccountRoboadvisorId,
+          filter.bankAccountRoboadvisorId,
+        ),
       );
     }
 
-    const whereClause = conditions.length > 0 ? buildAndFilters(conditions) : undefined;
+    const whereClause =
+      conditions.length > 0 ? buildAndFilters(conditions) : undefined;
 
     const orderColumn = this.getBalanceSortColumn(sortField);
     const orderDirection = sortOrder === SortOrder.Asc ? asc : desc;
@@ -312,20 +331,24 @@ export class BankAccountRoboadvisorsService {
       .select()
       .from(bankAccountRoboadvisorBalances)
       .where(whereClause)
-      .orderBy(orderDirection(orderColumn), orderDirection(bankAccountRoboadvisorBalances.id))
+      .orderBy(
+        orderDirection(orderColumn),
+        orderDirection(bankAccountRoboadvisorBalances.id),
+      )
       .limit(pageSize)
       .offset(offset);
 
-    const data: BankAccountRoboadvisorBalanceSummary[] = results.map((balance) =>
-      this.mapBalanceToSummary(balance)
+    const data: BankAccountRoboadvisorBalanceSummary[] = results.map(
+      (balance) => this.mapBalanceToSummary(balance),
     );
 
-    const pagination = createOffsetPagination<BankAccountRoboadvisorBalanceSummary>(
-      data,
-      pageSize,
-      offset,
-      total
-    );
+    const pagination =
+      createOffsetPagination<BankAccountRoboadvisorBalanceSummary>(
+        data,
+        pageSize,
+        offset,
+        total,
+      );
 
     return {
       results: pagination.results,
@@ -339,7 +362,7 @@ export class BankAccountRoboadvisorsService {
 
   public async updateBankAccountRoboadvisorBalance(
     balanceId: number,
-    payload: UpdateBankAccountRoboadvisorBalanceRequest
+    payload: UpdateBankAccountRoboadvisorBalanceRequest,
   ): Promise<UpdateBankAccountRoboadvisorBalanceResponse> {
     const db = this.databaseService.get();
 
@@ -355,7 +378,7 @@ export class BankAccountRoboadvisorsService {
       throw new ServerError(
         "ROBOADVISOR_BALANCE_NOT_FOUND",
         `Roboadvisor balance with ID ${balanceId} not found`,
-        404
+        404,
       );
     }
 
@@ -366,7 +389,8 @@ export class BankAccountRoboadvisorsService {
     if (payload.date !== undefined) updateValues.date = payload.date;
     if (payload.type !== undefined) updateValues.type = payload.type;
     if (payload.amount !== undefined) updateValues.amount = payload.amount;
-    if (payload.currencyCode !== undefined) updateValues.currencyCode = payload.currencyCode;
+    if (payload.currencyCode !== undefined)
+      updateValues.currencyCode = payload.currencyCode;
 
     const [result] = await db
       .update(bankAccountRoboadvisorBalances)
@@ -377,7 +401,9 @@ export class BankAccountRoboadvisorsService {
     return this.mapBalanceToResponse(result);
   }
 
-  public async deleteBankAccountRoboadvisorBalance(balanceId: number): Promise<void> {
+  public async deleteBankAccountRoboadvisorBalance(
+    balanceId: number,
+  ): Promise<void> {
     const db = this.databaseService.get();
 
     const result = await db
@@ -389,14 +415,14 @@ export class BankAccountRoboadvisorsService {
       throw new ServerError(
         "ROBOADVISOR_BALANCE_NOT_FOUND",
         `Roboadvisor balance with ID ${balanceId} not found`,
-        404
+        404,
       );
     }
   }
 
   // Roboadvisor Fund CRUD operations
   public async createBankAccountRoboadvisorFund(
-    payload: CreateBankAccountRoboadvisorFundRequest
+    payload: CreateBankAccountRoboadvisorFundRequest,
   ): Promise<CreateBankAccountRoboadvisorFundResponse> {
     const db = this.databaseService.get();
 
@@ -412,7 +438,7 @@ export class BankAccountRoboadvisorsService {
       throw new ServerError(
         "ROBOADVISOR_NOT_FOUND",
         `Roboadvisor with ID ${payload.bankAccountRoboadvisorId} not found`,
-        404
+        404,
       );
     }
 
@@ -433,7 +459,7 @@ export class BankAccountRoboadvisorsService {
   }
 
   public async getBankAccountRoboadvisorFunds(
-    roboadvisorId: number
+    roboadvisorId: number,
   ): Promise<GetBankAccountRoboadvisorFundsResponse> {
     const db = this.databaseService.get();
 
@@ -449,18 +475,20 @@ export class BankAccountRoboadvisorsService {
       throw new ServerError(
         "ROBOADVISOR_NOT_FOUND",
         `Roboadvisor with ID ${roboadvisorId} not found`,
-        404
+        404,
       );
     }
 
     const results = await db
       .select()
       .from(bankAccountRoboadvisorFunds)
-      .where(eq(bankAccountRoboadvisorFunds.bankAccountRoboadvisorId, roboadvisorId))
+      .where(
+        eq(bankAccountRoboadvisorFunds.bankAccountRoboadvisorId, roboadvisorId),
+      )
       .orderBy(asc(bankAccountRoboadvisorFunds.name));
 
     const data: BankAccountRoboadvisorFundSummary[] = results.map((fund) =>
-      this.mapFundToSummary(fund)
+      this.mapFundToSummary(fund),
     );
 
     return {
@@ -470,7 +498,7 @@ export class BankAccountRoboadvisorsService {
 
   public async updateBankAccountRoboadvisorFund(
     fundId: number,
-    payload: UpdateBankAccountRoboadvisorFundRequest
+    payload: UpdateBankAccountRoboadvisorFundRequest,
   ): Promise<UpdateBankAccountRoboadvisorFundResponse> {
     const db = this.databaseService.get();
 
@@ -486,7 +514,7 @@ export class BankAccountRoboadvisorsService {
       throw new ServerError(
         "ROBOADVISOR_FUND_NOT_FOUND",
         `Roboadvisor fund with ID ${fundId} not found`,
-        404
+        404,
       );
     }
 
@@ -496,7 +524,8 @@ export class BankAccountRoboadvisorsService {
 
     if (payload.name !== undefined) updateValues.name = payload.name;
     if (payload.isin !== undefined) updateValues.isin = payload.isin;
-    if (payload.assetClass !== undefined) updateValues.assetClass = payload.assetClass;
+    if (payload.assetClass !== undefined)
+      updateValues.assetClass = payload.assetClass;
     if (payload.region !== undefined) updateValues.region = payload.region;
     if (payload.fundCurrencyCode !== undefined)
       updateValues.fundCurrencyCode = payload.fundCurrencyCode;
@@ -523,7 +552,7 @@ export class BankAccountRoboadvisorsService {
       throw new ServerError(
         "ROBOADVISOR_FUND_NOT_FOUND",
         `Roboadvisor fund with ID ${fundId} not found`,
-        404
+        404,
       );
     }
   }
@@ -542,7 +571,9 @@ export class BankAccountRoboadvisorsService {
     }
   }
 
-  private getBalanceSortColumn(sortField: BankAccountRoboadvisorBalanceSortField) {
+  private getBalanceSortColumn(
+    sortField: BankAccountRoboadvisorBalanceSortField,
+  ) {
     switch (sortField) {
       case BankAccountRoboadvisorBalanceSortField.Date:
         return bankAccountRoboadvisorBalances.date;
@@ -554,7 +585,7 @@ export class BankAccountRoboadvisorsService {
   }
 
   private mapRoboadvisorToResponse(
-    roboadvisor: typeof bankAccountRoboadvisors.$inferSelect
+    roboadvisor: typeof bankAccountRoboadvisors.$inferSelect,
   ): CreateBankAccountRoboadvisorResponse {
     return {
       id: roboadvisor.id,
@@ -574,7 +605,7 @@ export class BankAccountRoboadvisorsService {
   }
 
   private mapRoboadvisorToSummary(
-    roboadvisor: typeof bankAccountRoboadvisors.$inferSelect
+    roboadvisor: typeof bankAccountRoboadvisors.$inferSelect,
   ): BankAccountRoboadvisorSummary {
     return {
       id: roboadvisor.id,
@@ -594,7 +625,7 @@ export class BankAccountRoboadvisorsService {
   }
 
   private mapBalanceToResponse(
-    balance: typeof bankAccountRoboadvisorBalances.$inferSelect
+    balance: typeof bankAccountRoboadvisorBalances.$inferSelect,
   ): CreateBankAccountRoboadvisorBalanceResponse {
     return {
       id: balance.id,
@@ -609,7 +640,7 @@ export class BankAccountRoboadvisorsService {
   }
 
   private mapBalanceToSummary(
-    balance: typeof bankAccountRoboadvisorBalances.$inferSelect
+    balance: typeof bankAccountRoboadvisorBalances.$inferSelect,
   ): BankAccountRoboadvisorBalanceSummary {
     return {
       id: balance.id,
@@ -624,7 +655,7 @@ export class BankAccountRoboadvisorsService {
   }
 
   private mapFundToResponse(
-    fund: typeof bankAccountRoboadvisorFunds.$inferSelect
+    fund: typeof bankAccountRoboadvisorFunds.$inferSelect,
   ): CreateBankAccountRoboadvisorFundResponse {
     return {
       id: fund.id,
@@ -641,7 +672,7 @@ export class BankAccountRoboadvisorsService {
   }
 
   private mapFundToSummary(
-    fund: typeof bankAccountRoboadvisorFunds.$inferSelect
+    fund: typeof bankAccountRoboadvisorFunds.$inferSelect,
   ): BankAccountRoboadvisorFundSummary {
     return {
       id: fund.id,
