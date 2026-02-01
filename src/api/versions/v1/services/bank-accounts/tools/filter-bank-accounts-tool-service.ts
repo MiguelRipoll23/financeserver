@@ -27,6 +27,7 @@ export class FilterBankAccountsToolService {
 
         const result = await this.bankAccountsService.getBankAccounts({
           name: parsed.name,
+          type: parsed.type,
           sortField: parsed.sortField,
           sortOrder: parsed.sortOrder,
           pageSize: parsed.pageSize,
@@ -35,7 +36,7 @@ export class FilterBankAccountsToolService {
 
         const count = result.results.length;
         const accountsList = result.results
-          .map((account) => `- ${account.name} (ID: ${account.id})`)
+          .map((account) => `- ${account.name} (${account.type}) (ID: ${account.id})`)
           .join("\n");
 
         let text = `Found ${count} bank account${count !== 1 ? "s" : ""}`;

@@ -28,6 +28,7 @@ import {
 import { SortOrder } from "../../enums/sort-order-enum.ts";
 import { BankAccountSortField } from "../../enums/bank-account-sort-field-enum.ts";
 import { BankAccountBalanceSortField } from "../../enums/bank-account-balance-sort-field-enum.ts";
+import { BankAccountType } from "../../enums/bank-account-type-enum.ts";
 import { BankAccountsFilter } from "../../interfaces/bank-accounts/bank-accounts-filter-interface.ts";
 import { BankAccountSummary } from "../../interfaces/bank-accounts/bank-account-summary-interface.ts";
 import { BankAccountBalanceSummary } from "../../interfaces/bank-accounts/bank-account-balance-summary-interface.ts";
@@ -59,6 +60,7 @@ export class BankAccountsService {
       .insert(bankAccountsTable)
       .values({
         name: payload.name,
+        type: payload.type,
       })
       .returning();
 
@@ -71,12 +73,25 @@ export class BankAccountsService {
   ): Promise<UpdateBankAccountResponse> {
     const db = this.databaseService.get();
 
+    const updateValues: {
+      name?: string;
+      type?: "checking" | "savings" | "credit_card" | "investment" | "loan" | "deposit" | "other";
+      updatedAt: Date;
+    } = {
+      updatedAt: new Date(),
+    };
+
+    if (payload.name !== undefined) {
+      updateValues.name = payload.name;
+    }
+
+    if (payload.type !== undefined) {
+      updateValues.type = payload.type;
+    }
+
     const [result] = await db
       .update(bankAccountsTable)
-      .set({
-        name: payload.name,
-        updatedAt: new Date(),
-      })
+      .set(updateValues)
       .where(eq(bankAccountsTable.id, accountId))
       .returning();
 
@@ -127,6 +142,10 @@ export class BankAccountsService {
 
     if (filter.name) {
       conditions.push(ilike(bankAccountsTable.name, `%${filter.name}%`));
+    }
+
+    if (filter.type) {
+      conditions.push(eq(bankAccountsTable.type, filter.type));
     }
 
     const whereClause =
@@ -425,6 +444,7 @@ export class BankAccountsService {
     return {
       id: account.id,
       name: account.name,
+      type: account.type,
       createdAt: toISOStringSafe(account.createdAt),
       updatedAt: toISOStringSafe(account.updatedAt),
     };
@@ -436,6 +456,7 @@ export class BankAccountsService {
     return {
       id: account.id,
       name: account.name,
+      type: account.type,
       createdAt: toISOStringSafe(account.createdAt),
       updatedAt: toISOStringSafe(account.updatedAt),
     };
