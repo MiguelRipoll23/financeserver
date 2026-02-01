@@ -28,12 +28,11 @@ export class UpdateBankAccountToolService {
         const result = await this.bankAccountsService.updateBankAccount(
           parsed.id,
           {
-            name: parsed.name,
-            type: parsed.type,
+            name: parsed.name!,
           }
         );
 
-        const text = `Bank account updated successfully: ${result.name} (${result.type}) (ID: ${result.id})`;
+        const text = `Bank account updated successfully: ${result.name} (ID: ${result.id})`;
 
         return {
           text,

@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { BankAccountType } from "../enums/bank-account-type-enum.ts";
 import { BankAccountSortField } from "../enums/bank-account-sort-field-enum.ts";
 import { SortOrder } from "../enums/sort-order-enum.ts";
 
@@ -10,7 +9,6 @@ export const CreateBankAccountToolSchema = z.object({
     .min(1)
     .max(255, "Name must be between 1-255 characters")
     .describe("The name of the bank account"),
-    type: z.nativeEnum(BankAccountType).describe("The type of the bank account"),
 });
 
 export const UpdateBankAccountToolSchema = z
@@ -26,7 +24,6 @@ export const UpdateBankAccountToolSchema = z
       .max(255, "Name must be between 1-255 characters")
       .optional()
       .describe("The new name of the bank account"),
-    type: z.nativeEnum(BankAccountType).optional().describe("The new type of the bank account"),
   })
   .refine((data) => Object.keys(data).some((key) => key !== "id"), {
     message: "At least one field to update must be provided besides the ID.",
@@ -43,7 +40,6 @@ export const FilterBankAccountsToolSchema = z.object({
     .max(255)
     .optional()
     .describe("Filter bank accounts by name (partial match)"),
-  type: z.nativeEnum(BankAccountType).optional().describe("Filter bank accounts by type"),
   sortField: z
     .nativeEnum(BankAccountSortField)
     .optional()
