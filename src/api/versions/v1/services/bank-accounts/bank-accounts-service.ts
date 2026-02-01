@@ -75,7 +75,7 @@ export class BankAccountsService {
 
     const updateValues: {
       name?: string;
-      type?: "checking" | "savings" | "credit_card" | "investment" | "loan" | "deposit" | "other";
+      type?: BankAccountType;
       updatedAt: Date;
     } = {
       updatedAt: new Date(),
