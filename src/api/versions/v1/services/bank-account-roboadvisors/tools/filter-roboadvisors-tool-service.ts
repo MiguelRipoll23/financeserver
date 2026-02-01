@@ -41,7 +41,7 @@ export class FilterRoboadvisorsToolService {
         const roboadvisorsList = result.results
           .map((roboadvisor) => {
             const riskPart = roboadvisor.riskLevel
-              ? ` [Risk: ${roboadvisor.riskLevel}/10]`
+              ? ` [Risk: ${roboadvisor.riskLevel}/7]`
               : "";
             const feePct = (parseFloat(roboadvisor.totalFeePercentage) * 100).toFixed(
               2,
