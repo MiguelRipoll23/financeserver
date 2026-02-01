@@ -41,7 +41,7 @@ export const CreateBankAccountRoboadvisorBalanceRequestSchema = z.object({
   date: z
     .string()
     .regex(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/)
-    .refine((val) => isValidDateString(val), {
+    .refine((value) => isValidDateString(value), {
       message: "Invalid calendar date. Please provide a valid date in YYYY-MM-DD format (e.g., 2026-01-15).",
     })
     .openapi({ example: "2026-01-15" })
@@ -147,7 +147,7 @@ export const UpdateBankAccountRoboadvisorBalanceRequestSchema = z
     date: z
       .string()
       .regex(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/)
-      .refine((val) => isValidDateString(val), {
+      .refine((value) => isValidDateString(value), {
         message: "Invalid calendar date. Please provide a valid date in YYYY-MM-DD format (e.g., 2026-01-15).",
       })
       .optional()
