@@ -17,7 +17,10 @@ export { usersTable } from "./tables/users-table.ts";
 export { oauthClientsTable } from "./tables/oauth-clients-table.ts";
 export { oauthAuthorizationCodes } from "./tables/oauth-authorization-codes-table.ts";
 export { oauthConnections } from "./tables/oauth-connections-table.ts";
-export { bankAccountsTable } from "./tables/bank-accounts-table.ts";
+export {
+  bankAccountsTable,
+  bankAccountTypeEnum,
+} from "./tables/bank-accounts-table.ts";
 export { bankAccountBalancesTable } from "./tables/bank-account-balances-table.ts";
 export { bankAccountInterestRatesTable } from "./tables/bank-account-interest-rates-table.ts";
 export { cryptoExchangesTable } from "./tables/crypto-exchanges-table.ts";
