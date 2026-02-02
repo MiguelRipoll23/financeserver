@@ -2,6 +2,7 @@ import { z } from "@hono/zod-openapi";
 import { PaginationQuerySchema } from "./pagination-schemas.ts";
 import { BankAccountSortField } from "../enums/bank-account-sort-field-enum.ts";
 import { SortOrder } from "../enums/sort-order-enum.ts";
+import { BankAccountType } from "../enums/bank-account-type-enum.ts";
 
 // Bank Account schemas
 export const CreateBankAccountRequestSchema = z.object({
@@ -11,6 +12,10 @@ export const CreateBankAccountRequestSchema = z.object({
     .max(255)
     .openapi({ example: "Main Savings Account" })
     .describe("Bank account name"),
+  type: z
+    .nativeEnum(BankAccountType)
+    .openapi({ example: "savings" })
+    .describe("Bank account type"),
 });
 
 export type CreateBankAccountRequest = z.infer<
@@ -24,6 +29,7 @@ export const CreateBankAccountResponseSchema = z.object({
     .openapi({ example: 1 })
     .describe("Unique bank account identifier"),
   name: z.string().openapi({ example: "Main Savings Account" }),
+  type: z.nativeEnum(BankAccountType).openapi({ example: "savings" }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
 });
@@ -50,7 +56,13 @@ export const UpdateBankAccountRequestSchema = z.object({
     .min(1)
     .max(255)
     .openapi({ example: "Updated Account Name" })
-    .describe("New bank account name"),
+    .describe("New bank account name")
+    .optional(),
+  type: z
+    .nativeEnum(BankAccountType)
+    .openapi({ example: "checking" })
+    .describe("New bank account type")
+    .optional(),
 });
 
 export type UpdateBankAccountRequest = z.infer<
@@ -73,6 +85,7 @@ export const GetBankAccountsRequestSchema = PaginationQuerySchema.extend({
     .optional()
     .openapi({ example: SortOrder.Desc }),
   name: z.string().optional().openapi({ example: "Savings" }),
+  type: z.nativeEnum(BankAccountType).optional().openapi({ example: "savings" }),
 });
 
 export type GetBankAccountsRequest = z.infer<
@@ -82,6 +95,7 @@ export type GetBankAccountsRequest = z.infer<
 export const BankAccountSummarySchema = z.object({
   id: z.number().int().openapi({ example: 1 }),
   name: z.string().openapi({ example: "Main Savings Account" }),
+  type: z.nativeEnum(BankAccountType).openapi({ example: "savings" }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
 });

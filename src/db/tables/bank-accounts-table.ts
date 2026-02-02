@@ -1,16 +1,28 @@
 import {
   bigserial,
   index,
+  pgEnum,
   pgTable,
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
+
+export const bankAccountTypeEnum = pgEnum("bank_account_type", [
+  "checking",
+  "savings",
+  "credit_card",
+  "investment",
+  "loan",
+  "deposit",
+  "other",
+]);
 
 export const bankAccountsTable = pgTable(
   "bank_accounts",
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
     name: text("name").notNull(),
+    type: bankAccountTypeEnum("type").notNull().default("checking"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),

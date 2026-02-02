@@ -117,6 +117,7 @@ export class AuthenticatedBankAccountsRouter {
           sortField: body.sortField,
           sortOrder: body.sortOrder,
           name: body.name,
+          type: body.type,
         };
         const result = await this.bankAccountsService.getBankAccounts(filter);
 

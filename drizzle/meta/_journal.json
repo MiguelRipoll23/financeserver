@@ -176,6 +176,13 @@
       "when": 1769956719294,
       "tag": "0024_true_mathemanic",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1770042699778,
+      "tag": "0025_hot_penance",
+      "breakpoints": true
     }
   ]
 }
