@@ -87,6 +87,8 @@ export class V1AuthenticatedRouter {
     this.app.route("/users", this.usersRouter.getRouter());
     this.app.route("/cash", this.cashRouter.getRouter());
     this.app.route("/cash-balances", this.cashBalancesRouter.getRouter());
+    // Salary changes must be registered before bank accounts
+    this.app.route("/salary-changes", this.salaryChangesRouter.getRouter());
     this.app.route("/bank-accounts", this.bankAccountsRouter.getRouter());
     this.app.route(
       "/bank-account-balances",
@@ -96,21 +98,7 @@ export class V1AuthenticatedRouter {
       "/bank-account-interest-rates",
       this.bankAccountInterestRatesRouter.getRouter(),
     );
-    this.app.route(
-      "/bill-categories",
-      this.billCategoriesRouter.getRouter(),
-    );
-    this.app.route("/crypto-exchanges", this.cryptoExchangesRouter.getRouter());
-    this.app.route(
-      "/crypto-exchange-balances",
-      this.cryptoExchangeBalancesRouter.getRouter(),
-    );
-    this.app.route("/bills", this.billsRouter.getRouter());
-    this.app.route("/subscriptions", this.subscriptionsRouter.getRouter());
-    this.app.route("/merchants", this.merchantsRouter.getRouter());
-    this.app.route("/receipts", this.receiptsRouter.getRouter());
-    this.app.route("/products", this.productsRouter.getRouter());
-    this.app.route("/salary-changes", this.salaryChangesRouter.getRouter());
+    // Place bank account roboadvisor routes immediately after interest rates
     this.app.route(
       "/bank-account-roboadvisors",
       this.bankAccountRoboadvisorsRouter.getRouter(),
@@ -123,5 +111,23 @@ export class V1AuthenticatedRouter {
       "/bank-account-roboadvisor-funds",
       this.bankAccountRoboadvisorFundsRouter.getRouter(),
     );
+
+    // Crypto exchanges come after roboadvisors
+    this.app.route("/crypto-exchanges", this.cryptoExchangesRouter.getRouter());
+    this.app.route(
+      "/crypto-exchange-balances",
+      this.cryptoExchangeBalancesRouter.getRouter(),
+    );
+
+    this.app.route("/bills", this.billsRouter.getRouter());
+    // Bill categories must be registered immediately after bills
+    this.app.route(
+      "/bill-categories",
+      this.billCategoriesRouter.getRouter(),
+    );
+    this.app.route("/subscriptions", this.subscriptionsRouter.getRouter());
+    this.app.route("/merchants", this.merchantsRouter.getRouter());
+    this.app.route("/receipts", this.receiptsRouter.getRouter());
+    this.app.route("/products", this.productsRouter.getRouter());
   }
 }
