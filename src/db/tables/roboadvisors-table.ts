@@ -17,7 +17,7 @@ export const feeFrequencyEnum = pgEnum("fee_frequency", [
   "yearly",
 ]);
 
-export const bankAccountRoboadvisors = pgTable("bank_account_roboadvisors", {
+export const roboadvisors = pgTable("roboadvisors", {
   id: bigserial("id", { mode: "number" }).primaryKey(),
 
   name: varchar("name", { length: 255 }).notNull(),

@@ -1,6 +1,6 @@
 export interface BankAccountRoboadvisorFundSummary {
   id: number;
-  bankAccountRoboadvisorId: number;
+  roboadvisorId: number;
   name: string;
   isin: string;
   assetClass: string;

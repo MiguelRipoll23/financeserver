@@ -26,7 +26,7 @@ export class CreateRoboadvisorFundToolService {
         const parsed = CreateBankAccountRoboadvisorFundToolSchema.parse(input);
 
         const result = await this.roboadvisorsService.createBankAccountRoboadvisorFund({
-          bankAccountRoboadvisorId: parsed.bankAccountRoboadvisorId,
+          roboadvisorId: parsed.roboadvisorId,
           name: parsed.name,
           isin: parsed.isin,
           assetClass: parsed.assetClass,
@@ -37,7 +37,8 @@ export class CreateRoboadvisorFundToolService {
         });
 
         const weightPercentage = (result.weight * 100).toFixed(2);
-        const shareInfo = result.shareCount ? ` with ${result.shareCount} shares` : '';
+        // Use a nullish check so 0 is treated as a valid share count and rendered
+        const shareInfo = result.shareCount != null ? ` with ${result.shareCount} shares` : '';
         const text = `Fund allocation created successfully: ${result.name} (${result.isin}) - ${weightPercentage}% allocation${shareInfo} (ID: ${result.id})`;
 
         return {

@@ -5,7 +5,7 @@ import { PercentageSchema } from "./percentage-schema.ts";
 
 // Roboadvisor Fund schemas
 export const CreateBankAccountRoboadvisorFundRequestSchema = z.object({
-  bankAccountRoboadvisorId: z
+  roboadvisorId: z
     .number()
     .int()
     .openapi({ example: 1 })
@@ -55,7 +55,7 @@ export type CreateBankAccountRoboadvisorFundRequest = z.infer<
 
 export const CreateBankAccountRoboadvisorFundResponseSchema = z.object({
   id: z.number().int().openapi({ example: 1 }),
-  bankAccountRoboadvisorId: z.number().int().openapi({ example: 1 }),
+  roboadvisorId: z.number().int().openapi({ example: 1 }),
   name: z.string().openapi({ example: "Vanguard FTSE All-World UCITS ETF" }),
   isin: z.string().openapi({ example: "IE00BK5BQT80" }),
   assetClass: z.string().openapi({ example: "equity" }),
@@ -86,7 +86,7 @@ export type BankAccountRoboadvisorFundIdParam = z.infer<
 >;
 
 export const GetBankAccountRoboadvisorFundsRequestSchema = z.object({
-  bankAccountRoboadvisorId: z
+  roboadvisorId: z
     .number()
     .int()
     .optional()
@@ -149,7 +149,7 @@ export type GetBankAccountRoboadvisorFundsRequest = z.infer<
 
 export const BankAccountRoboadvisorFundSummarySchema = z.object({
   id: z.number().int().openapi({ example: 1 }),
-  bankAccountRoboadvisorId: z.number().int().openapi({ example: 1 }),
+  roboadvisorId: z.number().int().openapi({ example: 1 }),
   name: z.string().openapi({ example: "Vanguard FTSE All-World UCITS ETF" }),
   isin: z.string().openapi({ example: "IE00BK5BQT80" }),
   assetClass: z.string().openapi({ example: "equity" }),

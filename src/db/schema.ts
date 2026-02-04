@@ -29,14 +29,14 @@ export { cryptoExchangeBalancesTable } from "./tables/crypto-exchange-balances-t
 export { cryptoExchangeCalculationsTable } from "./tables/crypto-exchange-calculations-table.ts";
 export { salaryChangesTable } from "./tables/salary-changes-table.ts";
 export {
-  bankAccountRoboadvisors,
+  roboadvisors,
   feeFrequencyEnum,
-} from "./tables/bank-account-roboadvisors-table.ts";
+} from "./tables/roboadvisors-table.ts";
 export {
-  bankAccountRoboadvisorBalances,
+  roboadvisorBalances,
   balanceTypeEnum,
-} from "./tables/bank-account-roboadvisor-balances-table.ts";
-export { bankAccountRoboadvisorFunds } from "./tables/bank-account-roboadvisor-funds-table.ts";
+} from "./tables/roboadvisor-balances-table.ts";
+export { roboadvisorFunds } from "./tables/roboadvisor-funds-table.ts";
 export { bankAccountRoboadvisorFundCalculationsTable } from "./tables/bank-account-roboadvisor-fund-calculations-table.ts";
 
 // Export RLS roles and helpers

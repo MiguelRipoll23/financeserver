@@ -33,7 +33,7 @@ function isValidDateString(dateString: string): boolean {
 
 // Roboadvisor Balance schemas
 export const CreateBankAccountRoboadvisorBalanceRequestSchema = z.object({
-  bankAccountRoboadvisorId: z
+  roboadvisorId: z
     .number()
     .int()
     .openapi({ example: 1 })
@@ -68,7 +68,7 @@ export type CreateBankAccountRoboadvisorBalanceRequest = z.infer<
 
 export const CreateBankAccountRoboadvisorBalanceResponseSchema = z.object({
   id: z.number().int().openapi({ example: 1 }),
-  bankAccountRoboadvisorId: z.number().int().openapi({ example: 1 }),
+  roboadvisorId: z.number().int().openapi({ example: 1 }),
   date: z.string().openapi({ example: "2026-01-15" }),
   type: z.string().openapi({ example: "deposit" }),
   amount: z.string().openapi({ example: "1000.00" }),
@@ -96,7 +96,7 @@ export type BankAccountRoboadvisorBalanceIdParam = z.infer<
 >;
 
 export const GetBankAccountRoboadvisorBalancesRequestSchema = PaginationQuerySchema.extend({
-  bankAccountRoboadvisorId: z
+  roboadvisorId: z
     .number()
     .int()
     .optional()
@@ -118,7 +118,7 @@ export type GetBankAccountRoboadvisorBalancesRequest = z.infer<
 
 export const BankAccountRoboadvisorBalanceSummarySchema = z.object({
   id: z.number().int().openapi({ example: 1 }),
-  bankAccountRoboadvisorId: z.number().int().openapi({ example: 1 }),
+  roboadvisorId: z.number().int().openapi({ example: 1 }),
   date: z.string().openapi({ example: "2026-01-15" }),
   type: z.string().openapi({ example: "deposit" }),
   amount: z.string().openapi({ example: "1000.00" }),

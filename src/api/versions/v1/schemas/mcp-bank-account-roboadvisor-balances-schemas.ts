@@ -7,7 +7,7 @@ const DateRegex = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
 
 // Roboadvisor Balance Tool Schemas
 export const CreateBankAccountRoboadvisorBalanceToolSchema = z.object({
-  bankAccountRoboadvisorId: z
+  roboadvisorId: z
     .number()
     .int()
     .positive()
@@ -30,7 +30,7 @@ export const CreateBankAccountRoboadvisorBalanceToolSchema = z.object({
 });
 
 export const FilterBankAccountRoboadvisorBalancesToolSchema = z.object({
-  bankAccountRoboadvisorId: z
+  roboadvisorId: z
     .number()
     .int()
     .positive()

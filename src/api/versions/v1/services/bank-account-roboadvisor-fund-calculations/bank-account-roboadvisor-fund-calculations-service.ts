@@ -21,7 +21,7 @@ export class BankAccountRoboadvisorFundCalculationsService {
       .from(bankAccountRoboadvisorFundCalculationsTable)
       .where(
         eq(
-          bankAccountRoboadvisorFundCalculationsTable.bankAccountRoboadvisorId,
+          bankAccountRoboadvisorFundCalculationsTable.roboadvisorId,
           roboadvisorId
         )
       )
@@ -45,7 +45,7 @@ export class BankAccountRoboadvisorFundCalculationsService {
     const db = this.databaseService.get();
 
     await db.insert(bankAccountRoboadvisorFundCalculationsTable).values({
-      bankAccountRoboadvisorId: roboadvisorId,
+      roboadvisorId: roboadvisorId,
       currentValueAfterTax,
     });
   }

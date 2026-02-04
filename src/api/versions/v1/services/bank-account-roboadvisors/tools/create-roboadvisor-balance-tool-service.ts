@@ -26,7 +26,7 @@ export class CreateRoboadvisorBalanceToolService {
         const parsed = CreateBankAccountRoboadvisorBalanceToolSchema.parse(input);
 
         const result = await this.roboadvisorsService.createBankAccountRoboadvisorBalance({
-          bankAccountRoboadvisorId: parsed.bankAccountRoboadvisorId,
+          roboadvisorId: parsed.roboadvisorId,
           date: parsed.date,
           type: parsed.type,
           amount: parsed.amount,

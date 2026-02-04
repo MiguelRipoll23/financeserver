@@ -30,7 +30,7 @@ export class FilterRoboadvisorBalancesToolService {
 
         const result =
           await this.roboadvisorsService.getBankAccountRoboadvisorBalances({
-            bankAccountRoboadvisorId: parsed.bankAccountRoboadvisorId,
+            roboadvisorId: parsed.roboadvisorId,
             pageSize: parsed.pageSize,
             cursor: parsed.cursor,
             sortField: parsed.sortField,

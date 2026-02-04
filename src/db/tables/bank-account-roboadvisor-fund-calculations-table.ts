@@ -6,17 +6,17 @@ import {
   pgTable,
   timestamp,
 } from "drizzle-orm/pg-core";
-import { bankAccountRoboadvisors } from "./bank-account-roboadvisors-table.ts";
+import { roboadvisors } from "./roboadvisors-table.ts";
 
 export const bankAccountRoboadvisorFundCalculationsTable = pgTable(
   "bank_account_roboadvisor_fund_calculations",
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
-    bankAccountRoboadvisorId: bigint("bank_account_roboadvisor_id", {
+    roboadvisorId: bigint("roboadvisor_id", {
       mode: "number",
     })
       .notNull()
-      .references(() => bankAccountRoboadvisors.id, { onDelete: "cascade" }),
+      .references(() => roboadvisors.id, { onDelete: "cascade" }),
     currentValueAfterTax: numeric("current_value_after_tax", {
       precision: 15,
       scale: 2,
@@ -30,7 +30,7 @@ export const bankAccountRoboadvisorFundCalculationsTable = pgTable(
   },
   (table) => [
     index("idx_roboadvisor_fund_calcs_roboadvisor_created").on(
-      table.bankAccountRoboadvisorId,
+      table.roboadvisorId,
       table.createdAt.desc()
     ),
   ]

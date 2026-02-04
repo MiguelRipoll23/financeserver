@@ -42,7 +42,8 @@ export class UpdateRoboadvisorFundToolService {
           );
 
         const weightPercentage = (result.weight * 100).toFixed(2);
-        const shareInfo = result.shareCount ? ` with ${result.shareCount} shares` : '';
+        // Treat 0 as a valid share count by checking for null/undefined explicitly
+        const shareInfo = result.shareCount != null ? ` with ${result.shareCount} shares` : '';
         const text = `Fund allocation updated successfully: ${result.name} (${result.isin}) - ${weightPercentage}% allocation${shareInfo} (ID: ${result.id})`;
 
         return {

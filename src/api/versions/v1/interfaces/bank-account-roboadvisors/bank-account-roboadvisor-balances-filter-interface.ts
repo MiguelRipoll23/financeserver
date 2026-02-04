@@ -2,7 +2,7 @@ import { BankAccountRoboadvisorBalanceSortField } from "../../enums/bank-account
 import { SortOrder } from "../../enums/sort-order-enum.ts";
 
 export interface BankAccountRoboadvisorBalancesFilter {
-  bankAccountRoboadvisorId?: number;
+  roboadvisorId?: number;
   pageSize?: number;
   cursor?: string;
   sortField?: BankAccountRoboadvisorBalanceSortField;

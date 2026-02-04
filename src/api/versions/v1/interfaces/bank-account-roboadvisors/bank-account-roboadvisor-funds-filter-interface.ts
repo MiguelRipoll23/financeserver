@@ -2,7 +2,7 @@ import { BankAccountRoboadvisorFundSortField } from "../../enums/bank-account-ro
 import { SortOrder } from "../../enums/sort-order-enum.ts";
 
 export interface BankAccountRoboadvisorFundsFilter {
-  bankAccountRoboadvisorId?: number;
+  roboadvisorId?: number;
   name?: string;
   isin?: string;
   assetClass?: string;

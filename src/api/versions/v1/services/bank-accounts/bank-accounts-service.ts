@@ -518,7 +518,11 @@ export class BankAccountsService {
       bankAccountId: balance.bankAccountId,
       balance: balance.balance,
       currencyCode: balance.currencyCode,
-      interestRate: balance.interestRate ? parseFloat(balance.interestRate) : null,
+      // Preserve valid 0 values by explicitly checking for null/undefined
+      interestRate:
+        balance.interestRate !== null && balance.interestRate !== undefined
+          ? parseFloat(balance.interestRate)
+          : null,
       createdAt: toISOStringSafe(balance.createdAt),
       updatedAt: toISOStringSafe(balance.updatedAt),
     };

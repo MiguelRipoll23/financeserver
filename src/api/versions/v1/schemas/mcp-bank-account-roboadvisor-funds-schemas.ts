@@ -4,7 +4,7 @@ import { SortOrder } from "../enums/sort-order-enum.ts";
 
 // Roboadvisor Fund Tool Schemas
 export const CreateBankAccountRoboadvisorFundToolSchema = z.object({
-  bankAccountRoboadvisorId: z
+  roboadvisorId: z
     .number()
     .int()
     .positive()
@@ -33,7 +33,7 @@ export const CreateBankAccountRoboadvisorFundToolSchema = z.object({
 });
 
 export const FilterBankAccountRoboadvisorFundsToolSchema = z.object({
-  bankAccountRoboadvisorId: z
+  roboadvisorId: z
     .number()
     .int()
     .positive()

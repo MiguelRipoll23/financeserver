@@ -6,17 +6,17 @@ import {
   bigserial,
   bigint,
 } from "drizzle-orm/pg-core";
-import { bankAccountRoboadvisors } from "./bank-account-roboadvisors-table.ts";
+import { roboadvisors } from "./roboadvisors-table.ts";
 
-export const bankAccountRoboadvisorFunds = pgTable(
-  "bank_account_roboadvisor_funds",
+export const roboadvisorFunds = pgTable(
+  "roboadvisor_funds",
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
 
-    bankAccountRoboadvisorId: bigint("bank_account_roboadvisor_id", {
+    roboadvisorId: bigint("roboadvisor_id", {
       mode: "number",
     })
-      .references(() => bankAccountRoboadvisors.id, { onDelete: "cascade" })
+      .references(() => roboadvisors.id, { onDelete: "cascade" })
       .notNull(),
 
     name: varchar("name", { length: 255 }).notNull(),

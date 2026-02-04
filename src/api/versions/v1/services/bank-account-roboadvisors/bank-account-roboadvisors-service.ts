@@ -3,9 +3,9 @@ import { asc, desc, eq, ilike, sql, type SQL, getTableColumns } from "drizzle-or
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import {
   bankAccountsTable,
-  bankAccountRoboadvisors,
-  bankAccountRoboadvisorBalances,
-  bankAccountRoboadvisorFunds,
+  roboadvisors,
+  roboadvisorBalances,
+  roboadvisorFunds,
   bankAccountRoboadvisorFundCalculationsTable,
 } from "../../../../../db/schema.ts";
 import { ServerError } from "../../models/server-error.ts";
@@ -84,7 +84,7 @@ export class BankAccountRoboadvisorsService {
     }
 
     const [result] = await db
-      .insert(bankAccountRoboadvisors)
+      .insert(roboadvisors)
       .values({
         name: payload.name,
         bankAccountId: payload.bankAccountId,
@@ -121,12 +121,12 @@ export class BankAccountRoboadvisorsService {
 
     if (filter.bankAccountId !== undefined) {
       conditions.push(
-        eq(bankAccountRoboadvisors.bankAccountId, filter.bankAccountId),
+        eq(roboadvisors.bankAccountId, filter.bankAccountId),
       );
     }
 
     if (filter.name) {
-      conditions.push(ilike(bankAccountRoboadvisors.name, `%${filter.name}%`));
+      conditions.push(ilike(roboadvisors.name, `%${filter.name}%`));
     }
 
     const whereClause =
@@ -137,7 +137,7 @@ export class BankAccountRoboadvisorsService {
 
     const [{ count }] = await db
       .select({ count: sql<number>`COUNT(*)` })
-      .from(bankAccountRoboadvisors)
+      .from(roboadvisors)
       .where(whereClause);
 
     const total = Number(count ?? 0);
@@ -155,7 +155,7 @@ export class BankAccountRoboadvisorsService {
 
     const results = await db
       .select({
-        ...getTableColumns(bankAccountRoboadvisors),
+        ...getTableColumns(roboadvisors),
         latestCalculation: sql<{
           currentValueAfterTax: string;
           calculatedAt: string;
@@ -165,16 +165,16 @@ export class BankAccountRoboadvisorsService {
             'calculatedAt', calc.created_at
           )
           FROM ${bankAccountRoboadvisorFundCalculationsTable} calc
-          WHERE calc.bank_account_roboadvisor_id = ${bankAccountRoboadvisors.id}
+          WHERE calc.bank_account_roboadvisor_id = ${roboadvisors.id}
           ORDER BY calc.created_at DESC
           LIMIT 1
         )`,
       })
-      .from(bankAccountRoboadvisors)
+      .from(roboadvisors)
       .where(whereClause)
       .orderBy(
         orderDirection(orderColumn),
-        orderDirection(bankAccountRoboadvisors.id)
+        orderDirection(roboadvisors.id)
       )
       .limit(pageSize)
       .offset(offset);
@@ -209,8 +209,8 @@ export class BankAccountRoboadvisorsService {
     // Verify roboadvisor exists
     const existing = await db
       .select()
-      .from(bankAccountRoboadvisors)
-      .where(eq(bankAccountRoboadvisors.id, roboadvisorId))
+      .from(roboadvisors)
+      .where(eq(roboadvisors.id, roboadvisorId))
       .limit(1)
       .then((rows) => rows[0]);
 
@@ -247,9 +247,9 @@ export class BankAccountRoboadvisorsService {
       updateValues.capitalGainsTaxPercentage = payload.capitalGainsTaxPercentage ? payload.capitalGainsTaxPercentage.toString() : null;
 
     const [result] = await db
-      .update(bankAccountRoboadvisors)
+      .update(roboadvisors)
       .set(updateValues)
-      .where(eq(bankAccountRoboadvisors.id, roboadvisorId))
+      .where(eq(roboadvisors.id, roboadvisorId))
       .returning();
 
     return this.mapRoboadvisorToResponse(result);
@@ -261,9 +261,9 @@ export class BankAccountRoboadvisorsService {
     const db = this.databaseService.get();
 
     const result = await db
-      .delete(bankAccountRoboadvisors)
-      .where(eq(bankAccountRoboadvisors.id, roboadvisorId))
-      .returning({ id: bankAccountRoboadvisors.id });
+      .delete(roboadvisors)
+      .where(eq(roboadvisors.id, roboadvisorId))
+      .returning({ id: roboadvisors.id });
 
     if (result.length === 0) {
       throw new ServerError(
@@ -282,24 +282,24 @@ export class BankAccountRoboadvisorsService {
 
     // Verify roboadvisor exists
     const roboadvisor = await db
-      .select({ id: bankAccountRoboadvisors.id })
-      .from(bankAccountRoboadvisors)
-      .where(eq(bankAccountRoboadvisors.id, payload.bankAccountRoboadvisorId))
+      .select({ id: roboadvisors.id })
+      .from(roboadvisors)
+      .where(eq(roboadvisors.id, payload.roboadvisorId))
       .limit(1)
       .then((rows) => rows[0]);
 
     if (!roboadvisor) {
       throw new ServerError(
         "ROBOADVISOR_NOT_FOUND",
-        `Roboadvisor with ID ${payload.bankAccountRoboadvisorId} not found`,
+        `Roboadvisor with ID ${payload.roboadvisorId} not found`,
         404,
       );
     }
 
     const [result] = await db
-      .insert(bankAccountRoboadvisorBalances)
+      .insert(roboadvisorBalances)
       .values({
-        bankAccountRoboadvisorId: payload.bankAccountRoboadvisorId,
+        roboadvisorId: payload.roboadvisorId,
         date: payload.date,
         type: payload.type,
         amount: payload.amount,
@@ -326,11 +326,11 @@ export class BankAccountRoboadvisorsService {
 
     const conditions: SQL[] = [];
 
-    if (filter.bankAccountRoboadvisorId !== undefined) {
+    if (filter.roboadvisorId !== undefined) {
       conditions.push(
         eq(
-          bankAccountRoboadvisorBalances.bankAccountRoboadvisorId,
-          filter.bankAccountRoboadvisorId,
+          roboadvisorBalances.roboadvisorId,
+          filter.roboadvisorId,
         ),
       );
     }
@@ -343,7 +343,7 @@ export class BankAccountRoboadvisorsService {
 
     const [{ count }] = await db
       .select({ count: sql<number>`COUNT(*)` })
-      .from(bankAccountRoboadvisorBalances)
+      .from(roboadvisorBalances)
       .where(whereClause);
 
     const total = Number(count ?? 0);
@@ -361,11 +361,11 @@ export class BankAccountRoboadvisorsService {
 
     const results = await db
       .select()
-      .from(bankAccountRoboadvisorBalances)
+      .from(roboadvisorBalances)
       .where(whereClause)
       .orderBy(
         orderDirection(orderColumn),
-        orderDirection(bankAccountRoboadvisorBalances.id),
+        orderDirection(roboadvisorBalances.id),
       )
       .limit(pageSize)
       .offset(offset);
@@ -401,8 +401,8 @@ export class BankAccountRoboadvisorsService {
     // Verify balance exists
     const existing = await db
       .select()
-      .from(bankAccountRoboadvisorBalances)
-      .where(eq(bankAccountRoboadvisorBalances.id, balanceId))
+      .from(roboadvisorBalances)
+      .where(eq(roboadvisorBalances.id, balanceId))
       .limit(1)
       .then((rows) => rows[0]);
 
@@ -425,9 +425,9 @@ export class BankAccountRoboadvisorsService {
       updateValues.currencyCode = payload.currencyCode;
 
     const [result] = await db
-      .update(bankAccountRoboadvisorBalances)
+      .update(roboadvisorBalances)
       .set(updateValues)
-      .where(eq(bankAccountRoboadvisorBalances.id, balanceId))
+      .where(eq(roboadvisorBalances.id, balanceId))
       .returning();
 
     return this.mapBalanceToResponse(result);
@@ -439,9 +439,9 @@ export class BankAccountRoboadvisorsService {
     const db = this.databaseService.get();
 
     const result = await db
-      .delete(bankAccountRoboadvisorBalances)
-      .where(eq(bankAccountRoboadvisorBalances.id, balanceId))
-      .returning({ id: bankAccountRoboadvisorBalances.id });
+      .delete(roboadvisorBalances)
+      .where(eq(roboadvisorBalances.id, balanceId))
+      .returning({ id: roboadvisorBalances.id });
 
     if (result.length === 0) {
       throw new ServerError(
@@ -460,24 +460,24 @@ export class BankAccountRoboadvisorsService {
 
     // Verify roboadvisor exists
     const roboadvisor = await db
-      .select({ id: bankAccountRoboadvisors.id })
-      .from(bankAccountRoboadvisors)
-      .where(eq(bankAccountRoboadvisors.id, payload.bankAccountRoboadvisorId))
+      .select({ id: roboadvisors.id })
+      .from(roboadvisors)
+      .where(eq(roboadvisors.id, payload.roboadvisorId))
       .limit(1)
       .then((rows) => rows[0]);
 
     if (!roboadvisor) {
       throw new ServerError(
         "ROBOADVISOR_NOT_FOUND",
-        `Roboadvisor with ID ${payload.bankAccountRoboadvisorId} not found`,
+        `Roboadvisor with ID ${payload.roboadvisorId} not found`,
         404,
       );
     }
 
     const [result] = await db
-      .insert(bankAccountRoboadvisorFunds)
+      .insert(roboadvisorFunds)
       .values({
-        bankAccountRoboadvisorId: payload.bankAccountRoboadvisorId,
+        roboadvisorId: payload.roboadvisorId,
         name: payload.name,
         isin: payload.isin,
         assetClass: payload.assetClass,
@@ -507,43 +507,43 @@ export class BankAccountRoboadvisorsService {
 
     const conditions: SQL[] = [];
 
-    if (filter.bankAccountRoboadvisorId !== undefined) {
+    if (filter.roboadvisorId !== undefined) {
       conditions.push(
         eq(
-          bankAccountRoboadvisorFunds.bankAccountRoboadvisorId,
-          filter.bankAccountRoboadvisorId,
+          roboadvisorFunds.roboadvisorId,
+          filter.roboadvisorId,
         ),
       );
     }
 
     if (filter.name) {
       conditions.push(
-        ilike(bankAccountRoboadvisorFunds.name, `%${filter.name}%`),
+        ilike(roboadvisorFunds.name, `%${filter.name}%`),
       );
     }
 
     if (filter.isin) {
       conditions.push(
-        ilike(bankAccountRoboadvisorFunds.isin, `%${filter.isin}%`),
+        ilike(roboadvisorFunds.isin, `%${filter.isin}%`),
       );
     }
 
     if (filter.assetClass) {
       conditions.push(
-        ilike(bankAccountRoboadvisorFunds.assetClass, `%${filter.assetClass}%`),
+        ilike(roboadvisorFunds.assetClass, `%${filter.assetClass}%`),
       );
     }
 
     if (filter.region) {
       conditions.push(
-        ilike(bankAccountRoboadvisorFunds.region, `%${filter.region}%`),
+        ilike(roboadvisorFunds.region, `%${filter.region}%`),
       );
     }
 
     if (filter.fundCurrencyCode) {
       conditions.push(
         eq(
-          bankAccountRoboadvisorFunds.fundCurrencyCode,
+          roboadvisorFunds.fundCurrencyCode,
           filter.fundCurrencyCode,
         ),
       );
@@ -557,7 +557,7 @@ export class BankAccountRoboadvisorsService {
 
     const [{ count }] = await db
       .select({ count: sql<number>`COUNT(*)` })
-      .from(bankAccountRoboadvisorFunds)
+      .from(roboadvisorFunds)
       .where(whereClause);
 
     const total = Number(count ?? 0);
@@ -575,9 +575,9 @@ export class BankAccountRoboadvisorsService {
 
     const results = await db
       .select()
-      .from(bankAccountRoboadvisorFunds)
+      .from(roboadvisorFunds)
       .where(whereClause)
-      .orderBy(orderDirection(orderColumn), orderDirection(bankAccountRoboadvisorFunds.id))
+      .orderBy(orderDirection(orderColumn), orderDirection(roboadvisorFunds.id))
       .limit(pageSize)
       .offset(offset);
 
@@ -612,8 +612,8 @@ export class BankAccountRoboadvisorsService {
     // Verify fund exists
     const existing = await db
       .select()
-      .from(bankAccountRoboadvisorFunds)
-      .where(eq(bankAccountRoboadvisorFunds.id, fundId))
+      .from(roboadvisorFunds)
+      .where(eq(roboadvisorFunds.id, fundId))
       .limit(1)
       .then((rows) => rows[0]);
 
@@ -641,9 +641,9 @@ export class BankAccountRoboadvisorsService {
       updateValues.shareCount = payload.shareCount ? payload.shareCount.toString() : null;
 
     const [result] = await db
-      .update(bankAccountRoboadvisorFunds)
+      .update(roboadvisorFunds)
       .set(updateValues)
-      .where(eq(bankAccountRoboadvisorFunds.id, fundId))
+      .where(eq(roboadvisorFunds.id, fundId))
       .returning();
 
     return this.mapFundToResponse(result);
@@ -653,9 +653,9 @@ export class BankAccountRoboadvisorsService {
     const db = this.databaseService.get();
 
     const result = await db
-      .delete(bankAccountRoboadvisorFunds)
-      .where(eq(bankAccountRoboadvisorFunds.id, fundId))
-      .returning({ id: bankAccountRoboadvisorFunds.id });
+      .delete(roboadvisorFunds)
+      .where(eq(roboadvisorFunds.id, fundId))
+      .returning({ id: roboadvisorFunds.id });
 
     if (result.length === 0) {
       throw new ServerError(
@@ -670,13 +670,13 @@ export class BankAccountRoboadvisorsService {
   private getRoboadvisorSortColumn(sortField: BankAccountRoboadvisorSortField) {
     switch (sortField) {
       case BankAccountRoboadvisorSortField.Name:
-        return bankAccountRoboadvisors.name;
+        return roboadvisors.name;
       case BankAccountRoboadvisorSortField.CreatedAt:
-        return bankAccountRoboadvisors.createdAt;
+        return roboadvisors.createdAt;
       case BankAccountRoboadvisorSortField.UpdatedAt:
-        return bankAccountRoboadvisors.updatedAt;
+        return roboadvisors.updatedAt;
       default:
-        return bankAccountRoboadvisors.createdAt;
+        return roboadvisors.createdAt;
     }
   }
 
@@ -685,16 +685,16 @@ export class BankAccountRoboadvisorsService {
   ) {
     switch (sortField) {
       case BankAccountRoboadvisorBalanceSortField.Date:
-        return bankAccountRoboadvisorBalances.date;
+        return roboadvisorBalances.date;
       case BankAccountRoboadvisorBalanceSortField.CreatedAt:
-        return bankAccountRoboadvisorBalances.createdAt;
+        return roboadvisorBalances.createdAt;
       default:
-        return bankAccountRoboadvisorBalances.date;
+        return roboadvisorBalances.date;
     }
   }
 
   private mapRoboadvisorToResponse(
-    roboadvisor: typeof bankAccountRoboadvisors.$inferSelect,
+    roboadvisor: typeof roboadvisors.$inferSelect,
   ): CreateBankAccountRoboadvisorResponse {
     return {
       id: roboadvisor.id,
@@ -715,7 +715,7 @@ export class BankAccountRoboadvisorsService {
   }
 
   private mapRoboadvisorToSummary(
-    roboadvisor: typeof bankAccountRoboadvisors.$inferSelect & {
+    roboadvisor: typeof roboadvisors.$inferSelect & {
       latestCalculation: {
         currentValueAfterTax: string;
         calculatedAt: string;
@@ -749,11 +749,11 @@ export class BankAccountRoboadvisorsService {
   }
 
   private mapBalanceToResponse(
-    balance: typeof bankAccountRoboadvisorBalances.$inferSelect,
+    balance: typeof roboadvisorBalances.$inferSelect,
   ): CreateBankAccountRoboadvisorBalanceResponse {
     return {
       id: balance.id,
-      bankAccountRoboadvisorId: balance.bankAccountRoboadvisorId,
+      roboadvisorId: balance.roboadvisorId,
       date: balance.date,
       type: balance.type,
       amount: balance.amount,
@@ -764,11 +764,11 @@ export class BankAccountRoboadvisorsService {
   }
 
   private mapBalanceToSummary(
-    balance: typeof bankAccountRoboadvisorBalances.$inferSelect,
+    balance: typeof roboadvisorBalances.$inferSelect,
   ): BankAccountRoboadvisorBalanceSummary {
     return {
       id: balance.id,
-      bankAccountRoboadvisorId: balance.bankAccountRoboadvisorId,
+      roboadvisorId: balance.roboadvisorId,
       date: balance.date,
       type: balance.type,
       amount: balance.amount,
@@ -779,11 +779,11 @@ export class BankAccountRoboadvisorsService {
   }
 
   private mapFundToResponse(
-    fund: typeof bankAccountRoboadvisorFunds.$inferSelect,
+    fund: typeof roboadvisorFunds.$inferSelect,
   ): CreateBankAccountRoboadvisorFundResponse {
     return {
       id: fund.id,
-      bankAccountRoboadvisorId: fund.bankAccountRoboadvisorId,
+      roboadvisorId: fund.roboadvisorId,
       name: fund.name,
       isin: fund.isin,
       assetClass: fund.assetClass,
@@ -797,11 +797,11 @@ export class BankAccountRoboadvisorsService {
   }
 
   private mapFundToSummary(
-    fund: typeof bankAccountRoboadvisorFunds.$inferSelect,
+    fund: typeof roboadvisorFunds.$inferSelect,
   ): BankAccountRoboadvisorFundSummary {
     return {
       id: fund.id,
-      bankAccountRoboadvisorId: fund.bankAccountRoboadvisorId,
+      roboadvisorId: fund.roboadvisorId,
       name: fund.name,
       isin: fund.isin,
       assetClass: fund.assetClass,
@@ -819,23 +819,23 @@ export class BankAccountRoboadvisorsService {
   ) {
     switch (sortField) {
       case BankAccountRoboadvisorFundSortField.Name:
-        return bankAccountRoboadvisorFunds.name;
+        return roboadvisorFunds.name;
       case BankAccountRoboadvisorFundSortField.Isin:
-        return bankAccountRoboadvisorFunds.isin;
+        return roboadvisorFunds.isin;
       case BankAccountRoboadvisorFundSortField.AssetClass:
-        return bankAccountRoboadvisorFunds.assetClass;
+        return roboadvisorFunds.assetClass;
       case BankAccountRoboadvisorFundSortField.Region:
-        return bankAccountRoboadvisorFunds.region;
+        return roboadvisorFunds.region;
       case BankAccountRoboadvisorFundSortField.FundCurrencyCode:
-        return bankAccountRoboadvisorFunds.fundCurrencyCode;
+        return roboadvisorFunds.fundCurrencyCode;
       case BankAccountRoboadvisorFundSortField.Weight:
-        return bankAccountRoboadvisorFunds.weight;
+        return roboadvisorFunds.weight;
       case BankAccountRoboadvisorFundSortField.CreatedAt:
-        return bankAccountRoboadvisorFunds.createdAt;
+        return roboadvisorFunds.createdAt;
       case BankAccountRoboadvisorFundSortField.UpdatedAt:
-        return bankAccountRoboadvisorFunds.updatedAt;
+        return roboadvisorFunds.updatedAt;
       default:
-        return bankAccountRoboadvisorFunds.name;
+        return roboadvisorFunds.name;
     }
   }
 
@@ -856,8 +856,8 @@ export class BankAccountRoboadvisorsService {
       // Get roboadvisor with capital gains tax percentage
       const roboadvisor = await db
         .select()
-        .from(bankAccountRoboadvisors)
-        .where(eq(bankAccountRoboadvisors.id, roboadvisorId))
+        .from(roboadvisors)
+        .where(eq(roboadvisors.id, roboadvisorId))
         .limit(1)
         .then((rows) => rows[0]);
 
@@ -871,9 +871,9 @@ export class BankAccountRoboadvisorsService {
       // Get all funds for this roboadvisor
       const funds = await db
         .select()
-        .from(bankAccountRoboadvisorFunds)
+        .from(roboadvisorFunds)
         .where(
-          eq(bankAccountRoboadvisorFunds.bankAccountRoboadvisorId, roboadvisorId)
+          eq(roboadvisorFunds.roboadvisorId, roboadvisorId)
         );
 
       if (funds.length === 0) {
@@ -886,10 +886,10 @@ export class BankAccountRoboadvisorsService {
       // Get all balances (deposits/withdrawals) for this roboadvisor
       const balances = await db
         .select()
-        .from(bankAccountRoboadvisorBalances)
+        .from(roboadvisorBalances)
         .where(
           eq(
-            bankAccountRoboadvisorBalances.bankAccountRoboadvisorId,
+            roboadvisorBalances.roboadvisorId,
             roboadvisorId
           )
         );
@@ -1018,20 +1018,15 @@ export class BankAccountRoboadvisorsService {
     try {
       const db = this.databaseService.get();
 
-      // Import here to avoid circular dependency
-      const { bankAccountRoboadvisors } = await import(
-        "../../../../../db/schema.ts"
-      );
-
       // Get all roboadvisors
-      const roboadvisors = await db
-        .select({ id: bankAccountRoboadvisors.id })
-        .from(bankAccountRoboadvisors);
+      const allRoboadvisors = await db
+        .select({ id: roboadvisors.id })
+        .from(roboadvisors);
 
-      console.log(`Processing ${roboadvisors.length} roboadvisors`);
+      console.log(`Processing ${allRoboadvisors.length} roboadvisors`);
 
       // Calculate value after tax for each roboadvisor
-      for (const roboadvisor of roboadvisors) {
+      for (const roboadvisor of allRoboadvisors) {
         try {
           await this.calculateRoboadvisorValueAfterTax(roboadvisor.id);
         } catch (error) {
