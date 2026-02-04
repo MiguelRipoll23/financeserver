@@ -1,12 +1,14 @@
 export interface BankAccountRoboadvisorFundSummary {
   id: number;
-  bankAccountRoboadvisorId: number;
+  roboadvisorId: number;
   name: string;
   isin: string;
   assetClass: string;
   region: string;
   fundCurrencyCode: string;
-  weight: string;
+  weight: number;
+  shareCount: number | null;
   createdAt: string;
   updatedAt: string;
 }
+

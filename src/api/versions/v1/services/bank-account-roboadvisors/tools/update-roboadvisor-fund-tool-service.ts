@@ -37,11 +37,14 @@ export class UpdateRoboadvisorFundToolService {
               region: parsed.region,
               fundCurrencyCode: parsed.fundCurrencyCode,
               weight: parsed.weight,
+              shareCount: parsed.shareCount,
             },
           );
 
-        const weightPct = (parseFloat(result.weight) * 100).toFixed(2);
-        const text = `Fund allocation updated successfully: ${result.name} (${result.isin}) - ${weightPct}% allocation (ID: ${result.id})`;
+        const weightPercentage = (result.weight * 100).toFixed(2);
+        // Treat 0 as a valid share count by checking for null/undefined explicitly
+        const shareInfo = result.shareCount != null ? ` with ${result.shareCount} shares` : '';
+        const text = `Fund allocation updated successfully: ${result.name} (${result.isin}) - ${weightPercentage}% allocation${shareInfo} (ID: ${result.id})`;
 
         return {
           text,

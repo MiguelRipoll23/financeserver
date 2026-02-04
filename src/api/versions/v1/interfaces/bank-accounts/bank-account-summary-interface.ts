@@ -6,4 +6,10 @@ export interface BankAccountSummary {
   type: BankAccountType;
   createdAt: string;
   updatedAt: string;
+  latestCalculation: {
+    monthlyProfitAfterTax: string;
+    annualProfitAfterTax: string;
+    calculatedAt: string;
+  } | null;
 }
+

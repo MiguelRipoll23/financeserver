@@ -29,7 +29,7 @@ export class FilterRoboadvisorFundsToolService {
 
         const result =
           await this.roboadvisorsService.getBankAccountRoboadvisorFunds({
-            bankAccountRoboadvisorId: parsed.bankAccountRoboadvisorId,
+            roboadvisorId: parsed.roboadvisorId,
             name: parsed.name,
             isin: parsed.isin,
             assetClass: parsed.assetClass,
@@ -44,12 +44,12 @@ export class FilterRoboadvisorFundsToolService {
         const count = result.results.length;
         const fundsList = result.results
           .map((fund) => {
-            const weightPct = (parseFloat(fund.weight) * 100).toFixed(2);
-            return `- ${fund.name} (${fund.isin}) - ${weightPct}% [${fund.assetClass}, ${fund.region}, ${fund.fundCurrencyCode}] (ID: ${fund.id})`;
+            const weightPercentage = (fund.weight * 100).toFixed(2);
+            return `- ${fund.name} (${fund.isin}) - ${weightPercentage}% [${fund.assetClass}, ${fund.region}, ${fund.fundCurrencyCode}] (ID: ${fund.id})`;
           })
           .join("\n");
 
-        let text = `Found ${count} fund allocation${count !== 1 ? "s" : ""} for roboadvisor ${parsed.bankAccountRoboadvisorId}`;
+        let text = `Found ${count} fund allocation${count !== 1 ? "s" : ""} for roboadvisor ${parsed.roboadvisorId}`;
         if (count > 0) {
           text += `:\n${fundsList}`;
         }

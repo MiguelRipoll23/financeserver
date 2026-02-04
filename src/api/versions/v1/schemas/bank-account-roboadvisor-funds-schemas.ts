@@ -1,10 +1,11 @@
 import { z } from "@hono/zod-openapi";
 import { BankAccountRoboadvisorFundSortField } from "../enums/bank-account-roboadvisor-fund-sort-field-enum.ts";
 import { SortOrder } from "../enums/sort-order-enum.ts";
+import { PercentageSchema } from "./percentage-schema.ts";
 
 // Roboadvisor Fund schemas
 export const CreateBankAccountRoboadvisorFundRequestSchema = z.object({
-  bankAccountRoboadvisorId: z
+  roboadvisorId: z
     .number()
     .int()
     .openapi({ example: 1 })
@@ -37,11 +38,15 @@ export const CreateBankAccountRoboadvisorFundRequestSchema = z.object({
     .length(3)
     .openapi({ example: "USD" })
     .describe("Fund currency ISO 4217 code"),
-  weight: z
-    .string()
-    .regex(/^(1(\.0{1,5})?|0(\.\d{1,5})?)$/)
-    .openapi({ example: "0.39" })
+  weight: PercentageSchema
+    .openapi({ example: 0.39 })
     .describe("Fund weight as decimal (0.39 = 39%)"),
+  shareCount: z
+    .number()
+    .positive()
+    .optional()
+    .openapi({ example: 125.5 })
+    .describe("Number of shares/units held (can be fractional)"),
 });
 
 export type CreateBankAccountRoboadvisorFundRequest = z.infer<
@@ -50,13 +55,14 @@ export type CreateBankAccountRoboadvisorFundRequest = z.infer<
 
 export const CreateBankAccountRoboadvisorFundResponseSchema = z.object({
   id: z.number().int().openapi({ example: 1 }),
-  bankAccountRoboadvisorId: z.number().int().openapi({ example: 1 }),
+  roboadvisorId: z.number().int().openapi({ example: 1 }),
   name: z.string().openapi({ example: "Vanguard FTSE All-World UCITS ETF" }),
   isin: z.string().openapi({ example: "IE00BK5BQT80" }),
   assetClass: z.string().openapi({ example: "equity" }),
   region: z.string().openapi({ example: "Global" }),
   fundCurrencyCode: z.string().openapi({ example: "USD" }),
-  weight: z.string().openapi({ example: "0.39" }),
+  weight: z.number().openapi({ example: 0.39 }),
+  shareCount: z.number().nullable().openapi({ example: 125.5 }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
 });
@@ -80,7 +86,7 @@ export type BankAccountRoboadvisorFundIdParam = z.infer<
 >;
 
 export const GetBankAccountRoboadvisorFundsRequestSchema = z.object({
-  bankAccountRoboadvisorId: z
+  roboadvisorId: z
     .number()
     .int()
     .optional()
@@ -143,13 +149,14 @@ export type GetBankAccountRoboadvisorFundsRequest = z.infer<
 
 export const BankAccountRoboadvisorFundSummarySchema = z.object({
   id: z.number().int().openapi({ example: 1 }),
-  bankAccountRoboadvisorId: z.number().int().openapi({ example: 1 }),
+  roboadvisorId: z.number().int().openapi({ example: 1 }),
   name: z.string().openapi({ example: "Vanguard FTSE All-World UCITS ETF" }),
   isin: z.string().openapi({ example: "IE00BK5BQT80" }),
   assetClass: z.string().openapi({ example: "equity" }),
   region: z.string().openapi({ example: "Global" }),
   fundCurrencyCode: z.string().openapi({ example: "USD" }),
-  weight: z.string().openapi({ example: "0.39" }),
+  weight: z.number().openapi({ example: 0.39 }),
+  shareCount: z.number().nullable().openapi({ example: 125.5 }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
 });
@@ -203,12 +210,16 @@ export const UpdateBankAccountRoboadvisorFundRequestSchema = z.object({
     .optional()
     .openapi({ example: "USD" })
     .describe("Fund currency ISO 4217 code"),
-  weight: z
-    .string()
-    .regex(/^(1(\.0{1,5})?|0(\.\d{1,5})?)$/)
+  weight: PercentageSchema
     .optional()
-    .openapi({ example: "0.39" })
+    .openapi({ example: 0.39 })
     .describe("Fund weight as decimal (0.39 = 39%)"),
+  shareCount: z
+    .number()
+    .positive()
+    .optional()
+    .openapi({ example: 125.5 })
+    .describe("Number of shares/units held (can be fractional)"),
 });
 
 export type UpdateBankAccountRoboadvisorFundRequest = z.infer<

@@ -2,6 +2,7 @@ import { z } from "@hono/zod-openapi";
 import { PaginationQuerySchema } from "./pagination-schemas.ts";
 import { CryptoExchangeSortField } from "../enums/crypto-exchange-sort-field-enum.ts";
 import { SortOrder } from "../enums/sort-order-enum.ts";
+import { NullablePercentageSchema } from "./percentage-schema.ts";
 
 // Crypto Exchange schemas
 export const CreateCryptoExchangeRequestSchema = z.object({
@@ -11,6 +12,10 @@ export const CreateCryptoExchangeRequestSchema = z.object({
     .max(255)
     .openapi({ example: "Binance" })
     .describe("Crypto exchange name"),
+  capitalGainsTaxPercentage: NullablePercentageSchema
+    .optional()
+    .openapi({ example: 0.26 })
+    .describe("Capital gains tax as decimal (0.26 = 26%)"),
 });
 
 export type CreateCryptoExchangeRequest = z.infer<
@@ -24,6 +29,7 @@ export const CreateCryptoExchangeResponseSchema = z.object({
     .openapi({ example: 1 })
     .describe("Unique crypto exchange identifier"),
   name: z.string().openapi({ example: "Binance" }),
+  capitalGainsTaxPercentage: z.number().nullable().openapi({ example: 0.26 }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
 });
@@ -52,6 +58,10 @@ export const UpdateCryptoExchangeRequestSchema = z.object({
     .optional()
     .openapi({ example: "Updated Exchange Name" })
     .describe("New crypto exchange name"),
+  capitalGainsTaxPercentage: NullablePercentageSchema
+    .optional()
+    .openapi({ example: 0.26 })
+    .describe("Capital gains tax as decimal (0.26 = 26%)"),
 });
 
 export type UpdateCryptoExchangeRequest = z.infer<
@@ -84,6 +94,7 @@ export type GetCryptoExchangesRequest = z.infer<
 export const CryptoExchangeSummarySchema = z.object({
   id: z.number().int().openapi({ example: 1 }),
   name: z.string().openapi({ example: "Binance" }),
+  capitalGainsTaxPercentage: z.number().nullable().openapi({ example: 0.26 }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
 });

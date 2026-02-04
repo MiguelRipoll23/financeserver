@@ -3,7 +3,7 @@ export interface BankAccountBalanceSummary {
   bankAccountId: number;
   balance: string;
   currencyCode: string;
-  interestRate: string | null;
+  interestRate: number | null;
   createdAt: string;
   updatedAt: string;
 }

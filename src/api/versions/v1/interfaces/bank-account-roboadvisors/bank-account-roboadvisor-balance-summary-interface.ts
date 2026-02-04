@@ -1,6 +1,6 @@
 export interface BankAccountRoboadvisorBalanceSummary {
   id: number;
-  bankAccountRoboadvisorId: number;
+  roboadvisorId: number;
   date: string;
   type: string;
   amount: string;

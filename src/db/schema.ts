@@ -23,18 +23,21 @@ export {
 } from "./tables/bank-accounts-table.ts";
 export { bankAccountBalancesTable } from "./tables/bank-account-balances-table.ts";
 export { bankAccountInterestRatesTable } from "./tables/bank-account-interest-rates-table.ts";
+export { bankAccountInterestRateCalculationsTable } from "./tables/bank-account-interest-rate-calculations-table.ts";
 export { cryptoExchangesTable } from "./tables/crypto-exchanges-table.ts";
 export { cryptoExchangeBalancesTable } from "./tables/crypto-exchange-balances-table.ts";
+export { cryptoExchangeCalculationsTable } from "./tables/crypto-exchange-calculations-table.ts";
 export { salaryChangesTable } from "./tables/salary-changes-table.ts";
 export {
-  bankAccountRoboadvisors,
+  roboadvisors,
   feeFrequencyEnum,
-} from "./tables/bank-account-roboadvisors-table.ts";
+} from "./tables/roboadvisors-table.ts";
 export {
-  bankAccountRoboadvisorBalances,
+  roboadvisorBalances,
   balanceTypeEnum,
-} from "./tables/bank-account-roboadvisor-balances-table.ts";
-export { bankAccountRoboadvisorFunds } from "./tables/bank-account-roboadvisor-funds-table.ts";
+} from "./tables/roboadvisor-balances-table.ts";
+export { roboadvisorFunds } from "./tables/roboadvisor-funds-table.ts";
+export { roboadvisorFundCalculationsTable } from "./tables/roboadvisor-fund-calculations-table.ts";
 
 // Export RLS roles and helpers
 export * from "./rls.ts";

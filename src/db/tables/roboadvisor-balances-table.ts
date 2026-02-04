@@ -8,7 +8,7 @@ import {
   varchar,
   bigint,
 } from "drizzle-orm/pg-core";
-import { bankAccountRoboadvisors } from "./bank-account-roboadvisors-table.ts";
+import { roboadvisors } from "./roboadvisors-table.ts";
 
 export const balanceTypeEnum = pgEnum("balance_type", [
   "deposit",
@@ -16,15 +16,15 @@ export const balanceTypeEnum = pgEnum("balance_type", [
   "adjustment",
 ]);
 
-export const bankAccountRoboadvisorBalances = pgTable(
-  "bank_account_roboadvisor_balances",
+export const roboadvisorBalances = pgTable(
+  "roboadvisor_balances",
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
 
-    bankAccountRoboadvisorId: bigint("bank_account_roboadvisor_id", {
+    roboadvisorId: bigint("roboadvisor_id", {
       mode: "number",
     })
-      .references(() => bankAccountRoboadvisors.id, { onDelete: "cascade" })
+      .references(() => roboadvisors.id, { onDelete: "cascade" })
       .notNull(),
 
     date: date("date").notNull(),

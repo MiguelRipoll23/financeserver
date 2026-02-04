@@ -2,8 +2,6 @@ import { z } from "zod";
 import { SortOrder } from "../enums/sort-order-enum.ts";
 import { BankAccountRoboadvisorSortField } from "../enums/bank-account-roboadvisor-sort-field-enum.ts";
 
-const DecimalRegex = /^[0-9]+(\.[0-9]{1,5})?$/;
-
 // Roboadvisor Tool Schemas
 export const CreateBankAccountRoboadvisorToolSchema = z.object({
   name: z
@@ -24,20 +22,24 @@ export const CreateBankAccountRoboadvisorToolSchema = z.object({
     .optional()
     .describe("Risk level from 1 (conservative) to 7 (aggressive)"),
   managementFeePercentage: z
-    .string()
-    .regex(DecimalRegex, "Must be a decimal (e.g., 0.0015 for 0.15%)")
+    .number()
+    .min(0)
+    .max(1)
     .describe("Annual management fee as decimal (e.g., 0.0015 = 0.15%)"),
   custodyFeePercentage: z
-    .string()
-    .regex(DecimalRegex, "Must be a decimal (e.g., 0.0015 for 0.15%)")
+    .number()
+    .min(0)
+    .max(1)
     .describe("Annual custody fee as decimal (e.g., 0.0015 = 0.15%)"),
   fundTerPercentage: z
-    .string()
-    .regex(DecimalRegex, "Must be a decimal (e.g., 0.0010 for 0.10%)")
+    .number()
+    .min(0)
+    .max(1)
     .describe("Fund TER as decimal (e.g., 0.0010 = 0.10%)"),
   totalFeePercentage: z
-    .string()
-    .regex(DecimalRegex, "Must be a decimal (e.g., 0.0040 for 0.40%)")
+    .number()
+    .min(0)
+    .max(1)
     .describe("Total annual fee as decimal (e.g., 0.0040 = 0.40%)"),
   managementFeeFrequency: z
     .enum(["monthly", "quarterly", "yearly"])
@@ -49,6 +51,12 @@ export const CreateBankAccountRoboadvisorToolSchema = z.object({
     .boolean()
     .optional()
     .describe("Whether TER is priced in NAV (default: true)"),
+  capitalGainsTaxPercentage: z
+    .number()
+    .min(0)
+    .max(1)
+    .optional()
+    .describe("Capital gains tax as decimal (0.26 = 26%)"),
 });
 
 export const FilterBankAccountRoboadvisorsToolSchema = z.object({
@@ -96,23 +104,27 @@ export const UpdateBankAccountRoboadvisorToolSchema = z.object({
     .optional()
     .describe("Risk level from 1 (conservative) to 7 (aggressive)"),
   managementFeePercentage: z
-    .string()
-    .regex(DecimalRegex, "Must be a decimal (e.g., 0.0015 for 0.15%)")
+    .number()
+    .min(0)
+    .max(1)
     .optional()
     .describe("Annual management fee as decimal (e.g., 0.0015 = 0.15%)"),
   custodyFeePercentage: z
-    .string()
-    .regex(DecimalRegex, "Must be a decimal (e.g., 0.0015 for 0.15%)")
+    .number()
+    .min(0)
+    .max(1)
     .optional()
     .describe("Annual custody fee as decimal (e.g., 0.0015 = 0.15%)"),
   fundTerPercentage: z
-    .string()
-    .regex(DecimalRegex, "Must be a decimal (e.g., 0.0010 for 0.10%)")
+    .number()
+    .min(0)
+    .max(1)
     .optional()
     .describe("Fund TER as decimal (e.g., 0.0010 = 0.10%)"),
   totalFeePercentage: z
-    .string()
-    .regex(DecimalRegex, "Must be a decimal (e.g., 0.0040 for 0.40%)")
+    .number()
+    .min(0)
+    .max(1)
     .optional()
     .describe("Total annual fee as decimal (e.g., 0.0040 = 0.40%)"),
   managementFeeFrequency: z
@@ -127,6 +139,12 @@ export const UpdateBankAccountRoboadvisorToolSchema = z.object({
     .boolean()
     .optional()
     .describe("Whether TER is priced in NAV"),
+  capitalGainsTaxPercentage: z
+    .number()
+    .min(0)
+    .max(1)
+    .optional()
+    .describe("Capital gains tax as decimal (0.26 = 26%)"),
 });
 
 export const DeleteBankAccountRoboadvisorToolSchema = z.object({

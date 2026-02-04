@@ -2,6 +2,7 @@ import { z } from "@hono/zod-openapi";
 import { PaginationQuerySchema } from "./pagination-schemas.ts";
 import { SortOrder } from "../enums/sort-order-enum.ts";
 import { DateOnlyStringSchema } from "./date-only-string-schema.ts";
+import { PercentageSchema, NullablePercentageSchema } from "./percentage-schema.ts";
 
 // Bank Account Interest Rate schemas
 export const CreateBankAccountInterestRateRequestSchema = z
@@ -11,15 +12,13 @@ export const CreateBankAccountInterestRateRequestSchema = z
       .int()
       .openapi({ example: 1 })
       .describe("Bank account identifier"),
-    interestRate: z
-      .string()
-      .regex(/^[0-9]+(\.[0-9]{1,2})?$/)
-      .refine((value) => {
-        const numericValue = parseFloat(value);
-        return numericValue >= 0 && numericValue <= 999.99;
-      }, "Interest rate must be between 0 and 999.99")
-      .openapi({ example: "2.50" })
-      .describe("Interest rate percentage (e.g., 2.50 for 2.50%)"),
+    interestRate: PercentageSchema
+      .openapi({ example: 0.025 })
+      .describe("Interest rate as decimal (0.025 = 2.5%)"),
+    taxPercentage: NullablePercentageSchema
+      .optional()
+      .openapi({ example: 0.19 })
+      .describe("Tax percentage as decimal (0.19 = 19%)"),
     interestRateStartDate: DateOnlyStringSchema.describe(
       "Start date of interest rate period in YYYY-MM-DD format",
     ),
@@ -48,7 +47,8 @@ export type CreateBankAccountInterestRateRequest = z.infer<
 export const CreateBankAccountInterestRateResponseSchema = z.object({
   id: z.number().int().openapi({ example: 1 }),
   bankAccountId: z.number().int().openapi({ example: 1 }),
-  interestRate: z.string().openapi({ example: "2.50" }),
+  interestRate: z.number().openapi({ example: 0.025 }),
+  taxPercentage: z.number().nullable().openapi({ example: 0.19 }),
   interestRateStartDate: z.string().openapi({ example: "2026-01-01" }),
   interestRateEndDate: z.string().nullable().openapi({ example: "2026-12-31" }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
@@ -98,7 +98,8 @@ export type GetBankAccountInterestRatesRequest = z.infer<
 export const BankAccountInterestRateSummarySchema = z.object({
   id: z.number().int().openapi({ example: 1 }),
   bankAccountId: z.number().int().openapi({ example: 1 }),
-  interestRate: z.string().openapi({ example: "2.50" }),
+  interestRate: z.number().openapi({ example: 0.025 }),
+  taxPercentage: z.number().nullable().openapi({ example: 0.19 }),
   interestRateStartDate: z.string().openapi({ example: "2026-01-01" }),
   interestRateEndDate: z.string().nullable().openapi({ example: "2026-12-31" }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
@@ -131,20 +132,14 @@ export type GetBankAccountInterestRatesResponse = z.infer<
 
 export const UpdateBankAccountInterestRateRequestSchema = z
   .object({
-    interestRate: z
-      .string()
-      .regex(/^[0-9]+(\.[0-9]{1,2})?$/)
-      .refine((value) => {
-        const numericValue = Number(value);
-        return (
-          Number.isFinite(numericValue) &&
-          numericValue >= 0 &&
-          numericValue <= 999.99
-        );
-      }, "Interest rate must be between 0 and 999.99")
+    interestRate: PercentageSchema
       .optional()
-      .openapi({ example: "2.50" })
-      .describe("Interest rate percentage (e.g., 2.50 for 2.50%)"),
+      .openapi({ example: 0.025 })
+      .describe("Interest rate as decimal (0.025 = 2.5%)"),
+    taxPercentage: NullablePercentageSchema
+      .optional()
+      .openapi({ example: 0.19 })
+      .describe("Tax percentage as decimal (0.19 = 19%)"),
     interestRateStartDate: DateOnlyStringSchema.optional().describe(
       "Start date of interest rate period in YYYY-MM-DD format",
     ),
