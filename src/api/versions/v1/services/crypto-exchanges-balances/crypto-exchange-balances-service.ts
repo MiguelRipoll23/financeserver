@@ -22,10 +22,16 @@ import type {
   UpdateCryptoExchangeBalanceRequest,
   UpdateCryptoExchangeBalanceResponse,
 } from "../../schemas/crypto-exchange-balances-schemas.ts";
+import { CryptoExchangeCalculationsService } from "../crypto-exchange-calculations/crypto-exchange-calculations-service.ts";
+import { CryptoPriceProviderFactory } from "../external-pricing/factory/crypto-price-provider-factory.ts";
 
 @injectable()
 export class CryptoExchangeBalancesService {
-  constructor(private databaseService = inject(DatabaseService)) {}
+  constructor(
+    private databaseService = inject(DatabaseService),
+    private calculationsService = inject(CryptoExchangeCalculationsService),
+    private priceProviderFactory = inject(CryptoPriceProviderFactory)
+  ) {}
 
   public async createCryptoExchangeBalance(
     exchangeId: number,
@@ -261,5 +267,125 @@ export class CryptoExchangeBalancesService {
       createdAt: toISOStringSafe(balance.createdAt),
       updatedAt: toISOStringSafe(balance.updatedAt),
     };
+  }
+
+  /**
+   * Calculate crypto balance value after capital gains tax
+   * @param cryptoExchangeId - Crypto exchange ID
+   * @param symbolCode - Crypto symbol (e.g., BTC, ETH)
+   * @returns Current value after tax, or null if unable to calculate
+   */
+  public async calculateCryptoValueAfterTax(
+    cryptoExchangeId: number,
+    symbolCode: string
+  ): Promise<{
+    currentValueAfterTax: string;
+    currencyCode: string;
+  } | null> {
+    try {
+      const db = this.databaseService.get();
+
+      // Get crypto exchange with capital gains tax percentage
+      const exchange = await db
+        .select()
+        .from(cryptoExchangesTable)
+        .where(eq(cryptoExchangesTable.id, cryptoExchangeId))
+        .limit(1)
+        .then((rows) => rows[0]);
+
+      if (!exchange) {
+        console.warn(
+          `Crypto exchange with ID ${cryptoExchangeId} not found`
+        );
+        return null;
+      }
+
+      // Get balance for this symbol
+      const balance = await db
+        .select()
+        .from(cryptoExchangeBalancesTable)
+        .where(
+          sql`${cryptoExchangeBalancesTable.cryptoExchangeId} = ${cryptoExchangeId} 
+              AND ${cryptoExchangeBalancesTable.symbolCode} = ${symbolCode}`
+        )
+        .limit(1)
+        .then((rows) => rows[0]);
+
+      if (!balance) {
+        console.warn(
+          `Balance not found for exchange ${cryptoExchangeId} and symbol ${symbolCode}`
+        );
+        return null;
+      }
+
+      // Get invested amount and currency
+      if (!balance.investedAmount || !balance.investedCurrencyCode) {
+        console.warn(
+          `Invested amount or currency not set for balance ${balance.id}`
+        );
+        return null;
+      }
+
+      const investedAmount = parseFloat(balance.investedAmount);
+      const currencyCode = balance.investedCurrencyCode;
+
+      // Get price provider
+      const priceProvider = this.priceProviderFactory.getProvider();
+
+      // Fetch current price for the crypto symbol
+      const priceString = await priceProvider.getCurrentPrice(
+        symbolCode,
+        currencyCode
+      );
+
+      if (!priceString) {
+        console.warn(
+          `Unable to fetch price for symbol ${symbolCode} in ${currencyCode}`
+        );
+        return null;
+      }
+
+      // Calculate current value
+      const cryptoBalance = parseFloat(balance.balance);
+      const currentPrice = parseFloat(priceString);
+      const currentValue = cryptoBalance * currentPrice;
+
+      // Calculate capital gain (can be negative for losses)
+      const capitalGain = currentValue - investedAmount;
+
+      // Apply tax only to gains (not to losses)
+      const taxPercentage = exchange.capitalGainsTaxPercentage
+        ? parseFloat(exchange.capitalGainsTaxPercentage)
+        : 0;
+
+      let valueAfterTax: number;
+
+      if (capitalGain > 0) {
+        // Tax only applies to the gain portion
+        const taxAmount = capitalGain * (taxPercentage / 100);
+        valueAfterTax = currentValue - taxAmount;
+      } else {
+        // No tax on losses
+        valueAfterTax = currentValue;
+      }
+
+      // Store calculation
+      await this.calculationsService.storeCalculation(
+        cryptoExchangeId,
+        symbolCode,
+        valueAfterTax.toFixed(2)
+      );
+
+      return {
+        currentValueAfterTax: valueAfterTax.toFixed(2),
+        currencyCode,
+      };
+    } catch (error) {
+      console.error(
+        "Error calculating crypto value after tax:",
+        error
+      );
+      return null;
+    }
   }
 }

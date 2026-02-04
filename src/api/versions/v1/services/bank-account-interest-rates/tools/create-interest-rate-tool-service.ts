@@ -34,6 +34,7 @@ export class CreateInterestRateToolService {
             {
               bankAccountId: parsed.bankAccountId,
               interestRate: parsed.interestRate,
+              taxPercentage: parsed.taxPercentage,
               interestRateStartDate: parsed.interestRateStartDate,
               interestRateEndDate: parsed.interestRateEndDate,
             }

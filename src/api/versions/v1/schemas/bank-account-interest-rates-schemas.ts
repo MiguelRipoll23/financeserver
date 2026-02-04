@@ -20,6 +20,16 @@ export const CreateBankAccountInterestRateRequestSchema = z
       }, "Interest rate must be between 0 and 999.99")
       .openapi({ example: "2.50" })
       .describe("Interest rate percentage (e.g., 2.50 for 2.50%)"),
+    taxPercentage: z
+      .string()
+      .regex(/^[0-9]+(\.[0-9]{1,2})?$/)
+      .refine((value) => {
+        const numericValue = parseFloat(value);
+        return numericValue >= 0 && numericValue <= 100;
+      }, "Tax percentage must be between 0 and 100")
+      .optional()
+      .openapi({ example: "19.00" })
+      .describe("Tax percentage on interest (e.g., 19.00 for 19%)"),
     interestRateStartDate: DateOnlyStringSchema.describe(
       "Start date of interest rate period in YYYY-MM-DD format",
     ),
@@ -49,6 +59,7 @@ export const CreateBankAccountInterestRateResponseSchema = z.object({
   id: z.number().int().openapi({ example: 1 }),
   bankAccountId: z.number().int().openapi({ example: 1 }),
   interestRate: z.string().openapi({ example: "2.50" }),
+  taxPercentage: z.string().nullable().openapi({ example: "19.00" }),
   interestRateStartDate: z.string().openapi({ example: "2026-01-01" }),
   interestRateEndDate: z.string().nullable().openapi({ example: "2026-12-31" }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
@@ -99,6 +110,7 @@ export const BankAccountInterestRateSummarySchema = z.object({
   id: z.number().int().openapi({ example: 1 }),
   bankAccountId: z.number().int().openapi({ example: 1 }),
   interestRate: z.string().openapi({ example: "2.50" }),
+  taxPercentage: z.string().nullable().openapi({ example: "19.00" }),
   interestRateStartDate: z.string().openapi({ example: "2026-01-01" }),
   interestRateEndDate: z.string().nullable().openapi({ example: "2026-12-31" }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
@@ -145,6 +157,16 @@ export const UpdateBankAccountInterestRateRequestSchema = z
       .optional()
       .openapi({ example: "2.50" })
       .describe("Interest rate percentage (e.g., 2.50 for 2.50%)"),
+    taxPercentage: z
+      .string()
+      .regex(/^[0-9]+(\.[0-9]{1,2})?$/)
+      .refine((value) => {
+        const numericValue = parseFloat(value);
+        return numericValue >= 0 && numericValue <= 100;
+      }, "Tax percentage must be between 0 and 100")
+      .optional()
+      .openapi({ example: "19.00" })
+      .describe("Tax percentage on interest (e.g., 19.00 for 19%)"),
     interestRateStartDate: DateOnlyStringSchema.optional().describe(
       "Start date of interest rate period in YYYY-MM-DD format",
     ),

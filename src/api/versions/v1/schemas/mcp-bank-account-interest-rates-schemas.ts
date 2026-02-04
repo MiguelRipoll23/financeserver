@@ -13,6 +13,14 @@ export const CreateBankAccountInterestRateToolSchema = z.object({
       "Interest rate must be a valid percentage (format: 2.50 for 2.50%)"
     )
     .describe("Interest rate percentage (format: 2.50 for 2.50%)"),
+  taxPercentage: z
+    .string()
+    .regex(
+      PercentageRegex,
+      "Tax percentage must be a valid percentage (format: 19.00 for 19%)"
+    )
+    .optional()
+    .describe("Tax percentage on interest (format: 19.00 for 19%, optional)"),
   interestRateStartDate: z
     .string()
     .regex(DateOnlyRegex, "Date must be in YYYY-MM-DD format")
@@ -72,6 +80,14 @@ export const UpdateBankAccountInterestRateToolSchema = z.object({
     )
     .optional()
     .describe("Interest rate percentage (format: 2.50 for 2.50%, optional)"),
+  taxPercentage: z
+    .string()
+    .regex(
+      PercentageRegex,
+      "Tax percentage must be a valid percentage (format: 19.00 for 19%)"
+    )
+    .optional()
+    .describe("Tax percentage on interest (format: 19.00 for 19%, optional)"),
   interestRateStartDate: z
     .string()
     .regex(DateOnlyRegex, "Date must be in YYYY-MM-DD format")

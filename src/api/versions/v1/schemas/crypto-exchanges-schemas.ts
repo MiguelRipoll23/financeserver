@@ -11,6 +11,16 @@ export const CreateCryptoExchangeRequestSchema = z.object({
     .max(255)
     .openapi({ example: "Binance" })
     .describe("Crypto exchange name"),
+  capitalGainsTaxPercentage: z
+    .string()
+    .regex(/^[0-9]+(\.[0-9]{1,2})?$/)
+    .refine((value) => {
+      const numericValue = parseFloat(value);
+      return numericValue >= 0 && numericValue <= 100;
+    }, "Capital gains tax percentage must be between 0 and 100")
+    .optional()
+    .openapi({ example: "26.00" })
+    .describe("Capital gains tax percentage (e.g., 26.00 for 26%)"),
 });
 
 export type CreateCryptoExchangeRequest = z.infer<
@@ -24,6 +34,7 @@ export const CreateCryptoExchangeResponseSchema = z.object({
     .openapi({ example: 1 })
     .describe("Unique crypto exchange identifier"),
   name: z.string().openapi({ example: "Binance" }),
+  capitalGainsTaxPercentage: z.string().nullable().openapi({ example: "26.00" }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
 });
@@ -52,6 +63,16 @@ export const UpdateCryptoExchangeRequestSchema = z.object({
     .optional()
     .openapi({ example: "Updated Exchange Name" })
     .describe("New crypto exchange name"),
+  capitalGainsTaxPercentage: z
+    .string()
+    .regex(/^[0-9]+(\.[0-9]{1,2})?$/)
+    .refine((value) => {
+      const numericValue = parseFloat(value);
+      return numericValue >= 0 && numericValue <= 100;
+    }, "Capital gains tax percentage must be between 0 and 100")
+    .optional()
+    .openapi({ example: "26.00" })
+    .describe("Capital gains tax percentage (e.g., 26.00 for 26%)"),
 });
 
 export type UpdateCryptoExchangeRequest = z.infer<
@@ -84,6 +105,7 @@ export type GetCryptoExchangesRequest = z.infer<
 export const CryptoExchangeSummarySchema = z.object({
   id: z.number().int().openapi({ example: 1 }),
   name: z.string().openapi({ example: "Binance" }),
+  capitalGainsTaxPercentage: z.string().nullable().openapi({ example: "26.00" }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
 });

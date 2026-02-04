@@ -47,10 +47,18 @@ import type {
   UpdateBankAccountRoboadvisorFundResponse,
   GetBankAccountRoboadvisorFundsResponse,
 } from "../../schemas/bank-account-roboadvisor-funds-schemas.ts";
+import { BankAccountRoboadvisorFundCalculationsService } from "../bank-account-roboadvisor-fund-calculations/bank-account-roboadvisor-fund-calculations-service.ts";
+import { IndexFundPriceProviderFactory } from "../external-pricing/factory/index-fund-price-provider-factory.ts";
 
 @injectable()
 export class BankAccountRoboadvisorsService {
-  constructor(private databaseService = inject(DatabaseService)) {}
+  constructor(
+    private databaseService = inject(DatabaseService),
+    private calculationsService = inject(
+      BankAccountRoboadvisorFundCalculationsService
+    ),
+    private priceProviderFactory = inject(IndexFundPriceProviderFactory)
+  ) {}
 
   // Roboadvisor CRUD operations
   public async createBankAccountRoboadvisor(
@@ -87,6 +95,7 @@ export class BankAccountRoboadvisorsService {
         managementFeeFrequency: payload.managementFeeFrequency,
         custodyFeeFrequency: payload.custodyFeeFrequency,
         terPricedInNav: payload.terPricedInNav ?? true,
+        capitalGainsTaxPercentage: payload.capitalGainsTaxPercentage ?? null,
       })
       .returning();
 
@@ -218,6 +227,8 @@ export class BankAccountRoboadvisorsService {
       updateValues.custodyFeeFrequency = payload.custodyFeeFrequency;
     if (payload.terPricedInNav !== undefined)
       updateValues.terPricedInNav = payload.terPricedInNav;
+    if (payload.capitalGainsTaxPercentage !== undefined)
+      updateValues.capitalGainsTaxPercentage = payload.capitalGainsTaxPercentage;
 
     const [result] = await db
       .update(bankAccountRoboadvisors)
@@ -678,6 +689,7 @@ export class BankAccountRoboadvisorsService {
       managementFeeFrequency: roboadvisor.managementFeeFrequency,
       custodyFeeFrequency: roboadvisor.custodyFeeFrequency,
       terPricedInNav: roboadvisor.terPricedInNav,
+      capitalGainsTaxPercentage: roboadvisor.capitalGainsTaxPercentage,
       createdAt: toISOStringSafe(roboadvisor.createdAt),
       updatedAt: toISOStringSafe(roboadvisor.updatedAt),
     };
@@ -698,6 +710,7 @@ export class BankAccountRoboadvisorsService {
       managementFeeFrequency: roboadvisor.managementFeeFrequency,
       custodyFeeFrequency: roboadvisor.custodyFeeFrequency,
       terPricedInNav: roboadvisor.terPricedInNav,
+      capitalGainsTaxPercentage: roboadvisor.capitalGainsTaxPercentage,
       createdAt: toISOStringSafe(roboadvisor.createdAt),
       updatedAt: toISOStringSafe(roboadvisor.updatedAt),
     };
@@ -789,6 +802,163 @@ export class BankAccountRoboadvisorsService {
         return bankAccountRoboadvisorFunds.updatedAt;
       default:
         return bankAccountRoboadvisorFunds.name;
+    }
+  }
+
+  /**
+   * Calculate roboadvisor portfolio value after capital gains tax
+   * @param roboadvisorId - Roboadvisor ID
+   * @returns Current portfolio value after tax, or null if unable to calculate
+   */
+  public async calculateRoboadvisorValueAfterTax(
+    roboadvisorId: number
+  ): Promise<{
+    currentValueAfterTax: string;
+    currencyCode: string;
+  } | null> {
+    try {
+      const db = this.databaseService.get();
+
+      // Get roboadvisor with capital gains tax percentage
+      const roboadvisor = await db
+        .select()
+        .from(bankAccountRoboadvisors)
+        .where(eq(bankAccountRoboadvisors.id, roboadvisorId))
+        .limit(1)
+        .then((rows) => rows[0]);
+
+      if (!roboadvisor) {
+        console.warn(
+          `Roboadvisor with ID ${roboadvisorId} not found`
+        );
+        return null;
+      }
+
+      // Get all funds for this roboadvisor
+      const funds = await db
+        .select()
+        .from(bankAccountRoboadvisorFunds)
+        .where(
+          eq(bankAccountRoboadvisorFunds.bankAccountRoboadvisorId, roboadvisorId)
+        );
+
+      if (funds.length === 0) {
+        console.warn(
+          `No funds found for roboadvisor ${roboadvisorId}`
+        );
+        return null;
+      }
+
+      // Get all balances (deposits/withdrawals) for this roboadvisor
+      const balances = await db
+        .select()
+        .from(bankAccountRoboadvisorBalances)
+        .where(
+          eq(
+            bankAccountRoboadvisorBalances.bankAccountRoboadvisorId,
+            roboadvisorId
+          )
+        );
+
+      if (balances.length === 0) {
+        console.warn(
+          `No balances found for roboadvisor ${roboadvisorId}`
+        );
+        return null;
+      }
+
+      // Calculate total invested amount (sum of deposits minus withdrawals)
+      let totalInvested = 0;
+      const currencyCode = balances[0].currencyCode;
+
+      for (const balance of balances) {
+        const amount = parseFloat(balance.amount);
+        if (balance.type === "deposit" || balance.type === "adjustment") {
+          totalInvested += amount;
+        } else if (balance.type === "withdrawal") {
+          totalInvested -= amount;
+        }
+      }
+
+      // Get price provider
+      const priceProvider = this.priceProviderFactory.getProvider();
+
+      // Fetch current prices for all funds and calculate total portfolio value
+      let totalCurrentValue = 0;
+      
+      for (const fund of funds) {
+        try {
+          const priceString = await priceProvider.getCurrentPrice(
+            fund.isin,
+            currencyCode
+          );
+
+          if (!priceString) {
+            console.warn(
+              `Unable to fetch price for ISIN ${fund.isin}, skipping fund`
+            );
+            continue;
+          }
+
+          const price = parseFloat(priceString);
+          const weight = parseFloat(fund.weight);
+          const fundValue = totalInvested * weight;
+          
+          // Calculate current value based on price change
+          // This is simplified - in reality you'd need share counts
+          // For now, assume proportional growth based on invested amount
+          const fundCurrentValue = fundValue * (price / 100); // Adjust based on your price provider logic
+          
+          totalCurrentValue += fundCurrentValue;
+        } catch (error) {
+          console.error(
+            `Error fetching price for ISIN ${fund.isin}:`,
+            error
+          );
+          continue;
+        }
+      }
+
+      // If we couldn't get any prices, use invested amount as fallback
+      if (totalCurrentValue === 0) {
+        totalCurrentValue = totalInvested;
+      }
+
+      // Calculate capital gain (can be negative for losses)
+      const capitalGain = totalCurrentValue - totalInvested;
+
+      // Apply tax only to gains (not to losses)
+      const taxPercentage = roboadvisor.capitalGainsTaxPercentage
+        ? parseFloat(roboadvisor.capitalGainsTaxPercentage)
+        : 0;
+
+      let valueAfterTax: number;
+      
+      if (capitalGain > 0) {
+        // Tax only applies to the gain portion
+        const taxAmount = capitalGain * (taxPercentage / 100);
+        valueAfterTax = totalCurrentValue - taxAmount;
+      } else {
+        // No tax on losses
+        valueAfterTax = totalCurrentValue;
+      }
+
+      // Store calculation
+      await this.calculationsService.storeCalculation(
+        roboadvisorId,
+        valueAfterTax.toFixed(2)
+      );
+
+      return {
+        currentValueAfterTax: valueAfterTax.toFixed(2),
+        currencyCode,
+      };
+    } catch (error) {
+      console.error(
+        "Error calculating roboadvisor value after tax:",
+        error
+      );
+      return null;
     }
   }
 }

@@ -21,6 +21,7 @@ import { AuthenticatedSalaryChangesRouter } from "./authenticated/authenticated-
 import { AuthenticatedBankAccountRoboadvisorsRouter } from "./authenticated/authenticated-bank-account-roboadvisors-router.ts";
 import { AuthenticatedBankAccountRoboadvisorBalancesRouter } from "./authenticated/authenticated-bank-account-roboadvisor-balances-router.ts";
 import { AuthenticatedBankAccountRoboadvisorFundsRouter } from "./authenticated/authenticated-bank-account-roboadvisor-funds-router.ts";
+import { AuthenticatedInvestmentCalculationsRouter } from "./authenticated/authenticated-investment-calculations-router.ts";
 import { HonoVariables } from "../../../../core/types/hono/hono-variables-type.ts";
 
 @injectable()
@@ -58,6 +59,9 @@ export class V1AuthenticatedRouter {
     ),
     private bankAccountRoboadvisorFundsRouter = inject(
       AuthenticatedBankAccountRoboadvisorFundsRouter,
+    ),
+    private investmentCalculationsRouter = inject(
+      AuthenticatedInvestmentCalculationsRouter,
     ),
   ) {
     this.app = new OpenAPIHono();
@@ -117,6 +121,12 @@ export class V1AuthenticatedRouter {
     this.app.route(
       "/crypto-exchange-balances",
       this.cryptoExchangeBalancesRouter.getRouter(),
+    );
+
+    // Investment calculations endpoint
+    this.app.route(
+      "/investment-calculations",
+      this.investmentCalculationsRouter.getRouter(),
     );
 
     this.app.route("/bills", this.billsRouter.getRouter());

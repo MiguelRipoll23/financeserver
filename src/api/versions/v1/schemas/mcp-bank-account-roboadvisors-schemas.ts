@@ -3,6 +3,7 @@ import { SortOrder } from "../enums/sort-order-enum.ts";
 import { BankAccountRoboadvisorSortField } from "../enums/bank-account-roboadvisor-sort-field-enum.ts";
 
 const DecimalRegex = /^[0-9]+(\.[0-9]{1,5})?$/;
+const PercentageRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
 
 // Roboadvisor Tool Schemas
 export const CreateBankAccountRoboadvisorToolSchema = z.object({
@@ -49,6 +50,11 @@ export const CreateBankAccountRoboadvisorToolSchema = z.object({
     .boolean()
     .optional()
     .describe("Whether TER is priced in NAV (default: true)"),
+  capitalGainsTaxPercentage: z
+    .string()
+    .regex(PercentageRegex, "Must be a percentage (e.g., 26.00 for 26%)")
+    .optional()
+    .describe("Capital gains tax percentage (e.g., 26.00 for 26%)"),
 });
 
 export const FilterBankAccountRoboadvisorsToolSchema = z.object({
@@ -127,6 +133,11 @@ export const UpdateBankAccountRoboadvisorToolSchema = z.object({
     .boolean()
     .optional()
     .describe("Whether TER is priced in NAV"),
+  capitalGainsTaxPercentage: z
+    .string()
+    .regex(PercentageRegex, "Must be a percentage (e.g., 26.00 for 26%)")
+    .optional()
+    .describe("Capital gains tax percentage (e.g., 26.00 for 26%)"),
 });
 
 export const DeleteBankAccountRoboadvisorToolSchema = z.object({

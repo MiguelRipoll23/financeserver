@@ -24,6 +24,7 @@ import type {
 } from "../../schemas/bank-account-interest-rates-schemas.ts";
 import type { BankAccountInterestRateSummarySchema } from "../../schemas/bank-account-interest-rates-schemas.ts";
 import { z } from "zod";
+import { BankAccountInterestRateCalculationsService } from "../bank-account-interest-rate-calculations/bank-account-interest-rate-calculations-service.ts";
 
 type BankAccountInterestRateSummary = z.infer<
   typeof BankAccountInterestRateSummarySchema
@@ -31,7 +32,12 @@ type BankAccountInterestRateSummary = z.infer<
 
 @injectable()
 export class BankAccountInterestRatesService {
-  constructor(private databaseService = inject(DatabaseService)) {}
+  constructor(
+    private databaseService = inject(DatabaseService),
+    private calculationsService = inject(
+      BankAccountInterestRateCalculationsService
+    )
+  ) {}
 
   public async createBankAccountInterestRate(
     payload: CreateBankAccountInterestRateRequest,
@@ -77,6 +83,7 @@ export class BankAccountInterestRatesService {
         .values({
           bankAccountId: accountId,
           interestRate: payload.interestRate,
+          taxPercentage: payload.taxPercentage ?? null,
           interestRateStartDate: payload.interestRateStartDate,
           interestRateEndDate: payload.interestRateEndDate ?? null,
         })
@@ -206,6 +213,7 @@ export class BankAccountInterestRatesService {
 
     const updateValues: {
       interestRate?: string;
+      taxPercentage?: string | null;
       interestRateStartDate?: string;
       interestRateEndDate?: string | null;
       updatedAt: Date;
@@ -215,6 +223,10 @@ export class BankAccountInterestRatesService {
 
     if (payload.interestRate !== undefined) {
       updateValues.interestRate = payload.interestRate;
+    }
+
+    if (payload.taxPercentage !== undefined) {
+      updateValues.taxPercentage = payload.taxPercentage;
     }
 
     if (payload.interestRateStartDate !== undefined) {
@@ -370,6 +382,7 @@ export class BankAccountInterestRatesService {
       id: rate.id,
       bankAccountId: rate.bankAccountId,
       interestRate: rate.interestRate,
+      taxPercentage: rate.taxPercentage,
       interestRateStartDate: rate.interestRateStartDate,
       interestRateEndDate: rate.interestRateEndDate,
       createdAt: toISOStringSafe(rate.createdAt),
@@ -384,10 +397,86 @@ export class BankAccountInterestRatesService {
       id: rate.id,
       bankAccountId: rate.bankAccountId,
       interestRate: rate.interestRate,
+      taxPercentage: rate.taxPercentage,
       interestRateStartDate: rate.interestRateStartDate,
       interestRateEndDate: rate.interestRateEndDate,
       createdAt: toISOStringSafe(rate.createdAt),
       updatedAt: toISOStringSafe(rate.updatedAt),
     };
+  }
+
+  /**
+   * Calculate interest profit after tax for a bank account
+   * @param bankAccountId - Bank account ID
+   * @param currentBalance - Current balance as string
+   * @param currencyCode - Currency code for the balance
+   * @returns Calculated monthly and annual profit after tax, or null if no active rate
+   */
+  public async calculateInterestAfterTax(
+    bankAccountId: number,
+    currentBalance: string,
+    currencyCode: string
+  ): Promise<{
+    monthlyProfitAfterTax: string;
+    annualProfitAfterTax: string;
+    currencyCode: string;
+  } | null> {
+    try {
+      const db = this.databaseService.get();
+
+      // Get current active interest rate
+      const now = new Date().toISOString().split("T")[0];
+      const [activeRate] = await db
+        .select()
+        .from(bankAccountInterestRatesTable)
+        .where(
+          and(
+            eq(bankAccountInterestRatesTable.bankAccountId, bankAccountId),
+            sql`${bankAccountInterestRatesTable.interestRateStartDate} <= ${now}`,
+            sql`(${bankAccountInterestRatesTable.interestRateEndDate} IS NULL OR ${bankAccountInterestRatesTable.interestRateEndDate} >= ${now})`
+          )
+        )
+        .limit(1);
+
+      if (!activeRate) {
+        console.warn(
+          `No active interest rate found for bank account ${bankAccountId}`
+        );
+        return null;
+      }
+
+      const balance = parseFloat(currentBalance);
+      const interestRate = parseFloat(activeRate.interestRate);
+      const taxPercentage = activeRate.taxPercentage
+        ? parseFloat(activeRate.taxPercentage)
+        : 0;
+
+      // Calculate annual profit before tax
+      const annualProfitBeforeTax = (balance * interestRate) / 100;
+
+      // Calculate monthly profit before tax
+      const monthlyProfitBeforeTax = annualProfitBeforeTax / 12;
+
+      // Apply tax
+      const taxMultiplier = 1 - taxPercentage / 100;
+      const monthlyProfitAfterTax = monthlyProfitBeforeTax * taxMultiplier;
+      const annualProfitAfterTax = annualProfitBeforeTax * taxMultiplier;
+
+      // Store calculation
+      await this.calculationsService.storeCalculation(
+        bankAccountId,
+        monthlyProfitAfterTax.toFixed(2),
+        annualProfitAfterTax.toFixed(2)
+      );
+
+      return {
+        monthlyProfitAfterTax: monthlyProfitAfterTax.toFixed(2),
+        annualProfitAfterTax: annualProfitAfterTax.toFixed(2),
+        currencyCode,
+      };
+    } catch (error) {
+      console.error("Error calculating interest after tax:", error);
+      return null;
+    }
   }
 }

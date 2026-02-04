@@ -10,6 +10,8 @@ export interface BankAccountRoboadvisorSummary {
   managementFeeFrequency: string;
   custodyFeeFrequency: string;
   terPricedInNav: boolean;
+  capitalGainsTaxPercentage: string | null;
   createdAt: string;
   updatedAt: string;
 }
+

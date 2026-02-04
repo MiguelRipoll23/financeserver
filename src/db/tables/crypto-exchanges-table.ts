@@ -1,5 +1,6 @@
 import {
   bigserial,
+  numeric,
   pgTable,
   text,
   timestamp,
@@ -12,6 +13,10 @@ export const cryptoExchangesTable = pgTable(
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
     name: text("name").notNull(),
+    capitalGainsTaxPercentage: numeric("capital_gains_tax_percentage", {
+      precision: 5,
+      scale: 2,
+    }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),

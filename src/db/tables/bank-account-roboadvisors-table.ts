@@ -57,6 +57,11 @@ export const bankAccountRoboadvisors = pgTable("bank_account_roboadvisors", {
 
   terPricedInNav: boolean("ter_priced_in_nav").notNull().default(true),
 
+  capitalGainsTaxPercentage: decimal("capital_gains_tax_percentage", {
+    precision: 5,
+    scale: 2,
+  }),
+
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
