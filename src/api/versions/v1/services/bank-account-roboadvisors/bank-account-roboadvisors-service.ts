@@ -468,6 +468,7 @@ export class BankAccountRoboadvisorsService {
         region: payload.region,
         fundCurrencyCode: payload.fundCurrencyCode,
         weight: payload.weight,
+        shareCount: payload.shareCount ?? null,
       })
       .returning();
 
@@ -620,6 +621,8 @@ export class BankAccountRoboadvisorsService {
     if (payload.fundCurrencyCode !== undefined)
       updateValues.fundCurrencyCode = payload.fundCurrencyCode;
     if (payload.weight !== undefined) updateValues.weight = payload.weight;
+    if (payload.shareCount !== undefined)
+      updateValues.shareCount = payload.shareCount;
 
     const [result] = await db
       .update(bankAccountRoboadvisorFunds)
@@ -758,6 +761,7 @@ export class BankAccountRoboadvisorsService {
       region: fund.region,
       fundCurrencyCode: fund.fundCurrencyCode,
       weight: fund.weight,
+      shareCount: fund.shareCount,
       createdAt: toISOStringSafe(fund.createdAt),
       updatedAt: toISOStringSafe(fund.updatedAt),
     };
@@ -775,6 +779,7 @@ export class BankAccountRoboadvisorsService {
       region: fund.region,
       fundCurrencyCode: fund.fundCurrencyCode,
       weight: fund.weight,
+      shareCount: fund.shareCount,
       createdAt: toISOStringSafe(fund.createdAt),
       updatedAt: toISOStringSafe(fund.updatedAt),
     };
@@ -885,8 +890,17 @@ export class BankAccountRoboadvisorsService {
 
       // Fetch current prices for all funds and calculate total portfolio value
       let totalCurrentValue = 0;
+      let successfulPriceFetches = 0;
       
       for (const fund of funds) {
+        // Skip funds without share count - cannot calculate value
+        if (!fund.shareCount) {
+          console.warn(
+            `Fund ${fund.name} (ISIN: ${fund.isin}) has no share count, skipping`
+          );
+          continue;
+        }
+
         try {
           const priceString = await priceProvider.getCurrentPrice(
             fund.isin,
@@ -900,16 +914,14 @@ export class BankAccountRoboadvisorsService {
             continue;
           }
 
-          const price = parseFloat(priceString);
-          const weight = parseFloat(fund.weight);
-          const fundValue = totalInvested * weight;
+          const currentPrice = parseFloat(priceString);
+          const shareCount = parseFloat(fund.shareCount);
           
-          // Calculate current value based on price change
-          // This is simplified - in reality you'd need share counts
-          // For now, assume proportional growth based on invested amount
-          const fundCurrentValue = fundValue * (price / 100); // Adjust based on your price provider logic
+          // Calculate current value: shares * currentPrice
+          const fundCurrentValue = shareCount * currentPrice;
           
           totalCurrentValue += fundCurrentValue;
+          successfulPriceFetches++;
         } catch (error) {
           console.error(
             `Error fetching price for ISIN ${fund.isin}:`,
@@ -919,9 +931,13 @@ export class BankAccountRoboadvisorsService {
         }
       }
 
-      // If we couldn't get any prices, use invested amount as fallback
-      if (totalCurrentValue === 0) {
-        totalCurrentValue = totalInvested;
+      // Return null if we couldn't fetch prices for most/all funds
+      // This prevents returning misleading portfolio values
+      if (successfulPriceFetches === 0 || successfulPriceFetches < funds.length / 2) {
+        console.warn(
+          `Unable to calculate portfolio value: only ${successfulPriceFetches} out of ${funds.length} fund prices retrieved`
+        );
+        return null;
       }
 
       // Calculate capital gain (can be negative for losses)

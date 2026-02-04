@@ -7,6 +7,8 @@ export interface BankAccountRoboadvisorFundSummary {
   region: string;
   fundCurrencyCode: string;
   weight: string;
+  shareCount: string | null;
   createdAt: string;
   updatedAt: string;
 }
+

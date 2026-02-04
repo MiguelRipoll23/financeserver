@@ -1,5 +1,6 @@
 import { inject, injectable } from "@needle-di/core";
 import { sql } from "drizzle-orm";
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import { BankAccountInterestRatesService } from "../bank-account-interest-rates/bank-account-interest-rates-service.ts";
 import { BankAccountRoboadvisorsService } from "../bank-account-roboadvisors/bank-account-roboadvisors-service.ts";
@@ -75,13 +76,14 @@ export class InvestmentCalculationsService {
         case "crypto":
           return await this.calculateCrypto(request);
 
-        default:
+        default: {
           const exhaustiveCheck: never = request;
           return {
             success: false,
             message: "Invalid calculation type",
             calculationType: (exhaustiveCheck as any).type,
           };
+        }
       }
     } catch (error) {
       console.error("Error in investment calculation:", error);
@@ -91,7 +93,7 @@ export class InvestmentCalculationsService {
           error instanceof Error
             ? error.message
             : "Unknown error occurred during calculation",
-        calculationType: "interest_rate" as CalculationType,
+        calculationType: request.type as CalculationType,
       };
     }
   }
@@ -209,7 +211,7 @@ export class InvestmentCalculationsService {
    * Calculate after-tax interest for all bank accounts with active interest rates
    */
   private async calculateAllBankAccountInterestRates(
-    db: any
+    db: NodePgDatabase
   ): Promise<void> {
     try {
       // Get all bank accounts with their latest balances
@@ -258,7 +260,7 @@ export class InvestmentCalculationsService {
   /**
    * Calculate after-tax value for all roboadvisors
    */
-  private async calculateAllRoboadvisors(db: any): Promise<void> {
+  private async calculateAllRoboadvisors(db: NodePgDatabase): Promise<void> {
     try {
       // Get all roboadvisors
       const roboadvisors = await db
@@ -289,7 +291,7 @@ export class InvestmentCalculationsService {
   /**
    * Calculate after-tax value for all crypto exchange balances
    */
-  private async calculateAllCryptoBalances(db: any): Promise<void> {
+  private async calculateAllCryptoBalances(db: NodePgDatabase): Promise<void> {
     try {
       // Get all crypto exchange balances
       const balances = await db

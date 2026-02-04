@@ -42,6 +42,12 @@ export const CreateBankAccountRoboadvisorFundRequestSchema = z.object({
     .regex(/^(1(\.0{1,5})?|0(\.\d{1,5})?)$/)
     .openapi({ example: "0.39" })
     .describe("Fund weight as decimal (0.39 = 39%)"),
+  shareCount: z
+    .string()
+    .regex(/^[0-9]+(\.[0-9]{1,8})?$/)
+    .optional()
+    .openapi({ example: "125.5" })
+    .describe("Number of shares/units held (can be fractional)"),
 });
 
 export type CreateBankAccountRoboadvisorFundRequest = z.infer<
@@ -57,6 +63,7 @@ export const CreateBankAccountRoboadvisorFundResponseSchema = z.object({
   region: z.string().openapi({ example: "Global" }),
   fundCurrencyCode: z.string().openapi({ example: "USD" }),
   weight: z.string().openapi({ example: "0.39" }),
+  shareCount: z.string().nullable().openapi({ example: "125.5" }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
 });
@@ -150,6 +157,7 @@ export const BankAccountRoboadvisorFundSummarySchema = z.object({
   region: z.string().openapi({ example: "Global" }),
   fundCurrencyCode: z.string().openapi({ example: "USD" }),
   weight: z.string().openapi({ example: "0.39" }),
+  shareCount: z.string().nullable().openapi({ example: "125.5" }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
 });
@@ -209,6 +217,12 @@ export const UpdateBankAccountRoboadvisorFundRequestSchema = z.object({
     .optional()
     .openapi({ example: "0.39" })
     .describe("Fund weight as decimal (0.39 = 39%)"),
+  shareCount: z
+    .string()
+    .regex(/^[0-9]+(\.[0-9]{1,8})?$/)
+    .optional()
+    .openapi({ example: "125.5" })
+    .describe("Number of shares/units held (can be fractional)"),
 });
 
 export type UpdateBankAccountRoboadvisorFundRequest = z.infer<

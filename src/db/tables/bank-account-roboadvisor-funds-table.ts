@@ -34,6 +34,11 @@ export const bankAccountRoboadvisorFunds = pgTable(
       scale: 5,
     }).notNull(), // 0.39 = 39%
 
+    shareCount: decimal("share_count", {
+      precision: 20,
+      scale: 8,
+    }), // Number of shares/units held (can be fractional)
+
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),

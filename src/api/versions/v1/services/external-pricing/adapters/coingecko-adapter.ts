@@ -44,7 +44,11 @@ export class CoingeckoAdapter implements CryptoPriceProvider {
         symbolCode.toLowerCase();
       const currency = targetCurrencyCode.toLowerCase();
 
-      const url = `${this.baseUrl}/simple/price?ids=${coinId}&vs_currencies=${currency}`;
+      const params = new URLSearchParams({
+        ids: coinId,
+        vs_currencies: currency,
+      });
+      const url = `${this.baseUrl}/simple/price?${params}`;
       const response = await fetch(url, {
         headers: {
           Accept: "application/json",
@@ -60,7 +64,12 @@ export class CoingeckoAdapter implements CryptoPriceProvider {
 
       const data = await response.json();
 
-      if (!data[coinId] || !data[coinId][currency]) {
+      if (
+        !data[coinId] ||
+        !(currency in data[coinId]) ||
+        data[coinId][currency] === null ||
+        data[coinId][currency] === undefined
+      ) {
         console.error(
           `No price found for ${symbolCode} in ${targetCurrencyCode}`
         );

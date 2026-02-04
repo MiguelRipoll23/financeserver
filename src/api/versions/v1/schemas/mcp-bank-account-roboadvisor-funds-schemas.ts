@@ -3,6 +3,7 @@ import { BankAccountRoboadvisorFundSortField } from "../enums/bank-account-roboa
 import { SortOrder } from "../enums/sort-order-enum.ts";
 
 const DecimalRegex = /^[0-9]+(\.[0-9]{1,5})?$/;
+const ShareCountRegex = /^[0-9]+(\.[0-9]{1,8})?$/;
 
 // Roboadvisor Fund Tool Schemas
 export const CreateBankAccountRoboadvisorFundToolSchema = z.object({
@@ -26,6 +27,11 @@ export const CreateBankAccountRoboadvisorFundToolSchema = z.object({
     .string()
     .regex(DecimalRegex, "Weight must be a decimal (e.g., 0.39 for 39%)")
     .describe("Fund weight as decimal (e.g., 0.39 = 39%)"),
+  shareCount: z
+    .string()
+    .regex(ShareCountRegex, "Share count must be a decimal (e.g., 125.5)")
+    .optional()
+    .describe("Number of shares/units held (can be fractional, e.g., 125.5)"),
 });
 
 export const FilterBankAccountRoboadvisorFundsToolSchema = z.object({
@@ -96,6 +102,11 @@ export const UpdateBankAccountRoboadvisorFundToolSchema = z.object({
     .regex(DecimalRegex, "Weight must be a decimal (e.g., 0.39 for 39%)")
     .optional()
     .describe("Fund weight as decimal (e.g., 0.39 = 39%)"),
+  shareCount: z
+    .string()
+    .regex(ShareCountRegex, "Share count must be a decimal (e.g., 125.5)")
+    .optional()
+    .describe("Number of shares/units held (can be fractional, e.g., 125.5)"),
 });
 
 export const DeleteBankAccountRoboadvisorFundToolSchema = z.object({
