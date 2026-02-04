@@ -30,8 +30,8 @@ export const bankAccountRoboadvisorFunds = pgTable(
     fundCurrencyCode: varchar("fund_currency_code", { length: 3 }).notNull(),
 
     weight: decimal("weight", {
-      precision: 6,
-      scale: 5,
+      precision: 8,
+      scale: 6,
     }).notNull(), // 0.39 = 39%
 
     shareCount: decimal("share_count", {

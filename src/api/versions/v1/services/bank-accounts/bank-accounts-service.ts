@@ -15,6 +15,7 @@ import {
   bankAccountsTable,
   bankAccountBalancesTable,
   bankAccountInterestRatesTable,
+  bankAccountInterestRateCalculationsTable,
 } from "../../../../../db/schema.ts";
 import { ServerError } from "../../models/server-error.ts";
 import { decodeCursor } from "../../utils/cursor-utils.ts";
@@ -173,7 +174,24 @@ export class BankAccountsService {
     }
 
     const results = await db
-      .select()
+      .select({
+        ...getTableColumns(bankAccountsTable),
+        latestCalculation: sql<{
+          monthlyProfitAfterTax: string;
+          annualProfitAfterTax: string;
+          calculatedAt: string;
+        } | null>`(
+          SELECT json_build_object(
+            'monthlyProfitAfterTax', calc.monthly_profit_after_tax,
+            'annualProfitAfterTax', calc.annual_profit_after_tax,
+            'calculatedAt', calc.created_at
+          )
+          FROM ${bankAccountInterestRateCalculationsTable} calc
+          WHERE calc.bank_account_id = ${bankAccountsTable.id}
+          ORDER BY calc.created_at DESC
+          LIMIT 1
+        )`,
+      })
       .from(bankAccountsTable)
       .where(whereClause)
       .orderBy(orderDirection(orderColumn))
@@ -451,7 +469,13 @@ export class BankAccountsService {
   }
 
   private mapBankAccountToSummary(
-    account: typeof bankAccountsTable.$inferSelect,
+    account: typeof bankAccountsTable.$inferSelect & {
+      latestCalculation: {
+        monthlyProfitAfterTax: string;
+        annualProfitAfterTax: string;
+        calculatedAt: string;
+      } | null;
+    },
   ): BankAccountSummary {
     return {
       id: account.id,
@@ -459,6 +483,15 @@ export class BankAccountsService {
       type: account.type as BankAccountType,
       createdAt: toISOStringSafe(account.createdAt),
       updatedAt: toISOStringSafe(account.updatedAt),
+      latestCalculation: account.latestCalculation
+        ? {
+            monthlyProfitAfterTax: account.latestCalculation.monthlyProfitAfterTax,
+            annualProfitAfterTax: account.latestCalculation.annualProfitAfterTax,
+            calculatedAt: toISOStringSafe(
+              new Date(account.latestCalculation.calculatedAt)
+            ),
+          }
+        : null,
     };
   }
 
@@ -485,7 +518,7 @@ export class BankAccountsService {
       bankAccountId: balance.bankAccountId,
       balance: balance.balance,
       currencyCode: balance.currencyCode,
-      interestRate: balance.interestRate ?? null,
+      interestRate: balance.interestRate ? parseFloat(balance.interestRate) : null,
       createdAt: toISOStringSafe(balance.createdAt),
       updatedAt: toISOStringSafe(balance.updatedAt),
     };

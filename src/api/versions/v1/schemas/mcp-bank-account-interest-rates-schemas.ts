@@ -2,25 +2,20 @@ import { z } from "zod";
 import { SortOrder } from "../enums/sort-order-enum.ts";
 
 const DateOnlyRegex = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
-const PercentageRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
 
 export const CreateBankAccountInterestRateToolSchema = z.object({
   bankAccountId: z.number().int().positive().describe("ID of the bank account"),
   interestRate: z
-    .string()
-    .regex(
-      PercentageRegex,
-      "Interest rate must be a valid percentage (format: 2.50 for 2.50%)"
-    )
-    .describe("Interest rate percentage (format: 2.50 for 2.50%)"),
+    .number()
+    .min(0)
+    .max(1)
+    .describe("Interest rate as decimal (0.025 = 2.5%)"),
   taxPercentage: z
-    .string()
-    .regex(
-      PercentageRegex,
-      "Tax percentage must be a valid percentage (format: 19.00 for 19%)"
-    )
+    .number()
+    .min(0)
+    .max(1)
     .optional()
-    .describe("Tax percentage on interest (format: 19.00 for 19%, optional)"),
+    .describe("Tax percentage as decimal (0.19 = 19%, optional)"),
   interestRateStartDate: z
     .string()
     .regex(DateOnlyRegex, "Date must be in YYYY-MM-DD format")
@@ -73,21 +68,17 @@ export const UpdateBankAccountInterestRateToolSchema = z.object({
     .positive()
     .describe("ID of the interest rate record to update"),
   interestRate: z
-    .string()
-    .regex(
-      PercentageRegex,
-      "Interest rate must be a valid percentage (format: 2.50 for 2.50%)"
-    )
+    .number()
+    .min(0)
+    .max(1)
     .optional()
-    .describe("Interest rate percentage (format: 2.50 for 2.50%, optional)"),
+    .describe("Interest rate as decimal (0.025 = 2.5%, optional)"),
   taxPercentage: z
-    .string()
-    .regex(
-      PercentageRegex,
-      "Tax percentage must be a valid percentage (format: 19.00 for 19%)"
-    )
+    .number()
+    .min(0)
+    .max(1)
     .optional()
-    .describe("Tax percentage on interest (format: 19.00 for 19%, optional)"),
+    .describe("Tax percentage as decimal (0.19 = 19%, optional)"),
   interestRateStartDate: z
     .string()
     .regex(DateOnlyRegex, "Date must be in YYYY-MM-DD format")

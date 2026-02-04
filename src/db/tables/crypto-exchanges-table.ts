@@ -14,8 +14,8 @@ export const cryptoExchangesTable = pgTable(
     id: bigserial("id", { mode: "number" }).primaryKey(),
     name: text("name").notNull(),
     capitalGainsTaxPercentage: numeric("capital_gains_tax_percentage", {
-      precision: 5,
-      scale: 2,
+      precision: 8,
+      scale: 6,
     }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()

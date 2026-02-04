@@ -1,11 +1,12 @@
 import { inject, injectable } from "@needle-di/core";
-import { asc, desc, eq, ilike, sql, type SQL } from "drizzle-orm";
+import { asc, desc, eq, ilike, sql, type SQL, getTableColumns } from "drizzle-orm";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import {
   bankAccountsTable,
   bankAccountRoboadvisors,
   bankAccountRoboadvisorBalances,
   bankAccountRoboadvisorFunds,
+  bankAccountRoboadvisorFundCalculationsTable,
 } from "../../../../../db/schema.ts";
 import { ServerError } from "../../models/server-error.ts";
 import { decodeCursor } from "../../utils/cursor-utils.ts";
@@ -88,14 +89,14 @@ export class BankAccountRoboadvisorsService {
         name: payload.name,
         bankAccountId: payload.bankAccountId,
         riskLevel: payload.riskLevel ?? null,
-        managementFeePercentage: payload.managementFeePercentage,
-        custodyFeePercentage: payload.custodyFeePercentage,
-        fundTerPercentage: payload.fundTerPercentage,
-        totalFeePercentage: payload.totalFeePercentage,
+        managementFeePercentage: payload.managementFeePercentage.toString(),
+        custodyFeePercentage: payload.custodyFeePercentage.toString(),
+        fundTerPercentage: payload.fundTerPercentage.toString(),
+        totalFeePercentage: payload.totalFeePercentage.toString(),
         managementFeeFrequency: payload.managementFeeFrequency,
         custodyFeeFrequency: payload.custodyFeeFrequency,
         terPricedInNav: payload.terPricedInNav ?? true,
-        capitalGainsTaxPercentage: payload.capitalGainsTaxPercentage ?? null,
+        capitalGainsTaxPercentage: payload.capitalGainsTaxPercentage ? payload.capitalGainsTaxPercentage.toString() : null,
       })
       .returning();
 
@@ -153,7 +154,22 @@ export class BankAccountRoboadvisorsService {
     }
 
     const results = await db
-      .select()
+      .select({
+        ...getTableColumns(bankAccountRoboadvisors),
+        latestCalculation: sql<{
+          currentValueAfterTax: string;
+          calculatedAt: string;
+        } | null>`(
+          SELECT json_build_object(
+            'currentValueAfterTax', calc.current_value_after_tax,
+            'calculatedAt', calc.created_at
+          )
+          FROM ${bankAccountRoboadvisorFundCalculationsTable} calc
+          WHERE calc.bank_account_roboadvisor_id = ${bankAccountRoboadvisors.id}
+          ORDER BY calc.created_at DESC
+          LIMIT 1
+        )`,
+      })
       .from(bankAccountRoboadvisors)
       .where(whereClause)
       .orderBy(
@@ -214,13 +230,13 @@ export class BankAccountRoboadvisorsService {
     if (payload.riskLevel !== undefined)
       updateValues.riskLevel = payload.riskLevel;
     if (payload.managementFeePercentage !== undefined)
-      updateValues.managementFeePercentage = payload.managementFeePercentage;
+      updateValues.managementFeePercentage = payload.managementFeePercentage.toString();
     if (payload.custodyFeePercentage !== undefined)
-      updateValues.custodyFeePercentage = payload.custodyFeePercentage;
+      updateValues.custodyFeePercentage = payload.custodyFeePercentage.toString();
     if (payload.fundTerPercentage !== undefined)
-      updateValues.fundTerPercentage = payload.fundTerPercentage;
+      updateValues.fundTerPercentage = payload.fundTerPercentage.toString();
     if (payload.totalFeePercentage !== undefined)
-      updateValues.totalFeePercentage = payload.totalFeePercentage;
+      updateValues.totalFeePercentage = payload.totalFeePercentage.toString();
     if (payload.managementFeeFrequency !== undefined)
       updateValues.managementFeeFrequency = payload.managementFeeFrequency;
     if (payload.custodyFeeFrequency !== undefined)
@@ -228,7 +244,7 @@ export class BankAccountRoboadvisorsService {
     if (payload.terPricedInNav !== undefined)
       updateValues.terPricedInNav = payload.terPricedInNav;
     if (payload.capitalGainsTaxPercentage !== undefined)
-      updateValues.capitalGainsTaxPercentage = payload.capitalGainsTaxPercentage;
+      updateValues.capitalGainsTaxPercentage = payload.capitalGainsTaxPercentage ? payload.capitalGainsTaxPercentage.toString() : null;
 
     const [result] = await db
       .update(bankAccountRoboadvisors)
@@ -467,8 +483,8 @@ export class BankAccountRoboadvisorsService {
         assetClass: payload.assetClass,
         region: payload.region,
         fundCurrencyCode: payload.fundCurrencyCode,
-        weight: payload.weight,
-        shareCount: payload.shareCount ?? null,
+        weight: payload.weight.toString(),
+        shareCount: payload.shareCount ? payload.shareCount.toString() : null,
       })
       .returning();
 
@@ -620,9 +636,9 @@ export class BankAccountRoboadvisorsService {
     if (payload.region !== undefined) updateValues.region = payload.region;
     if (payload.fundCurrencyCode !== undefined)
       updateValues.fundCurrencyCode = payload.fundCurrencyCode;
-    if (payload.weight !== undefined) updateValues.weight = payload.weight;
+    if (payload.weight !== undefined) updateValues.weight = payload.weight.toString();
     if (payload.shareCount !== undefined)
-      updateValues.shareCount = payload.shareCount;
+      updateValues.shareCount = payload.shareCount ? payload.shareCount.toString() : null;
 
     const [result] = await db
       .update(bankAccountRoboadvisorFunds)
@@ -685,37 +701,50 @@ export class BankAccountRoboadvisorsService {
       name: roboadvisor.name,
       bankAccountId: roboadvisor.bankAccountId,
       riskLevel: roboadvisor.riskLevel,
-      managementFeePercentage: roboadvisor.managementFeePercentage,
-      custodyFeePercentage: roboadvisor.custodyFeePercentage,
-      fundTerPercentage: roboadvisor.fundTerPercentage,
-      totalFeePercentage: roboadvisor.totalFeePercentage,
+      managementFeePercentage: parseFloat(roboadvisor.managementFeePercentage),
+      custodyFeePercentage: parseFloat(roboadvisor.custodyFeePercentage),
+      fundTerPercentage: parseFloat(roboadvisor.fundTerPercentage),
+      totalFeePercentage: parseFloat(roboadvisor.totalFeePercentage),
       managementFeeFrequency: roboadvisor.managementFeeFrequency,
       custodyFeeFrequency: roboadvisor.custodyFeeFrequency,
       terPricedInNav: roboadvisor.terPricedInNav,
-      capitalGainsTaxPercentage: roboadvisor.capitalGainsTaxPercentage,
+      capitalGainsTaxPercentage: roboadvisor.capitalGainsTaxPercentage ? parseFloat(roboadvisor.capitalGainsTaxPercentage) : null,
       createdAt: toISOStringSafe(roboadvisor.createdAt),
       updatedAt: toISOStringSafe(roboadvisor.updatedAt),
     };
   }
 
   private mapRoboadvisorToSummary(
-    roboadvisor: typeof bankAccountRoboadvisors.$inferSelect,
+    roboadvisor: typeof bankAccountRoboadvisors.$inferSelect & {
+      latestCalculation: {
+        currentValueAfterTax: string;
+        calculatedAt: string;
+      } | null;
+    },
   ): BankAccountRoboadvisorSummary {
     return {
       id: roboadvisor.id,
       name: roboadvisor.name,
       bankAccountId: roboadvisor.bankAccountId,
       riskLevel: roboadvisor.riskLevel,
-      managementFeePercentage: roboadvisor.managementFeePercentage,
-      custodyFeePercentage: roboadvisor.custodyFeePercentage,
-      fundTerPercentage: roboadvisor.fundTerPercentage,
-      totalFeePercentage: roboadvisor.totalFeePercentage,
+      managementFeePercentage: parseFloat(roboadvisor.managementFeePercentage),
+      custodyFeePercentage: parseFloat(roboadvisor.custodyFeePercentage),
+      fundTerPercentage: parseFloat(roboadvisor.fundTerPercentage),
+      totalFeePercentage: parseFloat(roboadvisor.totalFeePercentage),
       managementFeeFrequency: roboadvisor.managementFeeFrequency,
       custodyFeeFrequency: roboadvisor.custodyFeeFrequency,
       terPricedInNav: roboadvisor.terPricedInNav,
-      capitalGainsTaxPercentage: roboadvisor.capitalGainsTaxPercentage,
+      capitalGainsTaxPercentage: roboadvisor.capitalGainsTaxPercentage ? parseFloat(roboadvisor.capitalGainsTaxPercentage) : null,
       createdAt: toISOStringSafe(roboadvisor.createdAt),
       updatedAt: toISOStringSafe(roboadvisor.updatedAt),
+      latestCalculation: roboadvisor.latestCalculation
+        ? {
+            currentValueAfterTax: roboadvisor.latestCalculation.currentValueAfterTax,
+            calculatedAt: toISOStringSafe(
+              new Date(roboadvisor.latestCalculation.calculatedAt)
+            ),
+          }
+        : null,
     };
   }
 
@@ -760,8 +789,8 @@ export class BankAccountRoboadvisorsService {
       assetClass: fund.assetClass,
       region: fund.region,
       fundCurrencyCode: fund.fundCurrencyCode,
-      weight: fund.weight,
-      shareCount: fund.shareCount,
+      weight: parseFloat(fund.weight),
+      shareCount: fund.shareCount ? parseFloat(fund.shareCount) : null,
       createdAt: toISOStringSafe(fund.createdAt),
       updatedAt: toISOStringSafe(fund.updatedAt),
     };
@@ -778,8 +807,8 @@ export class BankAccountRoboadvisorsService {
       assetClass: fund.assetClass,
       region: fund.region,
       fundCurrencyCode: fund.fundCurrencyCode,
-      weight: fund.weight,
-      shareCount: fund.shareCount,
+      weight: parseFloat(fund.weight),
+      shareCount: fund.shareCount ? parseFloat(fund.shareCount) : null,
       createdAt: toISOStringSafe(fund.createdAt),
       updatedAt: toISOStringSafe(fund.updatedAt),
     };
@@ -891,6 +920,7 @@ export class BankAccountRoboadvisorsService {
       // Fetch current prices for all funds and calculate total portfolio value
       let totalCurrentValue = 0;
       let successfulPriceFetches = 0;
+      let eligibleFundsCount = 0;
       
       for (const fund of funds) {
         // Skip funds without share count - cannot calculate value
@@ -900,6 +930,9 @@ export class BankAccountRoboadvisorsService {
           );
           continue;
         }
+
+        // Fund has valid shareCount, so it's eligible for price calculation
+        eligibleFundsCount++;
 
         try {
           const priceString = await priceProvider.getCurrentPrice(
@@ -933,9 +966,9 @@ export class BankAccountRoboadvisorsService {
 
       // Return null if we couldn't fetch prices for most/all funds
       // This prevents returning misleading portfolio values
-      if (successfulPriceFetches === 0 || successfulPriceFetches < funds.length / 2) {
+      if (successfulPriceFetches === 0 || successfulPriceFetches < eligibleFundsCount / 2) {
         console.warn(
-          `Unable to calculate portfolio value: only ${successfulPriceFetches} out of ${funds.length} fund prices retrieved`
+          `Unable to calculate portfolio value: only ${successfulPriceFetches} out of ${eligibleFundsCount} eligible fund prices retrieved`
         );
         return null;
       }
@@ -952,7 +985,7 @@ export class BankAccountRoboadvisorsService {
       
       if (capitalGain > 0) {
         // Tax only applies to the gain portion
-        const taxAmount = capitalGain * (taxPercentage / 100);
+        const taxAmount = capitalGain * taxPercentage;
         valueAfterTax = totalCurrentValue - taxAmount;
       } else {
         // No tax on losses
@@ -975,6 +1008,42 @@ export class BankAccountRoboadvisorsService {
         error
       );
       return null;
+    }
+  }
+
+  /**
+   * Calculate after-tax value for all roboadvisors
+   */
+  public async calculateAllRoboadvisors(): Promise<void> {
+    try {
+      const db = this.databaseService.get();
+
+      // Import here to avoid circular dependency
+      const { bankAccountRoboadvisors } = await import(
+        "../../../../../db/schema.ts"
+      );
+
+      // Get all roboadvisors
+      const roboadvisors = await db
+        .select({ id: bankAccountRoboadvisors.id })
+        .from(bankAccountRoboadvisors);
+
+      console.log(`Processing ${roboadvisors.length} roboadvisors`);
+
+      // Calculate value after tax for each roboadvisor
+      for (const roboadvisor of roboadvisors) {
+        try {
+          await this.calculateRoboadvisorValueAfterTax(roboadvisor.id);
+        } catch (error) {
+          console.error(
+            `Failed to calculate roboadvisor ${roboadvisor.id}:`,
+            error
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Error calculating roboadvisors:", error);
+      throw error;
     }
   }
 }

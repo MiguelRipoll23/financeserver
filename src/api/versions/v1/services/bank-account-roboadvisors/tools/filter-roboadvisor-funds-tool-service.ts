@@ -44,7 +44,7 @@ export class FilterRoboadvisorFundsToolService {
         const count = result.results.length;
         const fundsList = result.results
           .map((fund) => {
-            const weightPct = (parseFloat(fund.weight) * 100).toFixed(2);
+            const weightPct = (fund.weight * 100).toFixed(2);
             return `- ${fund.name} (${fund.isin}) - ${weightPct}% [${fund.assetClass}, ${fund.region}, ${fund.fundCurrencyCode}] (ID: ${fund.id})`;
           })
           .join("\n");

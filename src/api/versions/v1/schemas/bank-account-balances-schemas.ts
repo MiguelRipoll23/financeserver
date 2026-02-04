@@ -81,7 +81,7 @@ export const BankAccountBalanceSummarySchema = z.object({
   bankAccountId: z.number().int().openapi({ example: 1 }),
   balance: z.string().openapi({ example: "1500.00" }),
   currencyCode: z.string().openapi({ example: "USD" }),
-  interestRate: z.string().nullable().optional().openapi({ example: "2.50" }),
+  interestRate: z.number().nullable().optional().openapi({ example: 0.025 }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
 });

@@ -2,9 +2,6 @@ import { z } from "zod";
 import { BankAccountRoboadvisorFundSortField } from "../enums/bank-account-roboadvisor-fund-sort-field-enum.ts";
 import { SortOrder } from "../enums/sort-order-enum.ts";
 
-const DecimalRegex = /^[0-9]+(\.[0-9]{1,5})?$/;
-const ShareCountRegex = /^[0-9]+(\.[0-9]{1,8})?$/;
-
 // Roboadvisor Fund Tool Schemas
 export const CreateBankAccountRoboadvisorFundToolSchema = z.object({
   bankAccountRoboadvisorId: z
@@ -24,12 +21,13 @@ export const CreateBankAccountRoboadvisorFundToolSchema = z.object({
     .length(3, "Currency code must be exactly 3 characters")
     .describe("Fund currency ISO 4217 code (e.g., USD, EUR)"),
   weight: z
-    .string()
-    .regex(DecimalRegex, "Weight must be a decimal (e.g., 0.39 for 39%)")
-    .describe("Fund weight as decimal (e.g., 0.39 = 39%)"),
+    .number()
+    .min(0)
+    .max(1)
+    .describe("Fund weight as decimal (0.39 = 39%)"),
   shareCount: z
-    .string()
-    .regex(ShareCountRegex, "Share count must be a decimal (e.g., 125.5)")
+    .number()
+    .positive()
     .optional()
     .describe("Number of shares/units held (can be fractional, e.g., 125.5)"),
 });
@@ -98,13 +96,14 @@ export const UpdateBankAccountRoboadvisorFundToolSchema = z.object({
     .optional()
     .describe("Fund currency ISO 4217 code (e.g., USD, EUR)"),
   weight: z
-    .string()
-    .regex(DecimalRegex, "Weight must be a decimal (e.g., 0.39 for 39%)")
+    .number()
+    .min(0)
+    .max(1)
     .optional()
-    .describe("Fund weight as decimal (e.g., 0.39 = 39%)"),
+    .describe("Fund weight as decimal (0.39 = 39%)"),
   shareCount: z
-    .string()
-    .regex(ShareCountRegex, "Share count must be a decimal (e.g., 125.5)")
+    .number()
+    .positive()
     .optional()
     .describe("Number of shares/units held (can be fractional, e.g., 125.5)"),
 });

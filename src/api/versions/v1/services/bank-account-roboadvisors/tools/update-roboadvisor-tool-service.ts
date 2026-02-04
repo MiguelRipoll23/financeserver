@@ -44,7 +44,7 @@ export class UpdateRoboadvisorToolService {
             },
           );
 
-        const feePct = (parseFloat(result.totalFeePercentage) * 100).toFixed(2);
+        const feePct = (result.totalFeePercentage * 100).toFixed(2);
         const text = `Roboadvisor updated successfully: ${result.name} (ID: ${result.id}, Total Fee: ${feePct}%)`;
 
         return {

@@ -1,6 +1,7 @@
 import { z } from "@hono/zod-openapi";
 import { BankAccountRoboadvisorFundSortField } from "../enums/bank-account-roboadvisor-fund-sort-field-enum.ts";
 import { SortOrder } from "../enums/sort-order-enum.ts";
+import { PercentageSchema } from "./percentage-schema.ts";
 
 // Roboadvisor Fund schemas
 export const CreateBankAccountRoboadvisorFundRequestSchema = z.object({
@@ -37,16 +38,14 @@ export const CreateBankAccountRoboadvisorFundRequestSchema = z.object({
     .length(3)
     .openapi({ example: "USD" })
     .describe("Fund currency ISO 4217 code"),
-  weight: z
-    .string()
-    .regex(/^(1(\.0{1,5})?|0(\.\d{1,5})?)$/)
-    .openapi({ example: "0.39" })
+  weight: PercentageSchema
+    .openapi({ example: 0.39 })
     .describe("Fund weight as decimal (0.39 = 39%)"),
   shareCount: z
-    .string()
-    .regex(/^[0-9]+(\.[0-9]{1,8})?$/)
+    .number()
+    .positive()
     .optional()
-    .openapi({ example: "125.5" })
+    .openapi({ example: 125.5 })
     .describe("Number of shares/units held (can be fractional)"),
 });
 
@@ -62,8 +61,8 @@ export const CreateBankAccountRoboadvisorFundResponseSchema = z.object({
   assetClass: z.string().openapi({ example: "equity" }),
   region: z.string().openapi({ example: "Global" }),
   fundCurrencyCode: z.string().openapi({ example: "USD" }),
-  weight: z.string().openapi({ example: "0.39" }),
-  shareCount: z.string().nullable().openapi({ example: "125.5" }),
+  weight: z.number().openapi({ example: 0.39 }),
+  shareCount: z.number().nullable().openapi({ example: 125.5 }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
 });
@@ -156,8 +155,8 @@ export const BankAccountRoboadvisorFundSummarySchema = z.object({
   assetClass: z.string().openapi({ example: "equity" }),
   region: z.string().openapi({ example: "Global" }),
   fundCurrencyCode: z.string().openapi({ example: "USD" }),
-  weight: z.string().openapi({ example: "0.39" }),
-  shareCount: z.string().nullable().openapi({ example: "125.5" }),
+  weight: z.number().openapi({ example: 0.39 }),
+  shareCount: z.number().nullable().openapi({ example: 125.5 }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
 });
@@ -211,17 +210,15 @@ export const UpdateBankAccountRoboadvisorFundRequestSchema = z.object({
     .optional()
     .openapi({ example: "USD" })
     .describe("Fund currency ISO 4217 code"),
-  weight: z
-    .string()
-    .regex(/^(1(\.0{1,5})?|0(\.\d{1,5})?)$/)
+  weight: PercentageSchema
     .optional()
-    .openapi({ example: "0.39" })
+    .openapi({ example: 0.39 })
     .describe("Fund weight as decimal (0.39 = 39%)"),
   shareCount: z
-    .string()
-    .regex(/^[0-9]+(\.[0-9]{1,8})?$/)
+    .number()
+    .positive()
     .optional()
-    .openapi({ example: "125.5" })
+    .openapi({ example: 125.5 })
     .describe("Number of shares/units held (can be fractional)"),
 });
 

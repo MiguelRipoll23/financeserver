@@ -183,6 +183,20 @@
       "when": 1770042699778,
       "tag": "0025_hot_penance",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1770221844700,
+      "tag": "0026_amused_white_queen",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1770226584432,
+      "tag": "0027_aspiring_zaladane",
+      "breakpoints": true
     }
   ]
 }

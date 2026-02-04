@@ -94,6 +94,16 @@ export const CryptoExchangeBalanceSummarySchema = z.object({
   investedCurrencyCode: z.string().nullable().openapi({ example: "USD" }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
+  latestCalculation: z
+    .object({
+      currentValueAfterTax: z.string().openapi({ example: "48000.00" }),
+      calculatedAt: z
+        .string()
+        .datetime()
+        .openapi({ example: "2026-02-04T10:30:00Z" }),
+    })
+    .nullable()
+    .describe("Latest value calculation after tax"),
 });
 
 export const GetCryptoExchangeBalancesResponseSchema = z.object({

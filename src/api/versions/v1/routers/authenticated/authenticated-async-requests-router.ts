@@ -2,17 +2,15 @@ import { inject, injectable } from "@needle-di/core";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { Context } from "hono";
 import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
-import { InvestmentCalculationsService } from "../../services/investment-calculations/investment-calculations-service.ts";
+import { NetWorthCalculationService } from "../../services/net-worth-calculation/net-worth-calculation-service.ts";
 import { ServerResponse } from "../../models/server-response.ts";
 
 @injectable()
-export class AuthenticatedInvestmentCalculationsRouter {
+export class AuthenticatedAsyncRequestsRouter {
   private app: OpenAPIHono<{ Variables: HonoVariables }>;
 
   constructor(
-    private investmentCalculationsService = inject(
-      InvestmentCalculationsService
-    )
+    private netWorthCalculationService = inject(NetWorthCalculationService)
   ) {
     this.app = new OpenAPIHono();
     this.setRoutes();
@@ -34,7 +32,7 @@ export class AuthenticatedInvestmentCalculationsRouter {
         summary: "Calculate net worth",
         description:
           "Calculate net worth by triggering after-tax value calculations for all bank accounts with interest rates, roboadvisors, and crypto exchanges. This is an asynchronous operation that returns immediately.",
-        tags: ["Investment Calculations"],
+        tags: ["Async Requests"],
         responses: {
           202: {
             description: "Calculation request accepted",
@@ -44,7 +42,7 @@ export class AuthenticatedInvestmentCalculationsRouter {
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
         // Trigger calculation asynchronously (fire and forget)
-        this.investmentCalculationsService.calculateAll().catch((error) => {
+        this.netWorthCalculationService.calculateAll().catch((error) => {
           console.error("Error calculating net worth:", error);
         });
 

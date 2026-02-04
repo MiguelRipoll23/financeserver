@@ -36,7 +36,7 @@ export class CryptoExchangesService {
       .insert(cryptoExchangesTable)
       .values({
         name: payload.name,
-        capitalGainsTaxPercentage: payload.capitalGainsTaxPercentage ?? null,
+        capitalGainsTaxPercentage: payload.capitalGainsTaxPercentage ? payload.capitalGainsTaxPercentage.toString() : null,
       })
       .returning();
 
@@ -62,7 +62,7 @@ export class CryptoExchangesService {
     }
 
     if (payload.capitalGainsTaxPercentage !== undefined) {
-      updateValues.capitalGainsTaxPercentage = payload.capitalGainsTaxPercentage;
+      updateValues.capitalGainsTaxPercentage = payload.capitalGainsTaxPercentage ? payload.capitalGainsTaxPercentage.toString() : null;
     }
 
     const [result] = await db
@@ -190,7 +190,7 @@ export class CryptoExchangesService {
     return {
       id: exchange.id,
       name: exchange.name,
-      capitalGainsTaxPercentage: exchange.capitalGainsTaxPercentage,
+      capitalGainsTaxPercentage: exchange.capitalGainsTaxPercentage ? parseFloat(exchange.capitalGainsTaxPercentage) : null,
       createdAt: toISOStringSafe(exchange.createdAt),
       updatedAt: toISOStringSafe(exchange.updatedAt),
     };
@@ -202,7 +202,7 @@ export class CryptoExchangesService {
     return {
       id: exchange.id,
       name: exchange.name,
-      capitalGainsTaxPercentage: exchange.capitalGainsTaxPercentage,
+      capitalGainsTaxPercentage: exchange.capitalGainsTaxPercentage ? parseFloat(exchange.capitalGainsTaxPercentage) : null,
       createdAt: toISOStringSafe(exchange.createdAt),
       updatedAt: toISOStringSafe(exchange.updatedAt),
     };

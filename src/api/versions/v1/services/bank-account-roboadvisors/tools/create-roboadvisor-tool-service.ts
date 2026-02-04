@@ -42,7 +42,7 @@ export class CreateRoboadvisorToolService {
             capitalGainsTaxPercentage: parsed.capitalGainsTaxPercentage,
           });
 
-        const text = `Roboadvisor created successfully: ${result.name} (ID: ${result.id}, Total Fee: ${(parseFloat(result.totalFeePercentage) * 100).toFixed(2)}%)`;
+        const text = `Roboadvisor created successfully: ${result.name} (ID: ${result.id}, Total Fee: ${(result.totalFeePercentage * 100).toFixed(2)}%)`;
 
         return {
           text,

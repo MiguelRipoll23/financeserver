@@ -1,9 +1,10 @@
 import { inject, injectable } from "@needle-di/core";
-import { asc, desc, eq, sql } from "drizzle-orm";
+import { asc, desc, eq, sql, getTableColumns } from "drizzle-orm";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import {
   cryptoExchangesTable,
   cryptoExchangeBalancesTable,
+  cryptoExchangeCalculationsTable,
 } from "../../../../../db/schema.ts";
 import { ServerError } from "../../models/server-error.ts";
 import { decodeCursor } from "../../utils/cursor-utils.ts";
@@ -128,7 +129,25 @@ export class CryptoExchangeBalancesService {
       };
     }
 
-    const query = db.select().from(cryptoExchangeBalancesTable);
+    const query = db
+      .select({
+        ...getTableColumns(cryptoExchangeBalancesTable),
+        latestCalculation: sql<{
+          currentValueAfterTax: string;
+          calculatedAt: string;
+        } | null>`(
+          SELECT json_build_object(
+            'currentValueAfterTax', calc.current_value_after_tax,
+            'calculatedAt', calc.created_at
+          )
+          FROM ${cryptoExchangeCalculationsTable} calc
+          WHERE calc.crypto_exchange_id = ${cryptoExchangeBalancesTable.cryptoExchangeId}
+            AND calc.symbol_code = ${cryptoExchangeBalancesTable.symbolCode}
+          ORDER BY calc.created_at DESC
+          LIMIT 1
+        )`,
+      })
+      .from(cryptoExchangeBalancesTable);
 
     if (exchangeId !== undefined) {
       query.where(eq(cryptoExchangeBalancesTable.cryptoExchangeId, exchangeId));
@@ -255,7 +274,12 @@ export class CryptoExchangeBalancesService {
   }
 
   private mapBalanceToSummary(
-    balance: typeof cryptoExchangeBalancesTable.$inferSelect,
+    balance: typeof cryptoExchangeBalancesTable.$inferSelect & {
+      latestCalculation: {
+        currentValueAfterTax: string;
+        calculatedAt: string;
+      } | null;
+    },
   ): CryptoExchangeBalanceSummary {
     return {
       id: balance.id,
@@ -266,6 +290,14 @@ export class CryptoExchangeBalancesService {
       investedCurrencyCode: balance.investedCurrencyCode,
       createdAt: toISOStringSafe(balance.createdAt),
       updatedAt: toISOStringSafe(balance.updatedAt),
+      latestCalculation: balance.latestCalculation
+        ? {
+            currentValueAfterTax: balance.latestCalculation.currentValueAfterTax,
+            calculatedAt: toISOStringSafe(
+              new Date(balance.latestCalculation.calculatedAt)
+            ),
+          }
+        : null,
     };
   }
 
@@ -362,7 +394,7 @@ export class CryptoExchangeBalancesService {
 
       if (capitalGain > 0) {
         // Tax only applies to the gain portion
-        const taxAmount = capitalGain * (taxPercentage / 100);
+        const taxAmount = capitalGain * taxPercentage;
         valueAfterTax = currentValue - taxAmount;
       } else {
         // No tax on losses
@@ -386,6 +418,48 @@ export class CryptoExchangeBalancesService {
         error
       );
       return null;
+    }
+  }
+
+  /**
+   * Calculate after-tax value for all crypto exchange balances
+   */
+  public async calculateAllCryptoBalances(): Promise<void> {
+    try {
+      const db = this.databaseService.get();
+
+      // Import here to avoid circular dependency
+      const { cryptoExchangeBalancesTable } = await import(
+        "../../../../../db/schema.ts"
+      );
+
+      // Get all crypto exchange balances
+      const balances = await db
+        .select({
+          cryptoExchangeId: cryptoExchangeBalancesTable.cryptoExchangeId,
+          symbolCode: cryptoExchangeBalancesTable.symbolCode,
+        })
+        .from(cryptoExchangeBalancesTable);
+
+      console.log(`Processing ${balances.length} crypto balances`);
+
+      // Calculate value after tax for each balance
+      for (const balance of balances) {
+        try {
+          await this.calculateCryptoValueAfterTax(
+            balance.cryptoExchangeId,
+            balance.symbolCode
+          );
+        } catch (error) {
+          console.error(
+            `Failed to calculate crypto balance for exchange ${balance.cryptoExchangeId} symbol ${balance.symbolCode}:`,
+            error
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Error calculating crypto balances:", error);
+      throw error;
     }
   }
 }

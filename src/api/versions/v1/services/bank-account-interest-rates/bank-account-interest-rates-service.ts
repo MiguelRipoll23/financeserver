@@ -82,8 +82,8 @@ export class BankAccountInterestRatesService {
         .insert(bankAccountInterestRatesTable)
         .values({
           bankAccountId: accountId,
-          interestRate: payload.interestRate,
-          taxPercentage: payload.taxPercentage ?? null,
+          interestRate: payload.interestRate.toString(),
+          taxPercentage: payload.taxPercentage ? payload.taxPercentage.toString() : null,
           interestRateStartDate: payload.interestRateStartDate,
           interestRateEndDate: payload.interestRateEndDate ?? null,
         })
@@ -222,11 +222,11 @@ export class BankAccountInterestRatesService {
     };
 
     if (payload.interestRate !== undefined) {
-      updateValues.interestRate = payload.interestRate;
+      updateValues.interestRate = payload.interestRate.toString();
     }
 
     if (payload.taxPercentage !== undefined) {
-      updateValues.taxPercentage = payload.taxPercentage;
+      updateValues.taxPercentage = payload.taxPercentage ? payload.taxPercentage.toString() : null;
     }
 
     if (payload.interestRateStartDate !== undefined) {
@@ -381,8 +381,8 @@ export class BankAccountInterestRatesService {
     return {
       id: rate.id,
       bankAccountId: rate.bankAccountId,
-      interestRate: rate.interestRate,
-      taxPercentage: rate.taxPercentage,
+      interestRate: parseFloat(rate.interestRate),
+      taxPercentage: rate.taxPercentage ? parseFloat(rate.taxPercentage) : null,
       interestRateStartDate: rate.interestRateStartDate,
       interestRateEndDate: rate.interestRateEndDate,
       createdAt: toISOStringSafe(rate.createdAt),
@@ -396,8 +396,8 @@ export class BankAccountInterestRatesService {
     return {
       id: rate.id,
       bankAccountId: rate.bankAccountId,
-      interestRate: rate.interestRate,
-      taxPercentage: rate.taxPercentage,
+      interestRate: parseFloat(rate.interestRate),
+      taxPercentage: rate.taxPercentage ? parseFloat(rate.taxPercentage) : null,
       interestRateStartDate: rate.interestRateStartDate,
       interestRateEndDate: rate.interestRateEndDate,
       createdAt: toISOStringSafe(rate.createdAt),
@@ -452,13 +452,13 @@ export class BankAccountInterestRatesService {
         : 0;
 
       // Calculate annual profit before tax
-      const annualProfitBeforeTax = (balance * interestRate) / 100;
+      const annualProfitBeforeTax = balance * interestRate;
 
       // Calculate monthly profit before tax
       const monthlyProfitBeforeTax = annualProfitBeforeTax / 12;
 
       // Apply tax
-      const taxMultiplier = 1 - taxPercentage / 100;
+      const taxMultiplier = 1 - taxPercentage;
       const monthlyProfitAfterTax = monthlyProfitBeforeTax * taxMultiplier;
       const annualProfitAfterTax = annualProfitBeforeTax * taxMultiplier;
 
@@ -477,6 +477,61 @@ export class BankAccountInterestRatesService {
     } catch (error) {
       console.error("Error calculating interest after tax:", error);
       return null;
+    }
+  }
+
+  /**
+   * Calculate after-tax interest for all bank accounts with active interest rates
+   */
+  public async calculateAllBankAccountInterestRates(): Promise<void> {
+    try {
+      const db = this.databaseService.get();
+
+      // Import here to avoid circular dependency
+      const { bankAccountBalancesTable } = await import(
+        "../../../../../db/schema.ts"
+      );
+
+      // Get all bank accounts with their latest balances
+      const bankAccountsWithBalances = await db
+        .select({
+          bankAccountId: bankAccountBalancesTable.bankAccountId,
+          balance: bankAccountBalancesTable.balance,
+          currencyCode: bankAccountBalancesTable.currencyCode,
+        })
+        .from(bankAccountBalancesTable)
+        .innerJoin(
+          sql`(
+            SELECT bank_account_id, MAX(created_at) as latest_date
+            FROM bank_account_balances
+            GROUP BY bank_account_id
+          ) latest`,
+          sql`${bankAccountBalancesTable.bankAccountId} = latest.bank_account_id 
+              AND ${bankAccountBalancesTable.createdAt} = latest.latest_date`
+        );
+
+      console.log(
+        `Processing ${bankAccountsWithBalances.length} bank accounts with interest rates`
+      );
+
+      // Calculate interest after tax for each account
+      for (const account of bankAccountsWithBalances) {
+        try {
+          await this.calculateInterestAfterTax(
+            account.bankAccountId,
+            account.balance,
+            account.currencyCode
+          );
+        } catch (error) {
+          console.error(
+            `Failed to calculate interest for bank account ${account.bankAccountId}:`,
+            error
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Error calculating bank account interest rates:", error);
+      throw error;
     }
   }
 }

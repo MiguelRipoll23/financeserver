@@ -2,6 +2,7 @@ import { z } from "@hono/zod-openapi";
 import { PaginationQuerySchema } from "./pagination-schemas.ts";
 import { SortOrder } from "../enums/sort-order-enum.ts";
 import { BankAccountRoboadvisorSortField } from "../enums/bank-account-roboadvisor-sort-field-enum.ts";
+import { PercentageSchema, NullablePercentageSchema } from "./percentage-schema.ts";
 
 // Roboadvisor schemas
 export const CreateBankAccountRoboadvisorRequestSchema = z.object({
@@ -24,25 +25,17 @@ export const CreateBankAccountRoboadvisorRequestSchema = z.object({
     .optional()
     .openapi({ example: 5 })
     .describe("Risk level (1-7 scale)"),
-  managementFeePercentage: z
-    .string()
-    .regex(/^[0-9]+(\.[0-9]{1,5})?$/)
-    .openapi({ example: "0.0015" })
+  managementFeePercentage: PercentageSchema
+    .openapi({ example: 0.0015 })
     .describe("Annual management fee as decimal (0.0015 = 0.15%)"),
-  custodyFeePercentage: z
-    .string()
-    .regex(/^[0-9]+(\.[0-9]{1,5})?$/)
-    .openapi({ example: "0.0015" })
+  custodyFeePercentage: PercentageSchema
+    .openapi({ example: 0.0015 })
     .describe("Annual custody fee as decimal (0.0015 = 0.15%)"),
-  fundTerPercentage: z
-    .string()
-    .regex(/^[0-9]+(\.[0-9]{1,5})?$/)
-    .openapi({ example: "0.0010" })
+  fundTerPercentage: PercentageSchema
+    .openapi({ example: 0.0010 })
     .describe("Fund TER as decimal (0.0010 = 0.10%)"),
-  totalFeePercentage: z
-    .string()
-    .regex(/^[0-9]+(\.[0-9]{1,5})?$/)
-    .openapi({ example: "0.0040" })
+  totalFeePercentage: PercentageSchema
+    .openapi({ example: 0.0040 })
     .describe("Total annual fee as decimal (0.0040 = 0.40%)"),
   managementFeeFrequency: z
     .enum(["monthly", "quarterly", "yearly"])
@@ -57,16 +50,10 @@ export const CreateBankAccountRoboadvisorRequestSchema = z.object({
     .default(true)
     .openapi({ example: true })
     .describe("Whether TER is priced in NAV"),
-  capitalGainsTaxPercentage: z
-    .string()
-    .regex(/^[0-9]+(\.[0-9]{1,2})?$/)
-    .refine((value) => {
-      const numericValue = parseFloat(value);
-      return numericValue >= 0 && numericValue <= 100;
-    }, "Capital gains tax percentage must be between 0 and 100")
+  capitalGainsTaxPercentage: NullablePercentageSchema
     .optional()
-    .openapi({ example: "26.00" })
-    .describe("Capital gains tax percentage (e.g., 26.00 for 26%)"),
+    .openapi({ example: 0.26 })
+    .describe("Capital gains tax as decimal (0.26 = 26%)"),
 });
 
 export type CreateBankAccountRoboadvisorRequest = z.infer<
@@ -78,14 +65,14 @@ export const CreateBankAccountRoboadvisorResponseSchema = z.object({
   name: z.string().openapi({ example: "My Roboadvisor" }),
   bankAccountId: z.number().int().openapi({ example: 1 }),
   riskLevel: z.number().int().nullable().openapi({ example: 5 }),
-  managementFeePercentage: z.string().openapi({ example: "0.0015" }),
-  custodyFeePercentage: z.string().openapi({ example: "0.0015" }),
-  fundTerPercentage: z.string().openapi({ example: "0.0010" }),
-  totalFeePercentage: z.string().openapi({ example: "0.0040" }),
+  managementFeePercentage: z.number().openapi({ example: 0.0015 }),
+  custodyFeePercentage: z.number().openapi({ example: 0.0015 }),
+  fundTerPercentage: z.number().openapi({ example: 0.0010 }),
+  totalFeePercentage: z.number().openapi({ example: 0.0040 }),
   managementFeeFrequency: z.string().openapi({ example: "monthly" }),
   custodyFeeFrequency: z.string().openapi({ example: "quarterly" }),
   terPricedInNav: z.boolean().openapi({ example: true }),
-  capitalGainsTaxPercentage: z.string().nullable().openapi({ example: "26.00" }),
+  capitalGainsTaxPercentage: z.number().nullable().openapi({ example: 0.26 }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
 });
@@ -139,16 +126,26 @@ export const BankAccountRoboadvisorSummarySchema = z.object({
   name: z.string().openapi({ example: "My Roboadvisor" }),
   bankAccountId: z.number().int().openapi({ example: 1 }),
   riskLevel: z.number().int().nullable().openapi({ example: 5 }),
-  managementFeePercentage: z.string().openapi({ example: "0.0015" }),
-  custodyFeePercentage: z.string().openapi({ example: "0.0015" }),
-  fundTerPercentage: z.string().openapi({ example: "0.0010" }),
-  totalFeePercentage: z.string().openapi({ example: "0.0040" }),
+  managementFeePercentage: z.number().openapi({ example: 0.0015 }),
+  custodyFeePercentage: z.number().openapi({ example: 0.0015 }),
+  fundTerPercentage: z.number().openapi({ example: 0.0010 }),
+  totalFeePercentage: z.number().openapi({ example: 0.0040 }),
   managementFeeFrequency: z.string().openapi({ example: "monthly" }),
   custodyFeeFrequency: z.string().openapi({ example: "quarterly" }),
   terPricedInNav: z.boolean().openapi({ example: true }),
-  capitalGainsTaxPercentage: z.string().nullable().openapi({ example: "26.00" }),
+  capitalGainsTaxPercentage: z.number().nullable().openapi({ example: 0.26 }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
+  latestCalculation: z
+    .object({
+      currentValueAfterTax: z.string().openapi({ example: "95000.00" }),
+      calculatedAt: z
+        .string()
+        .datetime()
+        .openapi({ example: "2026-02-04T10:30:00Z" }),
+    })
+    .nullable()
+    .describe("Latest roboadvisor value calculation"),
 });
 
 export const GetBankAccountRoboadvisorsResponseSchema = z.object({
@@ -182,29 +179,21 @@ export const UpdateBankAccountRoboadvisorRequestSchema = z.object({
     .optional()
     .openapi({ example: 5 })
     .describe("Risk level (1-7 scale)"),
-  managementFeePercentage: z
-    .string()
-    .regex(/^[0-9]+(\.[0-9]{1,5})?$/)
+  managementFeePercentage: PercentageSchema
     .optional()
-    .openapi({ example: "0.0015" })
+    .openapi({ example: 0.0015 })
     .describe("Annual management fee as decimal (0.0015 = 0.15%)"),
-  custodyFeePercentage: z
-    .string()
-    .regex(/^[0-9]+(\.[0-9]{1,5})?$/)
+  custodyFeePercentage: PercentageSchema
     .optional()
-    .openapi({ example: "0.0015" })
+    .openapi({ example: 0.0015 })
     .describe("Annual custody fee as decimal (0.0015 = 0.15%)"),
-  fundTerPercentage: z
-    .string()
-    .regex(/^[0-9]+(\.[0-9]{1,5})?$/)
+  fundTerPercentage: PercentageSchema
     .optional()
-    .openapi({ example: "0.0010" })
+    .openapi({ example: 0.0010 })
     .describe("Fund TER as decimal (0.0010 = 0.10%)"),
-  totalFeePercentage: z
-    .string()
-    .regex(/^[0-9]+(\.[0-9]{1,5})?$/)
+  totalFeePercentage: PercentageSchema
     .optional()
-    .openapi({ example: "0.0040" })
+    .openapi({ example: 0.0040 })
     .describe("Total annual fee as decimal (0.0040 = 0.40%)"),
   managementFeeFrequency: z
     .enum(["monthly", "quarterly", "yearly"])
@@ -221,16 +210,10 @@ export const UpdateBankAccountRoboadvisorRequestSchema = z.object({
     .optional()
     .openapi({ example: true })
     .describe("Whether TER is priced in NAV"),
-  capitalGainsTaxPercentage: z
-    .string()
-    .regex(/^[0-9]+(\.[0-9]{1,2})?$/)
-    .refine((value) => {
-      const numericValue = parseFloat(value);
-      return numericValue >= 0 && numericValue <= 100;
-    }, "Capital gains tax percentage must be between 0 and 100")
+  capitalGainsTaxPercentage: NullablePercentageSchema
     .optional()
-    .openapi({ example: "26.00" })
-    .describe("Capital gains tax percentage (e.g., 26.00 for 26%)"),
+    .openapi({ example: 0.26 })
+    .describe("Capital gains tax as decimal (0.26 = 26%)"),
 });
 
 export type UpdateBankAccountRoboadvisorRequest = z.infer<

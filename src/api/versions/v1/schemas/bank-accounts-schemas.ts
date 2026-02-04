@@ -98,6 +98,17 @@ export const BankAccountSummarySchema = z.object({
   type: z.nativeEnum(BankAccountType).openapi({ example: "savings" }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
+  latestCalculation: z
+    .object({
+      monthlyProfitAfterTax: z.string().openapi({ example: "25.00" }),
+      annualProfitAfterTax: z.string().openapi({ example: "300.00" }),
+      calculatedAt: z
+        .string()
+        .datetime()
+        .openapi({ example: "2026-02-04T10:30:00Z" }),
+    })
+    .nullable()
+    .describe("Latest interest rate calculation"),
 });
 
 export const GetBankAccountsResponseSchema = z.object({

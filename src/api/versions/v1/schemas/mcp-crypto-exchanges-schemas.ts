@@ -2,8 +2,6 @@ import { z } from "zod";
 import { CryptoExchangeSortField } from "../enums/crypto-exchange-sort-field-enum.ts";
 import { SortOrder } from "../enums/sort-order-enum.ts";
 
-const PercentageRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
-
 // Crypto Exchange Tool Schemas
 export const CreateCryptoExchangeToolSchema = z.object({
   name: z
@@ -12,14 +10,12 @@ export const CreateCryptoExchangeToolSchema = z.object({
     .max(255, "Name must be between 1-255 characters")
     .describe("The name of the crypto exchange"),
   capitalGainsTaxPercentage: z
-    .string()
-    .regex(
-      PercentageRegex,
-      "Capital gains tax percentage must be a valid number with up to 2 decimal places (e.g., '15', '20.5', '28.75')",
-    )
+    .number()
+    .min(0)
+    .max(1)
     .optional()
     .describe(
-      "The capital gains tax percentage to apply when calculating after-tax crypto values (e.g., '28' for 28%)",
+      "Capital gains tax as decimal (0.26 = 26%)",
     ),
 });
 
@@ -37,14 +33,12 @@ export const UpdateCryptoExchangeToolSchema = z
       .optional()
       .describe("The new name of the crypto exchange"),
     capitalGainsTaxPercentage: z
-      .string()
-      .regex(
-        PercentageRegex,
-        "Capital gains tax percentage must be a valid number with up to 2 decimal places (e.g., '15', '20.5', '28.75')",
-      )
+      .number()
+      .min(0)
+      .max(1)
       .optional()
       .describe(
-        "The capital gains tax percentage to apply when calculating after-tax crypto values (e.g., '28' for 28%)",
+        "Capital gains tax as decimal (0.26 = 26%)",
       ),
   })
   .refine((data) => Object.keys(data).some((key) => key !== "id"), {
