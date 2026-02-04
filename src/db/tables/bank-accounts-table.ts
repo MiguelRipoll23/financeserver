@@ -1,6 +1,7 @@
 import {
   bigserial,
   index,
+  numeric,
   pgEnum,
   pgTable,
   text,
@@ -23,6 +24,7 @@ export const bankAccountsTable = pgTable(
     id: bigserial("id", { mode: "number" }).primaryKey(),
     name: text("name").notNull(),
     type: bankAccountTypeEnum("type").notNull().default("checking"),
+    taxPercentage: numeric("tax_percentage", { precision: 8, scale: 6 }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),

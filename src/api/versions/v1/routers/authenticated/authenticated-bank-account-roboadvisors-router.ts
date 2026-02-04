@@ -43,7 +43,7 @@ export class AuthenticatedBankAccountRoboadvisorsRouter {
         summary: "Create roboadvisor",
         description:
           "Creates a new roboadvisor with fee configuration and risk level. Associates it with a bank account for automated investment management.",
-        tags: ["Bank account roboadvisors"],
+        tags: ["Roboadvisors"],
         request: {
           body: {
             content: {
@@ -84,7 +84,7 @@ export class AuthenticatedBankAccountRoboadvisorsRouter {
         summary: "List roboadvisors",
         description:
           "Returns paginated list of roboadvisors with optional filtering by bank account or name.",
-        tags: ["Bank account roboadvisors"],
+        tags: ["Roboadvisors"],
         request: {
           body: {
             content: {
@@ -125,7 +125,7 @@ export class AuthenticatedBankAccountRoboadvisorsRouter {
         path: "/{id}",
         summary: "Update roboadvisor",
         description: "Updates an existing roboadvisor configuration by identifier.",
-        tags: ["Bank account roboadvisors"],
+        tags: ["Roboadvisors"],
         request: {
           params: BankAccountRoboadvisorIdParamSchema,
           body: {
@@ -170,7 +170,7 @@ export class AuthenticatedBankAccountRoboadvisorsRouter {
         path: "/{id}",
         summary: "Delete roboadvisor",
         description: "Permanently deletes a roboadvisor and all associated data.",
-        tags: ["Bank account roboadvisors"],
+        tags: ["Roboadvisors"],
         request: {
           params: BankAccountRoboadvisorIdParamSchema,
         },

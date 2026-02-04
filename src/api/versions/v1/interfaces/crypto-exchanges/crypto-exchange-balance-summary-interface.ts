@@ -7,9 +7,4 @@ export interface CryptoExchangeBalanceSummary {
   investedCurrencyCode: string | null;
   createdAt: string;
   updatedAt: string;
-  latestCalculation: {
-    currentValueAfterTax: string;
-    calculatedAt: string;
-  } | null;
 }
-

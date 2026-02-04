@@ -4,5 +4,8 @@ export interface CryptoExchangeSummary {
   capitalGainsTaxPercentage: number | null;
   createdAt: string;
   updatedAt: string;
+  latestCalculation: {
+    currentValueAfterTax: string;
+    calculatedAt: string;
+  } | null;
 }
-

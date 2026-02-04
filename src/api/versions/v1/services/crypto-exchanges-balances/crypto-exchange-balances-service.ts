@@ -4,7 +4,6 @@ import { DatabaseService } from "../../../../../core/services/database-service.t
 import {
   cryptoExchangesTable,
   cryptoExchangeBalancesTable,
-  cryptoExchangeCalculationsTable,
 } from "../../../../../db/schema.ts";
 import { ServerError } from "../../models/server-error.ts";
 import { decodeCursor } from "../../utils/cursor-utils.ts";
@@ -132,20 +131,6 @@ export class CryptoExchangeBalancesService {
     const query = db
       .select({
         ...getTableColumns(cryptoExchangeBalancesTable),
-        latestCalculation: sql<{
-          currentValueAfterTax: string;
-          calculatedAt: string;
-        } | null>`(
-          SELECT json_build_object(
-            'currentValueAfterTax', calc.current_value_after_tax,
-            'calculatedAt', calc.created_at
-          )
-          FROM ${cryptoExchangeCalculationsTable} calc
-          WHERE calc.crypto_exchange_id = ${cryptoExchangeBalancesTable.cryptoExchangeId}
-            AND calc.symbol_code = ${cryptoExchangeBalancesTable.symbolCode}
-          ORDER BY calc.created_at DESC
-          LIMIT 1
-        )`,
       })
       .from(cryptoExchangeBalancesTable);
 
@@ -274,12 +259,7 @@ export class CryptoExchangeBalancesService {
   }
 
   private mapBalanceToSummary(
-    balance: typeof cryptoExchangeBalancesTable.$inferSelect & {
-      latestCalculation: {
-        currentValueAfterTax: string;
-        calculatedAt: string;
-      } | null;
-    },
+    balance: typeof cryptoExchangeBalancesTable.$inferSelect,
   ): CryptoExchangeBalanceSummary {
     return {
       id: balance.id,
@@ -290,14 +270,6 @@ export class CryptoExchangeBalancesService {
       investedCurrencyCode: balance.investedCurrencyCode,
       createdAt: toISOStringSafe(balance.createdAt),
       updatedAt: toISOStringSafe(balance.updatedAt),
-      latestCalculation: balance.latestCalculation
-        ? {
-            currentValueAfterTax: balance.latestCalculation.currentValueAfterTax,
-            calculatedAt: toISOStringSafe(
-              new Date(balance.latestCalculation.calculatedAt)
-            ),
-          }
-        : null,
     };
   }
 

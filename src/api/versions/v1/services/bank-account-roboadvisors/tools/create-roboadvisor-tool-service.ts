@@ -11,7 +11,7 @@ export class CreateRoboadvisorToolService {
 
   public getDefinition(): McpToolDefinition {
     return {
-      name: "bank_accounts.roboadvisors.create",
+      name: "roboadvisors.create",
       meta: {
         title: "Create roboadvisor",
         description:

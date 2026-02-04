@@ -11,7 +11,7 @@ export class DeleteRoboadvisorFundToolService {
 
   public getDefinition(): McpToolDefinition {
     return {
-      name: "bank_accounts.roboadvisors.funds.delete",
+      name: "roboadvisors.funds.delete",
       meta: {
         title: "Delete roboadvisor fund allocation",
         description:

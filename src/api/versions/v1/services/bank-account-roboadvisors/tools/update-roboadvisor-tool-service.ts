@@ -11,7 +11,7 @@ export class UpdateRoboadvisorToolService {
 
   public getDefinition(): McpToolDefinition {
     return {
-      name: "bank_accounts.roboadvisors.update",
+      name: "roboadvisors.update",
       meta: {
         title: "Update roboadvisor",
         description:

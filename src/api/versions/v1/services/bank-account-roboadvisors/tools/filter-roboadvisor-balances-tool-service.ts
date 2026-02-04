@@ -11,7 +11,7 @@ export class FilterRoboadvisorBalancesToolService {
 
   public getDefinition(): McpToolDefinition {
     return {
-      name: "bank_accounts.roboadvisors.balances.filter",
+      name: "roboadvisors.balances.filter",
       meta: {
         title: "Filter roboadvisor balance entries",
         description:

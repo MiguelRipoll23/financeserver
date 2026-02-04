@@ -23,7 +23,7 @@ export {
 } from "./tables/bank-accounts-table.ts";
 export { bankAccountBalancesTable } from "./tables/bank-account-balances-table.ts";
 export { bankAccountInterestRatesTable } from "./tables/bank-account-interest-rates-table.ts";
-export { bankAccountInterestRateCalculationsTable } from "./tables/bank-account-interest-rate-calculations-table.ts";
+export { bankAccountCalculationsTable } from "./tables/bank-account-calculations-table.ts";
 export { cryptoExchangesTable } from "./tables/crypto-exchanges-table.ts";
 export { cryptoExchangeBalancesTable } from "./tables/crypto-exchange-balances-table.ts";
 export { cryptoExchangeCalculationsTable } from "./tables/crypto-exchange-calculations-table.ts";

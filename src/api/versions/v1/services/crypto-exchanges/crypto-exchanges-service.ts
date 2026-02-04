@@ -1,7 +1,7 @@
 import { inject, injectable } from "@needle-di/core";
-import { asc, desc, eq, ilike, sql, type SQL } from "drizzle-orm";
+import { asc, desc, eq, getTableColumns, ilike, sql, type SQL } from "drizzle-orm";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
-import { cryptoExchangesTable } from "../../../../../db/schema.ts";
+import { cryptoExchangeCalculationsTable, cryptoExchangesTable } from "../../../../../db/schema.ts";
 import { ServerError } from "../../models/server-error.ts";
 import { decodeCursor } from "../../utils/cursor-utils.ts";
 import { createOffsetPagination } from "../../utils/pagination-utils.ts";
@@ -145,7 +145,22 @@ export class CryptoExchangesService {
     }
 
     const results = await db
-      .select()
+      .select({
+        ...getTableColumns(cryptoExchangesTable),
+        latestCalculation: sql<{
+          currentValueAfterTax: string;
+          calculatedAt: string;
+        } | null>`(
+          SELECT json_build_object(
+            'currentValueAfterTax', calc.current_value_after_tax,
+            'calculatedAt', calc.created_at
+          )
+          FROM ${cryptoExchangeCalculationsTable} calc
+          WHERE calc.crypto_exchange_id = ${cryptoExchangesTable.id}
+          ORDER BY calc.created_at DESC
+          LIMIT 1
+        )`,
+      })
       .from(cryptoExchangesTable)
       .where(whereClause)
       .orderBy(orderDirection(orderColumn))
@@ -197,7 +212,12 @@ export class CryptoExchangesService {
   }
 
   private mapCryptoExchangeToSummary(
-    exchange: typeof cryptoExchangesTable.$inferSelect,
+    exchange: typeof cryptoExchangesTable.$inferSelect & {
+      latestCalculation: {
+        currentValueAfterTax: string;
+        calculatedAt: string;
+      } | null;
+    },
   ): CryptoExchangeSummary {
     return {
       id: exchange.id,
@@ -205,6 +225,14 @@ export class CryptoExchangesService {
       capitalGainsTaxPercentage: exchange.capitalGainsTaxPercentage ? parseFloat(exchange.capitalGainsTaxPercentage) : null,
       createdAt: toISOStringSafe(exchange.createdAt),
       updatedAt: toISOStringSafe(exchange.updatedAt),
+      latestCalculation: exchange.latestCalculation
+        ? {
+            currentValueAfterTax: exchange.latestCalculation.currentValueAfterTax,
+            calculatedAt: toISOStringSafe(
+              new Date(exchange.latestCalculation.calculatedAt)
+            ),
+          }
+        : null,
     };
   }
 }
