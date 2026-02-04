@@ -3,12 +3,7 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { Context } from "hono";
 import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
 import { InvestmentCalculationsService } from "../../services/investment-calculations/investment-calculations-service.ts";
-import {
-  CalculationRequestSchema,
-  CalculationResponseSchema,
-} from "../../schemas/investment-calculations-schemas.ts";
 import { ServerResponse } from "../../models/server-response.ts";
-import { readJsonOrEmpty } from "../../utils/router-utils.ts";
 
 @injectable()
 export class AuthenticatedInvestmentCalculationsRouter {
@@ -28,49 +23,32 @@ export class AuthenticatedInvestmentCalculationsRouter {
   }
 
   private setRoutes(): void {
-    this.registerCalculateRoute();
+    this.registerCalculateNetWorthRoute();
   }
 
-  private registerCalculateRoute(): void {
+  private registerCalculateNetWorthRoute(): void {
     this.app.openapi(
       createRoute({
         method: "post",
-        path: "/calculate",
-        summary: "Calculate investment value after tax",
+        path: "/calculate-net-worth",
+        summary: "Calculate net worth",
         description:
-          "Calculate after-tax values for investments (interest rates, roboadvisors, crypto). Supports three calculation types: interest_rate (requires bankAccountId, currentBalance, currencyCode), roboadvisor (requires roboadvisorId), and crypto (requires cryptoExchangeId, symbolCode).",
+          "Calculate net worth by triggering after-tax value calculations for all bank accounts with interest rates, roboadvisors, and crypto exchanges. This is an asynchronous operation that returns immediately.",
         tags: ["Investment Calculations"],
-        request: {
-          body: {
-            content: {
-              "application/json": {
-                schema: CalculationRequestSchema,
-              },
-            },
-          },
-        },
         responses: {
-          200: {
-            description: "Calculation completed successfully",
-            content: {
-              "application/json": {
-                schema: CalculationResponseSchema,
-              },
-            },
+          202: {
+            description: "Calculation request accepted",
           },
-          ...ServerResponse.BadRequest,
           ...ServerResponse.Unauthorized,
-          ...ServerResponse.NotFound,
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
-        const payload = await readJsonOrEmpty(context);
-        const body = CalculationRequestSchema.parse(payload);
+        // Trigger calculation asynchronously (fire and forget)
+        this.investmentCalculationsService.calculateAll().catch((error) => {
+          console.error("Error calculating net worth:", error);
+        });
 
-        const result =
-          await this.investmentCalculationsService.calculate(body);
-
-        return context.json(result, 200);
+        return context.body(null, 202);
       }
     );
   }

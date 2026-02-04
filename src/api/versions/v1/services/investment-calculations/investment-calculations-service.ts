@@ -1,7 +1,14 @@
 import { inject, injectable } from "@needle-di/core";
+import { sql } from "drizzle-orm";
+import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import { BankAccountInterestRatesService } from "../bank-account-interest-rates/bank-account-interest-rates-service.ts";
 import { BankAccountRoboadvisorsService } from "../bank-account-roboadvisors/bank-account-roboadvisors-service.ts";
 import { CryptoExchangeBalancesService } from "../crypto-exchanges-balances/crypto-exchange-balances-service.ts";
+import {
+  bankAccountBalancesTable,
+  bankAccountRoboadvisors,
+  cryptoExchangeBalancesTable,
+} from "../../../../../db/schema.ts";
 
 export type CalculationType = "interest_rate" | "roboadvisor" | "crypto";
 
@@ -43,6 +50,7 @@ export interface CalculationResult {
 @injectable()
 export class InvestmentCalculationsService {
   constructor(
+    private databaseService = inject(DatabaseService),
     private interestRatesService = inject(BankAccountInterestRatesService),
     private roboadvisorsService = inject(BankAccountRoboadvisorsService),
     private cryptoBalancesService = inject(CryptoExchangeBalancesService)
@@ -68,10 +76,11 @@ export class InvestmentCalculationsService {
           return await this.calculateCrypto(request);
 
         default:
+          const exhaustiveCheck: never = request;
           return {
             success: false,
             message: "Invalid calculation type",
-            calculationType: request.type,
+            calculationType: (exhaustiveCheck as any).type,
           };
       }
     } catch (error) {
@@ -82,7 +91,7 @@ export class InvestmentCalculationsService {
           error instanceof Error
             ? error.message
             : "Unknown error occurred during calculation",
-        calculationType: request.type,
+        calculationType: "interest_rate" as CalculationType,
       };
     }
   }
@@ -172,25 +181,143 @@ export class InvestmentCalculationsService {
   }
 
   /**
-   * Calculate all investments for a user (batch operation)
-   * This would iterate through all accounts and perform calculations
-   * @returns Summary of all calculations
+   * Calculate all investments (batch operation)
+   * Iterates through all bank accounts with interest rates, roboadvisors, and crypto balances
+   * and performs after-tax calculations for each
    */
-  public async calculateAll(): Promise<{
-    success: boolean;
-    results: CalculationResult[];
-  }> {
-    // This is a placeholder for future implementation
-    // Would need to:
-    // 1. Get all bank accounts with interest rates
-    // 2. Get all roboadvisors
-    // 3. Get all crypto balances
-    // 4. Run calculations for each
-    // 5. Return aggregated results
+  public async calculateAll(): Promise<void> {
+    try {
+      const db = this.databaseService.get();
 
-    return {
-      success: false,
-      results: [],
-    };
+      // 1. Calculate for all bank accounts with active interest rates
+      await this.calculateAllBankAccountInterestRates(db);
+
+      // 2. Calculate for all roboadvisors
+      await this.calculateAllRoboadvisors(db);
+
+      // 3. Calculate for all crypto exchange balances
+      await this.calculateAllCryptoBalances(db);
+
+      console.log("Net worth calculation completed successfully");
+    } catch (error) {
+      console.error("Error in calculateAll:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Calculate after-tax interest for all bank accounts with active interest rates
+   */
+  private async calculateAllBankAccountInterestRates(
+    db: any
+  ): Promise<void> {
+    try {
+      // Get all bank accounts with their latest balances
+      const bankAccountsWithBalances = await db
+        .select({
+          bankAccountId: bankAccountBalancesTable.bankAccountId,
+          balance: bankAccountBalancesTable.balance,
+          currencyCode: bankAccountBalancesTable.currencyCode,
+        })
+        .from(bankAccountBalancesTable)
+        .innerJoin(
+          sql`(
+            SELECT bank_account_id, MAX(created_at) as latest_date
+            FROM bank_account_balances
+            GROUP BY bank_account_id
+          ) latest`,
+          sql`${bankAccountBalancesTable.bankAccountId} = latest.bank_account_id 
+              AND ${bankAccountBalancesTable.createdAt} = latest.latest_date`
+        );
+
+      console.log(
+        `Processing ${bankAccountsWithBalances.length} bank accounts with interest rates`
+      );
+
+      // Calculate interest after tax for each account
+      for (const account of bankAccountsWithBalances) {
+        try {
+          await this.interestRatesService.calculateInterestAfterTax(
+            account.bankAccountId,
+            account.balance,
+            account.currencyCode
+          );
+        } catch (error) {
+          console.error(
+            `Failed to calculate interest for bank account ${account.bankAccountId}:`,
+            error
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Error calculating bank account interest rates:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Calculate after-tax value for all roboadvisors
+   */
+  private async calculateAllRoboadvisors(db: any): Promise<void> {
+    try {
+      // Get all roboadvisors
+      const roboadvisors = await db
+        .select({ id: bankAccountRoboadvisors.id })
+        .from(bankAccountRoboadvisors);
+
+      console.log(`Processing ${roboadvisors.length} roboadvisors`);
+
+      // Calculate value after tax for each roboadvisor
+      for (const roboadvisor of roboadvisors) {
+        try {
+          await this.roboadvisorsService.calculateRoboadvisorValueAfterTax(
+            roboadvisor.id
+          );
+        } catch (error) {
+          console.error(
+            `Failed to calculate roboadvisor ${roboadvisor.id}:`,
+            error
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Error calculating roboadvisors:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Calculate after-tax value for all crypto exchange balances
+   */
+  private async calculateAllCryptoBalances(db: any): Promise<void> {
+    try {
+      // Get all crypto exchange balances
+      const balances = await db
+        .select({
+          cryptoExchangeId: cryptoExchangeBalancesTable.cryptoExchangeId,
+          symbolCode: cryptoExchangeBalancesTable.symbolCode,
+        })
+        .from(cryptoExchangeBalancesTable);
+
+      console.log(`Processing ${balances.length} crypto balances`);
+
+      // Calculate value after tax for each balance
+      for (const balance of balances) {
+        try {
+          await this.cryptoBalancesService.calculateCryptoValueAfterTax(
+            balance.cryptoExchangeId,
+            balance.symbolCode
+          );
+        } catch (error) {
+          console.error(
+            `Failed to calculate crypto balance for exchange ${balance.cryptoExchangeId} symbol ${balance.symbolCode}:`,
+            error
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Error calculating crypto balances:", error);
+      throw error;
+    }
   }
 }
