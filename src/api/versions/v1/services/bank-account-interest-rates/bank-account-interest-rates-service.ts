@@ -495,20 +495,31 @@ export class BankAccountInterestRatesService {
         "../../../../../db/schema.ts"
       );
 
-      // Get all bank accounts with their latest balances
-      const bankAccountsWithBalances = await db
-        .select({
-          bankAccountId: bankAccountBalancesTable.bankAccountId,
-          balance: bankAccountBalancesTable.balance,
-          currencyCode: bankAccountBalancesTable.currencyCode,
-        })
-        .from(bankAccountBalancesTable)
-        .distinctOn([bankAccountBalancesTable.bankAccountId])
-        .orderBy(
-          bankAccountBalancesTable.bankAccountId,
-          desc(bankAccountBalancesTable.createdAt),
-          desc(bankAccountBalancesTable.id)
+      // Get all bank accounts with their latest balances using a subquery
+      const latestBalances = db
+        .$with('latest_balances')
+        .as(
+          db
+            .select({
+              bankAccountId: bankAccountBalancesTable.bankAccountId,
+              balance: bankAccountBalancesTable.balance,
+              currencyCode: bankAccountBalancesTable.currencyCode,
+              createdAt: bankAccountBalancesTable.createdAt,
+              id: bankAccountBalancesTable.id,
+              rowNumber: sql<number>`ROW_NUMBER() OVER (PARTITION BY ${bankAccountBalancesTable.bankAccountId} ORDER BY ${bankAccountBalancesTable.createdAt} DESC, ${bankAccountBalancesTable.id} DESC)`.as('row_number')
+            })
+            .from(bankAccountBalancesTable)
         );
+
+      const bankAccountsWithBalances = await db
+        .with(latestBalances)
+        .select({
+          bankAccountId: latestBalances.bankAccountId,
+          balance: latestBalances.balance,
+          currencyCode: latestBalances.currencyCode,
+        })
+        .from(latestBalances)
+        .where(eq(latestBalances.rowNumber, 1));
 
       console.log(
         `Processing ${bankAccountsWithBalances.length} bank accounts with interest rates`
