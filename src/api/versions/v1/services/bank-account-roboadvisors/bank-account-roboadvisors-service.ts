@@ -6,7 +6,7 @@ import {
   roboadvisors,
   roboadvisorBalances,
   roboadvisorFunds,
-  bankAccountRoboadvisorFundCalculationsTable,
+  roboadvisorFundCalculationsTable,
 } from "../../../../../db/schema.ts";
 import { ServerError } from "../../models/server-error.ts";
 import { decodeCursor } from "../../utils/cursor-utils.ts";
@@ -164,8 +164,8 @@ export class BankAccountRoboadvisorsService {
             'currentValueAfterTax', calc.current_value_after_tax,
             'calculatedAt', calc.created_at
           )
-          FROM ${bankAccountRoboadvisorFundCalculationsTable} calc
-          WHERE calc.bank_account_roboadvisor_id = ${roboadvisors.id}
+          FROM ${roboadvisorFundCalculationsTable} calc
+          WHERE calc.roboadvisor_id = ${roboadvisors.id}
           ORDER BY calc.created_at DESC
           LIMIT 1
         )`,

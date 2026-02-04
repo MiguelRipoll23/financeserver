@@ -8,8 +8,8 @@ import {
 } from "drizzle-orm/pg-core";
 import { roboadvisors } from "./roboadvisors-table.ts";
 
-export const bankAccountRoboadvisorFundCalculationsTable = pgTable(
-  "bank_account_roboadvisor_fund_calculations",
+export const roboadvisorFundCalculationsTable = pgTable(
+  "roboadvisor_fund_calculations",
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
     roboadvisorId: bigint("roboadvisor_id", {
@@ -36,7 +36,7 @@ export const bankAccountRoboadvisorFundCalculationsTable = pgTable(
   ]
 );
 
-export type BankAccountRoboadvisorFundCalculationEntity =
-  typeof bankAccountRoboadvisorFundCalculationsTable.$inferSelect;
-export type BankAccountRoboadvisorFundCalculationInsertEntity =
-  typeof bankAccountRoboadvisorFundCalculationsTable.$inferInsert;
+export type RoboadvisorFundCalculationEntity =
+  typeof roboadvisorFundCalculationsTable.$inferSelect;
+export type RoboadvisorFundCalculationInsertEntity =
+  typeof roboadvisorFundCalculationsTable.$inferInsert;

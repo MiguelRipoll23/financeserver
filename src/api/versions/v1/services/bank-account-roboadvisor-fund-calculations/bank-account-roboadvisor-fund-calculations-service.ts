@@ -1,7 +1,7 @@
 import { inject, injectable } from "@needle-di/core";
 import { desc, eq } from "drizzle-orm";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
-import { bankAccountRoboadvisorFundCalculationsTable } from "../../../../../db/schema.ts";
+import { roboadvisorFundCalculationsTable } from "../../../../../db/schema.ts";
 import { toISOStringSafe } from "../../utils/date-utils.ts";
 
 @injectable()
@@ -18,14 +18,14 @@ export class BankAccountRoboadvisorFundCalculationsService {
 
     const [calculation] = await db
       .select()
-      .from(bankAccountRoboadvisorFundCalculationsTable)
+      .from(roboadvisorFundCalculationsTable)
       .where(
         eq(
-          bankAccountRoboadvisorFundCalculationsTable.roboadvisorId,
+          roboadvisorFundCalculationsTable.roboadvisorId,
           roboadvisorId
         )
       )
-      .orderBy(desc(bankAccountRoboadvisorFundCalculationsTable.createdAt))
+      .orderBy(desc(roboadvisorFundCalculationsTable.createdAt))
       .limit(1);
 
     if (!calculation) {
@@ -44,7 +44,7 @@ export class BankAccountRoboadvisorFundCalculationsService {
   ): Promise<void> {
     const db = this.databaseService.get();
 
-    await db.insert(bankAccountRoboadvisorFundCalculationsTable).values({
+    await db.insert(roboadvisorFundCalculationsTable).values({
       roboadvisorId: roboadvisorId,
       currentValueAfterTax,
     });

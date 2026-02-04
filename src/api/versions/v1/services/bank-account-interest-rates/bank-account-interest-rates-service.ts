@@ -79,11 +79,14 @@ export class BankAccountInterestRatesService {
       );
 
       const [result] = await tx
-        .insert(bankAccountInterestRatesTable)
+      .insert(bankAccountInterestRatesTable)
         .values({
           bankAccountId: accountId,
           interestRate: payload.interestRate.toString(),
-          taxPercentage: payload.taxPercentage ? payload.taxPercentage.toString() : null,
+          taxPercentage:
+            payload.taxPercentage === null || payload.taxPercentage === undefined
+              ? null
+              : payload.taxPercentage.toString(),
           interestRateStartDate: payload.interestRateStartDate,
           interestRateEndDate: payload.interestRateEndDate ?? null,
         })
@@ -226,7 +229,8 @@ export class BankAccountInterestRatesService {
     }
 
     if (payload.taxPercentage !== undefined) {
-      updateValues.taxPercentage = payload.taxPercentage ? payload.taxPercentage.toString() : null;
+      updateValues.taxPercentage =
+        payload.taxPercentage === null ? null : payload.taxPercentage.toString();
     }
 
     if (payload.interestRateStartDate !== undefined) {
