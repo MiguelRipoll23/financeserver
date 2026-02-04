@@ -478,7 +478,8 @@ export class BankAccountInterestRatesService {
       };
     } catch (error) {
       console.error("Error calculating interest after tax:", error);
-      return null;
+      // Rethrow so callers can handle persistence/calculation failures
+      throw error;
     }
   }
 
