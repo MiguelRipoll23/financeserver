@@ -5,24 +5,26 @@ import {
   numeric,
   pgTable,
   timestamp,
+  varchar,
 } from "drizzle-orm/pg-core";
 import { bankAccountsTable } from "./bank-accounts-table.ts";
 
-export const bankAccountInterestRateCalculationsTable = pgTable(
-  "bank_account_interest_rate_calculations",
+export const bankAccountCalculationsTable = pgTable(
+  "bank_account_calculations",
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
     bankAccountId: bigint("bank_account_id", { mode: "number" })
       .notNull()
       .references(() => bankAccountsTable.id, { onDelete: "cascade" }),
-    monthlyProfitAfterTax: numeric("monthly_profit_after_tax", {
+    monthlyProfit: numeric("monthly_profit", {
       precision: 15,
       scale: 2,
     }).notNull(),
-    annualProfitAfterTax: numeric("annual_profit_after_tax", {
+    annualProfit: numeric("annual_profit", {
       precision: 15,
       scale: 2,
     }).notNull(),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -31,14 +33,14 @@ export const bankAccountInterestRateCalculationsTable = pgTable(
       .notNull(),
   },
   (table) => [
-    index("idx_interest_rate_calcs_account_created").on(
+    index("idx_bank_account_calculations_account_created").on(
       table.bankAccountId,
       table.createdAt.desc()
     ),
   ]
 );
 
-export type BankAccountInterestRateCalculationEntity =
-  typeof bankAccountInterestRateCalculationsTable.$inferSelect;
-export type BankAccountInterestRateCalculationInsertEntity =
-  typeof bankAccountInterestRateCalculationsTable.$inferInsert;
+export type BankAccountCalculationEntity =
+  typeof bankAccountCalculationsTable.$inferSelect;
+export type BankAccountCalculationInsertEntity =
+  typeof bankAccountCalculationsTable.$inferInsert;

@@ -4,12 +4,13 @@ export interface BankAccountSummary {
   id: number;
   name: string;
   type: BankAccountType;
+  taxPercentage: number | null;
   createdAt: string;
   updatedAt: string;
   latestCalculation: {
-    monthlyProfitAfterTax: string;
-    annualProfitAfterTax: string;
+    monthlyProfit: string;
+    annualProfit: string;
+    currencyCode: string;
     calculatedAt: string;
   } | null;
 }
-

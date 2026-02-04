@@ -96,7 +96,10 @@ export class BankAccountRoboadvisorsService {
         managementFeeFrequency: payload.managementFeeFrequency,
         custodyFeeFrequency: payload.custodyFeeFrequency,
         terPricedInNav: payload.terPricedInNav ?? true,
-        capitalGainsTaxPercentage: payload.capitalGainsTaxPercentage ? payload.capitalGainsTaxPercentage.toString() : null,
+        capitalGainsTaxPercentage:
+          payload.capitalGainsTaxPercentage === null || payload.capitalGainsTaxPercentage === undefined
+            ? null
+            : payload.capitalGainsTaxPercentage.toString(),
       })
       .returning();
 
@@ -244,7 +247,10 @@ export class BankAccountRoboadvisorsService {
     if (payload.terPricedInNav !== undefined)
       updateValues.terPricedInNav = payload.terPricedInNav;
     if (payload.capitalGainsTaxPercentage !== undefined)
-      updateValues.capitalGainsTaxPercentage = payload.capitalGainsTaxPercentage ? payload.capitalGainsTaxPercentage.toString() : null;
+      updateValues.capitalGainsTaxPercentage =
+        payload.capitalGainsTaxPercentage === null
+          ? null
+          : payload.capitalGainsTaxPercentage.toString();
 
     const [result] = await db
       .update(roboadvisors)
@@ -949,11 +955,20 @@ export class BankAccountRoboadvisorsService {
 
           const currentPrice = parseFloat(priceString);
           const shareCount = parseFloat(fund.shareCount);
-          
-          // Calculate current value: shares * currentPrice
-          const fundCurrentValue = shareCount * currentPrice;
-          
-          totalCurrentValue += fundCurrentValue;
+
+          // Validate parsed numbers before computing to avoid NaN propagation
+          if (Number.isFinite(currentPrice) && Number.isFinite(shareCount)) {
+            // Calculate current value: shares * currentPrice
+            const fundCurrentValue = shareCount * currentPrice;
+            totalCurrentValue += fundCurrentValue;
+            successfulPriceFetches++;
+          } else {
+            console.warn(
+              `Skipping fund ${fund.name} (ISIN: ${fund.isin}) due to invalid numeric values: price='${priceString}', shareCount='${fund.shareCount}'`
+            );
+            // skip adding to totalCurrentValue
+            continue;
+          }
           successfulPriceFetches++;
         } catch (error) {
           console.error(

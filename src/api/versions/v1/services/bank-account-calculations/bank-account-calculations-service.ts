@@ -1,35 +1,33 @@
 import { inject, injectable } from "@needle-di/core";
 import { desc, eq } from "drizzle-orm";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
-import {
-  bankAccountInterestRateCalculationsTable,
-  bankAccountsTable,
-} from "../../../../../db/schema.ts";
+import { bankAccountCalculationsTable } from "../../../../../db/schema.ts";
 import { toISOStringSafe } from "../../utils/date-utils.ts";
 
 @injectable()
-export class BankAccountInterestRateCalculationsService {
+export class BankAccountCalculationsService {
   constructor(private databaseService = inject(DatabaseService)) {}
 
   public async getLatestCalculation(
     bankAccountId: number
   ): Promise<{
-    monthlyProfitAfterTax: string;
-    annualProfitAfterTax: string;
+    monthlyProfit: string;
+    annualProfit: string;
+    currencyCode: string;
     createdAt: string;
   } | null> {
     const db = this.databaseService.get();
 
     const [calculation] = await db
       .select()
-      .from(bankAccountInterestRateCalculationsTable)
+      .from(bankAccountCalculationsTable)
       .where(
         eq(
-          bankAccountInterestRateCalculationsTable.bankAccountId,
+          bankAccountCalculationsTable.bankAccountId,
           bankAccountId
         )
       )
-      .orderBy(desc(bankAccountInterestRateCalculationsTable.createdAt))
+      .orderBy(desc(bankAccountCalculationsTable.createdAt))
       .limit(1);
 
     if (!calculation) {
@@ -37,23 +35,26 @@ export class BankAccountInterestRateCalculationsService {
     }
 
     return {
-      monthlyProfitAfterTax: calculation.monthlyProfitAfterTax,
-      annualProfitAfterTax: calculation.annualProfitAfterTax,
+      monthlyProfit: calculation.monthlyProfit,
+      annualProfit: calculation.annualProfit,
+      currencyCode: calculation.currencyCode,
       createdAt: toISOStringSafe(calculation.createdAt),
     };
   }
 
   public async storeCalculation(
     bankAccountId: number,
-    monthlyProfitAfterTax: string,
-    annualProfitAfterTax: string
+    monthlyProfit: string,
+    annualProfit: string,
+    currencyCode: string
   ): Promise<void> {
     const db = this.databaseService.get();
 
-    await db.insert(bankAccountInterestRateCalculationsTable).values({
+    await db.insert(bankAccountCalculationsTable).values({
       bankAccountId,
-      monthlyProfitAfterTax,
-      annualProfitAfterTax,
+      monthlyProfit,
+      annualProfit,
+      currencyCode,
     });
   }
 }

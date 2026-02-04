@@ -9,7 +9,7 @@ export class CreateRoboadvisorFundToolService {
 
   public getDefinition(): McpToolDefinition {
     return {
-      name: "bank_accounts.roboadvisors.funds.create",
+      name: "roboadvisors.funds.create",
       meta: {
         title: "Create roboadvisor fund allocation",
         description:

@@ -28,6 +28,7 @@ export class CreateBankAccountToolService {
         const result = await this.bankAccountsService.createBankAccount({
           name: parsed.name,
           type: parsed.type,
+          taxPercentage: parsed.taxPercentage,
         });
 
         const text = `Bank account created successfully: ${result.name} (${result.type}) (ID: ${result.id})`;

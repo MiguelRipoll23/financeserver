@@ -24,7 +24,7 @@ import type {
 } from "../../schemas/bank-account-interest-rates-schemas.ts";
 import type { BankAccountInterestRateSummarySchema } from "../../schemas/bank-account-interest-rates-schemas.ts";
 import { z } from "zod";
-import { BankAccountInterestRateCalculationsService } from "../bank-account-interest-rate-calculations/bank-account-interest-rate-calculations-service.ts";
+import { BankAccountCalculationsService } from "../bank-account-calculations/bank-account-calculations-service.ts";
 
 type BankAccountInterestRateSummary = z.infer<
   typeof BankAccountInterestRateSummarySchema
@@ -34,9 +34,7 @@ type BankAccountInterestRateSummary = z.infer<
 export class BankAccountInterestRatesService {
   constructor(
     private databaseService = inject(DatabaseService),
-    private calculationsService = inject(
-      BankAccountInterestRateCalculationsService
-    )
+    private calculationsService = inject(BankAccountCalculationsService)
   ) {}
 
   public async createBankAccountInterestRate(
@@ -83,10 +81,6 @@ export class BankAccountInterestRatesService {
         .values({
           bankAccountId: accountId,
           interestRate: payload.interestRate.toString(),
-          taxPercentage:
-            payload.taxPercentage === null || payload.taxPercentage === undefined
-              ? null
-              : payload.taxPercentage.toString(),
           interestRateStartDate: payload.interestRateStartDate,
           interestRateEndDate: payload.interestRateEndDate ?? null,
         })
@@ -216,7 +210,6 @@ export class BankAccountInterestRatesService {
 
     const updateValues: {
       interestRate?: string;
-      taxPercentage?: string | null;
       interestRateStartDate?: string;
       interestRateEndDate?: string | null;
       updatedAt: Date;
@@ -226,11 +219,6 @@ export class BankAccountInterestRatesService {
 
     if (payload.interestRate !== undefined) {
       updateValues.interestRate = payload.interestRate.toString();
-    }
-
-    if (payload.taxPercentage !== undefined) {
-      updateValues.taxPercentage =
-        payload.taxPercentage === null ? null : payload.taxPercentage.toString();
     }
 
     if (payload.interestRateStartDate !== undefined) {
@@ -386,7 +374,6 @@ export class BankAccountInterestRatesService {
       id: rate.id,
       bankAccountId: rate.bankAccountId,
       interestRate: parseFloat(rate.interestRate),
-      taxPercentage: rate.taxPercentage ? parseFloat(rate.taxPercentage) : null,
       interestRateStartDate: rate.interestRateStartDate,
       interestRateEndDate: rate.interestRateEndDate,
       createdAt: toISOStringSafe(rate.createdAt),
@@ -401,7 +388,6 @@ export class BankAccountInterestRatesService {
       id: rate.id,
       bankAccountId: rate.bankAccountId,
       interestRate: parseFloat(rate.interestRate),
-      taxPercentage: rate.taxPercentage ? parseFloat(rate.taxPercentage) : null,
       interestRateStartDate: rate.interestRateStartDate,
       interestRateEndDate: rate.interestRateEndDate,
       createdAt: toISOStringSafe(rate.createdAt),
@@ -421,8 +407,8 @@ export class BankAccountInterestRatesService {
     currentBalance: string,
     currencyCode: string
   ): Promise<{
-    monthlyProfitAfterTax: string;
-    annualProfitAfterTax: string;
+    monthlyProfit: string;
+    annualProfit: string;
     currencyCode: string;
   } | null> {
     try {
@@ -431,14 +417,25 @@ export class BankAccountInterestRatesService {
       // Get current active interest rate
       const now = new Date().toISOString().split("T")[0];
       const [activeRate] = await db
-        .select()
+        .select({
+          interestRate: bankAccountInterestRatesTable.interestRate,
+          taxPercentage: bankAccountsTable.taxPercentage,
+        })
         .from(bankAccountInterestRatesTable)
+        .innerJoin(
+          bankAccountsTable,
+          eq(bankAccountsTable.id, bankAccountInterestRatesTable.bankAccountId)
+        )
         .where(
           and(
             eq(bankAccountInterestRatesTable.bankAccountId, bankAccountId),
             sql`${bankAccountInterestRatesTable.interestRateStartDate} <= ${now}`,
             sql`(${bankAccountInterestRatesTable.interestRateEndDate} IS NULL OR ${bankAccountInterestRatesTable.interestRateEndDate} >= ${now})`
           )
+        )
+        .orderBy(
+          desc(bankAccountInterestRatesTable.interestRateStartDate),
+          desc(bankAccountInterestRatesTable.createdAt)
         )
         .limit(1);
 
@@ -463,24 +460,26 @@ export class BankAccountInterestRatesService {
 
       // Apply tax
       const taxMultiplier = 1 - taxPercentage;
-      const monthlyProfitAfterTax = monthlyProfitBeforeTax * taxMultiplier;
-      const annualProfitAfterTax = annualProfitBeforeTax * taxMultiplier;
+      const monthlyProfit = monthlyProfitBeforeTax * taxMultiplier;
+      const annualProfit = annualProfitBeforeTax * taxMultiplier;
 
       // Store calculation
       await this.calculationsService.storeCalculation(
         bankAccountId,
-        monthlyProfitAfterTax.toFixed(2),
-        annualProfitAfterTax.toFixed(2)
+        monthlyProfit.toFixed(2),
+        annualProfit.toFixed(2),
+        currencyCode
       );
 
       return {
-        monthlyProfitAfterTax: monthlyProfitAfterTax.toFixed(2),
-        annualProfitAfterTax: annualProfitAfterTax.toFixed(2),
+        monthlyProfit: monthlyProfit.toFixed(2),
+        annualProfit: annualProfit.toFixed(2),
         currencyCode,
       };
     } catch (error) {
       console.error("Error calculating interest after tax:", error);
-      return null;
+      // Rethrow so callers can handle persistence/calculation failures
+      throw error;
     }
   }
 
@@ -496,23 +495,31 @@ export class BankAccountInterestRatesService {
         "../../../../../db/schema.ts"
       );
 
-      // Get all bank accounts with their latest balances
-      const bankAccountsWithBalances = await db
-        .select({
-          bankAccountId: bankAccountBalancesTable.bankAccountId,
-          balance: bankAccountBalancesTable.balance,
-          currencyCode: bankAccountBalancesTable.currencyCode,
-        })
-        .from(bankAccountBalancesTable)
-        .innerJoin(
-          sql`(
-            SELECT bank_account_id, MAX(created_at) as latest_date
-            FROM bank_account_balances
-            GROUP BY bank_account_id
-          ) latest`,
-          sql`${bankAccountBalancesTable.bankAccountId} = latest.bank_account_id 
-              AND ${bankAccountBalancesTable.createdAt} = latest.latest_date`
+      // Get all bank accounts with their latest balances using a subquery
+      const latestBalances = db
+        .$with('latest_balances')
+        .as(
+          db
+            .select({
+              bankAccountId: bankAccountBalancesTable.bankAccountId,
+              balance: bankAccountBalancesTable.balance,
+              currencyCode: bankAccountBalancesTable.currencyCode,
+              createdAt: bankAccountBalancesTable.createdAt,
+              id: bankAccountBalancesTable.id,
+              rowNumber: sql<number>`ROW_NUMBER() OVER (PARTITION BY ${bankAccountBalancesTable.bankAccountId} ORDER BY ${bankAccountBalancesTable.createdAt} DESC, ${bankAccountBalancesTable.id} DESC)`.as('row_number')
+            })
+            .from(bankAccountBalancesTable)
         );
+
+      const bankAccountsWithBalances = await db
+        .with(latestBalances)
+        .select({
+          bankAccountId: latestBalances.bankAccountId,
+          balance: latestBalances.balance,
+          currencyCode: latestBalances.currencyCode,
+        })
+        .from(latestBalances)
+        .where(eq(latestBalances.rowNumber, 1));
 
       console.log(
         `Processing ${bankAccountsWithBalances.length} bank accounts with interest rates`

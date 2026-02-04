@@ -97,6 +97,16 @@ export const CryptoExchangeSummarySchema = z.object({
   capitalGainsTaxPercentage: z.number().nullable().openapi({ example: 0.26 }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
+  latestCalculation: z
+    .object({
+      currentValueAfterTax: z.string().openapi({ example: "48000.00" }),
+      calculatedAt: z
+        .string()
+        .datetime()
+        .openapi({ example: "2026-02-04T10:30:00Z" }),
+    })
+    .nullable()
+    .describe("Latest value calculation after tax"),
 });
 
 export const GetCryptoExchangesResponseSchema = z.object({

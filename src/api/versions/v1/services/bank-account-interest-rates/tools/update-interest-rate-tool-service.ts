@@ -34,7 +34,6 @@ export class UpdateInterestRateToolService {
             parsed.id,
             {
               interestRate: parsed.interestRate,
-              taxPercentage: parsed.taxPercentage,
               interestRateStartDate: parsed.interestRateStartDate,
               interestRateEndDate: parsed.interestRateEndDate,
             }

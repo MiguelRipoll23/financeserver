@@ -10,7 +10,13 @@ export const CreateBankAccountToolSchema = z.object({
     .min(1)
     .max(255, "Name must be between 1-255 characters")
     .describe("The name of the bank account"),
-    type: z.nativeEnum(BankAccountType).describe("The type of the bank account"),
+  type: z.nativeEnum(BankAccountType).describe("The type of the bank account"),
+  taxPercentage: z
+    .number()
+    .min(0)
+    .max(1)
+    .optional()
+    .describe("Tax percentage as decimal (0.19 = 19%, optional)"),
 });
 
 export const UpdateBankAccountToolSchema = z
@@ -27,6 +33,12 @@ export const UpdateBankAccountToolSchema = z
       .optional()
       .describe("The new name of the bank account"),
     type: z.nativeEnum(BankAccountType).optional().describe("The new type of the bank account"),
+    taxPercentage: z
+      .number()
+      .min(0)
+      .max(1)
+      .optional()
+      .describe("Tax percentage as decimal (0.19 = 19%, optional)"),
   })
   .refine((data) => Object.keys(data).some((key) => key !== "id"), {
     message: "At least one field to update must be provided besides the ID.",

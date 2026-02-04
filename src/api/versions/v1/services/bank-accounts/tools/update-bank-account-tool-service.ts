@@ -30,6 +30,7 @@ export class UpdateBankAccountToolService {
           {
             name: parsed.name,
             type: parsed.type,
+            taxPercentage: parsed.taxPercentage,
           }
         );
 

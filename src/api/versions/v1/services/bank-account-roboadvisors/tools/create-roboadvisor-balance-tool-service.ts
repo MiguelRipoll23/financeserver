@@ -9,7 +9,7 @@ export class CreateRoboadvisorBalanceToolService {
 
   public getDefinition(): McpToolDefinition {
     return {
-      name: "bank_accounts.roboadvisors.balances.create",
+      name: "roboadvisors.balances.create",
       meta: {
         title: "Create roboadvisor balance entry",
         description:

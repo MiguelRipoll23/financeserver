@@ -11,7 +11,7 @@ export class UpdateRoboadvisorFundToolService {
 
   public getDefinition(): McpToolDefinition {
     return {
-      name: "bank_accounts.roboadvisors.funds.update",
+      name: "roboadvisors.funds.update",
       meta: {
         title: "Update roboadvisor fund allocation",
         description:

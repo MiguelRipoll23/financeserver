@@ -3,6 +3,7 @@ import { PaginationQuerySchema } from "./pagination-schemas.ts";
 import { BankAccountSortField } from "../enums/bank-account-sort-field-enum.ts";
 import { SortOrder } from "../enums/sort-order-enum.ts";
 import { BankAccountType } from "../enums/bank-account-type-enum.ts";
+import { NullablePercentageSchema } from "./percentage-schema.ts";
 
 // Bank Account schemas
 export const CreateBankAccountRequestSchema = z.object({
@@ -16,6 +17,9 @@ export const CreateBankAccountRequestSchema = z.object({
     .nativeEnum(BankAccountType)
     .openapi({ example: "savings" })
     .describe("Bank account type"),
+  taxPercentage: NullablePercentageSchema.optional()
+    .openapi({ example: 0.19 })
+    .describe("Tax percentage as decimal (0.19 = 19%)"),
 });
 
 export type CreateBankAccountRequest = z.infer<
@@ -30,6 +34,7 @@ export const CreateBankAccountResponseSchema = z.object({
     .describe("Unique bank account identifier"),
   name: z.string().openapi({ example: "Main Savings Account" }),
   type: z.nativeEnum(BankAccountType).openapi({ example: "savings" }),
+  taxPercentage: z.number().nullable().openapi({ example: 0.19 }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
 });
@@ -63,6 +68,9 @@ export const UpdateBankAccountRequestSchema = z.object({
     .openapi({ example: "checking" })
     .describe("New bank account type")
     .optional(),
+  taxPercentage: NullablePercentageSchema.optional()
+    .openapi({ example: 0.19 })
+    .describe("Tax percentage as decimal (0.19 = 19%)"),
 });
 
 export type UpdateBankAccountRequest = z.infer<
@@ -96,12 +104,14 @@ export const BankAccountSummarySchema = z.object({
   id: z.number().int().openapi({ example: 1 }),
   name: z.string().openapi({ example: "Main Savings Account" }),
   type: z.nativeEnum(BankAccountType).openapi({ example: "savings" }),
+  taxPercentage: z.number().nullable().openapi({ example: 0.19 }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   latestCalculation: z
     .object({
-      monthlyProfitAfterTax: z.string().openapi({ example: "25.00" }),
-      annualProfitAfterTax: z.string().openapi({ example: "300.00" }),
+      monthlyProfit: z.string().openapi({ example: "25.00" }),
+      annualProfit: z.string().openapi({ example: "300.00" }),
+      currencyCode: z.string().openapi({ example: "USD" }),
       calculatedAt: z
         .string()
         .datetime()
