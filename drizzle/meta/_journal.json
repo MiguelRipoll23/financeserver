@@ -211,6 +211,13 @@
       "when": 1770228963723,
       "tag": "0029_futuristic_thor_girl",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1770248309797,
+      "tag": "0030_short_tinkerer",
+      "breakpoints": true
     }
   ]
 }
