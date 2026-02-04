@@ -228,9 +228,7 @@ export class CryptoExchangesService {
       latestCalculation: exchange.latestCalculation
         ? {
             currentValueAfterTax: exchange.latestCalculation.currentValueAfterTax,
-            calculatedAt: toISOStringSafe(
-              new Date(exchange.latestCalculation.calculatedAt)
-            ),
+            calculatedAt: toISOStringSafe(exchange.latestCalculation.calculatedAt),
           }
         : null,
     };

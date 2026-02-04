@@ -1,13 +1,11 @@
 import { inject, injectable } from "@needle-di/core";
 import { desc, eq } from "drizzle-orm";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
-import {
-  bankAccountCalculationsTable,
-} from "../../../../../db/schema.ts";
+import { bankAccountCalculationsTable } from "../../../../../db/schema.ts";
 import { toISOStringSafe } from "../../utils/date-utils.ts";
 
 @injectable()
-export class BankAccountInterestRateCalculationsService {
+export class BankAccountCalculationsService {
   constructor(private databaseService = inject(DatabaseService)) {}
 
   public async getLatestCalculation(

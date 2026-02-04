@@ -43,10 +43,10 @@ export class FilterRoboadvisorsToolService {
             const riskPart = roboadvisor.riskLevel
               ? ` [Risk: ${roboadvisor.riskLevel}/7]`
               : "";
-            const feePct = (roboadvisor.totalFeePercentage * 100).toFixed(
+            const feePercentage = (roboadvisor.totalFeePercentage * 100).toFixed(
               2,
             );
-            return `- ${roboadvisor.name}${riskPart} (Fee: ${feePct}%, Account ID: ${roboadvisor.bankAccountId}, ID: ${roboadvisor.id})`;
+            return `- ${roboadvisor.name}${riskPart} (Fee: ${feePercentage}%, Account ID: ${roboadvisor.bankAccountId}, ID: ${roboadvisor.id})`;
           })
           .join("\n");
 

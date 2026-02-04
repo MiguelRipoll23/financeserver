@@ -400,11 +400,6 @@ export class CryptoExchangeBalancesService {
     try {
       const db = this.databaseService.get();
 
-      // Import here to avoid circular dependency
-      const { cryptoExchangeBalancesTable } = await import(
-        "../../../../../db/schema.ts"
-      );
-
       // Get all crypto exchange balances
       const balances = await db
         .select({

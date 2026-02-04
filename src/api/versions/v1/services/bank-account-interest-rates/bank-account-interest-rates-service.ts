@@ -24,7 +24,7 @@ import type {
 } from "../../schemas/bank-account-interest-rates-schemas.ts";
 import type { BankAccountInterestRateSummarySchema } from "../../schemas/bank-account-interest-rates-schemas.ts";
 import { z } from "zod";
-import { BankAccountInterestRateCalculationsService } from "../bank-account-interest-rate-calculations/bank-account-interest-rate-calculations-service.ts";
+import { BankAccountCalculationsService } from "../bank-account-calculations/bank-account-calculations-service.ts";
 
 type BankAccountInterestRateSummary = z.infer<
   typeof BankAccountInterestRateSummarySchema
@@ -34,9 +34,7 @@ type BankAccountInterestRateSummary = z.infer<
 export class BankAccountInterestRatesService {
   constructor(
     private databaseService = inject(DatabaseService),
-    private calculationsService = inject(
-      BankAccountInterestRateCalculationsService
-    )
+    private calculationsService = inject(BankAccountCalculationsService)
   ) {}
 
   public async createBankAccountInterestRate(
