@@ -11,7 +11,7 @@ export class BankAccountRoboadvisorFundCalculationsService {
   public async getLatestCalculation(
     roboadvisorId: number
   ): Promise<{
-    currentValueAfterTax: string;
+    currentValue: string;
     createdAt: string;
   } | null> {
     const db = this.databaseService.get();
@@ -33,20 +33,20 @@ export class BankAccountRoboadvisorFundCalculationsService {
     }
 
     return {
-      currentValueAfterTax: calculation.currentValueAfterTax,
+      currentValue: calculation.currentValue,
       createdAt: toISOStringSafe(calculation.createdAt),
     };
   }
 
   public async storeCalculation(
     roboadvisorId: number,
-    currentValueAfterTax: string
+    currentValue: string
   ): Promise<void> {
     const db = this.databaseService.get();
 
     await db.insert(roboadvisorFundCalculationsTable).values({
       roboadvisorId: roboadvisorId,
-      currentValueAfterTax,
+      currentValue,
     });
   }
 }

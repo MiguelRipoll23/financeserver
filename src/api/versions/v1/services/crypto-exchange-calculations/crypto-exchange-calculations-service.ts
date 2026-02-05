@@ -12,7 +12,7 @@ export class CryptoExchangeCalculationsService {
     cryptoExchangeId: number,
     symbolCode: string
   ): Promise<{
-    currentValueAfterTax: string;
+    currentValue: string;
     createdAt: string;
   } | null> {
     const db = this.databaseService.get();
@@ -34,7 +34,7 @@ export class CryptoExchangeCalculationsService {
     }
 
     return {
-      currentValueAfterTax: calculation.currentValueAfterTax,
+      currentValue: calculation.currentValue,
       createdAt: toISOStringSafe(calculation.createdAt),
     };
   }
@@ -42,14 +42,14 @@ export class CryptoExchangeCalculationsService {
   public async storeCalculation(
     cryptoExchangeId: number,
     symbolCode: string,
-    currentValueAfterTax: string
+    currentValue: string
   ): Promise<void> {
     const db = this.databaseService.get();
 
     await db.insert(cryptoExchangeCalculationsTable).values({
       cryptoExchangeId,
       symbolCode,
-      currentValueAfterTax,
+      currentValue,
     });
   }
 }

@@ -283,7 +283,7 @@ export class CryptoExchangeBalancesService {
     cryptoExchangeId: number,
     symbolCode: string
   ): Promise<{
-    currentValueAfterTax: string;
+    currentValue: string;
     currencyCode: string;
   } | null> {
     try {
@@ -381,7 +381,7 @@ export class CryptoExchangeBalancesService {
       );
 
       return {
-        currentValueAfterTax: valueAfterTax.toFixed(2),
+        currentValue: valueAfterTax.toFixed(2),
         currencyCode,
       };
     } catch (error) {
