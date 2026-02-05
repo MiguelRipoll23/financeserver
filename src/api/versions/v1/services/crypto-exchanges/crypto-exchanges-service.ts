@@ -40,7 +40,7 @@ export class CryptoExchangesService {
       .insert(cryptoExchangesTable)
       .values({
         name: payload.name,
-        capitalGainsTaxPercentage: payload.capitalGainsTaxPercentage ? payload.capitalGainsTaxPercentage.toString() : null,
+        taxPercentage: payload.taxPercentage ? payload.taxPercentage.toString() : null,
       })
       .returning();
 
@@ -55,7 +55,7 @@ export class CryptoExchangesService {
 
     const updateValues: {
       name?: string;
-      capitalGainsTaxPercentage?: string | null;
+      taxPercentage?: string | null;
       updatedAt: Date;
     } = {
       updatedAt: new Date(),
@@ -65,8 +65,8 @@ export class CryptoExchangesService {
       updateValues.name = payload.name;
     }
 
-    if (payload.capitalGainsTaxPercentage !== undefined) {
-      updateValues.capitalGainsTaxPercentage = payload.capitalGainsTaxPercentage ? payload.capitalGainsTaxPercentage.toString() : null;
+    if (payload.taxPercentage !== undefined) {
+      updateValues.taxPercentage = payload.taxPercentage ? payload.taxPercentage.toString() : null;
     }
 
     const [result] = await db
@@ -218,7 +218,7 @@ export class CryptoExchangesService {
     return {
       id: exchange.id,
       name: exchange.name,
-      capitalGainsTaxPercentage: exchange.capitalGainsTaxPercentage ? parseFloat(exchange.capitalGainsTaxPercentage) : null,
+      taxPercentage: exchange.taxPercentage ? parseFloat(exchange.taxPercentage) : null,
       createdAt: toISOStringSafe(exchange.createdAt),
       updatedAt: toISOStringSafe(exchange.updatedAt),
     };
@@ -236,7 +236,7 @@ export class CryptoExchangesService {
     return {
       id: exchange.id,
       name: exchange.name,
-      capitalGainsTaxPercentage: exchange.capitalGainsTaxPercentage ? parseFloat(exchange.capitalGainsTaxPercentage) : null,
+      taxPercentage: exchange.taxPercentage ? parseFloat(exchange.taxPercentage) : null,
       createdAt: toISOStringSafe(exchange.createdAt),
       updatedAt: toISOStringSafe(exchange.updatedAt),
       latestCalculation: exchange.latestCalculation

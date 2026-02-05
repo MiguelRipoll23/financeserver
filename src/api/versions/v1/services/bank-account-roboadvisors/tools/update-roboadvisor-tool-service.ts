@@ -40,7 +40,7 @@ export class UpdateRoboadvisorToolService {
               managementFeeFrequency: parsed.managementFeeFrequency,
               custodyFeeFrequency: parsed.custodyFeeFrequency,
               terPricedInNav: parsed.terPricedInNav,
-              capitalGainsTaxPercentage: parsed.capitalGainsTaxPercentage,
+               taxPercentage: parsed.taxPercentage,
             },
           );
 

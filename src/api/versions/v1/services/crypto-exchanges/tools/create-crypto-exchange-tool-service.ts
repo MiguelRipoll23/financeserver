@@ -29,7 +29,7 @@ export class CreateCryptoExchangeToolService {
 
         const result = await this.cryptoExchangesService.createCryptoExchange({
           name: parsed.name,
-          capitalGainsTaxPercentage: parsed.capitalGainsTaxPercentage,
+          taxPercentage: parsed.taxPercentage,
         });
 
         const text = `Crypto exchange created successfully: ${result.name} (ID: ${result.id})`;

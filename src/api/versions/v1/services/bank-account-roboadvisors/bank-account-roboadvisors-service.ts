@@ -96,10 +96,10 @@ export class BankAccountRoboadvisorsService {
         managementFeeFrequency: payload.managementFeeFrequency,
         custodyFeeFrequency: payload.custodyFeeFrequency,
         terPricedInNav: payload.terPricedInNav ?? true,
-        capitalGainsTaxPercentage:
-          payload.capitalGainsTaxPercentage === null || payload.capitalGainsTaxPercentage === undefined
+        taxPercentage:
+          payload.taxPercentage === null || payload.taxPercentage === undefined
             ? null
-            : payload.capitalGainsTaxPercentage.toString(),
+            : payload.taxPercentage.toString(),
       })
       .returning();
 
@@ -255,11 +255,11 @@ export class BankAccountRoboadvisorsService {
       updateValues.custodyFeeFrequency = payload.custodyFeeFrequency;
     if (payload.terPricedInNav !== undefined)
       updateValues.terPricedInNav = payload.terPricedInNav;
-    if (payload.capitalGainsTaxPercentage !== undefined)
-      updateValues.capitalGainsTaxPercentage =
-        payload.capitalGainsTaxPercentage === null
+    if (payload.taxPercentage !== undefined)
+      updateValues.taxPercentage =
+        payload.taxPercentage === null
           ? null
-          : payload.capitalGainsTaxPercentage.toString();
+          : payload.taxPercentage.toString();
 
     const [result] = await db
       .update(roboadvisors)
@@ -723,7 +723,7 @@ export class BankAccountRoboadvisorsService {
       managementFeeFrequency: roboadvisor.managementFeeFrequency,
       custodyFeeFrequency: roboadvisor.custodyFeeFrequency,
       terPricedInNav: roboadvisor.terPricedInNav,
-      capitalGainsTaxPercentage: roboadvisor.capitalGainsTaxPercentage ? parseFloat(roboadvisor.capitalGainsTaxPercentage) : null,
+      taxPercentage: roboadvisor.taxPercentage ? parseFloat(roboadvisor.taxPercentage) : null,
       createdAt: toISOStringSafe(roboadvisor.createdAt),
       updatedAt: toISOStringSafe(roboadvisor.updatedAt),
     };
@@ -750,7 +750,7 @@ export class BankAccountRoboadvisorsService {
       managementFeeFrequency: roboadvisor.managementFeeFrequency,
       custodyFeeFrequency: roboadvisor.custodyFeeFrequency,
       terPricedInNav: roboadvisor.terPricedInNav,
-      capitalGainsTaxPercentage: roboadvisor.capitalGainsTaxPercentage ? parseFloat(roboadvisor.capitalGainsTaxPercentage) : null,
+      taxPercentage: roboadvisor.taxPercentage ? parseFloat(roboadvisor.taxPercentage) : null,
       createdAt: toISOStringSafe(roboadvisor.createdAt),
       updatedAt: toISOStringSafe(roboadvisor.updatedAt),
       latestCalculation: roboadvisor.latestCalculation
@@ -1003,8 +1003,8 @@ export class BankAccountRoboadvisorsService {
       const capitalGain = totalCurrentValue - totalInvested;
 
       // Apply tax only to gains (not to losses)
-      const taxPercentage = roboadvisor.capitalGainsTaxPercentage
-        ? parseFloat(roboadvisor.capitalGainsTaxPercentage)
+      const taxPercentage = roboadvisor.taxPercentage
+        ? parseFloat(roboadvisor.taxPercentage)
         : 0;
 
       let valueAfterTax: number;
