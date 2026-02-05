@@ -51,12 +51,12 @@ export const CreateBankAccountRoboadvisorToolSchema = z.object({
     .boolean()
     .optional()
     .describe("Whether TER is priced in NAV (default: true)"),
-  capitalGainsTaxPercentage: z
+  taxPercentage: z
     .number()
     .min(0)
     .max(1)
     .optional()
-    .describe("Capital gains tax as decimal (0.26 = 26%)"),
+    .describe("Tax percentage as decimal (0.26 = 26%)"),
 });
 
 export const FilterBankAccountRoboadvisorsToolSchema = z.object({
@@ -139,12 +139,12 @@ export const UpdateBankAccountRoboadvisorToolSchema = z.object({
     .boolean()
     .optional()
     .describe("Whether TER is priced in NAV"),
-  capitalGainsTaxPercentage: z
+  taxPercentage: z
     .number()
     .min(0)
     .max(1)
     .optional()
-    .describe("Capital gains tax as decimal (0.26 = 26%)"),
+    .describe("Tax percentage as decimal (0.26 = 26%)"),
 });
 
 export const DeleteBankAccountRoboadvisorToolSchema = z.object({

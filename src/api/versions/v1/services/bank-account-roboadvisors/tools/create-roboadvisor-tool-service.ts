@@ -39,7 +39,7 @@ export class CreateRoboadvisorToolService {
             managementFeeFrequency: parsed.managementFeeFrequency,
             custodyFeeFrequency: parsed.custodyFeeFrequency,
             terPricedInNav: parsed.terPricedInNav ?? true,
-            capitalGainsTaxPercentage: parsed.capitalGainsTaxPercentage,
+            taxPercentage: parsed.taxPercentage,
           });
 
         const text = `Roboadvisor created successfully: ${result.name} (ID: ${result.id}, Total Fee: ${(result.totalFeePercentage * 100).toFixed(2)}%)`;

@@ -40,7 +40,12 @@ export class CryptoExchangesService {
       .insert(cryptoExchangesTable)
       .values({
         name: payload.name,
-        capitalGainsTaxPercentage: payload.capitalGainsTaxPercentage ? payload.capitalGainsTaxPercentage.toString() : null,
+        // NOTE: using a truthy check here will convert an explicit 0 to null
+        // (e.g. taxPercentage: 0 => null). Treat undefined/null as absent
+        // and preserve explicit zeros by checking for null/undefined explicitly.
+        taxPercentage: payload.taxPercentage != null
+          ? payload.taxPercentage.toString()
+          : null,
       })
       .returning();
 
@@ -55,7 +60,7 @@ export class CryptoExchangesService {
 
     const updateValues: {
       name?: string;
-      capitalGainsTaxPercentage?: string | null;
+      taxPercentage?: string | null;
       updatedAt: Date;
     } = {
       updatedAt: new Date(),
@@ -65,8 +70,11 @@ export class CryptoExchangesService {
       updateValues.name = payload.name;
     }
 
-    if (payload.capitalGainsTaxPercentage !== undefined) {
-      updateValues.capitalGainsTaxPercentage = payload.capitalGainsTaxPercentage ? payload.capitalGainsTaxPercentage.toString() : null;
+    if (payload.taxPercentage !== undefined) {
+      updateValues.taxPercentage =
+        payload.taxPercentage === null
+          ? null
+          : payload.taxPercentage.toString();
     }
 
     const [result] = await db
@@ -218,7 +226,7 @@ export class CryptoExchangesService {
     return {
       id: exchange.id,
       name: exchange.name,
-      capitalGainsTaxPercentage: exchange.capitalGainsTaxPercentage ? parseFloat(exchange.capitalGainsTaxPercentage) : null,
+      taxPercentage: exchange.taxPercentage ? parseFloat(exchange.taxPercentage) : null,
       createdAt: toISOStringSafe(exchange.createdAt),
       updatedAt: toISOStringSafe(exchange.updatedAt),
     };
@@ -236,7 +244,7 @@ export class CryptoExchangesService {
     return {
       id: exchange.id,
       name: exchange.name,
-      capitalGainsTaxPercentage: exchange.capitalGainsTaxPercentage ? parseFloat(exchange.capitalGainsTaxPercentage) : null,
+      taxPercentage: exchange.taxPercentage ? parseFloat(exchange.taxPercentage) : null,
       createdAt: toISOStringSafe(exchange.createdAt),
       updatedAt: toISOStringSafe(exchange.updatedAt),
       latestCalculation: exchange.latestCalculation
