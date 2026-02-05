@@ -1,9 +1,10 @@
 import { inject, injectable } from "@needle-di/core";
-import { asc, desc, eq, sql, getTableColumns } from "drizzle-orm";
+import { and, asc, desc, eq, sql, getTableColumns } from "drizzle-orm";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import {
   cryptoExchangesTable,
   cryptoExchangeBalancesTable,
+  cryptoExchangeCalculationsTable,
 } from "../../../../../db/schema.ts";
 import { ServerError } from "../../models/server-error.ts";
 import { decodeCursor } from "../../utils/cursor-utils.ts";
@@ -64,6 +65,15 @@ export class CryptoExchangeBalancesService {
         investedCurrencyCode: payload.investedCurrencyCode ?? null,
       })
       .returning();
+
+    this.calculateCryptoValueAfterTax(exchangeId, payload.symbolCode).catch(
+      (error) => {
+        console.error(
+          `Failed to trigger crypto value calculation for exchange ${exchangeId}:`,
+          error,
+        );
+      },
+    );
 
     return this.mapBalanceToResponse(result);
   }
@@ -171,7 +181,11 @@ export class CryptoExchangeBalancesService {
     const db = this.databaseService.get();
 
     const existingBalance = await db
-      .select({ id: cryptoExchangeBalancesTable.id })
+      .select({
+        id: cryptoExchangeBalancesTable.id,
+        cryptoExchangeId: cryptoExchangeBalancesTable.cryptoExchangeId,
+        symbolCode: cryptoExchangeBalancesTable.symbolCode,
+      })
       .from(cryptoExchangeBalancesTable)
       .where(eq(cryptoExchangeBalancesTable.id, balanceId))
       .limit(1)
@@ -217,6 +231,32 @@ export class CryptoExchangeBalancesService {
       .where(eq(cryptoExchangeBalancesTable.id, balanceId))
       .returning();
 
+    // Trigger calculation for both old and new symbol if symbolCode changed
+    this.calculateCryptoValueAfterTax(
+      existingBalance.cryptoExchangeId,
+      existingBalance.symbolCode,
+    ).catch((error) => {
+      console.error(
+        `Failed to trigger crypto value calculation for exchange ${existingBalance.cryptoExchangeId} symbol ${existingBalance.symbolCode}:`,
+        error,
+      );
+    });
+
+    if (
+      payload.symbolCode !== undefined &&
+      payload.symbolCode !== existingBalance.symbolCode
+    ) {
+      this.calculateCryptoValueAfterTax(
+        existingBalance.cryptoExchangeId,
+        payload.symbolCode,
+      ).catch((error) => {
+        console.error(
+          `Failed to trigger crypto value calculation for exchange ${existingBalance.cryptoExchangeId} symbol ${payload.symbolCode}:`,
+          error,
+        );
+      });
+    }
+
     return this.mapBalanceToResponse(result);
   }
 
@@ -224,13 +264,17 @@ export class CryptoExchangeBalancesService {
     const db = this.databaseService.get();
 
     // Verify balance exists before pushing telemetry
-    const existing = await db
-      .select({ id: cryptoExchangeBalancesTable.id })
+    const [existing] = await db
+      .select({
+        id: cryptoExchangeBalancesTable.id,
+        cryptoExchangeId: cryptoExchangeBalancesTable.cryptoExchangeId,
+        symbolCode: cryptoExchangeBalancesTable.symbolCode,
+      })
       .from(cryptoExchangeBalancesTable)
       .where(eq(cryptoExchangeBalancesTable.id, balanceId))
       .limit(1);
 
-    if (existing.length === 0) {
+    if (!existing) {
       throw new ServerError(
         "BALANCE_NOT_FOUND",
         `Balance with ID ${balanceId} not found`,
@@ -241,6 +285,16 @@ export class CryptoExchangeBalancesService {
     await db
       .delete(cryptoExchangeBalancesTable)
       .where(eq(cryptoExchangeBalancesTable.id, balanceId));
+
+    this.calculateCryptoValueAfterTax(
+      existing.cryptoExchangeId,
+      existing.symbolCode,
+    ).catch((error) => {
+      console.error(
+        `Failed to trigger crypto value calculation for exchange ${existing.cryptoExchangeId} symbol ${existing.symbolCode}:`,
+        error,
+      );
+    });
   }
 
   private mapBalanceToResponse(
@@ -277,11 +331,13 @@ export class CryptoExchangeBalancesService {
    * Calculate crypto balance value after capital gains tax
    * @param cryptoExchangeId - Crypto exchange ID
    * @param symbolCode - Crypto symbol (e.g., BTC, ETH)
+   * @param exchange - Optional pre-fetched exchange object
    * @returns Current value after tax, or null if unable to calculate
    */
   public async calculateCryptoValueAfterTax(
     cryptoExchangeId: number,
-    symbolCode: string
+    symbolCode: string,
+    exchange?: typeof cryptoExchangesTable.$inferSelect
   ): Promise<{
     currentValue: string;
     currencyCode: string;
@@ -289,13 +345,15 @@ export class CryptoExchangeBalancesService {
     try {
       const db = this.databaseService.get();
 
-      // Get crypto exchange with capital gains tax percentage
-      const exchange = await db
-        .select()
-        .from(cryptoExchangesTable)
-        .where(eq(cryptoExchangesTable.id, cryptoExchangeId))
-        .limit(1)
-        .then((rows) => rows[0]);
+      // Get crypto exchange with capital gains tax percentage if not provided
+      if (!exchange) {
+        exchange = await db
+          .select()
+          .from(cryptoExchangesTable)
+          .where(eq(cryptoExchangesTable.id, cryptoExchangeId))
+          .limit(1)
+          .then((rows) => rows[0]);
+      }
 
       if (!exchange) {
         console.warn(
@@ -317,8 +375,19 @@ export class CryptoExchangeBalancesService {
 
       if (!balance) {
         console.warn(
-          `Balance not found for exchange ${cryptoExchangeId} and symbol ${symbolCode}`
+          `Balance not found for exchange ${cryptoExchangeId} and symbol ${symbolCode}. Clearing calculations.`
         );
+        
+        // Clear stale calculations for this symbol if balance is missing
+        await db
+          .delete(cryptoExchangeCalculationsTable)
+          .where(
+            and(
+              eq(cryptoExchangeCalculationsTable.cryptoExchangeId, cryptoExchangeId),
+              eq(cryptoExchangeCalculationsTable.symbolCode, symbolCode)
+            )
+          );
+          
         return null;
       }
 

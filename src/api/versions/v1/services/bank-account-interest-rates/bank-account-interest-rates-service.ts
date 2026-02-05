@@ -5,6 +5,7 @@ import { DatabaseService } from "../../../../../core/services/database-service.t
 import {
   bankAccountsTable,
   bankAccountInterestRatesTable,
+  bankAccountBalancesTable,
 } from "../../../../../db/schema.ts";
 import { ServerError } from "../../models/server-error.ts";
 import { decodeCursor } from "../../utils/cursor-utils.ts";
@@ -59,7 +60,7 @@ export class BankAccountInterestRatesService {
       );
     }
 
-    return await db.transaction(async (tx) => {
+    const response = await db.transaction(async (tx) => {
       // End any active interest rate for this bank account
       await this.endActiveInterestRate(
         tx,
@@ -88,6 +89,10 @@ export class BankAccountInterestRatesService {
 
       return this.mapInterestRateToResponse(result);
     });
+
+    await this.triggerInterestCalculationForAccount(accountId);
+
+    return response;
   }
 
   public async getBankAccountInterestRates(payload: {
@@ -229,7 +234,7 @@ export class BankAccountInterestRatesService {
       updateValues.interestRateEndDate = payload.interestRateEndDate;
     }
 
-    return await db.transaction(async (tx) => {
+    const response = await db.transaction(async (tx) => {
       // Validate interest rate period if being updated
       const newStartDate =
         payload.interestRateStartDate ?? existingRate.interestRateStartDate;
@@ -262,10 +267,28 @@ export class BankAccountInterestRatesService {
 
       return this.mapInterestRateToResponse(result);
     });
+
+    await this.triggerInterestCalculationForAccount(accountId);
+
+    return response;
   }
 
   public async deleteBankAccountInterestRate(rateId: number): Promise<void> {
     const db = this.databaseService.get();
+
+    const [existing] = await db
+      .select({ bankAccountId: bankAccountInterestRatesTable.bankAccountId })
+      .from(bankAccountInterestRatesTable)
+      .where(eq(bankAccountInterestRatesTable.id, rateId))
+      .limit(1);
+
+    if (!existing) {
+      throw new ServerError(
+        "INTEREST_RATE_NOT_FOUND",
+        `Interest rate with ID ${rateId} not found`,
+        404,
+      );
+    }
 
     const result = await db
       .delete(bankAccountInterestRatesTable)
@@ -279,6 +302,8 @@ export class BankAccountInterestRatesService {
         404,
       );
     }
+
+    await this.triggerInterestCalculationForAccount(existing.bankAccountId);
   }
 
   private async validateNoOverlappingInterestRates(
@@ -543,6 +568,29 @@ export class BankAccountInterestRatesService {
     } catch (error) {
       console.error("Error calculating bank account interest rates:", error);
       throw error;
+    }
+  }
+
+  public async triggerInterestCalculationForAccount(bankAccountId: number): Promise<void> {
+    const db = this.databaseService.get();
+
+    // Get the latest balance for the account
+    const [latestBalance] = await db
+      .select({
+        balance: bankAccountBalancesTable.balance,
+        currencyCode: bankAccountBalancesTable.currencyCode,
+      })
+      .from(bankAccountBalancesTable)
+      .where(eq(bankAccountBalancesTable.bankAccountId, bankAccountId))
+      .orderBy(desc(bankAccountBalancesTable.createdAt))
+      .limit(1);
+
+    if (latestBalance) {
+      await this.calculateInterestAfterTax(
+        bankAccountId,
+        latestBalance.balance,
+        latestBalance.currencyCode,
+      );
     }
   }
 }

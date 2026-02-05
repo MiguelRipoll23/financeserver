@@ -77,7 +77,28 @@ export type UpdateBankAccountRequest = z.infer<
   typeof UpdateBankAccountRequestSchema
 >;
 
-export const UpdateBankAccountResponseSchema = CreateBankAccountResponseSchema;
+export const BankAccountSummarySchema = z.object({
+  id: z.number().int().openapi({ example: 1 }),
+  name: z.string().openapi({ example: "Main Savings Account" }),
+  type: z.nativeEnum(BankAccountType).openapi({ example: "savings" }),
+  taxPercentage: z.number().nullable().openapi({ example: 0.19 }),
+  createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
+  updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
+  latestCalculation: z
+    .object({
+      monthlyProfit: z.string().openapi({ example: "25.00" }),
+      annualProfit: z.string().openapi({ example: "300.00" }),
+      currencyCode: z.string().openapi({ example: "USD" }),
+      calculatedAt: z
+        .string()
+        .datetime()
+        .openapi({ example: "2026-02-04T10:30:00Z" }),
+    })
+    .nullable()
+    .describe("Latest interest rate calculation"),
+});
+
+export const UpdateBankAccountResponseSchema = BankAccountSummarySchema;
 
 export type UpdateBankAccountResponse = z.infer<
   typeof UpdateBankAccountResponseSchema
@@ -99,27 +120,6 @@ export const GetBankAccountsRequestSchema = PaginationQuerySchema.extend({
 export type GetBankAccountsRequest = z.infer<
   typeof GetBankAccountsRequestSchema
 >;
-
-export const BankAccountSummarySchema = z.object({
-  id: z.number().int().openapi({ example: 1 }),
-  name: z.string().openapi({ example: "Main Savings Account" }),
-  type: z.nativeEnum(BankAccountType).openapi({ example: "savings" }),
-  taxPercentage: z.number().nullable().openapi({ example: 0.19 }),
-  createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
-  updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
-  latestCalculation: z
-    .object({
-      monthlyProfit: z.string().openapi({ example: "25.00" }),
-      annualProfit: z.string().openapi({ example: "300.00" }),
-      currencyCode: z.string().openapi({ example: "USD" }),
-      calculatedAt: z
-        .string()
-        .datetime()
-        .openapi({ example: "2026-02-04T10:30:00Z" }),
-    })
-    .nullable()
-    .describe("Latest interest rate calculation"),
-});
 
 export const GetBankAccountsResponseSchema = z.object({
   results: z

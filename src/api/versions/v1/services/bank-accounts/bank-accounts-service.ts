@@ -48,9 +48,16 @@ import type {
   UpdateBankAccountBalanceResponse,
 } from "../../schemas/bank-account-balances-schemas.ts";
 
+import { z } from "zod";
+import { BankAccountCalculationsService } from "../bank-account-calculations/bank-account-calculations-service.ts";
+import { BankAccountInterestRatesService } from "../bank-account-interest-rates/bank-account-interest-rates-service.ts";
+
 @injectable()
 export class BankAccountsService {
-  constructor(private databaseService = inject(DatabaseService)) {}
+  constructor(
+    private databaseService = inject(DatabaseService),
+    private interestRatesService = inject(BankAccountInterestRatesService),
+  ) {}
 
   public async createBankAccount(
     payload: CreateBankAccountRequest,
@@ -116,7 +123,21 @@ export class BankAccountsService {
       );
     }
 
-    return this.mapBankAccountToResponse(result);
+    if (payload.taxPercentage !== undefined) {
+      this.interestRatesService
+        .triggerInterestCalculationForAccount(accountId)
+        .catch((error) => {
+          console.error(
+            `Failed to trigger async calculation for bank account ${accountId}:`,
+            error,
+          );
+        });
+    }
+
+    return this.mapBankAccountToSummary({
+      ...result,
+      latestCalculation: null,
+    });
   }
 
   public async deleteBankAccount(accountId: number): Promise<void> {
@@ -195,14 +216,14 @@ export class BankAccountsService {
           calculatedAt: string;
         } | null>`(
           SELECT json_build_object(
-            'monthlyProfit', calc.monthly_profit,
-            'annualProfit', calc.annual_profit,
-            'currencyCode', calc.currency_code,
-            'calculatedAt', calc.created_at
+            'monthlyProfit', calculation.monthly_profit,
+            'annualProfit', calculation.annual_profit,
+            'currencyCode', calculation.currency_code,
+            'calculatedAt', calculation.created_at
           )
-          FROM ${bankAccountCalculationsTable} calc
-          WHERE calc.bank_account_id = ${bankAccountsTable}.id
-          ORDER BY calc.created_at DESC
+          FROM ${bankAccountCalculationsTable} calculation
+          WHERE calculation.bank_account_id = ${bankAccountsTable}.id
+          ORDER BY calculation.created_at DESC
           LIMIT 1
         )`,
       })
@@ -269,6 +290,15 @@ export class BankAccountsService {
         currencyCode: payload.currencyCode,
       })
       .returning();
+
+    await this.interestRatesService
+      .triggerInterestCalculationForAccount(accountId)
+      .catch((error) => {
+        console.error(
+          `Failed to trigger interest calculation for bank account ${accountId}:`,
+          error,
+        );
+      });
 
     return this.mapBalanceToResponse(result);
   }
@@ -437,11 +467,34 @@ export class BankAccountsService {
       .where(eq(bankAccountBalancesTable.id, balanceId))
       .returning();
 
+    await this.interestRatesService
+      .triggerInterestCalculationForAccount(existingBalance.bankAccountId)
+      .catch((error) => {
+        console.error(
+          `Failed to trigger interest calculation for bank account ${existingBalance.bankAccountId}:`,
+          error,
+        );
+      });
+
     return this.mapBalanceToResponse(result);
   }
 
   public async deleteBankAccountBalance(balanceId: number): Promise<void> {
     const db = this.databaseService.get();
+
+    const [existingBalance] = await db
+      .select({ bankAccountId: bankAccountBalancesTable.bankAccountId })
+      .from(bankAccountBalancesTable)
+      .where(eq(bankAccountBalancesTable.id, balanceId))
+      .limit(1);
+
+    if (!existingBalance) {
+      throw new ServerError(
+        "BALANCE_NOT_FOUND",
+        `Balance with ID ${balanceId} not found`,
+        404,
+      );
+    }
 
     const result = await db
       .delete(bankAccountBalancesTable)
@@ -455,6 +508,15 @@ export class BankAccountsService {
         404,
       );
     }
+
+    await this.interestRatesService
+      .triggerInterestCalculationForAccount(existingBalance.bankAccountId)
+      .catch((error) => {
+        console.error(
+          `Failed to trigger interest calculation for bank account ${existingBalance.bankAccountId}:`,
+          error,
+        );
+      });
   }
 
   private getSortColumn(sortField: BankAccountSortField) {

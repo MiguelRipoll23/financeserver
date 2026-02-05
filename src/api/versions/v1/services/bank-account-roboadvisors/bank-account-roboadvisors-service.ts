@@ -165,20 +165,20 @@ export class BankAccountRoboadvisorsService {
           calculatedAt: string;
         } | null>`(
           SELECT json_build_object(
-            'currentValue', calc.current_value,
-            'currencyCode', bal.currency_code,
-            'calculatedAt', calc.created_at
+            'currentValue', fund_calculation.current_value,
+            'currencyCode', latest_balance.currency_code,
+            'calculatedAt', fund_calculation.created_at
           )
-          FROM ${roboadvisorFundCalculationsTable} calc
+          FROM ${roboadvisorFundCalculationsTable} fund_calculation
           LEFT JOIN LATERAL (
             SELECT currency_code
-            FROM ${roboadvisorBalances} rb
-            WHERE rb.roboadvisor_id = ${roboadvisors}.id
-            ORDER BY rb.date DESC
+            FROM ${roboadvisorBalances} roboadvisor_balance
+            WHERE roboadvisor_balance.roboadvisor_id = ${roboadvisors}.id
+            ORDER BY roboadvisor_balance.date DESC
             LIMIT 1
-          ) bal ON true
-          WHERE calc.roboadvisor_id = ${roboadvisors}.id
-          ORDER BY calc.created_at DESC
+          ) latest_balance ON true
+          WHERE fund_calculation.roboadvisor_id = ${roboadvisors}.id
+          ORDER BY fund_calculation.created_at DESC
           LIMIT 1
         )`,
       })
@@ -267,7 +267,34 @@ export class BankAccountRoboadvisorsService {
       .where(eq(roboadvisors.id, roboadvisorId))
       .returning();
 
-    return this.mapRoboadvisorToResponse(result);
+    if (!result) {
+      throw new ServerError(
+        "ROBOADVISOR_NOT_FOUND",
+        `Roboadvisor with ID ${roboadvisorId} not found`,
+        404,
+      );
+    }
+
+    // Trigger recalculation if relevant fields changed
+    if (
+      payload.managementFeePercentage !== undefined ||
+      payload.custodyFeePercentage !== undefined ||
+      payload.fundTerPercentage !== undefined ||
+      payload.totalFeePercentage !== undefined ||
+      payload.taxPercentage !== undefined
+    ) {
+      this.calculateRoboadvisorValueAfterTax(roboadvisorId).catch((error) => {
+        console.error(
+          `Failed to trigger async calculation for roboadvisor ${roboadvisorId}:`,
+          error,
+        );
+      });
+    }
+
+    return this.mapRoboadvisorToSummary({
+      ...result,
+      latestCalculation: null,
+    });
   }
 
   public async deleteBankAccountRoboadvisor(
@@ -321,6 +348,13 @@ export class BankAccountRoboadvisorsService {
         currencyCode: payload.currencyCode,
       })
       .returning();
+
+    this.calculateRoboadvisorValueAfterTax(payload.roboadvisorId).catch((error) => {
+      console.error(
+        `Failed to trigger async calculation for roboadvisor ${payload.roboadvisorId}:`,
+        error,
+      );
+    });
 
     return this.mapBalanceToResponse(result);
   }
@@ -445,6 +479,15 @@ export class BankAccountRoboadvisorsService {
       .where(eq(roboadvisorBalances.id, balanceId))
       .returning();
 
+    this.calculateRoboadvisorValueAfterTax(existing.roboadvisorId).catch(
+      (error) => {
+        console.error(
+          `Failed to trigger async calculation for roboadvisor ${existing.roboadvisorId}:`,
+          error,
+        );
+      },
+    );
+
     return this.mapBalanceToResponse(result);
   }
 
@@ -452,6 +495,21 @@ export class BankAccountRoboadvisorsService {
     balanceId: number,
   ): Promise<void> {
     const db = this.databaseService.get();
+
+    const existing = await db
+      .select({ roboadvisorId: roboadvisorBalances.roboadvisorId })
+      .from(roboadvisorBalances)
+      .where(eq(roboadvisorBalances.id, balanceId))
+      .limit(1)
+      .then((rows) => rows[0]);
+
+    if (!existing) {
+      throw new ServerError(
+        "ROBOADVISOR_BALANCE_NOT_FOUND",
+        `Roboadvisor balance with ID ${balanceId} not found`,
+        404,
+      );
+    }
 
     const result = await db
       .delete(roboadvisorBalances)
@@ -465,6 +523,15 @@ export class BankAccountRoboadvisorsService {
         404,
       );
     }
+
+    this.calculateRoboadvisorValueAfterTax(existing.roboadvisorId).catch(
+      (error) => {
+        console.error(
+          `Failed to trigger async calculation for roboadvisor ${existing.roboadvisorId}:`,
+          error,
+        );
+      },
+    );
   }
 
   // Roboadvisor Fund CRUD operations
@@ -502,6 +569,13 @@ export class BankAccountRoboadvisorsService {
         shareCount: payload.shareCount ? payload.shareCount.toString() : null,
       })
       .returning();
+
+    this.calculateRoboadvisorValueAfterTax(payload.roboadvisorId).catch((error) => {
+      console.error(
+        `Failed to trigger async calculation for roboadvisor ${payload.roboadvisorId}:`,
+        error,
+      );
+    });
 
     return this.mapFundToResponse(result);
   }
@@ -661,11 +735,33 @@ export class BankAccountRoboadvisorsService {
       .where(eq(roboadvisorFunds.id, fundId))
       .returning();
 
+    this.calculateRoboadvisorValueAfterTax(existing.roboadvisorId).catch((error) => {
+      console.error(
+        `Failed to trigger async calculation for roboadvisor ${existing.roboadvisorId}:`,
+        error,
+      );
+    });
+
     return this.mapFundToResponse(result);
   }
 
   public async deleteBankAccountRoboadvisorFund(fundId: number): Promise<void> {
     const db = this.databaseService.get();
+
+    const existing = await db
+      .select({ roboadvisorId: roboadvisorFunds.roboadvisorId })
+      .from(roboadvisorFunds)
+      .where(eq(roboadvisorFunds.id, fundId))
+      .limit(1)
+      .then((rows) => rows[0]);
+
+    if (!existing) {
+      throw new ServerError(
+        "ROBOADVISOR_FUND_NOT_FOUND",
+        `Roboadvisor fund with ID ${fundId} not found`,
+        404,
+      );
+    }
 
     const result = await db
       .delete(roboadvisorFunds)
@@ -679,6 +775,15 @@ export class BankAccountRoboadvisorsService {
         404,
       );
     }
+
+    this.calculateRoboadvisorValueAfterTax(existing.roboadvisorId).catch(
+      (error) => {
+        console.error(
+          `Failed to trigger async calculation for roboadvisor ${existing.roboadvisorId}:`,
+          error,
+        );
+      },
+    );
   }
 
   // Private helper methods

@@ -26,10 +26,14 @@ import type {
   UpdateCryptoExchangeResponse,
   GetCryptoExchangesResponse,
 } from "../../schemas/crypto-exchanges-schemas.ts";
+import { CryptoExchangeBalancesService } from "../crypto-exchanges-balances/crypto-exchange-balances-service.ts";
 
 @injectable()
 export class CryptoExchangesService {
-  constructor(private databaseService = inject(DatabaseService)) {}
+  constructor(
+    private databaseService = inject(DatabaseService),
+    private balancesService = inject(CryptoExchangeBalancesService),
+  ) {}
 
   public async createCryptoExchange(
     payload: CreateCryptoExchangeRequest,
@@ -91,7 +95,33 @@ export class CryptoExchangesService {
       );
     }
 
-    return this.mapCryptoExchangeToResponse(result);
+    if (payload.taxPercentage !== undefined) {
+      (async () => {
+        const db = this.databaseService.get();
+        const balances = await db
+          .select({ symbolCode: cryptoExchangeBalancesTable.symbolCode })
+          .from(cryptoExchangeBalancesTable)
+          .where(eq(cryptoExchangeBalancesTable.cryptoExchangeId, exchangeId));
+
+        for (const balance of balances) {
+          await this.balancesService.calculateCryptoValueAfterTax(
+            exchangeId,
+            balance.symbolCode,
+            result,
+          );
+        }
+      })().catch((error) => {
+        console.error(
+          `Failed to trigger async calculation for crypto exchange ${exchangeId}:`,
+          error,
+        );
+      });
+    }
+
+    return this.mapCryptoExchangeToSummary({
+      ...result,
+      latestCalculation: null,
+    });
   }
 
   public async deleteCryptoExchange(exchangeId: number): Promise<void> {
@@ -165,20 +195,21 @@ export class CryptoExchangesService {
           calculatedAt: string;
         } | null>`(
           SELECT json_build_object(
-            'currentValue', calc.current_value,
-            'currencyCode', bal.invested_currency_code,
-            'calculatedAt', calc.created_at
+            'currentValue', calculation.current_value,
+            'currencyCode', latest_balance.invested_currency_code,
+            'calculatedAt', calculation.created_at
           )
-          FROM ${cryptoExchangeCalculationsTable} calc
+          FROM ${cryptoExchangeCalculationsTable} calculation
           LEFT JOIN LATERAL (
             SELECT invested_currency_code
-            FROM ${cryptoExchangeBalancesTable} ceb
-            WHERE ceb.crypto_exchange_id = ${cryptoExchangesTable}.id
-            ORDER BY ceb.created_at DESC
+            FROM ${cryptoExchangeBalancesTable} crypto_balance
+            WHERE crypto_balance.crypto_exchange_id = ${cryptoExchangesTable}.id
+            ORDER BY crypto_balance.created_at DESC
             LIMIT 1
-          ) bal ON true
-          WHERE calc.crypto_exchange_id = ${cryptoExchangesTable}.id
-          ORDER BY calc.created_at DESC
+          ) latest_balance ON true
+          WHERE calculation.crypto_exchange_id = ${cryptoExchangesTable}.id
+            AND latest_balance.invested_currency_code IS NOT NULL
+          ORDER BY calculation.created_at DESC
           LIMIT 1
         )`,
       })
