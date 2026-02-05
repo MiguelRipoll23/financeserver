@@ -40,6 +40,11 @@ export class CryptoExchangesService {
       .insert(cryptoExchangesTable)
       .values({
         name: payload.name,
+        // NOTE: using a truthy check here will convert an explicit 0 to null
+        // (e.g. taxPercentage: 0 => null). Keep in mind that 0% is a valid
+        // value — the correct approach is to treat undefined/null as absent
+        // and persist numeric zeros as "0". The creation/update logic should
+        // use an explicit check when converting to string.
         taxPercentage: payload.taxPercentage ? payload.taxPercentage.toString() : null,
       })
       .returning();
