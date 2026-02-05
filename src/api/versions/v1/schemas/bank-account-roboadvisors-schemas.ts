@@ -50,10 +50,10 @@ export const CreateBankAccountRoboadvisorRequestSchema = z.object({
     .default(true)
     .openapi({ example: true })
     .describe("Whether TER is priced in NAV"),
-  capitalGainsTaxPercentage: NullablePercentageSchema
+  taxPercentage: NullablePercentageSchema
     .optional()
     .openapi({ example: 0.26 })
-    .describe("Capital gains tax as decimal (0.26 = 26%)"),
+    .describe("Tax percentage as decimal (0.26 = 26%)"),
 });
 
 export type CreateBankAccountRoboadvisorRequest = z.infer<
@@ -72,7 +72,7 @@ export const CreateBankAccountRoboadvisorResponseSchema = z.object({
   managementFeeFrequency: z.string().openapi({ example: "monthly" }),
   custodyFeeFrequency: z.string().openapi({ example: "quarterly" }),
   terPricedInNav: z.boolean().openapi({ example: true }),
-  capitalGainsTaxPercentage: z.number().nullable().openapi({ example: 0.26 }),
+  taxPercentage: z.number().nullable().openapi({ example: 0.26 }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
 });
@@ -133,12 +133,13 @@ export const BankAccountRoboadvisorSummarySchema = z.object({
   managementFeeFrequency: z.string().openapi({ example: "monthly" }),
   custodyFeeFrequency: z.string().openapi({ example: "quarterly" }),
   terPricedInNav: z.boolean().openapi({ example: true }),
-  capitalGainsTaxPercentage: z.number().nullable().openapi({ example: 0.26 }),
+  taxPercentage: z.number().nullable().openapi({ example: 0.26 }),
   createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   latestCalculation: z
     .object({
-      currentValueAfterTax: z.string().openapi({ example: "95000.00" }),
+      currentValue: z.string().openapi({ example: "95000.00" }),
+      currencyCode: z.string().length(3).openapi({ example: "EUR" }),
       calculatedAt: z
         .string()
         .datetime()
@@ -210,10 +211,10 @@ export const UpdateBankAccountRoboadvisorRequestSchema = z.object({
     .optional()
     .openapi({ example: true })
     .describe("Whether TER is priced in NAV"),
-  capitalGainsTaxPercentage: NullablePercentageSchema
+  taxPercentage: NullablePercentageSchema
     .optional()
     .openapi({ example: 0.26 })
-    .describe("Capital gains tax as decimal (0.26 = 26%)"),
+    .describe("Tax percentage as decimal (0.26 = 26%)"),
 });
 
 export type UpdateBankAccountRoboadvisorRequest = z.infer<

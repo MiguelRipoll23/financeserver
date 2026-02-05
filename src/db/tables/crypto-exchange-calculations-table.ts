@@ -17,7 +17,7 @@ export const cryptoExchangeCalculationsTable = pgTable(
       .notNull()
       .references(() => cryptoExchangesTable.id, { onDelete: "cascade" }),
     symbolCode: varchar("symbol_code", { length: 10 }).notNull(),
-    currentValueAfterTax: numeric("current_value_after_tax", {
+    currentValue: numeric("current_value", {
       precision: 15,
       scale: 2,
     }).notNull(),

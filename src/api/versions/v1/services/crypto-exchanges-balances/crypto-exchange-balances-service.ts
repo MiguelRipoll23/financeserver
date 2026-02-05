@@ -283,7 +283,7 @@ export class CryptoExchangeBalancesService {
     cryptoExchangeId: number,
     symbolCode: string
   ): Promise<{
-    currentValueAfterTax: string;
+    currentValue: string;
     currencyCode: string;
   } | null> {
     try {
@@ -358,8 +358,8 @@ export class CryptoExchangeBalancesService {
       const capitalGain = currentValue - investedAmount;
 
       // Apply tax only to gains (not to losses)
-      const taxPercentage = exchange.capitalGainsTaxPercentage
-        ? parseFloat(exchange.capitalGainsTaxPercentage)
+      const taxPercentage = exchange.taxPercentage
+        ? parseFloat(exchange.taxPercentage)
         : 0;
 
       let valueAfterTax: number;
@@ -381,7 +381,7 @@ export class CryptoExchangeBalancesService {
       );
 
       return {
-        currentValueAfterTax: valueAfterTax.toFixed(2),
+        currentValue: valueAfterTax.toFixed(2),
         currencyCode,
       };
     } catch (error) {

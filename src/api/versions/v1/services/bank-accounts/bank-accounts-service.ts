@@ -201,7 +201,7 @@ export class BankAccountsService {
             'calculatedAt', calc.created_at
           )
           FROM ${bankAccountCalculationsTable} calc
-          WHERE calc.bank_account_id = ${bankAccountsTable.id}
+          WHERE calc.bank_account_id = ${bankAccountsTable}.id
           ORDER BY calc.created_at DESC
           LIMIT 1
         )`,
@@ -506,8 +506,8 @@ export class BankAccountsService {
       updatedAt: toISOStringSafe(account.updatedAt),
       latestCalculation: account.latestCalculation
         ? {
-            monthlyProfit: account.latestCalculation.monthlyProfit,
-            annualProfit: account.latestCalculation.annualProfit,
+            monthlyProfit: account.latestCalculation.monthlyProfit.toString(),
+            annualProfit: account.latestCalculation.annualProfit.toString(),
             currencyCode: account.latestCalculation.currencyCode,
             calculatedAt: toISOStringSafe(
               new Date(account.latestCalculation.calculatedAt)

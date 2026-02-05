@@ -1,7 +1,11 @@
 import { inject, injectable } from "@needle-di/core";
 import { asc, desc, eq, getTableColumns, ilike, sql, type SQL } from "drizzle-orm";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
-import { cryptoExchangeCalculationsTable, cryptoExchangesTable } from "../../../../../db/schema.ts";
+import {
+  cryptoExchangesTable,
+  cryptoExchangeCalculationsTable,
+  cryptoExchangeBalancesTable,
+} from "../../../../../db/schema.ts";
 import { ServerError } from "../../models/server-error.ts";
 import { decodeCursor } from "../../utils/cursor-utils.ts";
 import { createOffsetPagination } from "../../utils/pagination-utils.ts";
@@ -36,7 +40,12 @@ export class CryptoExchangesService {
       .insert(cryptoExchangesTable)
       .values({
         name: payload.name,
-        capitalGainsTaxPercentage: payload.capitalGainsTaxPercentage ? payload.capitalGainsTaxPercentage.toString() : null,
+        // NOTE: using a truthy check here will convert an explicit 0 to null
+        // (e.g. taxPercentage: 0 => null). Treat undefined/null as absent
+        // and preserve explicit zeros by checking for null/undefined explicitly.
+        taxPercentage: payload.taxPercentage != null
+          ? payload.taxPercentage.toString()
+          : null,
       })
       .returning();
 
@@ -51,7 +60,7 @@ export class CryptoExchangesService {
 
     const updateValues: {
       name?: string;
-      capitalGainsTaxPercentage?: string | null;
+      taxPercentage?: string | null;
       updatedAt: Date;
     } = {
       updatedAt: new Date(),
@@ -61,8 +70,11 @@ export class CryptoExchangesService {
       updateValues.name = payload.name;
     }
 
-    if (payload.capitalGainsTaxPercentage !== undefined) {
-      updateValues.capitalGainsTaxPercentage = payload.capitalGainsTaxPercentage ? payload.capitalGainsTaxPercentage.toString() : null;
+    if (payload.taxPercentage !== undefined) {
+      updateValues.taxPercentage =
+        payload.taxPercentage === null
+          ? null
+          : payload.taxPercentage.toString();
     }
 
     const [result] = await db
@@ -148,15 +160,24 @@ export class CryptoExchangesService {
       .select({
         ...getTableColumns(cryptoExchangesTable),
         latestCalculation: sql<{
-          currentValueAfterTax: string;
+          currentValue: string;
+          currencyCode: string;
           calculatedAt: string;
         } | null>`(
           SELECT json_build_object(
-            'currentValueAfterTax', calc.current_value_after_tax,
+            'currentValue', calc.current_value,
+            'currencyCode', bal.invested_currency_code,
             'calculatedAt', calc.created_at
           )
           FROM ${cryptoExchangeCalculationsTable} calc
-          WHERE calc.crypto_exchange_id = ${cryptoExchangesTable.id}
+          LEFT JOIN LATERAL (
+            SELECT invested_currency_code
+            FROM ${cryptoExchangeBalancesTable} ceb
+            WHERE ceb.crypto_exchange_id = ${cryptoExchangesTable}.id
+            ORDER BY ceb.created_at DESC
+            LIMIT 1
+          ) bal ON true
+          WHERE calc.crypto_exchange_id = ${cryptoExchangesTable}.id
           ORDER BY calc.created_at DESC
           LIMIT 1
         )`,
@@ -205,7 +226,7 @@ export class CryptoExchangesService {
     return {
       id: exchange.id,
       name: exchange.name,
-      capitalGainsTaxPercentage: exchange.capitalGainsTaxPercentage ? parseFloat(exchange.capitalGainsTaxPercentage) : null,
+      taxPercentage: exchange.taxPercentage ? parseFloat(exchange.taxPercentage) : null,
       createdAt: toISOStringSafe(exchange.createdAt),
       updatedAt: toISOStringSafe(exchange.updatedAt),
     };
@@ -214,7 +235,8 @@ export class CryptoExchangesService {
   private mapCryptoExchangeToSummary(
     exchange: typeof cryptoExchangesTable.$inferSelect & {
       latestCalculation: {
-        currentValueAfterTax: string;
+        currentValue: string;
+        currencyCode: string;
         calculatedAt: string;
       } | null;
     },
@@ -222,12 +244,13 @@ export class CryptoExchangesService {
     return {
       id: exchange.id,
       name: exchange.name,
-      capitalGainsTaxPercentage: exchange.capitalGainsTaxPercentage ? parseFloat(exchange.capitalGainsTaxPercentage) : null,
+      taxPercentage: exchange.taxPercentage ? parseFloat(exchange.taxPercentage) : null,
       createdAt: toISOStringSafe(exchange.createdAt),
       updatedAt: toISOStringSafe(exchange.updatedAt),
       latestCalculation: exchange.latestCalculation
         ? {
-            currentValueAfterTax: exchange.latestCalculation.currentValueAfterTax,
+            currentValue: exchange.latestCalculation.currentValue.toString(),
+            currencyCode: exchange.latestCalculation.currencyCode,
             calculatedAt: toISOStringSafe(exchange.latestCalculation.calculatedAt),
           }
         : null,

@@ -96,10 +96,10 @@ export class BankAccountRoboadvisorsService {
         managementFeeFrequency: payload.managementFeeFrequency,
         custodyFeeFrequency: payload.custodyFeeFrequency,
         terPricedInNav: payload.terPricedInNav ?? true,
-        capitalGainsTaxPercentage:
-          payload.capitalGainsTaxPercentage === null || payload.capitalGainsTaxPercentage === undefined
+        taxPercentage:
+          payload.taxPercentage === null || payload.taxPercentage === undefined
             ? null
-            : payload.capitalGainsTaxPercentage.toString(),
+            : payload.taxPercentage.toString(),
       })
       .returning();
 
@@ -160,15 +160,24 @@ export class BankAccountRoboadvisorsService {
       .select({
         ...getTableColumns(roboadvisors),
         latestCalculation: sql<{
-          currentValueAfterTax: string;
+          currentValue: string;
+          currencyCode: string;
           calculatedAt: string;
         } | null>`(
           SELECT json_build_object(
-            'currentValueAfterTax', calc.current_value_after_tax,
+            'currentValue', calc.current_value,
+            'currencyCode', bal.currency_code,
             'calculatedAt', calc.created_at
           )
           FROM ${roboadvisorFundCalculationsTable} calc
-          WHERE calc.roboadvisor_id = ${roboadvisors.id}
+          LEFT JOIN LATERAL (
+            SELECT currency_code
+            FROM ${roboadvisorBalances} rb
+            WHERE rb.roboadvisor_id = ${roboadvisors}.id
+            ORDER BY rb.date DESC
+            LIMIT 1
+          ) bal ON true
+          WHERE calc.roboadvisor_id = ${roboadvisors}.id
           ORDER BY calc.created_at DESC
           LIMIT 1
         )`,
@@ -246,11 +255,11 @@ export class BankAccountRoboadvisorsService {
       updateValues.custodyFeeFrequency = payload.custodyFeeFrequency;
     if (payload.terPricedInNav !== undefined)
       updateValues.terPricedInNav = payload.terPricedInNav;
-    if (payload.capitalGainsTaxPercentage !== undefined)
-      updateValues.capitalGainsTaxPercentage =
-        payload.capitalGainsTaxPercentage === null
+    if (payload.taxPercentage !== undefined)
+      updateValues.taxPercentage =
+        payload.taxPercentage === null
           ? null
-          : payload.capitalGainsTaxPercentage.toString();
+          : payload.taxPercentage.toString();
 
     const [result] = await db
       .update(roboadvisors)
@@ -714,7 +723,7 @@ export class BankAccountRoboadvisorsService {
       managementFeeFrequency: roboadvisor.managementFeeFrequency,
       custodyFeeFrequency: roboadvisor.custodyFeeFrequency,
       terPricedInNav: roboadvisor.terPricedInNav,
-      capitalGainsTaxPercentage: roboadvisor.capitalGainsTaxPercentage ? parseFloat(roboadvisor.capitalGainsTaxPercentage) : null,
+      taxPercentage: roboadvisor.taxPercentage ? parseFloat(roboadvisor.taxPercentage) : null,
       createdAt: toISOStringSafe(roboadvisor.createdAt),
       updatedAt: toISOStringSafe(roboadvisor.updatedAt),
     };
@@ -723,7 +732,8 @@ export class BankAccountRoboadvisorsService {
   private mapRoboadvisorToSummary(
     roboadvisor: typeof roboadvisors.$inferSelect & {
       latestCalculation: {
-        currentValueAfterTax: string;
+        currentValue: string;
+        currencyCode: string;
         calculatedAt: string;
       } | null;
     },
@@ -740,12 +750,13 @@ export class BankAccountRoboadvisorsService {
       managementFeeFrequency: roboadvisor.managementFeeFrequency,
       custodyFeeFrequency: roboadvisor.custodyFeeFrequency,
       terPricedInNav: roboadvisor.terPricedInNav,
-      capitalGainsTaxPercentage: roboadvisor.capitalGainsTaxPercentage ? parseFloat(roboadvisor.capitalGainsTaxPercentage) : null,
+      taxPercentage: roboadvisor.taxPercentage ? parseFloat(roboadvisor.taxPercentage) : null,
       createdAt: toISOStringSafe(roboadvisor.createdAt),
       updatedAt: toISOStringSafe(roboadvisor.updatedAt),
       latestCalculation: roboadvisor.latestCalculation
         ? {
-            currentValueAfterTax: roboadvisor.latestCalculation.currentValueAfterTax,
+            currentValue: roboadvisor.latestCalculation.currentValue.toString(),
+            currencyCode: roboadvisor.latestCalculation.currencyCode,
             calculatedAt: toISOStringSafe(
               new Date(roboadvisor.latestCalculation.calculatedAt)
             ),
@@ -853,7 +864,7 @@ export class BankAccountRoboadvisorsService {
   public async calculateRoboadvisorValueAfterTax(
     roboadvisorId: number
   ): Promise<{
-    currentValueAfterTax: string;
+    currentValue: string;
     currencyCode: string;
   } | null> {
     try {
@@ -992,8 +1003,8 @@ export class BankAccountRoboadvisorsService {
       const capitalGain = totalCurrentValue - totalInvested;
 
       // Apply tax only to gains (not to losses)
-      const taxPercentage = roboadvisor.capitalGainsTaxPercentage
-        ? parseFloat(roboadvisor.capitalGainsTaxPercentage)
+      const taxPercentage = roboadvisor.taxPercentage
+        ? parseFloat(roboadvisor.taxPercentage)
         : 0;
 
       let valueAfterTax: number;
@@ -1014,7 +1025,7 @@ export class BankAccountRoboadvisorsService {
       );
 
       return {
-        currentValueAfterTax: valueAfterTax.toFixed(2),
+        currentValue: valueAfterTax.toFixed(2),
         currencyCode,
       };
     } catch (error) {

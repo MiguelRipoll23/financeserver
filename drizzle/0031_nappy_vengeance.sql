@@ -1,0 +1,2 @@
+ALTER TABLE "crypto_exchange_calculations" RENAME COLUMN "current_value_after_tax" TO "current_value";--> statement-breakpoint
+ALTER TABLE "roboadvisor_fund_calculations" RENAME COLUMN "current_value_after_tax" TO "current_value";

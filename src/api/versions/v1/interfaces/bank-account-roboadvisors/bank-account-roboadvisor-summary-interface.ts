@@ -10,11 +10,12 @@ export interface BankAccountRoboadvisorSummary {
   managementFeeFrequency: string;
   custodyFeeFrequency: string;
   terPricedInNav: boolean;
-  capitalGainsTaxPercentage: number | null;
+  taxPercentage: number | null;
   createdAt: string;
   updatedAt: string;
   latestCalculation: {
-    currentValueAfterTax: string;
+    currentValue: string;
+    currencyCode: string;
     calculatedAt: string;
   } | null;
 }

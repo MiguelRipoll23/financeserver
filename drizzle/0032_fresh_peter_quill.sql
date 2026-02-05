@@ -1,0 +1,2 @@
+ALTER TABLE "crypto_exchanges" RENAME COLUMN "capital_gains_tax_percentage" TO "tax_percentage";--> statement-breakpoint
+ALTER TABLE "roboadvisors" RENAME COLUMN "capital_gains_tax_percentage" TO "tax_percentage";

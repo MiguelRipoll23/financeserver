@@ -17,7 +17,7 @@ export const roboadvisorFundCalculationsTable = pgTable(
     })
       .notNull()
       .references(() => roboadvisors.id, { onDelete: "cascade" }),
-    currentValueAfterTax: numeric("current_value_after_tax", {
+    currentValue: numeric("current_value", {
       precision: 15,
       scale: 2,
     }).notNull(),
