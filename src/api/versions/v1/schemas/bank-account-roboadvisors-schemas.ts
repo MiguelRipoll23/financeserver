@@ -222,7 +222,7 @@ export type UpdateBankAccountRoboadvisorRequest = z.infer<
 >;
 
 export const UpdateBankAccountRoboadvisorResponseSchema =
-  CreateBankAccountRoboadvisorResponseSchema;
+  BankAccountRoboadvisorSummarySchema;
 
 export type UpdateBankAccountRoboadvisorResponse = z.infer<
   typeof UpdateBankAccountRoboadvisorResponseSchema

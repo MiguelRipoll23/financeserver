@@ -267,7 +267,45 @@ export class BankAccountRoboadvisorsService {
       .where(eq(roboadvisors.id, roboadvisorId))
       .returning();
 
-    return this.mapRoboadvisorToResponse(result);
+    if (!result) {
+      throw new ServerError(
+        "ROBOADVISOR_NOT_FOUND",
+        `Roboadvisor with ID ${roboadvisorId} not found`,
+        404,
+      );
+    }
+
+    const [withLatestCalculation] = await db
+      .select({
+        ...getTableColumns(roboadvisors),
+        latestCalculation: sql<{
+          currentValue: string;
+          currencyCode: string;
+          calculatedAt: string;
+        } | null>`(
+          SELECT json_build_object(
+            'currentValue', calc.current_value,
+            'currencyCode', bal.currency_code,
+            'calculatedAt', calc.created_at
+          )
+          FROM ${roboadvisorFundCalculationsTable} calc
+          LEFT JOIN LATERAL (
+            SELECT currency_code
+            FROM ${roboadvisorBalances} rb
+            WHERE rb.roboadvisor_id = ${roboadvisors}.id
+            ORDER BY rb.date DESC
+            LIMIT 1
+          ) bal ON true
+          WHERE calc.roboadvisor_id = ${roboadvisors}.id
+          ORDER BY calc.created_at DESC
+          LIMIT 1
+        )`,
+      })
+      .from(roboadvisors)
+      .where(eq(roboadvisors.id, roboadvisorId))
+      .limit(1);
+
+    return this.mapRoboadvisorToSummary(withLatestCalculation);
   }
 
   public async deleteBankAccountRoboadvisor(

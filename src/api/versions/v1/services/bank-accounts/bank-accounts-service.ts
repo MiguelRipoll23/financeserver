@@ -116,7 +116,32 @@ export class BankAccountsService {
       );
     }
 
-    return this.mapBankAccountToResponse(result);
+    const [withLatestCalculation] = await db
+      .select({
+        ...getTableColumns(bankAccountsTable),
+        latestCalculation: sql<{
+          monthlyProfit: string;
+          annualProfit: string;
+          currencyCode: string;
+          calculatedAt: string;
+        } | null>`(
+          SELECT json_build_object(
+            'monthlyProfit', calc.monthly_profit,
+            'annualProfit', calc.annual_profit,
+            'currencyCode', calc.currency_code,
+            'calculatedAt', calc.created_at
+          )
+          FROM ${bankAccountCalculationsTable} calc
+          WHERE calc.bank_account_id = ${bankAccountsTable}.id
+          ORDER BY calc.created_at DESC
+          LIMIT 1
+        )`,
+      })
+      .from(bankAccountsTable)
+      .where(eq(bankAccountsTable.id, accountId))
+      .limit(1);
+
+    return this.mapBankAccountToSummary(withLatestCalculation);
   }
 
   public async deleteBankAccount(accountId: number): Promise<void> {

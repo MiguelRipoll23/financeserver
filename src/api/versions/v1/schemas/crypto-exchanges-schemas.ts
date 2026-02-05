@@ -68,8 +68,26 @@ export type UpdateCryptoExchangeRequest = z.infer<
   typeof UpdateCryptoExchangeRequestSchema
 >;
 
-export const UpdateCryptoExchangeResponseSchema =
-  CreateCryptoExchangeResponseSchema;
+export const CryptoExchangeSummarySchema = z.object({
+  id: z.number().int().openapi({ example: 1 }),
+  name: z.string().openapi({ example: "Binance" }),
+  taxPercentage: z.number().nullable().openapi({ example: 0.26 }),
+  createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
+  updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
+  latestCalculation: z
+    .object({
+      currentValue: z.string().openapi({ example: "48000.00" }),
+      currencyCode: z.string().length(3).openapi({ example: "EUR" }),
+      calculatedAt: z
+        .string()
+        .datetime()
+        .openapi({ example: "2026-02-04T10:30:00Z" }),
+    })
+    .nullable()
+    .describe("Latest value calculation after tax"),
+});
+
+export const UpdateCryptoExchangeResponseSchema = CryptoExchangeSummarySchema;
 
 export type UpdateCryptoExchangeResponse = z.infer<
   typeof UpdateCryptoExchangeResponseSchema
@@ -91,24 +109,6 @@ export type GetCryptoExchangesRequest = z.infer<
   typeof GetCryptoExchangesRequestSchema
 >;
 
-export const CryptoExchangeSummarySchema = z.object({
-  id: z.number().int().openapi({ example: 1 }),
-  name: z.string().openapi({ example: "Binance" }),
-  taxPercentage: z.number().nullable().openapi({ example: 0.26 }),
-  createdAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
-  updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
-  latestCalculation: z
-    .object({
-      currentValue: z.string().openapi({ example: "48000.00" }),
-      currencyCode: z.string().length(3).openapi({ example: "EUR" }),
-      calculatedAt: z
-        .string()
-        .datetime()
-        .openapi({ example: "2026-02-04T10:30:00Z" }),
-    })
-    .nullable()
-    .describe("Latest value calculation after tax"),
-});
 
 export const GetCryptoExchangesResponseSchema = z.object({
   results: z

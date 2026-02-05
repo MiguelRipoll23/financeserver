@@ -91,7 +91,37 @@ export class CryptoExchangesService {
       );
     }
 
-    return this.mapCryptoExchangeToResponse(result);
+    const [withLatestCalculation] = await db
+      .select({
+        ...getTableColumns(cryptoExchangesTable),
+        latestCalculation: sql<{
+          currentValue: string;
+          currencyCode: string;
+          calculatedAt: string;
+        } | null>`(
+          SELECT json_build_object(
+            'currentValue', calc.current_value,
+            'currencyCode', bal.invested_currency_code,
+            'calculatedAt', calc.created_at
+          )
+          FROM ${cryptoExchangeCalculationsTable} calc
+          LEFT JOIN LATERAL (
+            SELECT invested_currency_code
+            FROM ${cryptoExchangeBalancesTable} ceb
+            WHERE ceb.crypto_exchange_id = ${cryptoExchangesTable}.id
+            ORDER BY ceb.created_at DESC
+            LIMIT 1
+          ) bal ON true
+          WHERE calc.crypto_exchange_id = ${cryptoExchangesTable}.id
+          ORDER BY calc.created_at DESC
+          LIMIT 1
+        )`,
+      })
+      .from(cryptoExchangesTable)
+      .where(eq(cryptoExchangesTable.id, exchangeId))
+      .limit(1);
+
+    return this.mapCryptoExchangeToSummary(withLatestCalculation);
   }
 
   public async deleteCryptoExchange(exchangeId: number): Promise<void> {
