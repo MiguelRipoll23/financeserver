@@ -40,7 +40,12 @@ export class CryptoExchangesService {
       .insert(cryptoExchangesTable)
       .values({
         name: payload.name,
-        taxPercentage: payload.taxPercentage ? payload.taxPercentage.toString() : null,
+        // NOTE: using a truthy check here will convert an explicit 0 to null
+        // (e.g. taxPercentage: 0 => null). Treat undefined/null as absent
+        // and preserve explicit zeros by checking for null/undefined explicitly.
+        taxPercentage: payload.taxPercentage != null
+          ? payload.taxPercentage.toString()
+          : null,
       })
       .returning();
 
@@ -66,7 +71,10 @@ export class CryptoExchangesService {
     }
 
     if (payload.taxPercentage !== undefined) {
-      updateValues.taxPercentage = payload.taxPercentage ? payload.taxPercentage.toString() : null;
+      updateValues.taxPercentage =
+        payload.taxPercentage === null
+          ? null
+          : payload.taxPercentage.toString();
     }
 
     const [result] = await db
