@@ -201,7 +201,7 @@ export class BankAccountsService {
             'calculatedAt', calc.created_at
           )
           FROM ${bankAccountCalculationsTable} calc
-          WHERE calc.bank_account_id = ${bankAccountsTable.id}
+          WHERE calc.bank_account_id = ${bankAccountsTable}.id
           ORDER BY calc.created_at DESC
           LIMIT 1
         )`,

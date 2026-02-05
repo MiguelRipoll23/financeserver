@@ -156,7 +156,7 @@ export class CryptoExchangesService {
             'calculatedAt', calc.created_at
           )
           FROM ${cryptoExchangeCalculationsTable} calc
-          WHERE calc.crypto_exchange_id = ${cryptoExchangesTable.id}
+          WHERE calc.crypto_exchange_id = ${cryptoExchangesTable}.id
           ORDER BY calc.created_at DESC
           LIMIT 1
         )`,

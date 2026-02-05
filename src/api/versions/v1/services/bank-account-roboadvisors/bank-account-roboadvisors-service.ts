@@ -168,7 +168,7 @@ export class BankAccountRoboadvisorsService {
             'calculatedAt', calc.created_at
           )
           FROM ${roboadvisorFundCalculationsTable} calc
-          WHERE calc.roboadvisor_id = ${roboadvisors.id}
+          WHERE calc.roboadvisor_id = ${roboadvisors}.id
           ORDER BY calc.created_at DESC
           LIMIT 1
         )`,
