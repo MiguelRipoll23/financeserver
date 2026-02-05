@@ -124,36 +124,19 @@ export class BankAccountsService {
     }
 
     if (payload.taxPercentage !== undefined) {
-      await this.interestRatesService.triggerInterestCalculationForAccount(accountId);
+      this.interestRatesService
+        .triggerInterestCalculationForAccount(accountId)
+        .catch((error) => {
+          console.error(
+            `Failed to trigger async calculation for bank account ${accountId}:`,
+            error,
+          );
+        });
     }
-
-    const [calculationData] = await db
-      .select({
-        latestCalculation: sql<{
-          monthlyProfit: string;
-          annualProfit: string;
-          currencyCode: string;
-          calculatedAt: string;
-        } | null>`(
-          SELECT json_build_object(
-            'monthlyProfit', calc.monthly_profit,
-            'annualProfit', calc.annual_profit,
-            'currencyCode', calc.currency_code,
-            'calculatedAt', calc.created_at
-          )
-          FROM ${bankAccountCalculationsTable} calc
-          WHERE calc.bank_account_id = ${bankAccountsTable}.id
-          ORDER BY calc.created_at DESC
-          LIMIT 1
-        )`,
-      })
-      .from(bankAccountsTable)
-      .where(eq(bankAccountsTable.id, accountId))
-      .limit(1);
 
     return this.mapBankAccountToSummary({
       ...result,
-      latestCalculation: calculationData?.latestCalculation ?? null,
+      latestCalculation: null,
     });
   }
 

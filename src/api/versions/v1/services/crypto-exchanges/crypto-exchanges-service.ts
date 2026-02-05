@@ -96,54 +96,31 @@ export class CryptoExchangesService {
     }
 
     if (payload.taxPercentage !== undefined) {
-      const db = this.databaseService.get();
-      const balances = await db
-        .select({ symbolCode: cryptoExchangeBalancesTable.symbolCode })
-        .from(cryptoExchangeBalancesTable)
-        .where(eq(cryptoExchangeBalancesTable.cryptoExchangeId, exchangeId));
+      (async () => {
+        const db = this.databaseService.get();
+        const balances = await db
+          .select({ symbolCode: cryptoExchangeBalancesTable.symbolCode })
+          .from(cryptoExchangeBalancesTable)
+          .where(eq(cryptoExchangeBalancesTable.cryptoExchangeId, exchangeId));
 
-      for (const balance of balances) {
-        await this.balancesService.calculateCryptoValueAfterTax(
-          exchangeId,
-          balance.symbolCode,
-          result,
+        for (const balance of balances) {
+          await this.balancesService.calculateCryptoValueAfterTax(
+            exchangeId,
+            balance.symbolCode,
+            result,
+          );
+        }
+      })().catch((error) => {
+        console.error(
+          `Failed to trigger async calculation for crypto exchange ${exchangeId}:`,
+          error,
         );
-      }
+      });
     }
-
-    const [calculationData] = await db
-      .select({
-        latestCalculation: sql<{
-          currentValue: string;
-          currencyCode: string;
-          calculatedAt: string;
-        } | null>`(
-          SELECT json_build_object(
-            'currentValue', calc.current_value,
-            'currencyCode', bal.invested_currency_code,
-            'calculatedAt', calc.created_at
-          )
-          FROM ${cryptoExchangeCalculationsTable} calc
-          LEFT JOIN LATERAL (
-            SELECT invested_currency_code
-            FROM ${cryptoExchangeBalancesTable} ceb
-            WHERE ceb.crypto_exchange_id = ${cryptoExchangesTable}.id
-            ORDER BY ceb.created_at DESC
-            LIMIT 1
-          ) bal ON true
-          WHERE calc.crypto_exchange_id = ${cryptoExchangesTable}.id
-            AND bal.invested_currency_code IS NOT NULL
-          ORDER BY calc.created_at DESC
-          LIMIT 1
-        )`,
-      })
-      .from(cryptoExchangesTable)
-      .where(eq(cryptoExchangesTable.id, exchangeId))
-      .limit(1);
 
     return this.mapCryptoExchangeToSummary({
       ...result,
-      latestCalculation: calculationData?.latestCalculation ?? null,
+      latestCalculation: null,
     });
   }
 

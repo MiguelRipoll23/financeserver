@@ -283,41 +283,17 @@ export class BankAccountRoboadvisorsService {
       payload.totalFeePercentage !== undefined ||
       payload.taxPercentage !== undefined
     ) {
-      await this.calculateRoboadvisorValueAfterTax(roboadvisorId);
+      this.calculateRoboadvisorValueAfterTax(roboadvisorId).catch((error) => {
+        console.error(
+          `Failed to trigger async calculation for roboadvisor ${roboadvisorId}:`,
+          error,
+        );
+      });
     }
-
-    const [calculationData] = await db
-      .select({
-        latestCalculation: sql<{
-          currentValue: string;
-          currencyCode: string;
-          calculatedAt: string;
-        } | null>`(
-          SELECT json_build_object(
-            'currentValue', calc.current_value,
-            'currencyCode', bal.currency_code,
-            'calculatedAt', calc.created_at
-          )
-          FROM ${roboadvisorFundCalculationsTable} calc
-          LEFT JOIN LATERAL (
-            SELECT currency_code
-            FROM ${roboadvisorBalances} rb
-            WHERE rb.roboadvisor_id = ${roboadvisors}.id
-            ORDER BY rb.date DESC
-            LIMIT 1
-          ) bal ON true
-          WHERE calc.roboadvisor_id = ${roboadvisors}.id
-          ORDER BY calc.created_at DESC
-          LIMIT 1
-        )`,
-      })
-      .from(roboadvisors)
-      .where(eq(roboadvisors.id, roboadvisorId))
-      .limit(1);
 
     return this.mapRoboadvisorToSummary({
       ...result,
-      latestCalculation: calculationData?.latestCalculation ?? null,
+      latestCalculation: null,
     });
   }
 
