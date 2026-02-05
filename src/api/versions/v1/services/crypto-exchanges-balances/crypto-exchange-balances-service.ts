@@ -307,11 +307,13 @@ export class CryptoExchangeBalancesService {
    * Calculate crypto balance value after capital gains tax
    * @param cryptoExchangeId - Crypto exchange ID
    * @param symbolCode - Crypto symbol (e.g., BTC, ETH)
+   * @param exchange - Optional pre-fetched exchange object
    * @returns Current value after tax, or null if unable to calculate
    */
   public async calculateCryptoValueAfterTax(
     cryptoExchangeId: number,
-    symbolCode: string
+    symbolCode: string,
+    exchange?: typeof cryptoExchangesTable.$inferSelect
   ): Promise<{
     currentValue: string;
     currencyCode: string;
@@ -319,13 +321,15 @@ export class CryptoExchangeBalancesService {
     try {
       const db = this.databaseService.get();
 
-      // Get crypto exchange with capital gains tax percentage
-      const exchange = await db
-        .select()
-        .from(cryptoExchangesTable)
-        .where(eq(cryptoExchangesTable.id, cryptoExchangeId))
-        .limit(1)
-        .then((rows) => rows[0]);
+      // Get crypto exchange with capital gains tax percentage if not provided
+      if (!exchange) {
+        exchange = await db
+          .select()
+          .from(cryptoExchangesTable)
+          .where(eq(cryptoExchangesTable.id, cryptoExchangeId))
+          .limit(1)
+          .then((rows) => rows[0]);
+      }
 
       if (!exchange) {
         console.warn(

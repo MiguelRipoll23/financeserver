@@ -90,7 +90,7 @@ export class BankAccountInterestRatesService {
       return this.mapInterestRateToResponse(result);
     });
 
-    await this.triggerCalculation(accountId);
+    await this.triggerInterestCalculationForAccount(accountId);
 
     return response;
   }
@@ -268,7 +268,7 @@ export class BankAccountInterestRatesService {
       return this.mapInterestRateToResponse(result);
     });
 
-    await this.triggerCalculation(accountId);
+    await this.triggerInterestCalculationForAccount(accountId);
 
     return response;
   }
@@ -303,7 +303,7 @@ export class BankAccountInterestRatesService {
       );
     }
 
-    await this.triggerCalculation(existing.bankAccountId);
+    await this.triggerInterestCalculationForAccount(existing.bankAccountId);
   }
 
   private async validateNoOverlappingInterestRates(
@@ -571,7 +571,7 @@ export class BankAccountInterestRatesService {
     }
   }
 
-  private async triggerCalculation(bankAccountId: number): Promise<void> {
+  public async triggerInterestCalculationForAccount(bankAccountId: number): Promise<void> {
     const db = this.databaseService.get();
 
     // Get the latest balance for the account

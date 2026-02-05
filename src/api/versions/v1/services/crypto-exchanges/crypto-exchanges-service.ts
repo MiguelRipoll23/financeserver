@@ -106,6 +106,7 @@ export class CryptoExchangesService {
         await this.balancesService.calculateCryptoValueAfterTax(
           exchangeId,
           balance.symbolCode,
+          result,
         );
       }
     }
