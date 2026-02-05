@@ -745,7 +745,7 @@ export class BankAccountRoboadvisorsService {
       updatedAt: toISOStringSafe(roboadvisor.updatedAt),
       latestCalculation: roboadvisor.latestCalculation
         ? {
-            currentValueAfterTax: roboadvisor.latestCalculation.currentValueAfterTax,
+            currentValueAfterTax: roboadvisor.latestCalculation.currentValueAfterTax.toString(),
             calculatedAt: toISOStringSafe(
               new Date(roboadvisor.latestCalculation.calculatedAt)
             ),

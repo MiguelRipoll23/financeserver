@@ -227,7 +227,7 @@ export class CryptoExchangesService {
       updatedAt: toISOStringSafe(exchange.updatedAt),
       latestCalculation: exchange.latestCalculation
         ? {
-            currentValueAfterTax: exchange.latestCalculation.currentValueAfterTax,
+            currentValueAfterTax: exchange.latestCalculation.currentValueAfterTax.toString(),
             calculatedAt: toISOStringSafe(exchange.latestCalculation.calculatedAt),
           }
         : null,

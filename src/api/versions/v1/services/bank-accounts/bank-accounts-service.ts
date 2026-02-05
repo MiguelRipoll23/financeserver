@@ -506,9 +506,9 @@ export class BankAccountsService {
       updatedAt: toISOStringSafe(account.updatedAt),
       latestCalculation: account.latestCalculation
         ? {
-            monthlyProfit: account.latestCalculation.monthlyProfit,
-            annualProfit: account.latestCalculation.annualProfit,
-            currencyCode: account.latestCalculation.currencyCode,
+            monthlyProfit: account.latestCalculation.monthlyProfit.toString(),
+            annualProfit: account.latestCalculation.annualProfit.toString(),
+            currencyCode: account.latestCalculation.currencyCode.toString(),
             calculatedAt: toISOStringSafe(
               new Date(account.latestCalculation.calculatedAt)
             ),
