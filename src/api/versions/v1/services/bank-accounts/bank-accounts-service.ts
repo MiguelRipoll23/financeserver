@@ -116,9 +116,8 @@ export class BankAccountsService {
       );
     }
 
-    const [withLatestCalculation] = await db
+    const [calculationData] = await db
       .select({
-        ...getTableColumns(bankAccountsTable),
         latestCalculation: sql<{
           monthlyProfit: string;
           annualProfit: string;
@@ -141,7 +140,10 @@ export class BankAccountsService {
       .where(eq(bankAccountsTable.id, accountId))
       .limit(1);
 
-    return this.mapBankAccountToSummary(withLatestCalculation);
+    return this.mapBankAccountToSummary({
+      ...result,
+      latestCalculation: calculationData?.latestCalculation ?? null,
+    });
   }
 
   public async deleteBankAccount(accountId: number): Promise<void> {

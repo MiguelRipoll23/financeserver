@@ -91,9 +91,8 @@ export class CryptoExchangesService {
       );
     }
 
-    const [withLatestCalculation] = await db
+    const [calculationData] = await db
       .select({
-        ...getTableColumns(cryptoExchangesTable),
         latestCalculation: sql<{
           currentValue: string;
           currencyCode: string;
@@ -113,6 +112,7 @@ export class CryptoExchangesService {
             LIMIT 1
           ) bal ON true
           WHERE calc.crypto_exchange_id = ${cryptoExchangesTable}.id
+            AND bal.invested_currency_code IS NOT NULL
           ORDER BY calc.created_at DESC
           LIMIT 1
         )`,
@@ -121,7 +121,10 @@ export class CryptoExchangesService {
       .where(eq(cryptoExchangesTable.id, exchangeId))
       .limit(1);
 
-    return this.mapCryptoExchangeToSummary(withLatestCalculation);
+    return this.mapCryptoExchangeToSummary({
+      ...result,
+      latestCalculation: calculationData?.latestCalculation ?? null,
+    });
   }
 
   public async deleteCryptoExchange(exchangeId: number): Promise<void> {
@@ -208,6 +211,7 @@ export class CryptoExchangesService {
             LIMIT 1
           ) bal ON true
           WHERE calc.crypto_exchange_id = ${cryptoExchangesTable}.id
+            AND bal.invested_currency_code IS NOT NULL
           ORDER BY calc.created_at DESC
           LIMIT 1
         )`,

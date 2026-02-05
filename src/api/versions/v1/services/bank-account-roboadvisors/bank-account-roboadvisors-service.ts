@@ -275,9 +275,8 @@ export class BankAccountRoboadvisorsService {
       );
     }
 
-    const [withLatestCalculation] = await db
+    const [calculationData] = await db
       .select({
-        ...getTableColumns(roboadvisors),
         latestCalculation: sql<{
           currentValue: string;
           currencyCode: string;
@@ -305,7 +304,10 @@ export class BankAccountRoboadvisorsService {
       .where(eq(roboadvisors.id, roboadvisorId))
       .limit(1);
 
-    return this.mapRoboadvisorToSummary(withLatestCalculation);
+    return this.mapRoboadvisorToSummary({
+      ...result,
+      latestCalculation: calculationData?.latestCalculation ?? null,
+    });
   }
 
   public async deleteBankAccountRoboadvisor(
