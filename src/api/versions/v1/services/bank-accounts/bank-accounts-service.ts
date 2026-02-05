@@ -291,7 +291,14 @@ export class BankAccountsService {
       })
       .returning();
 
-    await this.interestRatesService.triggerInterestCalculationForAccount(accountId);
+    await this.interestRatesService
+      .triggerInterestCalculationForAccount(accountId)
+      .catch((error) => {
+        console.error(
+          `Failed to trigger interest calculation for bank account ${accountId}:`,
+          error,
+        );
+      });
 
     return this.mapBalanceToResponse(result);
   }
@@ -460,7 +467,14 @@ export class BankAccountsService {
       .where(eq(bankAccountBalancesTable.id, balanceId))
       .returning();
 
-    await this.interestRatesService.triggerInterestCalculationForAccount(existingBalance.bankAccountId);
+    await this.interestRatesService
+      .triggerInterestCalculationForAccount(existingBalance.bankAccountId)
+      .catch((error) => {
+        console.error(
+          `Failed to trigger interest calculation for bank account ${existingBalance.bankAccountId}:`,
+          error,
+        );
+      });
 
     return this.mapBalanceToResponse(result);
   }
@@ -495,7 +509,14 @@ export class BankAccountsService {
       );
     }
 
-    await this.interestRatesService.triggerInterestCalculationForAccount(existingBalance.bankAccountId);
+    await this.interestRatesService
+      .triggerInterestCalculationForAccount(existingBalance.bankAccountId)
+      .catch((error) => {
+        console.error(
+          `Failed to trigger interest calculation for bank account ${existingBalance.bankAccountId}:`,
+          error,
+        );
+      });
   }
 
   private getSortColumn(sortField: BankAccountSortField) {

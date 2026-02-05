@@ -349,7 +349,12 @@ export class BankAccountRoboadvisorsService {
       })
       .returning();
 
-    await this.calculateRoboadvisorValueAfterTax(payload.roboadvisorId);
+    this.calculateRoboadvisorValueAfterTax(payload.roboadvisorId).catch((error) => {
+      console.error(
+        `Failed to trigger async calculation for roboadvisor ${payload.roboadvisorId}:`,
+        error,
+      );
+    });
 
     return this.mapBalanceToResponse(result);
   }
@@ -474,7 +479,14 @@ export class BankAccountRoboadvisorsService {
       .where(eq(roboadvisorBalances.id, balanceId))
       .returning();
 
-    await this.calculateRoboadvisorValueAfterTax(existing.roboadvisorId);
+    this.calculateRoboadvisorValueAfterTax(existing.roboadvisorId).catch(
+      (error) => {
+        console.error(
+          `Failed to trigger async calculation for roboadvisor ${existing.roboadvisorId}:`,
+          error,
+        );
+      },
+    );
 
     return this.mapBalanceToResponse(result);
   }
@@ -512,7 +524,14 @@ export class BankAccountRoboadvisorsService {
       );
     }
 
-    await this.calculateRoboadvisorValueAfterTax(existing.roboadvisorId);
+    this.calculateRoboadvisorValueAfterTax(existing.roboadvisorId).catch(
+      (error) => {
+        console.error(
+          `Failed to trigger async calculation for roboadvisor ${existing.roboadvisorId}:`,
+          error,
+        );
+      },
+    );
   }
 
   // Roboadvisor Fund CRUD operations
@@ -551,7 +570,12 @@ export class BankAccountRoboadvisorsService {
       })
       .returning();
 
-    await this.calculateRoboadvisorValueAfterTax(payload.roboadvisorId);
+    this.calculateRoboadvisorValueAfterTax(payload.roboadvisorId).catch((error) => {
+      console.error(
+        `Failed to trigger async calculation for roboadvisor ${payload.roboadvisorId}:`,
+        error,
+      );
+    });
 
     return this.mapFundToResponse(result);
   }
@@ -711,7 +735,12 @@ export class BankAccountRoboadvisorsService {
       .where(eq(roboadvisorFunds.id, fundId))
       .returning();
 
-    await this.calculateRoboadvisorValueAfterTax(existing.roboadvisorId);
+    this.calculateRoboadvisorValueAfterTax(existing.roboadvisorId).catch((error) => {
+      console.error(
+        `Failed to trigger async calculation for roboadvisor ${existing.roboadvisorId}:`,
+        error,
+      );
+    });
 
     return this.mapFundToResponse(result);
   }
@@ -747,7 +776,14 @@ export class BankAccountRoboadvisorsService {
       );
     }
 
-    await this.calculateRoboadvisorValueAfterTax(existing.roboadvisorId);
+    this.calculateRoboadvisorValueAfterTax(existing.roboadvisorId).catch(
+      (error) => {
+        console.error(
+          `Failed to trigger async calculation for roboadvisor ${existing.roboadvisorId}:`,
+          error,
+        );
+      },
+    );
   }
 
   // Private helper methods
