@@ -14,7 +14,8 @@ export interface BankAccountRoboadvisorSummary {
   createdAt: string;
   updatedAt: string;
   latestCalculation: {
-    currentValueAfterTax: string;
+    currentValue: string;
+    currencyCode: string;
     calculatedAt: string;
   } | null;
 }

@@ -99,7 +99,8 @@ export const CryptoExchangeSummarySchema = z.object({
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
   latestCalculation: z
     .object({
-      currentValueAfterTax: z.string().openapi({ example: "48000.00" }),
+      currentValue: z.string().openapi({ example: "48000.00" }),
+      currencyCode: z.string().length(3).openapi({ example: "EUR" }),
       calculatedAt: z
         .string()
         .datetime()

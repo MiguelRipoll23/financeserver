@@ -5,7 +5,8 @@ export interface CryptoExchangeSummary {
   createdAt: string;
   updatedAt: string;
   latestCalculation: {
-    currentValueAfterTax: string;
+    currentValue: string;
+    currencyCode: string;
     calculatedAt: string;
   } | null;
 }

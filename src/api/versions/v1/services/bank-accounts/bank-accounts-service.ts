@@ -508,7 +508,7 @@ export class BankAccountsService {
         ? {
             monthlyProfit: account.latestCalculation.monthlyProfit.toString(),
             annualProfit: account.latestCalculation.annualProfit.toString(),
-            currencyCode: account.latestCalculation.currencyCode.toString(),
+            currencyCode: account.latestCalculation.currencyCode,
             calculatedAt: toISOStringSafe(
               new Date(account.latestCalculation.calculatedAt)
             ),

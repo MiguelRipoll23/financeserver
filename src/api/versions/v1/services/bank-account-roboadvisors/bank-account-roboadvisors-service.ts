@@ -160,14 +160,23 @@ export class BankAccountRoboadvisorsService {
       .select({
         ...getTableColumns(roboadvisors),
         latestCalculation: sql<{
-          currentValueAfterTax: string;
+          currentValue: string;
+          currencyCode: string;
           calculatedAt: string;
         } | null>`(
           SELECT json_build_object(
-            'currentValueAfterTax', calc.current_value_after_tax,
+            'currentValue', calc.current_value,
+            'currencyCode', bal.currency_code,
             'calculatedAt', calc.created_at
           )
           FROM ${roboadvisorFundCalculationsTable} calc
+          LEFT JOIN LATERAL (
+            SELECT currency_code
+            FROM ${roboadvisorBalances} rb
+            WHERE rb.roboadvisor_id = ${roboadvisors}.id
+            ORDER BY rb.date DESC
+            LIMIT 1
+          ) bal ON true
           WHERE calc.roboadvisor_id = ${roboadvisors}.id
           ORDER BY calc.created_at DESC
           LIMIT 1
@@ -723,7 +732,8 @@ export class BankAccountRoboadvisorsService {
   private mapRoboadvisorToSummary(
     roboadvisor: typeof roboadvisors.$inferSelect & {
       latestCalculation: {
-        currentValueAfterTax: string;
+        currentValue: string;
+        currencyCode: string;
         calculatedAt: string;
       } | null;
     },
@@ -745,7 +755,8 @@ export class BankAccountRoboadvisorsService {
       updatedAt: toISOStringSafe(roboadvisor.updatedAt),
       latestCalculation: roboadvisor.latestCalculation
         ? {
-            currentValueAfterTax: roboadvisor.latestCalculation.currentValueAfterTax.toString(),
+            currentValue: roboadvisor.latestCalculation.currentValue.toString(),
+            currencyCode: roboadvisor.latestCalculation.currencyCode,
             calculatedAt: toISOStringSafe(
               new Date(roboadvisor.latestCalculation.calculatedAt)
             ),
@@ -853,7 +864,7 @@ export class BankAccountRoboadvisorsService {
   public async calculateRoboadvisorValueAfterTax(
     roboadvisorId: number
   ): Promise<{
-    currentValueAfterTax: string;
+    currentValue: string;
     currencyCode: string;
   } | null> {
     try {
@@ -1014,7 +1025,7 @@ export class BankAccountRoboadvisorsService {
       );
 
       return {
-        currentValueAfterTax: valueAfterTax.toFixed(2),
+        currentValue: valueAfterTax.toFixed(2),
         currencyCode,
       };
     } catch (error) {
