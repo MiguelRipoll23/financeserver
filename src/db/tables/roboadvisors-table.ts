@@ -57,7 +57,7 @@ export const roboadvisors = pgTable("roboadvisors", {
 
   terPricedInNav: boolean("ter_priced_in_nav").notNull().default(true),
 
-  capitalGainsTaxPercentage: decimal("capital_gains_tax_percentage", {
+  taxPercentage: decimal("tax_percentage", {
     precision: 8,
     scale: 6,
   }),

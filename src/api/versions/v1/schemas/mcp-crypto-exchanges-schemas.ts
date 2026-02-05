@@ -9,13 +9,13 @@ export const CreateCryptoExchangeToolSchema = z.object({
     .min(1)
     .max(255, "Name must be between 1-255 characters")
     .describe("The name of the crypto exchange"),
-  capitalGainsTaxPercentage: z
+  taxPercentage: z
     .number()
     .min(0)
     .max(1)
     .optional()
     .describe(
-      "Capital gains tax as decimal (0.26 = 26%)",
+      "Tax percentage as decimal (0.26 = 26%)",
     ),
 });
 
@@ -32,13 +32,13 @@ export const UpdateCryptoExchangeToolSchema = z
       .max(255, "Name must be between 1-255 characters")
       .optional()
       .describe("The new name of the crypto exchange"),
-    capitalGainsTaxPercentage: z
+    taxPercentage: z
       .number()
       .min(0)
       .max(1)
       .optional()
       .describe(
-        "Capital gains tax as decimal (0.26 = 26%)",
+        "Tax percentage as decimal (0.26 = 26%)",
       ),
   })
   .refine((data) => Object.keys(data).some((key) => key !== "id"), {
