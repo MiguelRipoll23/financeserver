@@ -275,6 +275,17 @@ export class BankAccountRoboadvisorsService {
       );
     }
 
+    // Trigger recalculation if relevant fields changed
+    if (
+      payload.managementFeePercentage !== undefined ||
+      payload.custodyFeePercentage !== undefined ||
+      payload.fundTerPercentage !== undefined ||
+      payload.totalFeePercentage !== undefined ||
+      payload.taxPercentage !== undefined
+    ) {
+      await this.calculateRoboadvisorValueAfterTax(roboadvisorId);
+    }
+
     const [calculationData] = await db
       .select({
         latestCalculation: sql<{
@@ -361,6 +372,8 @@ export class BankAccountRoboadvisorsService {
         currencyCode: payload.currencyCode,
       })
       .returning();
+
+    await this.calculateRoboadvisorValueAfterTax(payload.roboadvisorId);
 
     return this.mapBalanceToResponse(result);
   }
@@ -485,6 +498,8 @@ export class BankAccountRoboadvisorsService {
       .where(eq(roboadvisorBalances.id, balanceId))
       .returning();
 
+    await this.calculateRoboadvisorValueAfterTax(existing.roboadvisorId);
+
     return this.mapBalanceToResponse(result);
   }
 
@@ -492,6 +507,21 @@ export class BankAccountRoboadvisorsService {
     balanceId: number,
   ): Promise<void> {
     const db = this.databaseService.get();
+
+    const existing = await db
+      .select({ roboadvisorId: roboadvisorBalances.roboadvisorId })
+      .from(roboadvisorBalances)
+      .where(eq(roboadvisorBalances.id, balanceId))
+      .limit(1)
+      .then((rows) => rows[0]);
+
+    if (!existing) {
+      throw new ServerError(
+        "ROBOADVISOR_BALANCE_NOT_FOUND",
+        `Roboadvisor balance with ID ${balanceId} not found`,
+        404,
+      );
+    }
 
     const result = await db
       .delete(roboadvisorBalances)
@@ -505,6 +535,8 @@ export class BankAccountRoboadvisorsService {
         404,
       );
     }
+
+    await this.calculateRoboadvisorValueAfterTax(existing.roboadvisorId);
   }
 
   // Roboadvisor Fund CRUD operations
@@ -542,6 +574,8 @@ export class BankAccountRoboadvisorsService {
         shareCount: payload.shareCount ? payload.shareCount.toString() : null,
       })
       .returning();
+
+    await this.calculateRoboadvisorValueAfterTax(payload.roboadvisorId);
 
     return this.mapFundToResponse(result);
   }
@@ -701,11 +735,28 @@ export class BankAccountRoboadvisorsService {
       .where(eq(roboadvisorFunds.id, fundId))
       .returning();
 
+    await this.calculateRoboadvisorValueAfterTax(existing.roboadvisorId);
+
     return this.mapFundToResponse(result);
   }
 
   public async deleteBankAccountRoboadvisorFund(fundId: number): Promise<void> {
     const db = this.databaseService.get();
+
+    const existing = await db
+      .select({ roboadvisorId: roboadvisorFunds.roboadvisorId })
+      .from(roboadvisorFunds)
+      .where(eq(roboadvisorFunds.id, fundId))
+      .limit(1)
+      .then((rows) => rows[0]);
+
+    if (!existing) {
+      throw new ServerError(
+        "ROBOADVISOR_FUND_NOT_FOUND",
+        `Roboadvisor fund with ID ${fundId} not found`,
+        404,
+      );
+    }
 
     const result = await db
       .delete(roboadvisorFunds)
@@ -719,6 +770,8 @@ export class BankAccountRoboadvisorsService {
         404,
       );
     }
+
+    await this.calculateRoboadvisorValueAfterTax(existing.roboadvisorId);
   }
 
   // Private helper methods

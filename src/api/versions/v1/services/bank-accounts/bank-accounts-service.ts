@@ -48,9 +48,16 @@ import type {
   UpdateBankAccountBalanceResponse,
 } from "../../schemas/bank-account-balances-schemas.ts";
 
+import { z } from "zod";
+import { BankAccountCalculationsService } from "../bank-account-calculations/bank-account-calculations-service.ts";
+import { BankAccountInterestRatesService } from "../bank-account-interest-rates/bank-account-interest-rates-service.ts";
+
 @injectable()
 export class BankAccountsService {
-  constructor(private databaseService = inject(DatabaseService)) {}
+  constructor(
+    private databaseService = inject(DatabaseService),
+    private interestRatesService = inject(BankAccountInterestRatesService),
+  ) {}
 
   public async createBankAccount(
     payload: CreateBankAccountRequest,
@@ -114,6 +121,10 @@ export class BankAccountsService {
         `Bank account with ID ${accountId} not found`,
         404,
       );
+    }
+
+    if (payload.taxPercentage !== undefined) {
+      await this.triggerInterestCalculation(accountId);
     }
 
     const [calculationData] = await db
@@ -297,6 +308,8 @@ export class BankAccountsService {
       })
       .returning();
 
+    await this.triggerInterestCalculation(accountId);
+
     return this.mapBalanceToResponse(result);
   }
 
@@ -464,11 +477,27 @@ export class BankAccountsService {
       .where(eq(bankAccountBalancesTable.id, balanceId))
       .returning();
 
+    await this.triggerInterestCalculation(existingBalance.bankAccountId);
+
     return this.mapBalanceToResponse(result);
   }
 
   public async deleteBankAccountBalance(balanceId: number): Promise<void> {
     const db = this.databaseService.get();
+
+    const [existingBalance] = await db
+      .select({ bankAccountId: bankAccountBalancesTable.bankAccountId })
+      .from(bankAccountBalancesTable)
+      .where(eq(bankAccountBalancesTable.id, balanceId))
+      .limit(1);
+
+    if (!existingBalance) {
+      throw new ServerError(
+        "BALANCE_NOT_FOUND",
+        `Balance with ID ${balanceId} not found`,
+        404,
+      );
+    }
 
     const result = await db
       .delete(bankAccountBalancesTable)
@@ -482,6 +511,8 @@ export class BankAccountsService {
         404,
       );
     }
+
+    await this.triggerInterestCalculation(existingBalance.bankAccountId);
   }
 
   private getSortColumn(sortField: BankAccountSortField) {
@@ -589,5 +620,28 @@ export class BankAccountsService {
     }
 
     return parsed.toFixed(2);
+  }
+
+  private async triggerInterestCalculation(bankAccountId: number): Promise<void> {
+    const db = this.databaseService.get();
+
+    // Get the latest balance for the account
+    const [latestBalance] = await db
+      .select({
+        balance: bankAccountBalancesTable.balance,
+        currencyCode: bankAccountBalancesTable.currencyCode,
+      })
+      .from(bankAccountBalancesTable)
+      .where(eq(bankAccountBalancesTable.bankAccountId, bankAccountId))
+      .orderBy(desc(bankAccountBalancesTable.createdAt))
+      .limit(1);
+
+    if (latestBalance) {
+      await this.interestRatesService.calculateInterestAfterTax(
+        bankAccountId,
+        latestBalance.balance,
+        latestBalance.currencyCode,
+      );
+    }
   }
 }

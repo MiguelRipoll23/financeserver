@@ -26,10 +26,14 @@ import type {
   UpdateCryptoExchangeResponse,
   GetCryptoExchangesResponse,
 } from "../../schemas/crypto-exchanges-schemas.ts";
+import { CryptoExchangeBalancesService } from "../crypto-exchanges-balances/crypto-exchange-balances-service.ts";
 
 @injectable()
 export class CryptoExchangesService {
-  constructor(private databaseService = inject(DatabaseService)) {}
+  constructor(
+    private databaseService = inject(DatabaseService),
+    private balancesService = inject(CryptoExchangeBalancesService),
+  ) {}
 
   public async createCryptoExchange(
     payload: CreateCryptoExchangeRequest,
@@ -89,6 +93,21 @@ export class CryptoExchangesService {
         `Crypto exchange with ID ${exchangeId} not found`,
         404,
       );
+    }
+
+    if (payload.taxPercentage !== undefined) {
+      const db = this.databaseService.get();
+      const balances = await db
+        .select({ symbolCode: cryptoExchangeBalancesTable.symbolCode })
+        .from(cryptoExchangeBalancesTable)
+        .where(eq(cryptoExchangeBalancesTable.cryptoExchangeId, exchangeId));
+
+      for (const balance of balances) {
+        await this.balancesService.calculateCryptoValueAfterTax(
+          exchangeId,
+          balance.symbolCode,
+        );
+      }
     }
 
     const [calculationData] = await db

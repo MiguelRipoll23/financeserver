@@ -65,6 +65,8 @@ export class CryptoExchangeBalancesService {
       })
       .returning();
 
+    await this.calculateCryptoValueAfterTax(exchangeId, payload.symbolCode);
+
     return this.mapBalanceToResponse(result);
   }
 
@@ -171,7 +173,11 @@ export class CryptoExchangeBalancesService {
     const db = this.databaseService.get();
 
     const existingBalance = await db
-      .select({ id: cryptoExchangeBalancesTable.id })
+      .select({
+        id: cryptoExchangeBalancesTable.id,
+        cryptoExchangeId: cryptoExchangeBalancesTable.cryptoExchangeId,
+        symbolCode: cryptoExchangeBalancesTable.symbolCode,
+      })
       .from(cryptoExchangeBalancesTable)
       .where(eq(cryptoExchangeBalancesTable.id, balanceId))
       .limit(1)
@@ -217,6 +223,21 @@ export class CryptoExchangeBalancesService {
       .where(eq(cryptoExchangeBalancesTable.id, balanceId))
       .returning();
 
+    // Trigger calculation for both old and new symbol if symbolCode changed
+    await this.calculateCryptoValueAfterTax(
+      existingBalance.cryptoExchangeId,
+      existingBalance.symbolCode,
+    );
+    if (
+      payload.symbolCode !== undefined &&
+      payload.symbolCode !== existingBalance.symbolCode
+    ) {
+      await this.calculateCryptoValueAfterTax(
+        existingBalance.cryptoExchangeId,
+        payload.symbolCode,
+      );
+    }
+
     return this.mapBalanceToResponse(result);
   }
 
@@ -224,13 +245,17 @@ export class CryptoExchangeBalancesService {
     const db = this.databaseService.get();
 
     // Verify balance exists before pushing telemetry
-    const existing = await db
-      .select({ id: cryptoExchangeBalancesTable.id })
+    const [existing] = await db
+      .select({
+        id: cryptoExchangeBalancesTable.id,
+        cryptoExchangeId: cryptoExchangeBalancesTable.cryptoExchangeId,
+        symbolCode: cryptoExchangeBalancesTable.symbolCode,
+      })
       .from(cryptoExchangeBalancesTable)
       .where(eq(cryptoExchangeBalancesTable.id, balanceId))
       .limit(1);
 
-    if (existing.length === 0) {
+    if (!existing) {
       throw new ServerError(
         "BALANCE_NOT_FOUND",
         `Balance with ID ${balanceId} not found`,
@@ -241,6 +266,11 @@ export class CryptoExchangeBalancesService {
     await db
       .delete(cryptoExchangeBalancesTable)
       .where(eq(cryptoExchangeBalancesTable.id, balanceId));
+
+    await this.calculateCryptoValueAfterTax(
+      existing.cryptoExchangeId,
+      existing.symbolCode,
+    );
   }
 
   private mapBalanceToResponse(
