@@ -121,21 +121,13 @@ export class V1AuthenticatedRouter {
       this.cryptoExchangeBalancesRouter.getRouter(),
     );
 
+    this.app.route("/receipts", this.receiptsRouter.getRouter());
+    this.app.route("/products", this.productsRouter.getRouter());
+
     // Investment calculations endpoint
     this.app.route(
       "/async-requests",
       this.asyncRequestsRouter.getRouter(),
     );
-
-    this.app.route("/bills", this.billsRouter.getRouter());
-    // Bill categories must be registered immediately after bills
-    this.app.route(
-      "/bill-categories",
-      this.billCategoriesRouter.getRouter(),
-    );
-    this.app.route("/subscriptions", this.subscriptionsRouter.getRouter());
-    this.app.route("/merchants", this.merchantsRouter.getRouter());
-    this.app.route("/receipts", this.receiptsRouter.getRouter());
-    this.app.route("/products", this.productsRouter.getRouter());
   }
 }

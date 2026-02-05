@@ -216,14 +216,14 @@ export class BankAccountsService {
           calculatedAt: string;
         } | null>`(
           SELECT json_build_object(
-            'monthlyProfit', calc.monthly_profit,
-            'annualProfit', calc.annual_profit,
-            'currencyCode', calc.currency_code,
-            'calculatedAt', calc.created_at
+            'monthlyProfit', calculation.monthly_profit,
+            'annualProfit', calculation.annual_profit,
+            'currencyCode', calculation.currency_code,
+            'calculatedAt', calculation.created_at
           )
-          FROM ${bankAccountCalculationsTable} calc
-          WHERE calc.bank_account_id = ${bankAccountsTable}.id
-          ORDER BY calc.created_at DESC
+          FROM ${bankAccountCalculationsTable} calculation
+          WHERE calculation.bank_account_id = ${bankAccountsTable}.id
+          ORDER BY calculation.created_at DESC
           LIMIT 1
         )`,
       })

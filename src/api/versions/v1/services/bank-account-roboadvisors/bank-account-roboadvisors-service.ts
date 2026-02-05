@@ -165,20 +165,20 @@ export class BankAccountRoboadvisorsService {
           calculatedAt: string;
         } | null>`(
           SELECT json_build_object(
-            'currentValue', calc.current_value,
-            'currencyCode', bal.currency_code,
-            'calculatedAt', calc.created_at
+            'currentValue', fund_calculation.current_value,
+            'currencyCode', latest_balance.currency_code,
+            'calculatedAt', fund_calculation.created_at
           )
-          FROM ${roboadvisorFundCalculationsTable} calc
+          FROM ${roboadvisorFundCalculationsTable} fund_calculation
           LEFT JOIN LATERAL (
             SELECT currency_code
-            FROM ${roboadvisorBalances} rb
-            WHERE rb.roboadvisor_id = ${roboadvisors}.id
-            ORDER BY rb.date DESC
+            FROM ${roboadvisorBalances} roboadvisor_balance
+            WHERE roboadvisor_balance.roboadvisor_id = ${roboadvisors}.id
+            ORDER BY roboadvisor_balance.date DESC
             LIMIT 1
-          ) bal ON true
-          WHERE calc.roboadvisor_id = ${roboadvisors}.id
-          ORDER BY calc.created_at DESC
+          ) latest_balance ON true
+          WHERE fund_calculation.roboadvisor_id = ${roboadvisors}.id
+          ORDER BY fund_calculation.created_at DESC
           LIMIT 1
         )`,
       })
