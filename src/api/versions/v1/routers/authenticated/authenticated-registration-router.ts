@@ -70,8 +70,10 @@ export class AuthenticatedRegistrationRouter {
           throw new ServerError("MISSING_ORIGIN", "Origin header is required", 400);
         }
 
+        const requestUrl = c.req.url;
         const response = await this.registrationService.getRegistrationOptions(
           origin,
+          requestUrl,
           transactionId,
           displayName
         );
@@ -120,8 +122,10 @@ export class AuthenticatedRegistrationRouter {
           throw new ServerError("MISSING_ORIGIN", "Origin header is required", 400);
         }
 
+        const requestUrl = c.req.url;
         const response = await this.registrationService.verifyRegistration(
           origin,
+          requestUrl,
           transactionId,
           registrationResponse as any // Zod validation ensures correct shape
         );
