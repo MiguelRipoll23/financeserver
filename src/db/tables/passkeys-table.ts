@@ -4,7 +4,7 @@ import {
   timestamp,
   uniqueIndex,
   uuid,
-  bigint,
+  integer,
 } from "drizzle-orm/pg-core";
 
 export const passkeysTable = pgTable(
@@ -13,7 +13,7 @@ export const passkeysTable = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     credentialId: text("credential_id").notNull(),
     publicKey: text("public_key").notNull(),
-    counter: bigint("counter", { mode: "number" }).notNull(),
+    counter: integer("counter").notNull(),
     transports: text("transports").array(),
     displayName: text("display_name").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })

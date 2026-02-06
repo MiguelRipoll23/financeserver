@@ -66,6 +66,8 @@ export class JWTService {
 
   public async createManagementToken(requestUrl: string) {
     const applicationBaseURL = UrlUtils.getApplicationBaseURL(requestUrl);
+    const now = Math.floor(Date.now() / 1000);
+    const threeMonthsInSeconds = 90 * 24 * 60 * 60; // 90 days
 
     return await create(
       { alg: "HS512", typ: "JWT" },
@@ -74,6 +76,7 @@ export class JWTService {
         name: "Management",
         // Wildcard audience claim to grant access to all resources
         aud: `${applicationBaseURL}/*`,
+        exp: now + threeMonthsInSeconds, // 3 months
       },
       await this.getKey()
     );
@@ -88,37 +91,12 @@ export class JWTService {
       {
         id: "setup",
         name: "Setup",
-        aud: `${applicationBaseURL}/*`,
+        // Restrict to registration endpoints only for first passkey setup
+        aud: `${applicationBaseURL}/api/v1/registration/*`,
         exp: now + 15 * 60, // 15 minutes
       },
       await this.getKey()
     );
   }
-
-  public async createChallengeToken(challenge: string, displayName?: string) {
-    const now = Math.floor(Date.now() / 1000);
-
-    return await create(
-      { alg: "HS512", typ: "JWT" },
-      {
-        challenge,
-        displayName,
-        exp: now + 2 * 60, // 2 minutes
-      },
-      await this.getKey()
-    );
-  }
-
-  public async verifyChallengeToken(token: string): Promise<{ challenge: string; displayName?: string }> {
-    const payload = await this.verify(token);
-
-    if (typeof payload.challenge !== "string") {
-      throw new ServerError("INVALID_TOKEN", "Token missing challenge", 400);
-    }
-
-    return { 
-      challenge: payload.challenge,
-      displayName: typeof payload.displayName === "string" ? payload.displayName : undefined
-    };
-  }
 }
+

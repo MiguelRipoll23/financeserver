@@ -2,7 +2,7 @@ import { injectable } from "@needle-di/core";
 import type {
   PublicKeyCredentialCreationOptionsJSON,
   PublicKeyCredentialRequestOptionsJSON,
-} from "@simplewebauthn/types";
+} from "@simplewebauthn/server";
 
 export interface RegistrationOptionsKV {
   data: PublicKeyCredentialCreationOptionsJSON & { displayName?: string };
@@ -46,8 +46,20 @@ export class KVService {
       return null;
     }
 
-    // Delete the options after consuming (one-time use)
-    await kv.delete(["registration_options", transactionId]);
+    // Atomic delete with version check to prevent TOCTOU races
+    const deleteResult = await kv
+      .atomic()
+      .check({
+        key: ["registration_options", transactionId],
+        versionstamp: result.versionstamp,
+      })
+      .delete(["registration_options", transactionId])
+      .commit();
+
+    // If commit failed, another consumer already deleted it
+    if (!deleteResult.ok) {
+      return null;
+    }
 
     return result.value;
   }
@@ -60,7 +72,7 @@ export class KVService {
     await kv.set(["authentication_options", transactionId], options);
   }
 
-  public async takeAuthenticationOptionsByTransactionId(
+  public async consumeAuthenticationOptionsByTransactionId(
     transactionId: string
   ): Promise<AuthenticationOptionsKV | null> {
     const kv = await this.getKV();
@@ -73,26 +85,22 @@ export class KVService {
       return null;
     }
 
-    // Delete the options after consuming (one-time use)
-    await kv.delete(["authentication_options", transactionId]);
+    // Atomic delete with version check to prevent TOCTOU races
+    const deleteResult = await kv
+      .atomic()
+      .check({
+        key: ["authentication_options", transactionId],
+        versionstamp: result.versionstamp,
+      })
+      .delete(["authentication_options", transactionId])
+      .commit();
+
+    // If commit failed, another consumer already deleted it
+    if (!deleteResult.ok) {
+      return null;
+    }
 
     return result.value;
-  }
-
-  public async setUserKey(userId: string, key: string): Promise<void> {
-    const kv = await this.getKV();
-    await kv.set(["user_keys", userId], key);
-  }
-
-  public async getUserKey(userId: string): Promise<string | null> {
-    const kv = await this.getKV();
-    const result = await kv.get<string>(["user_keys", userId]);
-    return result.value;
-  }
-
-  public async deleteUserKey(userId: string): Promise<void> {
-    const kv = await this.getKV();
-    await kv.delete(["user_keys", userId]);
   }
 
   public async close(): Promise<void> {

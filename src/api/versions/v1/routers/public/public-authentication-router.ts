@@ -123,7 +123,7 @@ export class PublicAuthenticationRouter {
         const response = await this.authenticationService.verifyLogin(
           origin,
           transactionId,
-          authenticationResponse
+          authenticationResponse as any // Zod validation ensures correct shape
         );
 
         return c.json(response, 200);

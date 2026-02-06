@@ -2,8 +2,9 @@ import { inject, injectable } from "@needle-di/core";
 import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
+  type PublicKeyCredentialCreationOptionsJSON,
+  type RegistrationResponseJSON,
 } from "@simplewebauthn/server";
-import type { PublicKeyCredentialCreationOptionsJSON } from "@simplewebauthn/types";
 import { Buffer } from "node:buffer";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import { JWTService } from "../../../../../core/services/jwt-service.ts";
@@ -52,7 +53,7 @@ export class PasskeyRegistrationService {
   public async verifyRegistration(
     origin: string,
     transactionId: string,
-    registrationResponse: any
+    registrationResponse: RegistrationResponseJSON
   ) {
     // Retrieve and consume registration options from KV
     const registrationOptions = await this.consumeRegistrationOptionsOrThrow(
@@ -85,14 +86,31 @@ export class PasskeyRegistrationService {
       );
     }
 
+    // Validate displayName
+    const displayName = registrationOptions.displayName;
+    if (!displayName || typeof displayName !== "string" || displayName.trim().length === 0) {
+      throw new ServerError(
+        "INVALID_DISPLAY_NAME",
+        "Display name is required and must be a non-empty string",
+        400
+      );
+    }
+
+    // Validate and sanitize transports
+    const transports = registrationResponse.response?.transports;
+    const sanitizedTransports = Array.isArray(transports) && 
+      transports.every((t) => typeof t === "string")
+      ? transports as string[]
+      : undefined;
+
     // Save passkey to database with displayName
     const { credential } = verification.registrationInfo;
     await this.databaseService.get().insert(passkeysTable).values({
       credentialId: credential.id,
       publicKey: Buffer.from(credential.publicKey).toString("base64url"),
       counter: credential.counter,
-      transports: registrationResponse.response.transports as string[],
-      displayName: registrationOptions.displayName!,
+      transports: sanitizedTransports,
+      displayName: displayName.trim(),
     });
 
     // Create management token (userless passkeys)

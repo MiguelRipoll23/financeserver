@@ -120,12 +120,12 @@ export class AuthenticationMiddleware {
     principal: AuthenticationPrincipalType
   ): Promise<void> {
     const url = new URL(requestUrl);
-    // Only validate audience for MCP endpoints (protected resources)
-    if (!url.pathname.includes("/mcp/")) {
-      return;
-    }
-
+    
     if (principal.provider === "github") {
+      // Only validate audience for MCP endpoints for GitHub tokens
+      if (!url.pathname.includes("/mcp/")) {
+        return;
+      }
       // For GitHub OAuth tokens, validate they were issued for this resource
       await this.gitHubOAuthService.validateTokenResource(
         token,
@@ -133,7 +133,7 @@ export class AuthenticationMiddleware {
         url.pathname
       );
     } else if (principal.provider === "internal") {
-      // For JWTs, validate the audience claim using cached payload
+      // For internal JWTs, always validate the audience claim
       const cacheKey = { token };
       const payload = this.jwtPayloadCache.get(cacheKey);
 

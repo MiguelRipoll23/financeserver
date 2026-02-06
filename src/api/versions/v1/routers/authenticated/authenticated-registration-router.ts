@@ -123,7 +123,7 @@ export class AuthenticatedRegistrationRouter {
         const response = await this.registrationService.verifyRegistration(
           origin,
           transactionId,
-          registrationResponse
+          registrationResponse as any // Zod validation ensures correct shape
         );
 
         return c.json(response, 200);

@@ -2,11 +2,10 @@ import { inject, injectable } from "@needle-di/core";
 import {
   generateAuthenticationOptions,
   verifyAuthenticationResponse,
+  type AuthenticatorTransportFuture,
+  type PublicKeyCredentialRequestOptionsJSON,
+  type AuthenticationResponseJSON,
 } from "@simplewebauthn/server";
-import type { 
-  AuthenticatorTransportFuture,
-  PublicKeyCredentialRequestOptionsJSON 
-} from "@simplewebauthn/types";
 import { eq } from "drizzle-orm";
 import { Buffer } from "node:buffer";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
@@ -51,7 +50,7 @@ export class PasskeyAuthenticationService {
   public async verifyLogin(
     origin: string,
     transactionId: string,
-    authenticationResponse: any
+    authenticationResponse: AuthenticationResponseJSON
   ) {
     // Retrieve and consume authentication options from KV
     const authenticationOptions = await this.getAuthenticationOptionsOrThrow(
@@ -125,7 +124,7 @@ export class PasskeyAuthenticationService {
     transactionId: string
   ): Promise<PublicKeyCredentialRequestOptionsJSON> {
     const authenticationOptions =
-      await this.kvService.takeAuthenticationOptionsByTransactionId(
+      await this.kvService.consumeAuthenticationOptionsByTransactionId(
         transactionId
       );
 
