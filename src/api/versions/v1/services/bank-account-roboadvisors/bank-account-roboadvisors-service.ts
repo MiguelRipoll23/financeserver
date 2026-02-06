@@ -299,7 +299,11 @@ export class BankAccountRoboadvisorsService {
     });
   }
 
-  private async getLatestCalculation(roboadvisorId: number) {
+  private async getLatestCalculation(roboadvisorId: number): Promise<{
+    currentValue: string;
+    currencyCode: string;
+    calculatedAt: string;
+  } | null> {
     const db = this.databaseService.get();
 
     const [calculation] = await db

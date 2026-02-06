@@ -126,7 +126,11 @@ export class CryptoExchangesService {
     });
   }
 
-  private async getLatestCalculation(exchangeId: number) {
+  private async getLatestCalculation(exchangeId: number): Promise<{
+    currentValue: string;
+    currencyCode: string;
+    calculatedAt: string;
+  } | null> {
     const db = this.databaseService.get();
 
     const [calculation] = await db

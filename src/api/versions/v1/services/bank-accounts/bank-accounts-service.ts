@@ -142,7 +142,12 @@ export class BankAccountsService {
     });
   }
 
-  private async getLatestCalculation(accountId: number) {
+  private async getLatestCalculation(accountId: number): Promise<{
+    monthlyProfit: string;
+    annualProfit: string;
+    currencyCode: string;
+    calculatedAt: string;
+  } | null> {
     const db = this.databaseService.get();
 
     const [calculation] = await db
