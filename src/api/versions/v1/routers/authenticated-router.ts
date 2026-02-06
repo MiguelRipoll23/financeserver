@@ -121,6 +121,11 @@ export class V1AuthenticatedRouter {
       this.cryptoExchangeBalancesRouter.getRouter(),
     );
 
+    this.app.route("/bill-categories", this.billCategoriesRouter.getRouter());
+    this.app.route("/bills", this.billsRouter.getRouter());
+    this.app.route("/subscriptions", this.subscriptionsRouter.getRouter());
+    this.app.route("/merchants", this.merchantsRouter.getRouter());
+
     this.app.route("/receipts", this.receiptsRouter.getRouter());
     this.app.route("/products", this.productsRouter.getRouter());
 
