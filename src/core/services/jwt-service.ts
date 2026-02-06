@@ -66,6 +66,8 @@ export class JWTService {
 
   public async createManagementToken(requestUrl: string) {
     const applicationBaseURL = UrlUtils.getApplicationBaseURL(requestUrl);
+    const now = Math.floor(Date.now() / 1000);
+    const threeMonthsInSeconds = 90 * 24 * 60 * 60; // 90 days
 
     return await create(
       { alg: "HS512", typ: "JWT" },
@@ -74,8 +76,27 @@ export class JWTService {
         name: "Management",
         // Wildcard audience claim to grant access to all resources
         aud: `${applicationBaseURL}/*`,
+        exp: now + threeMonthsInSeconds, // 3 months
+      },
+      await this.getKey()
+    );
+  }
+
+  public async createSetupToken(requestUrl: string) {
+    const applicationBaseURL = UrlUtils.getApplicationBaseURL(requestUrl);
+    const now = Math.floor(Date.now() / 1000);
+
+    return await create(
+      { alg: "HS512", typ: "JWT" },
+      {
+        id: "setup",
+        name: "Setup",
+        // Restrict to registration endpoints only for first passkey setup
+        aud: `${applicationBaseURL}/api/v1/registration/*`,
+        exp: now + 15 * 60, // 15 minutes
       },
       await this.getKey()
     );
   }
 }
+

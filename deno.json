@@ -1,6 +1,7 @@
 {
   "imports": {
     "@hono/zod-openapi": "npm:@hono/zod-openapi@^1.2.1",
+    "@simplewebauthn/server": "jsr:@simplewebauthn/server@^13.2.2",
     "@needle-di/core": "jsr:@needle-di/core@^1.1.0",
 
     "@scalar/hono-api-reference": "npm:@scalar/hono-api-reference@^0.9.40",
@@ -38,9 +39,9 @@
     }
   },
   "tasks": {
-    "dev": "deno run --permission-set=development --env --watch src/main.ts",
-    "debug": "deno run --inspect-wait --permission-set=development --env --watch src/main.ts",
-    "check": "deno check src/main.ts",
+    "dev": "deno run --unstable-kv --permission-set=development --env --watch src/main.ts",
+    "debug": "deno run --unstable-kv --inspect-wait --permission-set=development --env --watch src/main.ts",
+    "check": "deno check --unstable-kv src/main.ts",
     "studio": "deno run --permission-set=database --node-modules-dir npm:drizzle-kit studio",
     "generate": "deno run --permission-set=database --node-modules-dir npm:drizzle-kit generate",
     "push": "deno run --permission-set=database --node-modules-dir npm:drizzle-kit push"

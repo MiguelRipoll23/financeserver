@@ -11,7 +11,7 @@ import {
 import {
   OAuthClientRegistrationRequest,
   OAuthClientRegistrationResponse,
-} from "../../schemas/authentication-schemas.ts";
+} from "../../schemas/oauth-schemas.ts";
 
 @injectable()
 export class OAuthClientRegistryService {

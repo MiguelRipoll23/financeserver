@@ -34,7 +34,7 @@ import {
   type OAuthTokenRequest,
   type OAuthTokenResponse,
   type OAuthRevokeRequest,
-} from "../../schemas/authentication-schemas.ts";
+} from "../../schemas/oauth-schemas.ts";
 import { Base64Utils } from "../../../../../core/utils/base64-utils.ts";
 import { OAuthClientRegistryService } from "./oauth-client-registry-service.ts";
 import { UrlUtils } from "../../../../../core/utils/url-utils.ts";

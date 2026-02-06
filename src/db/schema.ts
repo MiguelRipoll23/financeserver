@@ -38,6 +38,7 @@ export {
 } from "./tables/roboadvisor-balances-table.ts";
 export { roboadvisorFunds } from "./tables/roboadvisor-funds-table.ts";
 export { roboadvisorFundCalculationsTable } from "./tables/roboadvisor-fund-calculations-table.ts";
+export { passkeysTable } from "./tables/passkeys-table.ts";
 
 // Export RLS roles and helpers
 export * from "./rls.ts";
