@@ -100,9 +100,9 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
 
   public async validateTokenResource(
     accessToken: string,
-    requestUrl: string
+    requestUrl: string,
+    requestPath: string
   ): Promise<void> {
-    const url = new URL(requestUrl);
     // Look up the token in oauth_connections to get its resource claim
     const records = await this.databaseService
       .get()
@@ -121,7 +121,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
     if (tokenResource) {
       const applicationBaseURL = UrlUtils.getApplicationBaseURL(requestUrl);
       const requestedResource = new URL(
-        url.pathname,
+        requestPath,
         applicationBaseURL
       ).toString();
 

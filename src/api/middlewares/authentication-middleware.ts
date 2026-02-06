@@ -127,7 +127,11 @@ export class AuthenticationMiddleware {
 
     if (principal.provider === "github") {
       // For GitHub OAuth tokens, validate they were issued for this resource
-      await this.gitHubOAuthService.validateTokenResource(token, requestUrl);
+      await this.gitHubOAuthService.validateTokenResource(
+        token,
+        requestUrl,
+        url.pathname
+      );
     } else if (principal.provider === "internal") {
       // For JWTs, validate the audience claim using cached payload
       const cacheKey = { token };
@@ -136,16 +140,20 @@ export class AuthenticationMiddleware {
       if (!payload) {
         // Fallback: verify again if cache miss (shouldn't happen)
         const freshPayload = await this.jwtService.verify(token);
-        this.validateJwtAudience(freshPayload, requestUrl);
+        this.validateJwtAudience(freshPayload, requestUrl, url.pathname);
       } else {
-        this.validateJwtAudience(payload, requestUrl);
+        this.validateJwtAudience(payload, requestUrl, url.pathname);
         // Clean up cache after use
         this.jwtPayloadCache.delete(cacheKey);
       }
     }
   }
 
-  private validateJwtAudience(payload: Payload, requestUrl: string): void {
+  private validateJwtAudience(
+    payload: Payload,
+    requestUrl: string,
+    requestPath: string
+  ): void {
     const audience = payload.aud;
 
     if (!audience) {
@@ -157,9 +165,8 @@ export class AuthenticationMiddleware {
     }
 
     const applicationBaseURL = UrlUtils.getApplicationBaseURL(requestUrl);
-    const url = new URL(requestUrl);
     const requestedResource = new URL(
-      url.pathname,
+      requestPath,
       applicationBaseURL
     ).toString();
 

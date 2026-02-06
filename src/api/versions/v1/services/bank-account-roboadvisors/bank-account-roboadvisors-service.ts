@@ -325,9 +325,13 @@ export class BankAccountRoboadvisorsService {
       .orderBy(desc(roboadvisorBalances.date))
       .limit(1);
 
+    if (!latestBalance?.currencyCode) {
+      return null;
+    }
+
     return {
       currentValue: calculation.currentValue,
-      currencyCode: latestBalance?.currencyCode ?? "",
+      currencyCode: latestBalance.currencyCode,
       calculatedAt: calculation.calculatedAt.toISOString(),
     };
   }
