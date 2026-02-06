@@ -22,6 +22,7 @@ import { AuthenticatedBankAccountRoboadvisorsRouter } from "./authenticated/auth
 import { AuthenticatedBankAccountRoboadvisorBalancesRouter } from "./authenticated/authenticated-bank-account-roboadvisor-balances-router.ts";
 import { AuthenticatedBankAccountRoboadvisorFundsRouter } from "./authenticated/authenticated-bank-account-roboadvisor-funds-router.ts";
 import { AuthenticatedAsyncRequestsRouter } from "./authenticated/authenticated-async-requests-router.ts";
+import { AuthenticatedRegistrationRouter } from "./authenticated/authenticated-registration-router.ts";
 import { HonoVariables } from "../../../../core/types/hono/hono-variables-type.ts";
 
 @injectable()
@@ -31,6 +32,7 @@ export class V1AuthenticatedRouter {
   constructor(
     private authenticationMiddleware = inject(AuthenticationMiddleware),
     private authorizationMiddleware = inject(AuthorizationMiddleware),
+    private authenticatedRegistrationRouter = inject(AuthenticatedRegistrationRouter),
     private usersRouter = inject(AuthenticatedUsersRouter),
     private mcpRouter = inject(AuthenticatedMCPRouter),
     private billsRouter = inject(AuthenticatedBillsRouter),
@@ -85,6 +87,9 @@ export class V1AuthenticatedRouter {
   }
 
   private setRoutes(): void {
+    // Passkey routes: registration
+    this.app.route("/registration", this.authenticatedRegistrationRouter.getRouter());
+    
     this.app.route("/mcp", this.mcpRouter.getRouter());
     this.app.route("/users", this.usersRouter.getRouter());
     this.app.route("/cash", this.cashRouter.getRouter());

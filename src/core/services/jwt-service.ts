@@ -78,4 +78,47 @@ export class JWTService {
       await this.getKey()
     );
   }
+
+  public async createSetupToken(requestUrl: string) {
+    const applicationBaseURL = UrlUtils.getApplicationBaseURL(requestUrl);
+    const now = Math.floor(Date.now() / 1000);
+
+    return await create(
+      { alg: "HS512", typ: "JWT" },
+      {
+        id: "setup",
+        name: "Setup",
+        aud: `${applicationBaseURL}/*`,
+        exp: now + 15 * 60, // 15 minutes
+      },
+      await this.getKey()
+    );
+  }
+
+  public async createChallengeToken(challenge: string, displayName?: string) {
+    const now = Math.floor(Date.now() / 1000);
+
+    return await create(
+      { alg: "HS512", typ: "JWT" },
+      {
+        challenge,
+        displayName,
+        exp: now + 2 * 60, // 2 minutes
+      },
+      await this.getKey()
+    );
+  }
+
+  public async verifyChallengeToken(token: string): Promise<{ challenge: string; displayName?: string }> {
+    const payload = await this.verify(token);
+
+    if (typeof payload.challenge !== "string") {
+      throw new ServerError("INVALID_TOKEN", "Token missing challenge", 400);
+    }
+
+    return { 
+      challenge: payload.challenge,
+      displayName: typeof payload.displayName === "string" ? payload.displayName : undefined
+    };
+  }
 }

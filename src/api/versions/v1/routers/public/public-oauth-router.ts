@@ -12,7 +12,7 @@ import {
   OAuthClientRegistrationRequestSchema,
   OAuthClientRegistrationResponseSchema,
   OAuthRevokeRequestFormSchema,
-} from "../../schemas/authentication-schemas.ts";
+} from "../../schemas/oauth-schemas.ts";
 import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
 import { ServerResponse } from "../../models/server-response.ts";
 
