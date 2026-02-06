@@ -25,7 +25,7 @@ export class PasskeyAuthenticationService {
     private jwtService = inject(JWTService)
   ) {}
 
-  public async getLoginOptions(origin: string, transactionId: string) {
+  public async getLoginOptions(origin: string, requestUrl: string, transactionId: string) {
     // Validate origin is allowed
     if (!WebAuthnUtils.isOriginAllowed(origin)) {
       throw new ServerError(
@@ -49,6 +49,7 @@ export class PasskeyAuthenticationService {
 
   public async verifyLogin(
     origin: string,
+    requestUrl: string,
     transactionId: string,
     authenticationResponse: AuthenticationResponseJSON
   ) {
@@ -92,7 +93,9 @@ export class PasskeyAuthenticationService {
           Buffer.from(passkey.publicKey, "base64url")
         ),
         counter: Number(passkey.counter),
-        transports: passkey.transports as AuthenticatorTransportFuture[],
+        transports: passkey.transports
+          ? (passkey.transports as AuthenticatorTransportFuture[])
+          : undefined,
       },
     });
 
@@ -116,7 +119,7 @@ export class PasskeyAuthenticationService {
       .where(eq(passkeysTable.id, passkey.id));
 
     // Create management token (userless passkeys)
-    const token = await this.jwtService.createManagementToken(origin);
+    const token = await this.jwtService.createManagementToken(requestUrl);
     return { token };
   }
 

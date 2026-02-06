@@ -70,8 +70,10 @@ export class PublicAuthenticationRouter {
           throw new ServerError("MISSING_ORIGIN", "Origin header is required", 400);
         }
 
+        const requestUrl = c.req.url;
         const response = await this.authenticationService.getLoginOptions(
           origin,
+          requestUrl,
           transactionId
         );
 
@@ -120,8 +122,10 @@ export class PublicAuthenticationRouter {
           throw new ServerError("MISSING_ORIGIN", "Origin header is required", 400);
         }
 
+        const requestUrl = c.req.url;
         const response = await this.authenticationService.verifyLogin(
           origin,
+          requestUrl,
           transactionId,
           authenticationResponse as any // Zod validation ensures correct shape
         );

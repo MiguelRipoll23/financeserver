@@ -22,7 +22,7 @@ export class PasskeyRegistrationService {
     private jwtService = inject(JWTService)
   ) {}
 
-  public async getRegistrationOptions(origin: string, transactionId: string, displayName: string) {
+  public async getRegistrationOptions(origin: string, requestUrl: string, transactionId: string, displayName: string) {
     // Validate origin is allowed
     if (!WebAuthnUtils.isOriginAllowed(origin)) {
       throw new ServerError(
@@ -52,6 +52,7 @@ export class PasskeyRegistrationService {
 
   public async verifyRegistration(
     origin: string,
+    requestUrl: string,
     transactionId: string,
     registrationResponse: RegistrationResponseJSON
   ) {
@@ -114,7 +115,7 @@ export class PasskeyRegistrationService {
     });
 
     // Create management token (userless passkeys)
-    const token = await this.jwtService.createManagementToken(origin);
+    const token = await this.jwtService.createManagementToken(requestUrl);
     return { token };
   }
 
