@@ -134,10 +134,39 @@ export class BankAccountsService {
         });
     }
 
+    const latestCalculation = await this.getLatestCalculation(accountId);
+
     return this.mapBankAccountToSummary({
       ...result,
-      latestCalculation: null,
+      latestCalculation,
     });
+  }
+
+  private async getLatestCalculation(accountId: number) {
+    const db = this.databaseService.get();
+
+    const [calculation] = await db
+      .select({
+        monthlyProfit: bankAccountCalculationsTable.monthlyProfit,
+        annualProfit: bankAccountCalculationsTable.annualProfit,
+        currencyCode: bankAccountCalculationsTable.currencyCode,
+        calculatedAt: bankAccountCalculationsTable.createdAt,
+      })
+      .from(bankAccountCalculationsTable)
+      .where(eq(bankAccountCalculationsTable.bankAccountId, accountId))
+      .orderBy(desc(bankAccountCalculationsTable.createdAt))
+      .limit(1);
+
+    if (!calculation) {
+      return null;
+    }
+
+    return {
+      monthlyProfit: calculation.monthlyProfit,
+      annualProfit: calculation.annualProfit,
+      currencyCode: calculation.currencyCode,
+      calculatedAt: calculation.calculatedAt.toISOString(),
+    };
   }
 
   public async deleteBankAccount(accountId: number): Promise<void> {

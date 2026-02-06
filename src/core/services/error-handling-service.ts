@@ -44,7 +44,7 @@ export class ErrorHandlingService {
   ): void {
     // Add WWW-Authenticate header for 401 responses per RFC 9728
     if (statusCode === 401) {
-      const applicationBaseURL = UrlUtils.getApplicationBaseURL();
+      const applicationBaseURL = UrlUtils.getApplicationBaseURL(c.req.url);
       const protectedResourceMetadataUrl = new URL(
         "/.well-known/oauth-protected-resource",
         applicationBaseURL

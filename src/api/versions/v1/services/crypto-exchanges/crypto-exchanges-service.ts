@@ -118,10 +118,45 @@ export class CryptoExchangesService {
       });
     }
 
+    const latestCalculation = await this.getLatestCalculation(exchangeId);
+
     return this.mapCryptoExchangeToSummary({
       ...result,
-      latestCalculation: null,
+      latestCalculation,
     });
+  }
+
+  private async getLatestCalculation(exchangeId: number) {
+    const db = this.databaseService.get();
+
+    const [calculation] = await db
+      .select({
+        currentValue: cryptoExchangeCalculationsTable.currentValue,
+        calculatedAt: cryptoExchangeCalculationsTable.createdAt,
+      })
+      .from(cryptoExchangeCalculationsTable)
+      .where(eq(cryptoExchangeCalculationsTable.cryptoExchangeId, exchangeId))
+      .orderBy(desc(cryptoExchangeCalculationsTable.createdAt))
+      .limit(1);
+
+    if (!calculation) {
+      return null;
+    }
+
+    const [latestBalance] = await db
+      .select({
+        currencyCode: cryptoExchangeBalancesTable.investedCurrencyCode,
+      })
+      .from(cryptoExchangeBalancesTable)
+      .where(eq(cryptoExchangeBalancesTable.cryptoExchangeId, exchangeId))
+      .orderBy(desc(cryptoExchangeBalancesTable.createdAt))
+      .limit(1);
+
+    return {
+      currentValue: calculation.currentValue,
+      currencyCode: latestBalance?.currencyCode ?? "",
+      calculatedAt: calculation.calculatedAt.toISOString(),
+    };
   }
 
   public async deleteCryptoExchange(exchangeId: number): Promise<void> {

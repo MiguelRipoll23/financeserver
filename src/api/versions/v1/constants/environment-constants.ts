@@ -1,4 +1,3 @@
-export const ENV_APP_BASE_URL = "APP_BASE_URL";
 export const ENV_JWT_SECRET = "JWT_SECRET";
 export const ENV_DATABASE_URL = "DATABASE_URL";
 export const ENV_GITHUB_CLIENT_ID = "GITHUB_CLIENT_ID";

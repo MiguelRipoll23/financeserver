@@ -14,9 +14,7 @@ export class AuthenticationMiddleware {
   constructor(
     private jwtService = inject(JWTService),
     private gitHubOAuthService = inject(GitHubOAuthService)
-  ) {
-    this.generateJWT();
-  }
+  ) {}
 
   public create() {
     return createMiddleware(async (context, next) => {
@@ -25,7 +23,7 @@ export class AuthenticationMiddleware {
       const principal = await this.resolvePrincipal(jwt);
 
       // Validate token audience for MCP endpoints per RFC 8707
-      await this.validateTokenAudience(jwt, context.req.path, principal);
+      await this.validateTokenAudience(jwt, context.req.url, principal);
 
       context.set("userId", principal.id);
       context.set("userHandle", principal.userHandle ?? null);
@@ -118,17 +116,18 @@ export class AuthenticationMiddleware {
 
   private async validateTokenAudience(
     token: string,
-    requestPath: string,
+    requestUrl: string,
     principal: AuthenticationPrincipalType
   ): Promise<void> {
+    const url = new URL(requestUrl);
     // Only validate audience for MCP endpoints (protected resources)
-    if (!requestPath.startsWith("/api/v1/mcp/")) {
+    if (!url.pathname.includes("/mcp/")) {
       return;
     }
 
     if (principal.provider === "github") {
       // For GitHub OAuth tokens, validate they were issued for this resource
-      await this.gitHubOAuthService.validateTokenResource(token, requestPath);
+      await this.gitHubOAuthService.validateTokenResource(token, requestUrl);
     } else if (principal.provider === "internal") {
       // For JWTs, validate the audience claim using cached payload
       const cacheKey = { token };
@@ -137,16 +136,16 @@ export class AuthenticationMiddleware {
       if (!payload) {
         // Fallback: verify again if cache miss (shouldn't happen)
         const freshPayload = await this.jwtService.verify(token);
-        this.validateJwtAudience(freshPayload, requestPath);
+        this.validateJwtAudience(freshPayload, requestUrl);
       } else {
-        this.validateJwtAudience(payload, requestPath);
+        this.validateJwtAudience(payload, requestUrl);
         // Clean up cache after use
         this.jwtPayloadCache.delete(cacheKey);
       }
     }
   }
 
-  private validateJwtAudience(payload: Payload, requestPath: string): void {
+  private validateJwtAudience(payload: Payload, requestUrl: string): void {
     const audience = payload.aud;
 
     if (!audience) {
@@ -157,9 +156,10 @@ export class AuthenticationMiddleware {
       );
     }
 
-    const applicationBaseURL = UrlUtils.getApplicationBaseURL();
+    const applicationBaseURL = UrlUtils.getApplicationBaseURL(requestUrl);
+    const url = new URL(requestUrl);
     const requestedResource = new URL(
-      requestPath,
+      url.pathname,
       applicationBaseURL
     ).toString();
 
@@ -186,11 +186,6 @@ export class AuthenticationMiddleware {
         403
       );
     }
-  }
-
-  private async generateJWT() {
-    const jwt = await this.jwtService.createManagementToken();
-    console.log("🔑", jwt);
   }
 
   private isJwtToken(token: string): boolean {

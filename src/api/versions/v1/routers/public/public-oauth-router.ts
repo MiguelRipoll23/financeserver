@@ -105,7 +105,7 @@ export class PublicOAuthRouter {
       async (context: Context) => {
         const query = OAuthAuthorizeQuerySchema.parse(context.req.query());
         const redirectUrl =
-          await this.gitHubOAuthService.createAuthorizationRedirect(query);
+          await this.gitHubOAuthService.createAuthorizationRedirect(query, context.req.url);
 
         return context.redirect(redirectUrl, 302);
       }
@@ -133,7 +133,7 @@ export class PublicOAuthRouter {
       async (context: Context) => {
         const query = GitHubCallbackQuerySchema.parse(context.req.query());
         const redirectUrl =
-          await this.gitHubOAuthService.createCallbackRedirect(query);
+          await this.gitHubOAuthService.createCallbackRedirect(query, context.req.url);
 
         return context.redirect(redirectUrl, 302);
       }
