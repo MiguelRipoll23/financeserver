@@ -253,6 +253,13 @@
       "when": 1770394204286,
       "tag": "0035_ancient_aqueduct",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1770398086764,
+      "tag": "0036_lame_mariko_yashida",
+      "breakpoints": true
     }
   ]
 }
