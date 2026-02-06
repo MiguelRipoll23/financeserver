@@ -64,8 +64,8 @@ export class JWTService {
     return payload;
   }
 
-  public async createManagementToken() {
-    const applicationBaseURL = UrlUtils.getApplicationBaseURL();
+  public async createManagementToken(requestUrl: string) {
+    const applicationBaseURL = UrlUtils.getApplicationBaseURL(requestUrl);
 
     return await create(
       { alg: "HS512", typ: "JWT" },

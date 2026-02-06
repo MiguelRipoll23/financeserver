@@ -1,4 +1,3 @@
-export const DEFAULT_APP_BASE_URL = "http://localhost:8000";
 export const OAUTH_SERVICE_DOCUMENTATION_URL =
   "https://github.com/MiguelRipoll23/financeserver";
 export const GITHUB_APPLICATION_CONNECTIONS_BASE_URL =

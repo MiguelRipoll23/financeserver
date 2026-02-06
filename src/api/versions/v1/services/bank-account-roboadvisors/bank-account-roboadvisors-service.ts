@@ -291,10 +291,53 @@ export class BankAccountRoboadvisorsService {
       });
     }
 
+    const latestCalculation = await this.getLatestCalculation(roboadvisorId);
+
     return this.mapRoboadvisorToSummary({
       ...result,
-      latestCalculation: null,
+      latestCalculation,
     });
+  }
+
+  private async getLatestCalculation(roboadvisorId: number): Promise<{
+    currentValue: string;
+    currencyCode: string;
+    calculatedAt: string;
+  } | null> {
+    const db = this.databaseService.get();
+
+    const [calculation] = await db
+      .select({
+        currentValue: roboadvisorFundCalculationsTable.currentValue,
+        calculatedAt: roboadvisorFundCalculationsTable.createdAt,
+      })
+      .from(roboadvisorFundCalculationsTable)
+      .where(eq(roboadvisorFundCalculationsTable.roboadvisorId, roboadvisorId))
+      .orderBy(desc(roboadvisorFundCalculationsTable.createdAt))
+      .limit(1);
+
+    if (!calculation) {
+      return null;
+    }
+
+    const [latestBalance] = await db
+      .select({
+        currencyCode: roboadvisorBalances.currencyCode,
+      })
+      .from(roboadvisorBalances)
+      .where(eq(roboadvisorBalances.roboadvisorId, roboadvisorId))
+      .orderBy(desc(roboadvisorBalances.date))
+      .limit(1);
+
+    if (!latestBalance?.currencyCode) {
+      return null;
+    }
+
+    return {
+      currentValue: calculation.currentValue,
+      currencyCode: latestBalance.currencyCode,
+      calculatedAt: calculation.calculatedAt.toISOString(),
+    };
   }
 
   public async deleteBankAccountRoboadvisor(

@@ -17,8 +17,8 @@ import type { OAuthProtectedResourceMetadata } from "../types/oauth/oauth-protec
 
 @injectable()
 export class OAuthService {
-  public getAuthorizationServerMetadata(): OAuthAuthorizationServerType {
-    const applicationBaseURL = UrlUtils.getApplicationBaseURL();
+  public getAuthorizationServerMetadata(requestUrl: string): OAuthAuthorizationServerType {
+    const applicationBaseURL = UrlUtils.getApplicationBaseURL(requestUrl);
 
     return {
       issuer: applicationBaseURL,
@@ -59,8 +59,8 @@ export class OAuthService {
     };
   }
 
-  public getProtectedResourceMetadata(): OAuthProtectedResourceMetadata {
-    const applicationBaseURL = UrlUtils.getApplicationBaseURL();
+  public getProtectedResourceMetadata(requestUrl: string): OAuthProtectedResourceMetadata {
+    const applicationBaseURL = UrlUtils.getApplicationBaseURL(requestUrl);
 
     return {
       issuer: applicationBaseURL,

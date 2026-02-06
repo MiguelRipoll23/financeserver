@@ -65,7 +65,7 @@ export class RootRouter {
         },
       }),
       (c) => {
-        const metadata = this.oauthService.getAuthorizationServerMetadata();
+        const metadata = this.oauthService.getAuthorizationServerMetadata(c.req.url);
 
         return c.json(metadata, 200);
       }
@@ -93,7 +93,7 @@ export class RootRouter {
         },
       }),
       (c) => {
-        const metadata = this.oauthService.getProtectedResourceMetadata();
+        const metadata = this.oauthService.getProtectedResourceMetadata(c.req.url);
 
         return c.json(metadata, 200);
       }

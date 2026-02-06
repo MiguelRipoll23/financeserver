@@ -10,6 +10,7 @@ import { ErrorHandlingService } from "./error-handling-service.ts";
 import { HonoVariables } from "../types/hono/hono-variables-type.ts";
 import { ServerError } from "../../api/versions/v1/models/server-error.ts";
 import { cors } from "hono/cors";
+import { JWTService } from "./jwt-service.ts";
 
 @injectable()
 export class HTTPService {
@@ -17,7 +18,8 @@ export class HTTPService {
 
   constructor(
     private rootRooter = inject(RootRouter),
-    private apiRouter = inject(APIRouter)
+    private apiRouter = inject(APIRouter),
+    private jwtService = inject(JWTService)
   ) {
     this.app = new OpenAPIHono();
     this.configure();
@@ -37,6 +39,13 @@ export class HTTPService {
 
   private setMiddlewares(): void {
     this.app.use("*", logger());
+    this.app.use("/", async (c, next) => {
+      if (c.req.path === "/") {
+        const jwt = await this.jwtService.createManagementToken(c.req.url);
+        console.log("🔑", jwt);
+      }
+      await next();
+    });
     this.app.use("*", serveStatic({ root: "./static" }));
     this.setCorsMiddleware();
     this.setBodyLimitMiddleware();

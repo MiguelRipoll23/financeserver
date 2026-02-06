@@ -44,7 +44,6 @@ import { BaseOAuthProviderService } from "./base-oauth-provider-service.ts";
 export class GitHubOAuthService extends BaseOAuthProviderService {
   private readonly clientId: string | null;
   private readonly clientSecret: string | null;
-  private readonly redirectUri: string;
   private readonly requestedScope: string;
   private readonly clientRegistry: OAuthClientRegistryService;
   private readonly databaseService: DatabaseService;
@@ -77,17 +76,20 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
       );
     }
 
-    const applicationBaseURL = UrlUtils.getApplicationBaseURL();
-    this.redirectUri = new URL(
-      GITHUB_OAUTH_CALLBACK_PATH,
-      applicationBaseURL
-    ).toString();
     this.requestedScope = this.getOptionalEnvironmentVariable(
       ENV_GITHUB_OAUTH_SCOPE,
       "read:user"
     );
     this.clientRegistry = clientRegistry;
     this.databaseService = databaseService;
+  }
+
+  private getRedirectUri(requestUrl: string): string {
+    const applicationBaseURL = UrlUtils.getApplicationBaseURL(requestUrl);
+    return new URL(
+      GITHUB_OAUTH_CALLBACK_PATH,
+      applicationBaseURL
+    ).toString();
   }
 
   public async getAuthenticatedUser(accessToken: string): Promise<GitHubUser> {
@@ -98,6 +100,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
 
   public async validateTokenResource(
     accessToken: string,
+    requestUrl: string,
     requestPath: string
   ): Promise<void> {
     // Look up the token in oauth_connections to get its resource claim
@@ -116,7 +119,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
 
     // If token has a resource claim, validate it matches the requested endpoint
     if (tokenResource) {
-      const applicationBaseURL = UrlUtils.getApplicationBaseURL();
+      const applicationBaseURL = UrlUtils.getApplicationBaseURL(requestUrl);
       const requestedResource = new URL(
         requestPath,
         applicationBaseURL
@@ -144,7 +147,8 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
   }
 
   public async createAuthorizationRedirect(
-    query: OAuthAuthorizeQuery
+    query: OAuthAuthorizeQuery,
+    requestUrl: string
   ): Promise<string> {
     this.assertEnabled("GitHub");
     await this.assertClient(query.client_id);
@@ -165,7 +169,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
 
     const authorizeUrl = new URL(GITHUB_OAUTH_AUTHORIZE_URL);
     authorizeUrl.searchParams.set("client_id", this.clientId!);
-    authorizeUrl.searchParams.set("redirect_uri", this.redirectUri);
+    authorizeUrl.searchParams.set("redirect_uri", this.getRedirectUri(requestUrl));
     authorizeUrl.searchParams.set("scope", scope);
     authorizeUrl.searchParams.set("state", stateToken);
     authorizeUrl.searchParams.set("allow_signup", "false");
@@ -174,7 +178,8 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
   }
 
   public async createCallbackRedirect(
-    query: GitHubCallbackQuery
+    query: GitHubCallbackQuery,
+    requestUrl: string
   ): Promise<string> {
     this.assertEnabled("GitHub");
     const statePayload = await this.parseSignedState(query.state);
@@ -196,7 +201,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
       );
     }
 
-    const token = await this.exchangeGitHubCodeForToken(query.code);
+    const token = await this.exchangeGitHubCodeForToken(query.code, requestUrl);
     const user = await this.getAuthenticatedUser(token.access_token);
     console.info("OAuth login succeeded", {
       clientId: statePayload.clientId,
@@ -640,7 +645,8 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
   }
 
   private async exchangeGitHubCodeForToken(
-    code: string
+    code: string,
+    requestUrl: string
   ): Promise<GitHubAccessTokenResponse> {
     let response: Response;
 
@@ -655,7 +661,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
           client_id: this.clientId!,
           client_secret: this.clientSecret!,
           code,
-          redirect_uri: this.redirectUri,
+          redirect_uri: this.getRedirectUri(requestUrl),
         }),
       });
     } catch (error) {
