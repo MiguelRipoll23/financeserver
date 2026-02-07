@@ -11,24 +11,25 @@ export class V1Router {
   constructor(
     private publicRouter = inject(V1PublicRouter),
     private authenticatedRouter = inject(V1AuthenticatedRouter),
-    private netWorthCalculationService = inject(NetWorthCalculationService)
+    private netWorthCalculationService = inject(NetWorthCalculationService),
   ) {
     this.app = new OpenAPIHono();
     this.setRoutes();
+    this.runStartupTasks();
   }
 
   public getRouter(): OpenAPIHono {
     return this.app;
   }
 
-  public runStartupTasks(): void {
-    this.netWorthCalculationService.calculateAll().catch((error) => {
-      console.error("Error calculating net worth during startup:", error);
-    });
-  }
-
   private setRoutes(): void {
     this.app.route("/", this.publicRouter.getRouter());
     this.app.route("/", this.authenticatedRouter.getRouter());
+  }
+
+  private runStartupTasks(): void {
+    void this.netWorthCalculationService.calculateAll().catch((error) => {
+      console.error("Error calculating net worth during startup:", error);
+    });
   }
 }

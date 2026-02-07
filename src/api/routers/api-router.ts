@@ -10,15 +10,10 @@ export class APIRouter {
     this.app = new OpenAPIHono();
     this.setMiddlewares();
     this.setRoutes();
-    this.runStartupTasks();
   }
 
   public getRouter(): OpenAPIHono {
     return this.app;
-  }
-
-  public runStartupTasks(): void {
-    this.v1Router.runStartupTasks();
   }
 
   private setMiddlewares(): void {}
