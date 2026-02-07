@@ -21,7 +21,6 @@ import { AuthenticatedSalaryChangesRouter } from "./authenticated/authenticated-
 import { AuthenticatedBankAccountRoboadvisorsRouter } from "./authenticated/authenticated-bank-account-roboadvisors-router.ts";
 import { AuthenticatedBankAccountRoboadvisorBalancesRouter } from "./authenticated/authenticated-bank-account-roboadvisor-balances-router.ts";
 import { AuthenticatedBankAccountRoboadvisorFundsRouter } from "./authenticated/authenticated-bank-account-roboadvisor-funds-router.ts";
-import { AuthenticatedAsyncRequestsRouter } from "./authenticated/authenticated-async-requests-router.ts";
 import { AuthenticatedRegistrationRouter } from "./authenticated/authenticated-registration-router.ts";
 import { HonoVariables } from "../../../../core/types/hono/hono-variables-type.ts";
 
@@ -62,7 +61,6 @@ export class V1AuthenticatedRouter {
     private bankAccountRoboadvisorFundsRouter = inject(
       AuthenticatedBankAccountRoboadvisorFundsRouter,
     ),
-    private asyncRequestsRouter = inject(AuthenticatedAsyncRequestsRouter),
   ) {
     this.app = new OpenAPIHono();
     this.setMiddlewares();
@@ -133,11 +131,5 @@ export class V1AuthenticatedRouter {
 
     this.app.route("/receipts", this.receiptsRouter.getRouter());
     this.app.route("/products", this.productsRouter.getRouter());
-
-    // Investment calculations endpoint
-    this.app.route(
-      "/async-requests",
-      this.asyncRequestsRouter.getRouter(),
-    );
   }
 }
