@@ -23,6 +23,7 @@ import { AuthenticatedBankAccountRoboadvisorBalancesRouter } from "./authenticat
 import { AuthenticatedBankAccountRoboadvisorFundsRouter } from "./authenticated/authenticated-bank-account-roboadvisor-funds-router.ts";
 import { AuthenticatedAsyncRequestsRouter } from "./authenticated/authenticated-async-requests-router.ts";
 import { AuthenticatedRegistrationRouter } from "./authenticated/authenticated-registration-router.ts";
+import { AuthenticatedConversationsRouter } from "./authenticated/authenticated-conversations-router.ts";
 import { HonoVariables } from "../../../../core/types/hono/hono-variables-type.ts";
 
 @injectable()
@@ -35,6 +36,7 @@ export class V1AuthenticatedRouter {
     private authenticatedRegistrationRouter = inject(AuthenticatedRegistrationRouter),
     private usersRouter = inject(AuthenticatedUsersRouter),
     private mcpRouter = inject(AuthenticatedMCPRouter),
+    private conversationsRouter = inject(AuthenticatedConversationsRouter),
     private billsRouter = inject(AuthenticatedBillsRouter),
     private subscriptionsRouter = inject(AuthenticatedSubscriptionsRouter),
     private merchantsRouter = inject(AuthenticatedMerchantsRouter),
@@ -91,6 +93,7 @@ export class V1AuthenticatedRouter {
     this.app.route("/registration", this.authenticatedRegistrationRouter.getRouter());
     
     this.app.route("/mcp", this.mcpRouter.getRouter());
+    this.app.route("/conversations", this.conversationsRouter.getRouter());
     this.app.route("/users", this.usersRouter.getRouter());
     this.app.route("/cash", this.cashRouter.getRouter());
     this.app.route("/cash-balances", this.cashBalancesRouter.getRouter());

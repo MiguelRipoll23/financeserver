@@ -5,22 +5,23 @@
     "jsr:@simplewebauthn/server@^13.2.2": "13.2.2",
     "jsr:@std/encoding@0.221": "0.221.0",
     "jsr:@wok/djwt@^3.0.2": "3.0.2",
+    "npm:@github/copilot-sdk@~0.1.23": "0.1.23",
     "npm:@hexagon/base64@^1.1.27": "1.1.28",
-    "npm:@hono/mcp@0.2.3": "0.2.3_@modelcontextprotocol+sdk@1.26.0__zod@4.3.6__hono@4.11.7__ajv@8.17.1__express@5.2.1_hono@4.11.7_hono-rate-limiter@0.4.2__hono@4.11.7_zod@4.3.6",
-    "npm:@hono/zod-openapi@^1.2.1": "1.2.1_hono@4.11.7_zod@4.3.6",
+    "npm:@hono/mcp@0.2.3": "0.2.3_@modelcontextprotocol+sdk@1.26.0__zod@4.3.6__hono@4.11.8__ajv@8.17.1__express@5.2.1_hono@4.11.8_hono-rate-limiter@0.4.2__hono@4.11.8_zod@4.3.6",
+    "npm:@hono/zod-openapi@^1.2.1": "1.2.1_hono@4.11.8_zod@4.3.6",
     "npm:@levischuck/tiny-cbor@~0.2.2": "0.2.11",
-    "npm:@modelcontextprotocol/sdk@^1.26.0": "1.26.0_zod@4.3.6_hono@4.11.7_ajv@8.17.1_express@5.2.1",
+    "npm:@modelcontextprotocol/sdk@^1.26.0": "1.26.0_zod@4.3.6_hono@4.11.8_ajv@8.17.1_express@5.2.1",
     "npm:@peculiar/asn1-android@^2.3.10": "2.6.0",
     "npm:@peculiar/asn1-ecc@^2.3.8": "2.6.0",
     "npm:@peculiar/asn1-rsa@^2.3.8": "2.6.0",
     "npm:@peculiar/asn1-schema@^2.3.8": "2.6.0",
     "npm:@peculiar/asn1-x509@^2.3.8": "2.6.0",
     "npm:@peculiar/x509@^1.13.0": "1.14.3",
-    "npm:@scalar/hono-api-reference@~0.9.40": "0.9.40_hono@4.11.7",
+    "npm:@scalar/hono-api-reference@~0.9.40": "0.9.40_hono@4.11.8",
     "npm:drizzle-kit@*": "0.31.8_esbuild@0.25.12",
     "npm:drizzle-kit@~0.31.8": "0.31.8_esbuild@0.25.12",
     "npm:drizzle-orm@~0.45.1": "0.45.1_pg@8.18.0",
-    "npm:hono@^4.11.7": "4.11.7",
+    "npm:hono@^4.11.8": "4.11.8",
     "npm:pg@^8.18.0": "8.18.0",
     "npm:zod@^4.3.6": "4.3.6"
   },
@@ -318,10 +319,66 @@
       "os": ["win32"],
       "cpu": ["x64"]
     },
+    "@github/copilot-darwin-arm64@0.0.403": {
+      "integrity": "sha512-dOw8IleA0d1soHnbr/6wc6vZiYWNTKMgfTe/NET1nCfMzyKDt/0F0I7PT5y+DLujJknTla/ZeEmmBUmliTW4Cg==",
+      "os": ["darwin"],
+      "cpu": ["arm64"],
+      "bin": true
+    },
+    "@github/copilot-darwin-x64@0.0.403": {
+      "integrity": "sha512-aK2jSNWgY8eiZ+TmrvGhssMCPDTKArc0ip6Ul5OaslpytKks8hyXoRbxGD0N9sKioSUSbvKUf+1AqavbDpJO+w==",
+      "os": ["darwin"],
+      "cpu": ["x64"],
+      "bin": true
+    },
+    "@github/copilot-linux-arm64@0.0.403": {
+      "integrity": "sha512-KhoR2iR70O6vCkzf0h8/K+p82qAgOvMTgAPm9bVEHvbdGFR7Py9qL5v03bMbPxsA45oNaZAkzDhfTAqWhIAZsQ==",
+      "os": ["linux"],
+      "cpu": ["arm64"],
+      "bin": true
+    },
+    "@github/copilot-linux-x64@0.0.403": {
+      "integrity": "sha512-eoswUc9vo4TB+/9PgFJLVtzI4dPjkpJXdCsAioVuoqPdNxHxlIHFe9HaVcqMRZxUNY1YHEBZozy+IpUEGjgdfQ==",
+      "os": ["linux"],
+      "cpu": ["x64"],
+      "bin": true
+    },
+    "@github/copilot-sdk@0.1.23": {
+      "integrity": "sha512-0by81bsBQlDKE5VbcegZfUMvPyPm1aXwSGS2rGaMAFxv3ps+dACf1Voruxik7hQTae0ziVFJjuVrlxZoRaXBLw==",
+      "dependencies": [
+        "@github/copilot",
+        "vscode-jsonrpc",
+        "zod"
+      ]
+    },
+    "@github/copilot-win32-arm64@0.0.403": {
+      "integrity": "sha512-djWjzCsp2xPNafMyOZ/ivU328/WvWhdroGie/DugiJBTgQL2SP0quWW1fhTlDwE81a3g9CxfJonaRgOpFTJTcg==",
+      "os": ["win32"],
+      "cpu": ["arm64"],
+      "bin": true
+    },
+    "@github/copilot-win32-x64@0.0.403": {
+      "integrity": "sha512-lju8cHy2E6Ux7R7tWyLZeksYC2MVZu9i9ocjiBX/qfG2/pNJs7S5OlkwKJ0BSXSbZEHQYq7iHfEWp201bVfk9A==",
+      "os": ["win32"],
+      "cpu": ["x64"],
+      "bin": true
+    },
+    "@github/copilot@0.0.403": {
+      "integrity": "sha512-v5jUdtGJReLmE1rmff/LZf+50nzmYQYAaSRNtVNr9g0j0GkCd/noQExe31i1+PudvWU0ZJjltR0B8pUfDRdA9Q==",
+      "optionalDependencies": [
+        "@github/copilot-darwin-arm64",
+        "@github/copilot-darwin-x64",
+        "@github/copilot-linux-arm64",
+        "@github/copilot-linux-x64",
+        "@github/copilot-win32-arm64",
+        "@github/copilot-win32-x64"
+      ],
+      "bin": true
+    },
     "@hexagon/base64@1.1.28": {
       "integrity": "sha512-lhqDEAvWixy3bZ+UOYbPwUbBkwBq5C1LAJ/xPC8Oi+lL54oyakv/npbA0aU2hgCsx/1NUd4IBvV03+aUBWxerw=="
     },
-    "@hono/mcp@0.2.3_@modelcontextprotocol+sdk@1.26.0__zod@4.3.6__hono@4.11.7__ajv@8.17.1__express@5.2.1_hono@4.11.7_hono-rate-limiter@0.4.2__hono@4.11.7_zod@4.3.6": {
+    "@hono/mcp@0.2.3_@modelcontextprotocol+sdk@1.26.0__zod@4.3.6__hono@4.11.8__ajv@8.17.1__express@5.2.1_hono@4.11.8_hono-rate-limiter@0.4.2__hono@4.11.8_zod@4.3.6": {
       "integrity": "sha512-wrYKVQSjnBg4/ZinnnP/1t3jlvP3Z9fqZv8OzuhLXV4gVTLOHOHDhnXsIwD0nFVKk2pMOvA+sDfrKyRzw4yUPg==",
       "dependencies": [
         "@modelcontextprotocol/sdk",
@@ -331,13 +388,13 @@
         "zod"
       ]
     },
-    "@hono/node-server@1.19.9_hono@4.11.7": {
+    "@hono/node-server@1.19.9_hono@4.11.8": {
       "integrity": "sha512-vHL6w3ecZsky+8P5MD+eFfaGTyCeOHUIFYMGpQGbrBTSmNNoxv0if69rEZ5giu36weC5saFuznL411gRX7bJDw==",
       "dependencies": [
         "hono"
       ]
     },
-    "@hono/zod-openapi@1.2.1_hono@4.11.7_zod@4.3.6": {
+    "@hono/zod-openapi@1.2.1_hono@4.11.8_zod@4.3.6": {
       "integrity": "sha512-aZza4V8wkqpdHBWFNPiCeWd0cGOXbYuQW9AyezHs/jwQm5p67GkUyXwfthAooAwnG7thTpvOJkThZpCoY6us8w==",
       "dependencies": [
         "@asteasolutions/zod-to-openapi",
@@ -347,7 +404,7 @@
         "zod"
       ]
     },
-    "@hono/zod-validator@0.7.6_hono@4.11.7_zod@4.3.6": {
+    "@hono/zod-validator@0.7.6_hono@4.11.8_zod@4.3.6": {
       "integrity": "sha512-Io1B6d011Gj1KknV4rXYz4le5+5EubcWEU/speUjuw9XMMIaP3n78yXLhjd2A3PXaXaUwEAluOiAyLqhBEJgsw==",
       "dependencies": [
         "hono",
@@ -357,7 +414,7 @@
     "@levischuck/tiny-cbor@0.2.11": {
       "integrity": "sha512-llBRm4dT4Z89aRsm6u2oEZ8tfwL/2l6BwpZ7JcyieouniDECM5AqNgr/y08zalEIvW3RSK4upYyybDcmjXqAow=="
     },
-    "@modelcontextprotocol/sdk@1.26.0_zod@4.3.6_hono@4.11.7_ajv@8.17.1_express@5.2.1": {
+    "@modelcontextprotocol/sdk@1.26.0_zod@4.3.6_hono@4.11.8_ajv@8.17.1_express@5.2.1": {
       "integrity": "sha512-Y5RmPncpiDtTXDbLKswIJzTqu2hyBKxTNsgKqKclDbhIgg1wgtf1fRuvxgTnRfcnxtvvgbIEcqUOzZrJ6iSReg==",
       "dependencies": [
         "@hono/node-server",
@@ -508,7 +565,7 @@
     "@scalar/helpers@0.2.11": {
       "integrity": "sha512-Y7DLt1bIZF9dvHzJwSJTcC1lpSr1Tbf4VBhHOCRIHu23Rr7/lhQnddRxFmPV1tZXwEQKz7F7yRrubwCfKPCucw=="
     },
-    "@scalar/hono-api-reference@0.9.40_hono@4.11.7": {
+    "@scalar/hono-api-reference@0.9.40_hono@4.11.8": {
       "integrity": "sha512-0tQOxyEwuu1QGcoA5aCJg2eSmNfF35mxeGx13TND9ud5ZBeuOqli8jyfykgkqV3gFTnDDlQYgQcOvB6Rgk2beA==",
       "dependencies": [
         "@scalar/core",
@@ -862,14 +919,14 @@
         "function-bind"
       ]
     },
-    "hono-rate-limiter@0.4.2_hono@4.11.7": {
+    "hono-rate-limiter@0.4.2_hono@4.11.8": {
       "integrity": "sha512-AAtFqgADyrmbDijcRTT/HJfwqfvhalya2Zo+MgfdrMPas3zSMD8SU03cv+ZsYwRU1swv7zgVt0shwN059yzhjw==",
       "dependencies": [
         "hono"
       ]
     },
-    "hono@4.11.7": {
-      "integrity": "sha512-l7qMiNee7t82bH3SeyUCt9UF15EVmaBvsppY2zQtrbIhl/yzBTny+YUxsVjSjQ6gaqaeVtZmGocom8TzBlA4Yw=="
+    "hono@4.11.8": {
+      "integrity": "sha512-eVkB/CYCCei7K2WElZW9yYQFWssG0DhaDhVvr7wy5jJ22K+ck8fWW0EsLpB0sITUTvPnc97+rrbQqIr5iqiy9Q=="
     },
     "http-errors@2.0.1": {
       "integrity": "sha512-4FbRdAX+bSdmo4AUFuS0WNiPz8NgFt+r8ThgNWmlrjQjt1Q7ZR9+zTlce2859x4KSXrwIsaeTqDoKQmtP8pLmQ==",
@@ -1220,6 +1277,9 @@
     "vary@1.1.2": {
       "integrity": "sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg=="
     },
+    "vscode-jsonrpc@8.2.1": {
+      "integrity": "sha512-kdjOSJ2lLIn7r1rtrMbbNCHjyMPfRnowdKjBQ+mGq6NAW5QY2bEZC/khaC5OR8svbbjvLEaIXkOq45e2X9BIbQ=="
+    },
     "which@2.0.2": {
       "integrity": "sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==",
       "dependencies": [
@@ -1247,18 +1307,29 @@
       "integrity": "sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg=="
     }
   },
+  "remote": {
+    "https://deno.land/std@0.205.0/encoding/_util.ts": "f368920189c4fe6592ab2e93bd7ded8f3065b84f95cd3e036a4a10a75649dcba",
+    "https://deno.land/std@0.205.0/encoding/base64.ts": "cc03110d6518170aeaa68ec97f89c6d6e2276294b30807e7332591d7ce2e4b72",
+    "https://deno.land/std@0.205.0/encoding/base64url.ts": "7608862858d28a003f9d6cb78dd61e645ecd1ae1f45faf0e09a306eafe66b16e",
+    "https://deno.land/x/djwt@v3.0.1/algorithm.ts": "b1c6645f9dbd6e6c47c123a3b18c28b956f91c65ed17f5b6d5d968fc3750542b",
+    "https://deno.land/x/djwt@v3.0.1/deps.ts": "c8b329dc18c54f93879699ffb728bd805d548f7c64c4d2916efa5fb2c712cc47",
+    "https://deno.land/x/djwt@v3.0.1/mod.ts": "eca176976595654b8a536e7b8029a029c435d079ef58feff2d3bde33ea107417",
+    "https://deno.land/x/djwt@v3.0.1/signature.ts": "a5649368a4b433b2810e7d47f53661fe3b0f7fe1778cb49234ceae3d6e861185",
+    "https://deno.land/x/djwt@v3.0.1/util.ts": "5cb264d2125c553678e11446bcfa0494025d120e3f59d0a3ab38f6800def697d"
+  },
   "workspace": {
     "dependencies": [
       "jsr:@needle-di/core@^1.1.0",
       "jsr:@simplewebauthn/server@^13.2.2",
       "jsr:@wok/djwt@^3.0.2",
+      "npm:@github/copilot-sdk@~0.1.23",
       "npm:@hono/mcp@0.2.3",
       "npm:@hono/zod-openapi@^1.2.1",
       "npm:@modelcontextprotocol/sdk@^1.26.0",
       "npm:@scalar/hono-api-reference@~0.9.40",
       "npm:drizzle-kit@~0.31.8",
       "npm:drizzle-orm@~0.45.1",
-      "npm:hono@^4.11.7",
+      "npm:hono@^4.11.8",
       "npm:pg@^8.18.0",
       "npm:zod@^4.3.6"
     ]

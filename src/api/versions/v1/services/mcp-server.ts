@@ -56,6 +56,49 @@ export class MCPService {
     ]);
   }
 
+  public getToolsForServer(
+    serverType: "GLOBAL" | "PORTFOLIO" | "EXPENSES",
+  ): McpToolDefinition[] {
+    let providers: McpProvider[] = [];
+    switch (serverType) {
+      case "GLOBAL":
+        providers = [
+          this.receiptsMCPService,
+          this.productsMCPService,
+          this.billsMCPService,
+          this.subscriptionsMCPService,
+          this.cashMCPService,
+          this.cashBalancesMCPService,
+          this.bankAccountsMCPService,
+          this.bankAccountBalancesMCPService,
+          this.bankAccountInterestRatesMCPService,
+          this.bankAccountRoboadvisorsMCPService,
+          this.cryptoExchangesMCPService,
+          this.salaryChangesMCPService,
+        ];
+        break;
+      case "PORTFOLIO":
+        providers = [
+          this.cashMCPService,
+          this.cashBalancesMCPService,
+          this.bankAccountsMCPService,
+          this.bankAccountBalancesMCPService,
+          this.bankAccountInterestRatesMCPService,
+          this.bankAccountRoboadvisorsMCPService,
+          this.cryptoExchangesMCPService,
+        ];
+        break;
+      case "EXPENSES":
+        providers = [
+          this.billsMCPService,
+          this.receiptsMCPService,
+          this.subscriptionsMCPService,
+        ];
+        break;
+    }
+    return providers.flatMap((p) => p.getTools());
+  }
+
   public createPortfolioServer(): McpServer {
     return this.createServer("portfolio-mcp", [
       this.cashMCPService,
