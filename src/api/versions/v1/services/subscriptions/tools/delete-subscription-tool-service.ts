@@ -15,7 +15,7 @@ export class DeleteSubscriptionToolService {
         title: "Delete subscription",
         description:
           "Use this when you need to delete a subscription that contains completely invalid data. Do not use for updating or correcting subscriptions - use subscriptions.update instead.",
-        inputSchema: DeleteSubscriptionToolSchema.shape,
+        inputSchema: DeleteSubscriptionToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,

@@ -16,7 +16,7 @@ export class FilterRoboadvisorBalancesToolService {
         title: "Filter roboadvisor balance entries",
         description:
           "Use this when you need to retrieve balance history for roboadvisors with optional filtering and pagination.",
-        inputSchema: FilterBankAccountRoboadvisorBalancesToolSchema.shape,
+        inputSchema: FilterBankAccountRoboadvisorBalancesToolSchema,
         annotations: {
           readOnlyHint: true,
           idempotentHint: true,

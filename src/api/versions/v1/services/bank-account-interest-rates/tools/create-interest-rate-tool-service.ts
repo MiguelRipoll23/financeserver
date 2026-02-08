@@ -18,7 +18,7 @@ export class CreateInterestRateToolService {
         title: "Add bank account interest rate",
         description:
           "Use this when you need to record a new interest rate for a bank account. This creates a historical record of the interest rate period.",
-        inputSchema: CreateBankAccountInterestRateToolSchema.shape,
+        inputSchema: CreateBankAccountInterestRateToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: false,

@@ -18,7 +18,7 @@ export class UpdateCryptoExchangeBalanceToolService {
         title: "Update crypto exchange balance",
         description:
           "Use this when you need to update an existing crypto exchange balance entry.",
-        inputSchema: UpdateCryptoExchangeBalanceToolSchema.shape,
+        inputSchema: UpdateCryptoExchangeBalanceToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: false,

@@ -18,7 +18,7 @@ export class CreateCryptoExchangeBalanceToolService {
         title: "Create crypto exchange balance",
         description:
           "Use this when you need to add a new balance entry for a specific crypto exchange.",
-        inputSchema: CreateCryptoExchangeBalanceToolSchema.shape,
+        inputSchema: CreateCryptoExchangeBalanceToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: false,

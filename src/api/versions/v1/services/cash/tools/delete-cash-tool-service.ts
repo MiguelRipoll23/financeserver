@@ -14,7 +14,7 @@ export class DeleteCashToolService {
         title: "Delete cash source",
         description:
           "Use this when you need to permanently delete a cash source. Do not use for creating or updating cash sources. Warning: This will also delete all associated balances.",
-        inputSchema: DeleteCashToolSchema.shape,
+        inputSchema: DeleteCashToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,

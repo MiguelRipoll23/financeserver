@@ -14,7 +14,7 @@ export class FilterBankAccountsToolService {
         title: "Filter bank accounts",
         description:
           "Use this when you need to search and filter bank accounts with optional sorting and pagination.",
-        inputSchema: FilterBankAccountsToolSchema.shape,
+        inputSchema: FilterBankAccountsToolSchema,
         annotations: {
           readOnlyHint: true,
           idempotentHint: true,

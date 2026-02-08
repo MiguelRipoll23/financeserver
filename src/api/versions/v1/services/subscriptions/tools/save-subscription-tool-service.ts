@@ -15,7 +15,7 @@ export class SaveSubscriptionToolService {
         title: "Save subscription",
         description:
           "Use this when you need to save a new subscription. Do not use for updating or deleting subscriptions.",
-        inputSchema: SaveSubscriptionToolSchema.shape,
+        inputSchema: SaveSubscriptionToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,

@@ -14,7 +14,7 @@ export class CreateRoboadvisorBalanceToolService {
         title: "Create roboadvisor balance entry",
         description:
           "Use this when you need to record a deposit, withdrawal, or adjustment for a roboadvisor. This tracks the roboadvisor's cash movements over time.",
-        inputSchema: CreateBankAccountRoboadvisorBalanceToolSchema.shape,
+        inputSchema: CreateBankAccountRoboadvisorBalanceToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: false,

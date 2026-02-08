@@ -131,46 +131,6 @@ export class AuthenticatedConversationsRouter {
         }
       },
     );
-
-    // Add sendAndWait endpoint for testing
-    this.app.openapi(
-      createRoute({
-        method: "post",
-        path: "/send-and-wait-message",
-        summary: "Send a message using sendAndWait",
-        description: "Test endpoint using sendAndWait instead of streaming",
-        tags: ["Conversations"],
-        request: {
-          body: {
-            content: {
-              "application/json": {
-                schema: SendMessageSchema,
-              },
-            },
-          },
-        },
-        responses: {
-          200: {
-            description: "Message response",
-            content: {
-              "application/json": {
-                schema: z.object({
-                  content: z.string(),
-                }),
-              },
-            },
-          },
-        },
-      }),
-      async (c: Context<{ Variables: HonoVariables }>) => {
-        const body = await c.req.json();
-        const payload = SendMessageSchema.parse(body);
-        const requestUrl = new URL(c.req.url).href;
-        const authHeader = c.req.header('Authorization');
-        const content = await this.conversationsService.sendAndWaitMessage(payload, requestUrl, authHeader);
-        return c.json({ content });
-      },
-    );
   }
 
   private registerUploadImageRoute(): void {

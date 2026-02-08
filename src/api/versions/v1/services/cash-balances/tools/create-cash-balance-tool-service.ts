@@ -14,7 +14,7 @@ export class CreateCashBalanceToolService {
         title: "Create cash balance",
         description:
           "Use this when you need to create a new cash balance record. Do not use for updating or deleting cash balances.",
-        inputSchema: CreateCashBalanceToolSchema.shape,
+        inputSchema: CreateCashBalanceToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: false,

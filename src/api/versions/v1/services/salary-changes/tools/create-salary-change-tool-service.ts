@@ -15,7 +15,7 @@ export class CreateSalaryChangeToolService {
         title: "Create salary change",
         description:
           "Use this when you need to record a new salary change for the user.",
-        inputSchema: CreateSalaryChangeToolSchema.shape,
+        inputSchema: CreateSalaryChangeToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: false,

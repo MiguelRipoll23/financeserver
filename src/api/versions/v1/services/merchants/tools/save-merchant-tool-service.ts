@@ -14,7 +14,7 @@ export class SaveMerchantToolService {
         title: "Save merchant",
         description:
           "Use this when you need to save a new merchant. Do not use for updating or deleting merchants.",
-        inputSchema: SaveMerchantToolSchema.shape,
+        inputSchema: SaveMerchantToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: false,

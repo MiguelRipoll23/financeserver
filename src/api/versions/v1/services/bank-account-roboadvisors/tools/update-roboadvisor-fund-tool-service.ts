@@ -16,7 +16,7 @@ export class UpdateRoboadvisorFundToolService {
         title: "Update roboadvisor fund allocation",
         description:
           "Use this when you need to update an existing fund allocation in a roboadvisor. This includes changing the weight, ISIN, or other fund details",
-        inputSchema: UpdateBankAccountRoboadvisorFundToolSchema.shape,
+        inputSchema: UpdateBankAccountRoboadvisorFundToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,

@@ -15,7 +15,7 @@ export class ListSalaryChangesToolService {
         title: "List salary changes",
         description:
           "Use this when you need to list and filter salary changes by description, net amount thresholds, etc.",
-        inputSchema: ListSalaryChangesToolSchema.shape,
+        inputSchema: ListSalaryChangesToolSchema,
         annotations: {
           readOnlyHint: true,
           idempotentHint: true,

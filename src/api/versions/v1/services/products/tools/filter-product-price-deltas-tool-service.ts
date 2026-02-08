@@ -16,7 +16,7 @@ export class FilterProductPriceDeltasToolService {
         title: "Filter product price deltas",
         description:
           "Use this when you need to identify products with the most price variation within a date range.",
-        inputSchema: FilterProductPriceDeltasToolSchema.shape,
+        inputSchema: FilterProductPriceDeltasToolSchema,
         annotations: {
           readOnlyHint: true,
           idempotentHint: true,

@@ -15,7 +15,7 @@ export class SaveBillToolService {
         title: "Save bill",
         description:
           "Use this when you need to save a new bill. Do not use for updating or deleting bills.",
-        inputSchema: SaveBillToolSchema.shape,
+        inputSchema: SaveBillToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,

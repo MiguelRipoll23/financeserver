@@ -14,7 +14,7 @@ export class CreateBankAccountToolService {
         title: "Create bank account",
         description:
           "Use this when you need to create a new bank account. Do not use for updating or deleting bank accounts.",
-        inputSchema: CreateBankAccountToolSchema.shape,
+        inputSchema: CreateBankAccountToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: false,

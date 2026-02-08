@@ -15,7 +15,7 @@ export class FilterMerchantsToolService {
         title: "Filter merchants",
         description:
           "Use this when you need to search for merchants by name or retrieve a list of all merchants. Do not use for creating, updating or deleting merchants.",
-        inputSchema: FilterMerchantsToolSchema.shape,
+        inputSchema: FilterMerchantsToolSchema,
         annotations: {
           readOnlyHint: true,
           idempotentHint: true,

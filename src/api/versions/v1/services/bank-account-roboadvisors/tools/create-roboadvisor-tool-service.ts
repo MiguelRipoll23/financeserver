@@ -16,7 +16,7 @@ export class CreateRoboadvisorToolService {
         title: "Create roboadvisor",
         description:
           "Use this when you need to create a new roboadvisor for automated investment management. This includes configuring fees, risk level, and linking it to a bank account.",
-        inputSchema: CreateBankAccountRoboadvisorToolSchema.shape,
+        inputSchema: CreateBankAccountRoboadvisorToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: false,

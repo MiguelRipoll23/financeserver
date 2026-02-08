@@ -16,7 +16,7 @@ export class DeleteRoboadvisorToolService {
         title: "Delete roboadvisor",
         description:
           "Use this when you need to permanently delete a roboadvisor and all its associated data (balances, funds). This action cannot be undone",
-        inputSchema: DeleteBankAccountRoboadvisorToolSchema.shape,
+        inputSchema: DeleteBankAccountRoboadvisorToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,

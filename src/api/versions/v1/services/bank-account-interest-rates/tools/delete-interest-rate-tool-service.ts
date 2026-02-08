@@ -18,7 +18,7 @@ export class DeleteInterestRateToolService {
         title: "Delete bank account interest rate",
         description:
           "Use this when you need to delete an existing interest rate record.",
-        inputSchema: DeleteBankAccountInterestRateToolSchema.shape,
+        inputSchema: DeleteBankAccountInterestRateToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: false,

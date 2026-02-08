@@ -16,7 +16,7 @@ export class FilterProductsToolService {
         title: "Filter products",
         description:
           "Use this when you need to search products by name with optional unit price filters and sorting.",
-        inputSchema: FilterProductsToolSchema.shape,
+        inputSchema: FilterProductsToolSchema,
         annotations: {
           readOnlyHint: true,
           idempotentHint: true,

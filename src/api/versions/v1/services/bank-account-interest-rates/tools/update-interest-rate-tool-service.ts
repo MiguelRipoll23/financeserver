@@ -18,7 +18,7 @@ export class UpdateInterestRateToolService {
         title: "Update bank account interest rate",
         description:
           "Use this when you need to update an existing interest rate record for a bank account (e.g. correct a date or rate).",
-        inputSchema: UpdateBankAccountInterestRateToolSchema.shape,
+        inputSchema: UpdateBankAccountInterestRateToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: false,

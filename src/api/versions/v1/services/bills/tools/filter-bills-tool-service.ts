@@ -15,7 +15,7 @@ export class FilterBillsToolService {
         title: "Filter bills",
         description:
           "Use this when you need to search and retrieve bills filtered by date range, category, and amount thresholds.",
-        inputSchema: FilterBillsToolSchema.shape,
+        inputSchema: FilterBillsToolSchema,
         annotations: {
           readOnlyHint: true,
           idempotentHint: true,

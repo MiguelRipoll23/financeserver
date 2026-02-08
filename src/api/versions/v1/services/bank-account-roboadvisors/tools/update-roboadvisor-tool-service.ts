@@ -16,7 +16,7 @@ export class UpdateRoboadvisorToolService {
         title: "Update roboadvisor",
         description:
           "Use this when you need to update an existing roboadvisor configuration. This includes modifying fees, risk level, or other settings",
-        inputSchema: UpdateBankAccountRoboadvisorToolSchema.shape,
+        inputSchema: UpdateBankAccountRoboadvisorToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,

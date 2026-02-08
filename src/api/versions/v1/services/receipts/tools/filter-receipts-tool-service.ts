@@ -17,7 +17,7 @@ export class FilterReceiptsToolService {
         title: "Filter receipts",
         description:
           "Use this when you need to search receipts by date range, total amounts, product names, or merchant name. Do not use for creating or updating receipts.",
-        inputSchema: FilterReceiptsToolSchema.shape,
+        inputSchema: FilterReceiptsToolSchema,
         annotations: {
           readOnlyHint: true,
           idempotentHint: true,

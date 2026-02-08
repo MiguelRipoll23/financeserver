@@ -14,7 +14,7 @@ export class CreateRoboadvisorFundToolService {
         title: "Create roboadvisor fund allocation",
         description:
           "Use this when you need to add a fund allocation to a roboadvisor. This defines which ETFs or mutual funds the roboadvisor invests in and their target weights.",
-        inputSchema: CreateBankAccountRoboadvisorFundToolSchema.shape,
+        inputSchema: CreateBankAccountRoboadvisorFundToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: false,

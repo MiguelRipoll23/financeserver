@@ -15,7 +15,7 @@ export class UpdateReceiptToolService {
         title: "Update receipt",
         description:
           "Use this when you need to update an existing receipt. Do not use for creating new receipts or deleting receipts.",
-        inputSchema: UpdateReceiptToolSchema.shape,
+        inputSchema: UpdateReceiptToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,

@@ -16,7 +16,7 @@ export class CreateCryptoExchangeToolService {
         title: "Create crypto exchange",
         description:
           "Use this when you need to create a new crypto exchange. Do not use for updating or deleting crypto exchanges.",
-        inputSchema: CreateCryptoExchangeToolSchema.shape,
+        inputSchema: CreateCryptoExchangeToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: false,

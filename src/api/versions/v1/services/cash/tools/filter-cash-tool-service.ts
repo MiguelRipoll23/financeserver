@@ -14,7 +14,7 @@ export class FilterCashToolService {
         title: "Filter cash sources",
         description:
           "Use this when you need to search and filter cash sources with optional sorting and pagination.",
-        inputSchema: FilterCashToolSchema.shape,
+        inputSchema: FilterCashToolSchema,
         annotations: {
           readOnlyHint: true,
           idempotentHint: true,

@@ -14,7 +14,7 @@ export class UpdateBalanceToolService {
         title: "Update bank account balance",
         description:
           "Use this when you need to update an existing balance record. Do not use for adding or deleting balances.",
-        inputSchema: UpdateBalanceToolSchema.shape,
+        inputSchema: UpdateBalanceToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,

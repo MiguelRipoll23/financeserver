@@ -16,7 +16,7 @@ export class UpdateCryptoExchangeToolService {
         title: "Update crypto exchange",
         description:
           "Use this when you need to update an existing crypto exchange's details.",
-        inputSchema: UpdateCryptoExchangeToolSchema.shape,
+        inputSchema: UpdateCryptoExchangeToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: false,

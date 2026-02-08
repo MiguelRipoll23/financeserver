@@ -18,7 +18,7 @@ export class FilterInterestRatesToolService {
         title: "List bank account interest rates",
         description:
           "Use this when you need to view the history of interest rates for a bank account.",
-        inputSchema: FilterBankAccountInterestRatesToolSchema.shape,
+        inputSchema: FilterBankAccountInterestRatesToolSchema,
         annotations: {
           readOnlyHint: true,
           idempotentHint: true,

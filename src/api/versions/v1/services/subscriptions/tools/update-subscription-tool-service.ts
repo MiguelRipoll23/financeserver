@@ -15,7 +15,7 @@ export class UpdateSubscriptionToolService {
         title: "Update subscription",
         description:
           "Use this when you need to update an existing subscription or cancel it.",
-        inputSchema: UpdateSubscriptionToolSchema.shape,
+        inputSchema: UpdateSubscriptionToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,

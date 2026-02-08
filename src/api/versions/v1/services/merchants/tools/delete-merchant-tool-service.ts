@@ -14,7 +14,7 @@ export class DeleteMerchantToolService {
         title: "Delete merchant",
         description:
           "Use this when you need to delete an existing merchant. Do not use for creating or updating merchants.",
-        inputSchema: DeleteMerchantToolSchema.shape,
+        inputSchema: DeleteMerchantToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,

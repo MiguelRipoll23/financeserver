@@ -14,7 +14,7 @@ export class CreateBalanceToolService {
         title: "Add bank account balance",
         description:
           "Use this when you need to record a new balance for a bank account. This creates a historical record of the account balance at a specific point in time.",
-        inputSchema: CreateBankAccountBalanceToolSchema.shape,
+        inputSchema: CreateBankAccountBalanceToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: false,

@@ -1,6 +1,7 @@
 import { inject, injectable } from "@needle-di/core";
 import { createOpenAI } from "@ai-sdk/openai";
-import { streamText, generateText, type CoreMessage, tool as aiTool, zodSchema } from "ai";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { streamText, type ModelMessage, tool as aiTool, stepCountIs, type TextPart, type ImagePart } from "ai";
 import { MCPService } from "../mcp-server.ts";
 import { SendMessageRequest } from "../../schemas/conversations-schemas.ts";
 import { ServerError } from "../../models/server-error.ts";
@@ -13,31 +14,44 @@ import {
   InvalidPromptError,
   RetryError,
 } from "ai";
-import { z } from "zod";
 
 @injectable()
 export class ConversationsService {
   // Simple in-memory session cache to maintain context across HTTP requests
-  private static sessions = new Map<string, CoreMessage[]>();
+  private static sessions = new Map<string, ModelMessage[]>();
+  
+  // Store image attachments per session
+  private static imageAttachments = new Map<string, ImagePart[]>();
 
   constructor(private mcpService = inject(MCPService)) {}
 
-  private getClient(baseUrl?: string, apiKey?: string) {
-    const finalApiKey = apiKey || Deno.env.get(ENV_OPENAI_API_KEY);
-    const finalBaseUrl = baseUrl || Deno.env.get(ENV_OPENAI_BASE_URL);
+  private getModel(model: string) {
+    const apiKey = Deno.env.get(ENV_OPENAI_API_KEY);
+    const baseUrl = Deno.env.get(ENV_OPENAI_BASE_URL);
 
-    if (!finalApiKey) {
+    if (!apiKey) {
       throw new Error(`${ENV_OPENAI_API_KEY} environment variable is required`);
     }
 
-    if (!finalBaseUrl) {
+    if (!baseUrl) {
       throw new Error(`${ENV_OPENAI_BASE_URL} environment variable is required`);
     }
 
-    return createOpenAI({
-      apiKey: finalApiKey,
-      baseURL: finalBaseUrl,
-    });
+    // Detect provider and return appropriate model
+    const isGoogleGemini = baseUrl.includes('generativelanguage.googleapis.com');
+
+    if (isGoogleGemini) {
+      // Use Google native SDK
+      const googleProvider = createGoogleGenerativeAI({ apiKey });
+      return googleProvider(model);
+    } else {
+      // Use OpenAI-compatible provider
+      const openAIProvider = createOpenAI({
+        apiKey,
+        baseURL: baseUrl,
+      });
+      return openAIProvider.chat(model);
+    }
   }
 
   public async listModels() {
@@ -48,31 +62,64 @@ export class ConversationsService {
        throw new Error("OpenAI configuration is missing");
     }
 
-    // Fetch models from provider
-    const response = await fetch(`${baseUrl}/models`, {
-      headers: {
+    // Detect if using Google Gemini API
+    const isGoogleGemini = baseUrl.includes('generativelanguage.googleapis.com');
+    
+    let fetchUrl: string;
+    let headers: Record<string, string>;
+
+    if (isGoogleGemini) {
+      // Google Gemini API uses different auth and endpoint
+      fetchUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
+      headers = {
+        'X-Goog-Api-Key': apiKey,
+      };
+    } else {
+      // Standard OpenAI-compatible endpoint
+      fetchUrl = `${baseUrl}/models`;
+      headers = {
         'Authorization': `Bearer ${apiKey}`,
-      },
-    });
+      };
+    }
+
+    const response = await fetch(fetchUrl, { headers });
     
     if (!response.ok) {
       throw new Error(`Failed to fetch models: ${response.statusText}`);
     }
     
     const data = await response.json();
-    return data.data || [];
+    
+    // Google returns { models: [...] }, OpenAI returns { data: [...] }
+    return data.models || data.data || [];
   }
 
   public async attachImage(sessionId: string, file: File): Promise<void> {
-    // TODO: Implement image attachment support
-    throw new ServerError("NOT_IMPLEMENTED", "Image attachments not yet supported", 501);
+    // Read file into Uint8Array
+    const buffer = await file.arrayBuffer();
+    const uint8Array = new Uint8Array(buffer);
+    
+    // Get existing images for this session or create new array
+    const images = ConversationsService.imageAttachments.get(sessionId) || [];
+    
+    // Add the new image using the correct ImagePart type
+    const imagePart: ImagePart = {
+      type: 'image',
+      image: uint8Array,
+      mediaType: file.type, // Correct property name is mediaType, not mimeType
+    };
+    
+    images.push(imagePart);
+    
+    // Store back in the map
+    ConversationsService.imageAttachments.set(sessionId, images);
   }
 
-  private getHistory(sessionId: string): CoreMessage[] {
+  private getHistory(sessionId: string): ModelMessage[] {
     return ConversationsService.sessions.get(sessionId) || [];
   }
 
-  private updateHistory(sessionId: string, messages: CoreMessage[]) {
+  private updateHistory(sessionId: string, messages: ModelMessage[]) {
     ConversationsService.sessions.set(sessionId, messages);
   }
 
@@ -81,11 +128,9 @@ export class ConversationsService {
     const tools: Record<string, any> = {};
 
     for (const mcpTool of mcpTools) {
-      const schema = z.object(mcpTool.meta.inputSchema);
-      
       tools[mcpTool.name] = aiTool({
         description: mcpTool.meta.description || "",
-        parameters: zodSchema(schema),
+        inputSchema: mcpTool.meta.inputSchema,
         execute: async (args: any) => {
           const result = await mcpTool.run(args);
           return result.structured || result.text;
@@ -155,39 +200,6 @@ export class ConversationsService {
     );
   }
 
-  public async sendAndWaitMessage(
-    payload: SendMessageRequest,
-    requestUrl: string,
-    authHeader?: string,
-  ): Promise<string> {
-    const { sessionId, userMessage, mcpServer, model } = payload;
-    
-    try {
-      const client = this.getClient();
-      const history = this.getHistory(sessionId);
-      const tools = this.getTools(mcpServer);
-
-      const newMessage: CoreMessage = { 
-        role: 'user', 
-        content: userMessage 
-      };
-      const messages = [...history, newMessage];
-
-      const result = await generateText({
-        model: client(model),
-        messages,
-        tools,
-        maxSteps: 10, // Allow more tool calls
-      });
-
-      this.updateHistory(sessionId, [...messages, ...result.response.messages]);
-
-      return result.text;
-    } catch (error) {
-      throw this.handleAIError(error);
-    }
-  }
-
   public async streamMessage(
     payload: SendMessageRequest,
     requestUrl: string,
@@ -196,21 +208,39 @@ export class ConversationsService {
     const { sessionId, userMessage, mcpServer, model } = payload;
     
     try {
-      const client = this.getClient();
+      const aiModel = this.getModel(model);
       const history = this.getHistory(sessionId);
       const tools = this.getTools(mcpServer);
 
-      const newMessage: CoreMessage = { 
+      // Get any attached images for this session
+      const attachedImages = ConversationsService.imageAttachments.get(sessionId) || [];
+      
+      // Build message content with text and images
+      let messageContent: string | Array<TextPart | ImagePart>;
+      
+      if (attachedImages.length > 0) {
+        // Create multimodal content with text and images
+        const textPart: TextPart = { type: 'text', text: userMessage };
+        messageContent = [textPart, ...attachedImages];
+        
+        // Clear images after adding them to the message
+        ConversationsService.imageAttachments.delete(sessionId);
+      } else {
+        // Plain text message
+        messageContent = userMessage;
+      }
+
+      const newMessage: ModelMessage = { 
         role: 'user', 
-        content: userMessage 
+        content: messageContent
       };
       const messages = [...history, newMessage];
 
       const result = await streamText({
-        model: client(model),
+        model: aiModel,
         messages,
         tools,
-        maxSteps: 10, // Allow more tool calls
+        stopWhen: stepCountIs(25), // Allow up to 25 tool call steps
         onFinish: async ({ response }) => {
           this.updateHistory(sessionId, [...messages, ...response.messages]);
         },

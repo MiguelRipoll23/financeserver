@@ -15,7 +15,7 @@ export class DeleteBillToolService {
         title: "Delete bill",
         description:
           "Use this when you need to delete a bill that contains completely invalid data. Do not use for updating or correcting bills - use bills.update instead.",
-        inputSchema: DeleteBillToolSchema.shape,
+        inputSchema: DeleteBillToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,

@@ -15,7 +15,7 @@ export class DeleteSalaryChangeToolService {
         title: "Delete salary change",
         description:
           "Use this when you need to delete a salary change. Do not use for updating salary changes.",
-        inputSchema: DeleteSalaryChangeToolSchema.shape,
+        inputSchema: DeleteSalaryChangeToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,

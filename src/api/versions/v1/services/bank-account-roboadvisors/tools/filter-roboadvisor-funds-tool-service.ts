@@ -16,7 +16,7 @@ export class FilterRoboadvisorFundsToolService {
         title: "Filter roboadvisor fund allocations",
         description:
           "Use this when you need to retrieve all fund allocations for a specific roboadvisor",
-        inputSchema: FilterBankAccountRoboadvisorFundsToolSchema.shape,
+        inputSchema: FilterBankAccountRoboadvisorFundsToolSchema,
         annotations: {
           readOnlyHint: true,
           idempotentHint: true,

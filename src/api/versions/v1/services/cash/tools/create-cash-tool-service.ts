@@ -14,7 +14,7 @@ export class CreateCashToolService {
         title: "Create cash source",
         description:
           "Use this when you need to create a new cash source. Do not use for updating or deleting cash sources.",
-        inputSchema: CreateCashToolSchema.shape,
+        inputSchema: CreateCashToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: false,

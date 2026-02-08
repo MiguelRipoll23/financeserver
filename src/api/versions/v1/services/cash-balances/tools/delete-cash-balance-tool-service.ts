@@ -14,7 +14,7 @@ export class DeleteCashBalanceToolService {
         title: "Delete cash balance",
         description:
           "Use this when you need to permanently delete a cash balance record. Do not use for creating or updating cash balances.",
-        inputSchema: DeleteCashBalanceToolSchema.shape,
+        inputSchema: DeleteCashBalanceToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,

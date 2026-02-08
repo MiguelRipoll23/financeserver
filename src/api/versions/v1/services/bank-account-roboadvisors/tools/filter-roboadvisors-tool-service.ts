@@ -16,7 +16,7 @@ export class FilterRoboadvisorsToolService {
         title: "Filter roboadvisors",
         description:
           "Use this when you need to retrieve roboadvisors with optional filtering and pagination. You can filter by bank account or name",
-        inputSchema: FilterBankAccountRoboadvisorsToolSchema.shape,
+        inputSchema: FilterBankAccountRoboadvisorsToolSchema,
         annotations: {
           readOnlyHint: true,
           idempotentHint: true,

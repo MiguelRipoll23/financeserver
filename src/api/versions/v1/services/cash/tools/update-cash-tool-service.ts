@@ -14,7 +14,7 @@ export class UpdateCashToolService {
         title: "Update cash source",
         description:
           "Use this when you need to update an existing cash source's details. Do not use for creating or deleting cash sources.",
-        inputSchema: UpdateCashToolSchema.shape,
+        inputSchema: UpdateCashToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,

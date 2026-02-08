@@ -16,7 +16,7 @@ export class FilterCryptoExchangesToolService {
         title: "Filter crypto exchanges",
         description:
           "Use this when you need to search and list crypto exchanges with optional filters.",
-        inputSchema: FilterCryptoExchangesToolSchema.shape,
+        inputSchema: FilterCryptoExchangesToolSchema,
         annotations: {
           readOnlyHint: true,
           idempotentHint: true,

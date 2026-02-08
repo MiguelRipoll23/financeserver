@@ -15,7 +15,7 @@ export class FilterSubscriptionsToolService {
         title: "Filter subscriptions",
         description:
           "Use this when you need to search subscriptions by name, category, recurrence, date range, and active status.",
-        inputSchema: FilterSubscriptionsToolSchema.shape,
+        inputSchema: FilterSubscriptionsToolSchema,
         annotations: {
           readOnlyHint: true,
           idempotentHint: true,

@@ -16,7 +16,7 @@ export class UpdateRoboadvisorBalanceToolService {
         title: "Update roboadvisor balance entry",
         description:
           "Use this when you need to update an existing balance entry for a roboadvisor",
-        inputSchema: UpdateBankAccountRoboadvisorBalanceToolSchema.shape,
+        inputSchema: UpdateBankAccountRoboadvisorBalanceToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,
