@@ -5,6 +5,7 @@ import {
   type ModelMessage,
   stepCountIs,
   streamText,
+  type StreamTextResult,
   type TextPart,
   tool as aiTool,
 } from "ai";
@@ -226,7 +227,7 @@ export class ConversationsService {
 
   public async streamMessage(
     payload: SendMessageRequest,
-  ): Promise<any> {
+  ): Promise<StreamTextResult<any, any>> {
     const { sessionId, userMessage, mcpServer, model } = payload;
 
     try {
