@@ -1,6 +1,8 @@
 {
   "imports": {
-    "@github/copilot-sdk": "npm:@github/copilot-sdk@^0.1.23",
+    "@ai-sdk/openai": "npm:@ai-sdk/openai@^3.0.26",
+    "@ai-sdk/mcp": "npm:@ai-sdk/mcp@^1.0.19",
+    "ai": "npm:ai@6.0.77",
     "@hono/zod-openapi": "npm:@hono/zod-openapi@^1.2.1",
     "@simplewebauthn/server": "jsr:@simplewebauthn/server@^13.2.2",
     "@needle-di/core": "jsr:@needle-di/core@^1.1.0",

@@ -1,6 +1,6 @@
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { inject, injectable } from "@needle-di/core";
-import { CopilotService } from "../../services/copilot/copilot-service.ts";
+import { ConversationsService } from "../../services/conversations/conversations-service.ts";
 import {
   SendMessageSchema,
   SessionIdParamSchema,
@@ -10,12 +10,13 @@ import { HonoVariables } from "../../../../../core/types/hono/hono-variables-typ
 import type { Context } from "hono";
 import { streamText } from "hono/streaming";
 import { z } from "@hono/zod-openapi";
+import { ServerError } from "../../models/server-error.ts";
 
 @injectable()
 export class AuthenticatedConversationsRouter {
   private app: OpenAPIHono<{ Variables: HonoVariables }>;
 
-  constructor(private copilotService = inject(CopilotService)) {
+  constructor(private conversationsService = inject(ConversationsService)) {
     this.app = new OpenAPIHono<{ Variables: HonoVariables }>();
     this.setRoutes();
   }
@@ -37,7 +38,7 @@ export class AuthenticatedConversationsRouter {
         path: "/models",
         summary: "List available models",
         description:
-          "Returns a list of available GitHub Copilot models that can be used for conversations.",
+          "Returns a list of available models that can be used for conversations.",
         tags: ["Conversations"],
         responses: {
           200: {
@@ -56,7 +57,7 @@ export class AuthenticatedConversationsRouter {
         },
       }),
       async (c: Context<{ Variables: HonoVariables }>) => {
-        const models = await this.copilotService.listModels();
+        const models = await this.conversationsService.listModels();
         return c.json({ models });
       },
     );
@@ -69,7 +70,7 @@ export class AuthenticatedConversationsRouter {
         path: "/stream-message",
         summary: "Stream a message",
         description:
-          "Sends a message to GitHub Copilot and streams the response back as text chunks.",
+          "Sends a message and streams the response back as text chunks.",
         tags: ["Conversations"],
         request: {
           body: {
@@ -99,22 +100,35 @@ export class AuthenticatedConversationsRouter {
         },
       }),
       async (c: Context<{ Variables: HonoVariables }>) => {
-        const body = await c.req.json();
-        const payload = SendMessageSchema.parse(body);
-        const stream = await this.copilotService.streamMessage(payload);
+        try {
+          const body = await c.req.json();
+          const payload = SendMessageSchema.parse(body);
+          const requestUrl = new URL(c.req.url).href;
+          const authHeader = c.req.header('Authorization');
+          const stream = await this.conversationsService.streamMessage(payload, requestUrl, authHeader);
 
-        return streamText(c, async (streamWriter) => {
-          const reader = stream.getReader();
-          try {
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) break;
-              await streamWriter.write(value);
+          return streamText(c, async (streamWriter) => {
+            const reader = stream.getReader();
+            try {
+              while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                await streamWriter.write(value);
+              }
+            } finally {
+              reader.releaseLock();
             }
-          } finally {
-            reader.releaseLock();
+          });
+        } catch (error) {
+          // Handle errors BEFORE streaming starts
+          if (error instanceof ServerError) {
+            return c.json(
+              { code: error.getCode(), message: error.getMessage() },
+              error.getStatusCode()
+            );
           }
-        });
+          throw error;
+        }
       },
     );
 
@@ -151,7 +165,9 @@ export class AuthenticatedConversationsRouter {
       async (c: Context<{ Variables: HonoVariables }>) => {
         const body = await c.req.json();
         const payload = SendMessageSchema.parse(body);
-        const content = await this.copilotService.sendAndWaitMessage(payload);
+        const requestUrl = new URL(c.req.url).href;
+        const authHeader = c.req.header('Authorization');
+        const content = await this.conversationsService.sendAndWaitMessage(payload, requestUrl, authHeader);
         return c.json({ content });
       },
     );
@@ -204,7 +220,7 @@ export class AuthenticatedConversationsRouter {
           return c.json({ error: "No image file provided" }, 400);
         }
 
-        await this.copilotService.attachImage(sessionId, body["image"]);
+        await this.conversationsService.attachImage(sessionId, body["image"]);
 
         return c.json({ success: true });
       },

@@ -5,7 +5,9 @@
     "jsr:@simplewebauthn/server@^13.2.2": "13.2.2",
     "jsr:@std/encoding@0.221": "0.221.0",
     "jsr:@wok/djwt@^3.0.2": "3.0.2",
-    "npm:@github/copilot-sdk@~0.1.23": "0.1.23",
+    "npm:@ai-sdk/mcp@*": "1.0.19_zod@4.3.6",
+    "npm:@ai-sdk/mcp@^1.0.19": "1.0.19_zod@4.3.6",
+    "npm:@ai-sdk/openai@^3.0.26": "3.0.26_zod@4.3.6",
     "npm:@hexagon/base64@^1.1.27": "1.1.28",
     "npm:@hono/mcp@0.2.3": "0.2.3_@modelcontextprotocol+sdk@1.26.0__zod@4.3.6__hono@4.11.8__ajv@8.17.1__express@5.2.1_hono@4.11.8_hono-rate-limiter@0.4.2__hono@4.11.8_zod@4.3.6",
     "npm:@hono/zod-openapi@^1.2.1": "1.2.1_hono@4.11.8_zod@4.3.6",
@@ -18,6 +20,7 @@
     "npm:@peculiar/asn1-x509@^2.3.8": "2.6.0",
     "npm:@peculiar/x509@^1.13.0": "1.14.3",
     "npm:@scalar/hono-api-reference@~0.9.40": "0.9.40_hono@4.11.8",
+    "npm:ai@6.0.77": "6.0.77_zod@4.3.6",
     "npm:drizzle-kit@*": "0.31.8_esbuild@0.25.12",
     "npm:drizzle-kit@~0.31.8": "0.31.8_esbuild@0.25.12",
     "npm:drizzle-orm@~0.45.1": "0.45.1_pg@8.18.0",
@@ -53,6 +56,47 @@
     }
   },
   "npm": {
+    "@ai-sdk/gateway@3.0.39_zod@4.3.6": {
+      "integrity": "sha512-SeCZBAdDNbWpVUXiYgOAqis22p5MEYfrjRw0hiBa5hM+7sDGYQpMinUjkM8kbPXMkY+AhKLrHleBl+SuqpzlgA==",
+      "dependencies": [
+        "@ai-sdk/provider",
+        "@ai-sdk/provider-utils",
+        "@vercel/oidc",
+        "zod"
+      ]
+    },
+    "@ai-sdk/mcp@1.0.19_zod@4.3.6": {
+      "integrity": "sha512-RJ5I9IU0MNOFMJXTNh+pjGM8EeUNxT5FZHADoW/x2HhkMvZzpbx6ZKXvLzJ6/+uJBe50PHj4ZNxObeihH0JdoA==",
+      "dependencies": [
+        "@ai-sdk/provider",
+        "@ai-sdk/provider-utils",
+        "pkce-challenge",
+        "zod"
+      ]
+    },
+    "@ai-sdk/openai@3.0.26_zod@4.3.6": {
+      "integrity": "sha512-W/hiwxIfG29IO0Fob1HwWpFssMsNrxWoX8A7DwNGOtKArDBmJNuGzQeU/k0Fnh8WyvZEnfxkjO4oXkSXfVBayg==",
+      "dependencies": [
+        "@ai-sdk/provider",
+        "@ai-sdk/provider-utils",
+        "zod"
+      ]
+    },
+    "@ai-sdk/provider-utils@4.0.14_zod@4.3.6": {
+      "integrity": "sha512-7bzKd9lgiDeXM7O4U4nQ8iTxguAOkg8LZGD9AfDVZYjO5cKYRwBPwVjboFcVrxncRHu0tYxZtXZtiLKpG4pEng==",
+      "dependencies": [
+        "@ai-sdk/provider",
+        "@standard-schema/spec",
+        "eventsource-parser",
+        "zod"
+      ]
+    },
+    "@ai-sdk/provider@3.0.8": {
+      "integrity": "sha512-oGMAgGoQdBXbZqNG0Ze56CHjDZ1IDYOwGYxYjO5KLSlz5HiNQ9udIXsPZ61VWaHGZ5XW/jyjmr6t2xz2jGVwbQ==",
+      "dependencies": [
+        "json-schema"
+      ]
+    },
     "@asteasolutions/zod-to-openapi@8.4.0_zod@4.3.6": {
       "integrity": "sha512-Ckp971tmTw4pnv+o7iK85ldBHBKk6gxMaoNyLn3c2Th/fKoTG8G3jdYuOanpdGqwlDB0z01FOjry2d32lfTqrA==",
       "dependencies": [
@@ -319,62 +363,6 @@
       "os": ["win32"],
       "cpu": ["x64"]
     },
-    "@github/copilot-darwin-arm64@0.0.403": {
-      "integrity": "sha512-dOw8IleA0d1soHnbr/6wc6vZiYWNTKMgfTe/NET1nCfMzyKDt/0F0I7PT5y+DLujJknTla/ZeEmmBUmliTW4Cg==",
-      "os": ["darwin"],
-      "cpu": ["arm64"],
-      "bin": true
-    },
-    "@github/copilot-darwin-x64@0.0.403": {
-      "integrity": "sha512-aK2jSNWgY8eiZ+TmrvGhssMCPDTKArc0ip6Ul5OaslpytKks8hyXoRbxGD0N9sKioSUSbvKUf+1AqavbDpJO+w==",
-      "os": ["darwin"],
-      "cpu": ["x64"],
-      "bin": true
-    },
-    "@github/copilot-linux-arm64@0.0.403": {
-      "integrity": "sha512-KhoR2iR70O6vCkzf0h8/K+p82qAgOvMTgAPm9bVEHvbdGFR7Py9qL5v03bMbPxsA45oNaZAkzDhfTAqWhIAZsQ==",
-      "os": ["linux"],
-      "cpu": ["arm64"],
-      "bin": true
-    },
-    "@github/copilot-linux-x64@0.0.403": {
-      "integrity": "sha512-eoswUc9vo4TB+/9PgFJLVtzI4dPjkpJXdCsAioVuoqPdNxHxlIHFe9HaVcqMRZxUNY1YHEBZozy+IpUEGjgdfQ==",
-      "os": ["linux"],
-      "cpu": ["x64"],
-      "bin": true
-    },
-    "@github/copilot-sdk@0.1.23": {
-      "integrity": "sha512-0by81bsBQlDKE5VbcegZfUMvPyPm1aXwSGS2rGaMAFxv3ps+dACf1Voruxik7hQTae0ziVFJjuVrlxZoRaXBLw==",
-      "dependencies": [
-        "@github/copilot",
-        "vscode-jsonrpc",
-        "zod"
-      ]
-    },
-    "@github/copilot-win32-arm64@0.0.403": {
-      "integrity": "sha512-djWjzCsp2xPNafMyOZ/ivU328/WvWhdroGie/DugiJBTgQL2SP0quWW1fhTlDwE81a3g9CxfJonaRgOpFTJTcg==",
-      "os": ["win32"],
-      "cpu": ["arm64"],
-      "bin": true
-    },
-    "@github/copilot-win32-x64@0.0.403": {
-      "integrity": "sha512-lju8cHy2E6Ux7R7tWyLZeksYC2MVZu9i9ocjiBX/qfG2/pNJs7S5OlkwKJ0BSXSbZEHQYq7iHfEWp201bVfk9A==",
-      "os": ["win32"],
-      "cpu": ["x64"],
-      "bin": true
-    },
-    "@github/copilot@0.0.403": {
-      "integrity": "sha512-v5jUdtGJReLmE1rmff/LZf+50nzmYQYAaSRNtVNr9g0j0GkCd/noQExe31i1+PudvWU0ZJjltR0B8pUfDRdA9Q==",
-      "optionalDependencies": [
-        "@github/copilot-darwin-arm64",
-        "@github/copilot-darwin-x64",
-        "@github/copilot-linux-arm64",
-        "@github/copilot-linux-x64",
-        "@github/copilot-win32-arm64",
-        "@github/copilot-win32-x64"
-      ],
-      "bin": true
-    },
     "@hexagon/base64@1.1.28": {
       "integrity": "sha512-lhqDEAvWixy3bZ+UOYbPwUbBkwBq5C1LAJ/xPC8Oi+lL54oyakv/npbA0aU2hgCsx/1NUd4IBvV03+aUBWxerw=="
     },
@@ -435,6 +423,9 @@
         "zod",
         "zod-to-json-schema"
       ]
+    },
+    "@opentelemetry/api@1.9.0": {
+      "integrity": "sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg=="
     },
     "@peculiar/asn1-android@2.6.0": {
       "integrity": "sha512-cBRCKtYPF7vJGN76/yG8VbxRcHLPF3HnkoHhKOZeHpoVtbMYfY9ROKtH3DtYUY9m8uI1Mh47PRhHf2hSK3xcSQ==",
@@ -581,11 +572,27 @@
         "zod"
       ]
     },
+    "@standard-schema/spec@1.1.0": {
+      "integrity": "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w=="
+    },
+    "@vercel/oidc@3.1.0": {
+      "integrity": "sha512-Fw28YZpRnA3cAHHDlkt7xQHiJ0fcL+NRcIqsocZQUSmbzeIKRpwttJjik5ZGanXP+vlA4SbTg+AbA3bP363l+w=="
+    },
     "accepts@2.0.0": {
       "integrity": "sha512-5cvg6CtKwfgdmVqY1WIiXKc3Q1bkRqGLi+2W/6ao+6Y7gu/RCwRuAhGEzh5B4KlszSuTLgZYuqFqo5bImjNKng==",
       "dependencies": [
         "mime-types",
         "negotiator"
+      ]
+    },
+    "ai@6.0.77_zod@4.3.6": {
+      "integrity": "sha512-tyyhrRpCRFVlivdNIFLK8cexSBB2jwTqO0z1qJQagk+UxZ+MW8h5V8xsvvb+xdKDY482Y8KAm0mr7TDnPKvvlw==",
+      "dependencies": [
+        "@ai-sdk/gateway",
+        "@ai-sdk/provider",
+        "@ai-sdk/provider-utils",
+        "@opentelemetry/api",
+        "zod"
       ]
     },
     "ajv-formats@3.0.1_ajv@8.17.1": {
@@ -968,6 +975,9 @@
     "json-schema-typed@8.0.2": {
       "integrity": "sha512-fQhoXdcvc3V28x7C7BMs4P5+kNlgUURe2jmUT1T//oBRMDrqy1QPelJimwZGo7Hg9VPV3EQV5Bnq4hbFy2vetA=="
     },
+    "json-schema@0.4.0": {
+      "integrity": "sha512-es94M3nTIfsEPisRafak+HDLfHXnKBhV3vU5eqPcS3flIWqcxJWgXHXiey3YrpaNsanY5ei1VoYEbOzijuq9BA=="
+    },
     "math-intrinsics@1.1.0": {
       "integrity": "sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g=="
     },
@@ -1277,9 +1287,6 @@
     "vary@1.1.2": {
       "integrity": "sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg=="
     },
-    "vscode-jsonrpc@8.2.1": {
-      "integrity": "sha512-kdjOSJ2lLIn7r1rtrMbbNCHjyMPfRnowdKjBQ+mGq6NAW5QY2bEZC/khaC5OR8svbbjvLEaIXkOq45e2X9BIbQ=="
-    },
     "which@2.0.2": {
       "integrity": "sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==",
       "dependencies": [
@@ -1322,11 +1329,13 @@
       "jsr:@needle-di/core@^1.1.0",
       "jsr:@simplewebauthn/server@^13.2.2",
       "jsr:@wok/djwt@^3.0.2",
-      "npm:@github/copilot-sdk@~0.1.23",
+      "npm:@ai-sdk/mcp@^1.0.19",
+      "npm:@ai-sdk/openai@^3.0.26",
       "npm:@hono/mcp@0.2.3",
       "npm:@hono/zod-openapi@^1.2.1",
       "npm:@modelcontextprotocol/sdk@^1.26.0",
       "npm:@scalar/hono-api-reference@~0.9.40",
+      "npm:ai@6.0.77",
       "npm:drizzle-kit@~0.31.8",
       "npm:drizzle-orm@~0.45.1",
       "npm:hono@^4.11.8",
