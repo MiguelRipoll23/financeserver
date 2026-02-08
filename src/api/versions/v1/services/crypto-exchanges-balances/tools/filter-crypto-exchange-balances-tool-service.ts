@@ -18,7 +18,7 @@ export class FilterCryptoExchangeBalancesToolService {
         title: "Filter crypto exchange balances",
         description:
           "Use this when you need to search and list balances for crypto exchanges. You can optionally specify a cryptoExchangeId to filter by a specific exchange, or omit it to retrieve all balances across all exchanges.",
-        inputSchema: FilterCryptoExchangeBalancesToolSchema.shape,
+        inputSchema: FilterCryptoExchangeBalancesToolSchema,
         annotations: {
           readOnlyHint: true,
           idempotentHint: true,
@@ -29,8 +29,8 @@ export class FilterCryptoExchangeBalancesToolService {
       run: async (input: unknown) => {
         const parsed = FilterCryptoExchangeBalancesToolSchema.parse(input);
 
-        const result =
-          await this.cryptoExchangeBalancesService.getCryptoExchangeBalances({
+        const result = await this.cryptoExchangeBalancesService
+          .getCryptoExchangeBalances({
             cryptoExchangeId: parsed.cryptoExchangeId,
             sortOrder: parsed.sortOrder,
             limit: parsed.pageSize,

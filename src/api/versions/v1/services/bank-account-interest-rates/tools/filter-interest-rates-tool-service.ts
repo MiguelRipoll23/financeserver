@@ -18,7 +18,7 @@ export class FilterInterestRatesToolService {
         title: "List bank account interest rates",
         description:
           "Use this when you need to view the history of interest rates for a bank account.",
-        inputSchema: FilterBankAccountInterestRatesToolSchema.shape,
+        inputSchema: FilterBankAccountInterestRatesToolSchema,
         annotations: {
           readOnlyHint: true,
           idempotentHint: true,
@@ -29,8 +29,8 @@ export class FilterInterestRatesToolService {
       run: async (input: unknown) => {
         const parsed = FilterBankAccountInterestRatesToolSchema.parse(input);
 
-        const result =
-          await this.bankAccountInterestRatesService.getBankAccountInterestRates(
+        const result = await this.bankAccountInterestRatesService
+          .getBankAccountInterestRates(
             {
               bankAccountId: parsed.bankAccountId,
               sortOrder: parsed.sortOrder,
@@ -43,17 +43,24 @@ export class FilterInterestRatesToolService {
         const ratesList = result.results
           .map(
             (rate) =>
-              `- ${rate.interestRate}% from ${rate.interestRateStartDate}${rate.interestRateEndDate ? ` to ${rate.interestRateEndDate}` : " (ongoing)"} (ID: ${rate.id})`,
+              `- ${rate.interestRate}% from ${rate.interestRateStartDate}${
+                rate.interestRateEndDate
+                  ? ` to ${rate.interestRateEndDate}`
+                  : " (ongoing)"
+              } (ID: ${rate.id})`,
           )
           .join("\n");
 
-        let text = `Found ${count} interest rate record${count !== 1 ? "s" : ""}`;
+        let text = `Found ${count} interest rate record${
+          count !== 1 ? "s" : ""
+        }`;
         if (count > 0) {
           text += `:\n${ratesList}`;
         }
 
         if (result.nextCursor) {
-          text += `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
+          text +=
+            `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
         }
 
         return {

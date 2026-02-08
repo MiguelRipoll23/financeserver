@@ -32,7 +32,9 @@ export class MCPService {
     private bankAccountInterestRatesMCPService = inject(
       BankAccountInterestRatesMCPService,
     ),
-    private bankAccountRoboadvisorsMCPService = inject(BankAccountRoboadvisorsMCPService),
+    private bankAccountRoboadvisorsMCPService = inject(
+      BankAccountRoboadvisorsMCPService,
+    ),
     private cryptoExchangesMCPService = inject(CryptoExchangesMCPService),
     private cashMCPService = inject(CashMCPService),
     private cashBalancesMCPService = inject(CashBalancesMCPService),
@@ -54,6 +56,49 @@ export class MCPService {
       this.cryptoExchangesMCPService,
       this.salaryChangesMCPService,
     ]);
+  }
+
+  public getToolsForServer(
+    serverType: "GLOBAL" | "PORTFOLIO" | "EXPENSES",
+  ): McpToolDefinition[] {
+    let providers: McpProvider[] = [];
+    switch (serverType) {
+      case "GLOBAL":
+        providers = [
+          this.receiptsMCPService,
+          this.productsMCPService,
+          this.billsMCPService,
+          this.subscriptionsMCPService,
+          this.cashMCPService,
+          this.cashBalancesMCPService,
+          this.bankAccountsMCPService,
+          this.bankAccountBalancesMCPService,
+          this.bankAccountInterestRatesMCPService,
+          this.bankAccountRoboadvisorsMCPService,
+          this.cryptoExchangesMCPService,
+          this.salaryChangesMCPService,
+        ];
+        break;
+      case "PORTFOLIO":
+        providers = [
+          this.cashMCPService,
+          this.cashBalancesMCPService,
+          this.bankAccountsMCPService,
+          this.bankAccountBalancesMCPService,
+          this.bankAccountInterestRatesMCPService,
+          this.bankAccountRoboadvisorsMCPService,
+          this.cryptoExchangesMCPService,
+        ];
+        break;
+      case "EXPENSES":
+        providers = [
+          this.billsMCPService,
+          this.receiptsMCPService,
+          this.subscriptionsMCPService,
+        ];
+        break;
+    }
+    return providers.flatMap((provider) => provider.getTools());
   }
 
   public createPortfolioServer(): McpServer {
@@ -124,12 +169,14 @@ export class MCPService {
           };
         } catch (error) {
           const executionTime = Date.now() - startTime;
-          const logMessage = `Tool ${tool.name} executed by ${userId} (${executionTime}ms) failed with error:`;
+          const logMessage =
+            `Tool ${tool.name} executed by ${userId} (${executionTime}ms) failed with error:`;
           console.error(logMessage, error);
 
           // Return error as text content for MCP client
-          const errorMessage =
-            error instanceof Error ? error.message : "Unknown error occurred";
+          const errorMessage = error instanceof Error
+            ? error.message
+            : "Unknown error occurred";
           return {
             content: [
               { type: "text" as const, text: `Error: ${errorMessage}` },

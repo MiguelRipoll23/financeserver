@@ -7,8 +7,8 @@ import { DeleteBankAccountInterestRateToolSchema } from "../../../schemas/mcp-ba
 export class DeleteInterestRateToolService {
   constructor(
     private bankAccountInterestRatesService = inject(
-      BankAccountInterestRatesService
-    )
+      BankAccountInterestRatesService,
+    ),
   ) {}
 
   public getDefinition(): McpToolDefinition {
@@ -18,7 +18,7 @@ export class DeleteInterestRateToolService {
         title: "Delete bank account interest rate",
         description:
           "Use this when you need to delete an existing interest rate record.",
-        inputSchema: DeleteBankAccountInterestRateToolSchema.shape,
+        inputSchema: DeleteBankAccountInterestRateToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: false,
@@ -29,9 +29,10 @@ export class DeleteInterestRateToolService {
       run: async (input: unknown) => {
         const parsed = DeleteBankAccountInterestRateToolSchema.parse(input);
 
-        await this.bankAccountInterestRatesService.deleteBankAccountInterestRate(
-          parsed.id
-        );
+        await this.bankAccountInterestRatesService
+          .deleteBankAccountInterestRate(
+            parsed.id,
+          );
 
         return {
           text: `Interest rate deleted successfully (ID: ${parsed.id})`,

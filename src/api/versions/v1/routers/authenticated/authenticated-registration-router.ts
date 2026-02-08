@@ -16,7 +16,7 @@ export class AuthenticatedRegistrationRouter {
   private app: OpenAPIHono<{ Variables: HonoVariables }>;
 
   constructor(
-    private registrationService = inject(PasskeyRegistrationService)
+    private registrationService = inject(PasskeyRegistrationService),
   ) {
     this.app = new OpenAPIHono<{ Variables: HonoVariables }>();
     this.setRoutes();
@@ -67,7 +67,11 @@ export class AuthenticatedRegistrationRouter {
         const origin = c.req.header("Origin");
 
         if (!origin) {
-          throw new ServerError("MISSING_ORIGIN", "Origin header is required", 400);
+          throw new ServerError(
+            "MISSING_ORIGIN",
+            "Origin header is required",
+            400,
+          );
         }
 
         const requestUrl = c.req.url;
@@ -75,11 +79,11 @@ export class AuthenticatedRegistrationRouter {
           origin,
           requestUrl,
           transactionId,
-          displayName
+          displayName,
         );
 
         return c.json(response, 200);
-      }
+      },
     );
   }
 
@@ -119,7 +123,11 @@ export class AuthenticatedRegistrationRouter {
         const origin = c.req.header("Origin");
 
         if (!origin) {
-          throw new ServerError("MISSING_ORIGIN", "Origin header is required", 400);
+          throw new ServerError(
+            "MISSING_ORIGIN",
+            "Origin header is required",
+            400,
+          );
         }
 
         const requestUrl = c.req.url;
@@ -127,11 +135,11 @@ export class AuthenticatedRegistrationRouter {
           origin,
           requestUrl,
           transactionId,
-          registrationResponse as any // Zod validation ensures correct shape
+          registrationResponse as any, // Zod validation ensures correct shape
         );
 
         return c.json(response, 200);
-      }
+      },
     );
   }
 }

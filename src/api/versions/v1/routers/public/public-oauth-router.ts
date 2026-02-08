@@ -6,12 +6,12 @@ import { OAuthClientRegistryService } from "../../services/authentication/oauth-
 import {
   GitHubCallbackQuerySchema,
   OAuthAuthorizeQuerySchema,
-  OAuthTokenRequestFormSchema,
-  OAuthTokenRequestSchema,
-  OAuthTokenResponseSchema,
   OAuthClientRegistrationRequestSchema,
   OAuthClientRegistrationResponseSchema,
   OAuthRevokeRequestFormSchema,
+  OAuthTokenRequestFormSchema,
+  OAuthTokenRequestSchema,
+  OAuthTokenResponseSchema,
 } from "../../schemas/oauth-schemas.ts";
 import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
 import { ServerResponse } from "../../models/server-response.ts";
@@ -22,7 +22,7 @@ export class PublicOAuthRouter {
 
   constructor(
     private gitHubOAuthService = inject(GitHubOAuthService),
-    private oauthClientRegistryService = inject(OAuthClientRegistryService)
+    private oauthClientRegistryService = inject(OAuthClientRegistryService),
   ) {
     this.app = new OpenAPIHono();
     this.setRoutes();
@@ -73,14 +73,14 @@ export class PublicOAuthRouter {
       }),
       async (context: Context) => {
         const payload = OAuthClientRegistrationRequestSchema.parse(
-          await context.req.json()
+          await context.req.json(),
         );
 
-        const response =
-          await this.oauthClientRegistryService.registerPublicClient(payload);
+        const response = await this.oauthClientRegistryService
+          .registerPublicClient(payload);
 
         return context.json(response, 201);
-      }
+      },
     );
   }
 
@@ -104,11 +104,11 @@ export class PublicOAuthRouter {
       }),
       async (context: Context) => {
         const query = OAuthAuthorizeQuerySchema.parse(context.req.query());
-        const redirectUrl =
-          await this.gitHubOAuthService.createAuthorizationRedirect(query, context.req.url);
+        const redirectUrl = await this.gitHubOAuthService
+          .createAuthorizationRedirect(query, context.req.url);
 
         return context.redirect(redirectUrl, 302);
-      }
+      },
     );
   }
 
@@ -132,11 +132,11 @@ export class PublicOAuthRouter {
       }),
       async (context: Context) => {
         const query = GitHubCallbackQuerySchema.parse(context.req.query());
-        const redirectUrl =
-          await this.gitHubOAuthService.createCallbackRedirect(query, context.req.url);
+        const redirectUrl = await this.gitHubOAuthService
+          .createCallbackRedirect(query, context.req.url);
 
         return context.redirect(redirectUrl, 302);
-      }
+      },
     );
   }
 
@@ -175,11 +175,11 @@ export class PublicOAuthRouter {
       async (context: Context) => {
         const body = await context.req.parseBody();
         const payload = OAuthTokenRequestSchema.parse(body);
-        const tokenResponse =
-          await this.gitHubOAuthService.exchangeAuthorizationCode(payload);
+        const tokenResponse = await this.gitHubOAuthService
+          .exchangeAuthorizationCode(payload);
 
         return context.json(tokenResponse, 200);
-      }
+      },
     );
   }
 
@@ -216,7 +216,7 @@ export class PublicOAuthRouter {
         await this.gitHubOAuthService.revokeToken(payload);
 
         return context.body(null, 200);
-      }
+      },
     );
   }
 }

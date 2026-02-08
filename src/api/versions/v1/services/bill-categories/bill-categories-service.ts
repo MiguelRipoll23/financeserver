@@ -1,5 +1,5 @@
 import { inject, injectable } from "@needle-di/core";
-import { asc, desc, eq, sql, type SQL } from "drizzle-orm";
+import { asc, desc, eq, type SQL, sql } from "drizzle-orm";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import { billCategoriesTable } from "../../../../../db/schema.ts";
 import { ServerError } from "../../models/server-error.ts";
@@ -96,8 +96,9 @@ export class BillCategoriesService {
 
     const filteredCategoryName = filters.name?.trim();
     if (filteredCategoryName) {
-      const normalizedFilter =
-        this.normalizeCategoryInput(filteredCategoryName);
+      const normalizedFilter = this.normalizeCategoryInput(
+        filteredCategoryName,
+      );
       conditions.push(
         eq(billCategoriesTable.normalizedName, normalizedFilter.normalized),
       );
@@ -234,14 +235,13 @@ export class BillCategoriesService {
   }
 
   private resolveSortField(field: BillCategorySortField, order: SortOrder) {
-    const column =
-      field === BillCategorySortField.Name
-        ? billCategoriesTable.name
-        : field === BillCategorySortField.CreatedAt
-          ? billCategoriesTable.createdAt
-          : field === BillCategorySortField.UpdatedAt
-            ? billCategoriesTable.updatedAt
-            : billCategoriesTable.favoritedAt;
+    const column = field === BillCategorySortField.Name
+      ? billCategoriesTable.name
+      : field === BillCategorySortField.CreatedAt
+      ? billCategoriesTable.createdAt
+      : field === BillCategorySortField.UpdatedAt
+      ? billCategoriesTable.updatedAt
+      : billCategoriesTable.favoritedAt;
 
     return order === SortOrder.Desc ? desc(column) : asc(column);
   }

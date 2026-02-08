@@ -1,10 +1,10 @@
 import { inject, injectable } from "@needle-di/core";
 import {
-  generateAuthenticationOptions,
-  verifyAuthenticationResponse,
-  type AuthenticatorTransportFuture,
-  type PublicKeyCredentialRequestOptionsJSON,
   type AuthenticationResponseJSON,
+  type AuthenticatorTransportFuture,
+  generateAuthenticationOptions,
+  type PublicKeyCredentialRequestOptionsJSON,
+  verifyAuthenticationResponse,
 } from "@simplewebauthn/server";
 import { eq } from "drizzle-orm";
 import { Buffer } from "node:buffer";
@@ -22,16 +22,20 @@ export class PasskeyAuthenticationService {
   constructor(
     private kvService = inject(KVService),
     private databaseService = inject(DatabaseService),
-    private jwtService = inject(JWTService)
+    private jwtService = inject(JWTService),
   ) {}
 
-  public async getLoginOptions(origin: string, requestUrl: string, transactionId: string) {
+  public async getLoginOptions(
+    origin: string,
+    requestUrl: string,
+    transactionId: string,
+  ) {
     // Validate origin is allowed
     if (!WebAuthnUtils.isOriginAllowed(origin)) {
       throw new ServerError(
         "ORIGIN_NOT_ALLOWED",
         "Origin is not in the allowed list",
-        403
+        403,
       );
     }
 
@@ -51,11 +55,11 @@ export class PasskeyAuthenticationService {
     origin: string,
     requestUrl: string,
     transactionId: string,
-    authenticationResponse: AuthenticationResponseJSON
+    authenticationResponse: AuthenticationResponseJSON,
   ) {
     // Retrieve and consume authentication options from KV
     const authenticationOptions = await this.getAuthenticationOptionsOrThrow(
-      transactionId
+      transactionId,
     );
 
     // Validate origin is allowed
@@ -63,7 +67,7 @@ export class PasskeyAuthenticationService {
       throw new ServerError(
         "ORIGIN_NOT_ALLOWED",
         "Origin is not in the allowed list",
-        403
+        403,
       );
     }
 
@@ -90,7 +94,7 @@ export class PasskeyAuthenticationService {
       credential: {
         id: passkey.credentialId,
         publicKey: new Uint8Array(
-          Buffer.from(passkey.publicKey, "base64url")
+          Buffer.from(passkey.publicKey, "base64url"),
         ),
         counter: Number(passkey.counter),
         transports: passkey.transports
@@ -103,7 +107,7 @@ export class PasskeyAuthenticationService {
       throw new ServerError(
         "AUTHENTICATION_FAILED",
         "Authentication failed",
-        400
+        400,
       );
     }
 
@@ -124,29 +128,29 @@ export class PasskeyAuthenticationService {
   }
 
   private async getAuthenticationOptionsOrThrow(
-    transactionId: string
+    transactionId: string,
   ): Promise<PublicKeyCredentialRequestOptionsJSON> {
-    const authenticationOptions =
-      await this.kvService.consumeAuthenticationOptionsByTransactionId(
-        transactionId
+    const authenticationOptions = await this.kvService
+      .consumeAuthenticationOptionsByTransactionId(
+        transactionId,
       );
 
     if (authenticationOptions === null) {
       throw new ServerError(
         "AUTHENTICATION_OPTIONS_NOT_FOUND",
         "Authentication options not found",
-        400
+        400,
       );
     }
 
     if (
       authenticationOptions.createdAt + KV_OPTIONS_EXPIRATION_TIME <
-      Date.now()
+        Date.now()
     ) {
       throw new ServerError(
         "AUTHENTICATION_OPTIONS_EXPIRED",
         "Authentication options expired",
-        400
+        400,
       );
     }
 

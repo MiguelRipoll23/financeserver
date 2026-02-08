@@ -69,7 +69,7 @@ export class AuthenticatedUsersRouter {
         const result = await this.usersService.createUser(body);
 
         return c.json(result, 201);
-      }
+      },
     );
   }
 
@@ -114,7 +114,7 @@ export class AuthenticatedUsersRouter {
         const result = await this.usersService.updateUser(params.id, body);
 
         return c.json(result, 200);
-      }
+      },
     );
   }
 
@@ -142,7 +142,7 @@ export class AuthenticatedUsersRouter {
         await this.usersService.deleteUser(params.id);
 
         return c.body(null, 204);
-      }
+      },
     );
   }
 }

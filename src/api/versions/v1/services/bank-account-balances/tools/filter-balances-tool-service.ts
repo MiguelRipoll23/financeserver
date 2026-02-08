@@ -14,7 +14,7 @@ export class FilterBalancesToolService {
         title: "Filter bank account balances",
         description:
           "Use this when you need to retrieve the balance history for bank accounts with optional sorting and pagination. You can optionally specify a bankAccountId to filter by a specific account, or omit it to retrieve all balances across all accounts. Do not use for creating, updating, or deleting bank account balances.",
-        inputSchema: FilterBankAccountBalancesToolSchema.shape,
+        inputSchema: FilterBankAccountBalancesToolSchema,
         annotations: {
           readOnlyHint: true,
           idempotentHint: true,
@@ -49,7 +49,8 @@ export class FilterBalancesToolService {
         }
 
         if (result.nextCursor) {
-          text += `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
+          text +=
+            `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
         }
 
         return {

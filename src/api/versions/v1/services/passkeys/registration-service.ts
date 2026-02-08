@@ -1,9 +1,9 @@
 import { inject, injectable } from "@needle-di/core";
 import {
   generateRegistrationOptions,
-  verifyRegistrationResponse,
   type PublicKeyCredentialCreationOptionsJSON,
   type RegistrationResponseJSON,
+  verifyRegistrationResponse,
 } from "@simplewebauthn/server";
 import { Buffer } from "node:buffer";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
@@ -19,16 +19,21 @@ export class PasskeyRegistrationService {
   constructor(
     private kvService = inject(KVService),
     private databaseService = inject(DatabaseService),
-    private jwtService = inject(JWTService)
+    private jwtService = inject(JWTService),
   ) {}
 
-  public async getRegistrationOptions(origin: string, requestUrl: string, transactionId: string, displayName: string) {
+  public async getRegistrationOptions(
+    origin: string,
+    requestUrl: string,
+    transactionId: string,
+    displayName: string,
+  ) {
     // Validate origin is allowed
     if (!WebAuthnUtils.isOriginAllowed(origin)) {
       throw new ServerError(
         "ORIGIN_NOT_ALLOWED",
         "Origin is not in the allowed list",
-        403
+        403,
       );
     }
 
@@ -54,11 +59,11 @@ export class PasskeyRegistrationService {
     origin: string,
     requestUrl: string,
     transactionId: string,
-    registrationResponse: RegistrationResponseJSON
+    registrationResponse: RegistrationResponseJSON,
   ) {
     // Retrieve and consume registration options from KV
     const registrationOptions = await this.consumeRegistrationOptionsOrThrow(
-      transactionId
+      transactionId,
     );
 
     // Validate origin is allowed
@@ -66,7 +71,7 @@ export class PasskeyRegistrationService {
       throw new ServerError(
         "ORIGIN_NOT_ALLOWED",
         "Origin is not in the allowed list",
-        403
+        403,
       );
     }
 
@@ -83,24 +88,27 @@ export class PasskeyRegistrationService {
       throw new ServerError(
         "REGISTRATION_VERIFICATION_FAILED",
         "Registration verification failed",
-        400
+        400,
       );
     }
 
     // Validate displayName
     const displayName = registrationOptions.displayName;
-    if (!displayName || typeof displayName !== "string" || displayName.trim().length === 0) {
+    if (
+      !displayName || typeof displayName !== "string" ||
+      displayName.trim().length === 0
+    ) {
       throw new ServerError(
         "INVALID_DISPLAY_NAME",
         "Display name is required and must be a non-empty string",
-        400
+        400,
       );
     }
 
     // Validate and sanitize transports
     const transports = registrationResponse.response?.transports;
-    const sanitizedTransports = Array.isArray(transports) && 
-      transports.every((t) => typeof t === "string")
+    const sanitizedTransports = Array.isArray(transports) &&
+        transports.every((t) => typeof t === "string")
       ? transports as string[]
       : undefined;
 
@@ -120,29 +128,31 @@ export class PasskeyRegistrationService {
   }
 
   private async consumeRegistrationOptionsOrThrow(
-    transactionId: string
-  ): Promise<PublicKeyCredentialCreationOptionsJSON & { displayName?: string }> {
-    const registrationOptions =
-      await this.kvService.consumeRegistrationOptionsByTransactionId(
-        transactionId
+    transactionId: string,
+  ): Promise<
+    PublicKeyCredentialCreationOptionsJSON & { displayName?: string }
+  > {
+    const registrationOptions = await this.kvService
+      .consumeRegistrationOptionsByTransactionId(
+        transactionId,
       );
 
     if (registrationOptions === null) {
       throw new ServerError(
         "REGISTRATION_OPTIONS_NOT_FOUND",
         "Registration options not found",
-        400
+        400,
       );
     }
 
     if (
       registrationOptions.createdAt + KV_OPTIONS_EXPIRATION_TIME <
-      Date.now()
+        Date.now()
     ) {
       throw new ServerError(
         "REGISTRATION_OPTIONS_EXPIRED",
         "Registration options expired",
-        400
+        400,
       );
     }
 

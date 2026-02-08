@@ -16,7 +16,7 @@ export class DeleteRoboadvisorBalanceToolService {
         title: "Delete roboadvisor balance entry",
         description:
           "Use this when you need to permanently delete a balance entry from a roboadvisor. This action cannot be undone.",
-        inputSchema: DeleteBankAccountRoboadvisorBalanceToolSchema.shape,
+        inputSchema: DeleteBankAccountRoboadvisorBalanceToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,
@@ -25,14 +25,16 @@ export class DeleteRoboadvisorBalanceToolService {
         },
       },
       run: async (input: unknown) => {
-        const parsed =
-          DeleteBankAccountRoboadvisorBalanceToolSchema.parse(input);
+        const parsed = DeleteBankAccountRoboadvisorBalanceToolSchema.parse(
+          input,
+        );
 
         await this.roboadvisorsService.deleteBankAccountRoboadvisorBalance(
           parsed.id,
         );
 
-        const text = `Balance entry with ID ${parsed.id} has been deleted successfully`;
+        const text =
+          `Balance entry with ID ${parsed.id} has been deleted successfully`;
 
         return {
           text,

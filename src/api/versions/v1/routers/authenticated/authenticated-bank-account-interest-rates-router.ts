@@ -4,11 +4,11 @@ import { Context } from "hono";
 import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
 import { BankAccountInterestRatesService } from "../../services/bank-account-interest-rates/bank-account-interest-rates-service.ts";
 import {
+  BankAccountInterestRateIdParamSchema,
   CreateBankAccountInterestRateRequestSchema,
   CreateBankAccountInterestRateResponseSchema,
   GetBankAccountInterestRatesRequestSchema,
   GetBankAccountInterestRatesResponseSchema,
-  BankAccountInterestRateIdParamSchema,
   UpdateBankAccountInterestRateRequestSchema,
   UpdateBankAccountInterestRateResponseSchema,
 } from "../../schemas/bank-account-interest-rates-schemas.ts";
@@ -74,16 +74,17 @@ export class AuthenticatedBankAccountInterestRatesRouter {
         const payload = await readJsonOrEmpty(context);
         const body = GetBankAccountInterestRatesRequestSchema.parse(payload);
 
-        const result =
-          await this.bankAccountInterestRatesService.getBankAccountInterestRates(
+        const result = await this.bankAccountInterestRatesService
+          .getBankAccountInterestRates(
             {
               bankAccountId: body.bankAccountId,
               limit: body.limit,
               cursor: body.cursor,
               sortOrder: body.sortOrder,
-          });
+            },
+          );
         return context.json(result, 200);
-      }
+      },
     );
   }
 
@@ -122,8 +123,8 @@ export class AuthenticatedBankAccountInterestRatesRouter {
         const body = CreateBankAccountInterestRateRequestSchema.parse(
           await context.req.json(),
         );
-        const result =
-          await this.bankAccountInterestRatesService.createBankAccountInterestRate(
+        const result = await this.bankAccountInterestRatesService
+          .createBankAccountInterestRate(
             body,
           );
         return context.json(result, 200);
@@ -170,8 +171,8 @@ export class AuthenticatedBankAccountInterestRatesRouter {
         const body = UpdateBankAccountInterestRateRequestSchema.parse(
           await context.req.json(),
         );
-        const result =
-          await this.bankAccountInterestRatesService.updateBankAccountInterestRate(
+        const result = await this.bankAccountInterestRatesService
+          .updateBankAccountInterestRate(
             params.id,
             body,
           );
@@ -204,12 +205,12 @@ export class AuthenticatedBankAccountInterestRatesRouter {
         const params = BankAccountInterestRateIdParamSchema.parse(
           context.req.param(),
         );
-        await this.bankAccountInterestRatesService.deleteBankAccountInterestRate(
-          params.id,
-        );
+        await this.bankAccountInterestRatesService
+          .deleteBankAccountInterestRate(
+            params.id,
+          );
         return context.body(null, 204);
       },
     );
   }
-
 }

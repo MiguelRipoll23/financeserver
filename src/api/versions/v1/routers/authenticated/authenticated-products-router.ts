@@ -71,11 +71,11 @@ export class AuthenticatedProductsRouter {
         const payload = await readJsonOrEmpty(c);
         const body = GetProductsRequestSchema.parse(payload);
         const result = await this.productsService.getProducts(
-          body as ProductFilter
+          body as ProductFilter,
         );
 
         return c.json(result, 200);
-      }
+      },
     );
   }
 
@@ -106,11 +106,11 @@ export class AuthenticatedProductsRouter {
       async (c: Context<{ Variables: HonoVariables }>) => {
         const query = GetProductPriceDeltasQuerySchema.parse(c.req.query());
         const result = await this.productsService.getPriceDeltas(
-          query as GetProductPriceDeltasQuery
+          query as GetProductPriceDeltasQuery,
         );
 
         return c.json(result, 200);
-      }
+      },
     );
   }
 
@@ -154,11 +154,11 @@ export class AuthenticatedProductsRouter {
 
         const result = await this.productsService.updateProduct(
           params.id,
-          payload
+          payload,
         );
 
         return c.json(result, 200);
-      }
+      },
     );
   }
 
@@ -186,7 +186,7 @@ export class AuthenticatedProductsRouter {
         await this.productsService.deleteProduct(params.id);
 
         return c.body(null, 204);
-      }
+      },
     );
   }
 }

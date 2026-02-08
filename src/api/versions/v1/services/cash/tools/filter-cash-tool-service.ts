@@ -14,7 +14,7 @@ export class FilterCashToolService {
         title: "Filter cash sources",
         description:
           "Use this when you need to search and filter cash sources with optional sorting and pagination.",
-        inputSchema: FilterCashToolSchema.shape,
+        inputSchema: FilterCashToolSchema,
         annotations: {
           readOnlyHint: true,
           idempotentHint: true,
@@ -44,7 +44,8 @@ export class FilterCashToolService {
         }
 
         if (result.nextCursor) {
-          text += `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
+          text +=
+            `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
         }
 
         return {

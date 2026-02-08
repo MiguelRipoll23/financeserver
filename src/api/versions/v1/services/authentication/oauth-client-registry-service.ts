@@ -4,9 +4,9 @@ import { ServerError } from "../../models/server-error.ts";
 import type { RegisteredOAuthClient } from "../../interfaces/authentication/registered-oauth-client-interface.ts";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import {
-  oauthClientsTable,
   type OAuthClientEntity,
   type OAuthClientInsertEntity,
+  oauthClientsTable,
 } from "../../../../../db/tables/oauth-clients-table.ts";
 import {
   OAuthClientRegistrationRequest,
@@ -19,7 +19,7 @@ export class OAuthClientRegistryService {
 
   /** Register a new public OAuth client */
   public async registerPublicClient(
-    request: OAuthClientRegistrationRequest
+    request: OAuthClientRegistrationRequest,
   ): Promise<OAuthClientRegistrationResponse> {
     // All request-level validation is handled by Zod schemas, so we skip manual checks
 
@@ -51,7 +51,7 @@ export class OAuthClientRegistryService {
           .from(oauthClientsTable)
           .where(eq(oauthClientsTable.clientId, clientId))
           .limit(1);
-      }
+      },
     );
 
     return Boolean(record);
@@ -59,7 +59,7 @@ export class OAuthClientRegistryService {
 
   /** Retrieve a registered OAuth client by clientId */
   public async getClient(
-    clientId: string
+    clientId: string,
   ): Promise<RegisteredOAuthClient | null> {
     const [record] = await this.databaseService.executeWithRlsClient(
       clientId,
@@ -80,7 +80,7 @@ export class OAuthClientRegistryService {
           .from(oauthClientsTable)
           .where(eq(oauthClientsTable.clientId, clientId))
           .limit(1);
-      }
+      },
     );
 
     return record ? this.mapEntityToRegisteredClient(record) : null;
@@ -88,7 +88,7 @@ export class OAuthClientRegistryService {
 
   /** Insert a new OAuth client into the database */
   private async insertClient(
-    entity: OAuthClientInsertEntity
+    entity: OAuthClientInsertEntity,
   ): Promise<OAuthClientEntity> {
     const [created] = await this.databaseService.executeWithRlsClient(
       entity.clientId,
@@ -105,7 +105,7 @@ export class OAuthClientRegistryService {
           createdAt: oauthClientsTable.createdAt,
           updatedAt: oauthClientsTable.updatedAt,
         });
-      }
+      },
     );
 
     if (!created) {
@@ -115,7 +115,7 @@ export class OAuthClientRegistryService {
       throw new ServerError(
         "OAUTH_CLIENT_REGISTRATION_FAILED",
         "Failed to persist OAuth client registration",
-        500
+        500,
       );
     }
 
@@ -124,12 +124,12 @@ export class OAuthClientRegistryService {
 
   /** Map a persisted OAuth client entity to the registration response */
   private mapToRegistrationResponse(
-    created: OAuthClientEntity
+    created: OAuthClientEntity,
   ): OAuthClientRegistrationResponse {
     return {
       client_id: created.clientId,
       client_id_issued_at: Math.floor(
-        created.clientIdIssuedAt.getTime() / 1000
+        created.clientIdIssuedAt.getTime() / 1000,
       ),
       client_secret: created.clientSecret ?? undefined,
       client_secret_expires_at: created.clientSecretExpiresAt ?? undefined,
@@ -142,14 +142,14 @@ export class OAuthClientRegistryService {
 
   /** Map a DB entity to a registered client object */
   private mapEntityToRegisteredClient(
-    entity: OAuthClientEntity
+    entity: OAuthClientEntity,
   ): RegisteredOAuthClient {
     // Minimal DB validation for safety
     if (!entity.redirectUris?.length) {
       throw new ServerError(
         "INVALID_OAUTH_CLIENT",
         "OAuth client does not have redirect URIs configured",
-        500
+        500,
       );
     }
 
@@ -173,7 +173,7 @@ export class OAuthClientRegistryService {
       throw new ServerError(
         "INVALID_OAUTH_CLIENT",
         "OAuth client has an invalid issued at timestamp",
-        500
+        500,
       );
     }
     return Math.floor(date.getTime() / 1000);

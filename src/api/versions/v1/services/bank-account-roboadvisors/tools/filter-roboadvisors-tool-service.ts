@@ -16,7 +16,7 @@ export class FilterRoboadvisorsToolService {
         title: "Filter roboadvisors",
         description:
           "Use this when you need to retrieve roboadvisors with optional filtering and pagination. You can filter by bank account or name",
-        inputSchema: FilterBankAccountRoboadvisorsToolSchema.shape,
+        inputSchema: FilterBankAccountRoboadvisorsToolSchema,
         annotations: {
           readOnlyHint: true,
           idempotentHint: true,
@@ -27,8 +27,8 @@ export class FilterRoboadvisorsToolService {
       run: async (input: unknown) => {
         const parsed = FilterBankAccountRoboadvisorsToolSchema.parse(input);
 
-        const result =
-          await this.roboadvisorsService.getBankAccountRoboadvisors({
+        const result = await this.roboadvisorsService
+          .getBankAccountRoboadvisors({
             bankAccountId: parsed.bankAccountId,
             name: parsed.name,
             pageSize: parsed.pageSize,
@@ -43,9 +43,10 @@ export class FilterRoboadvisorsToolService {
             const riskPart = roboadvisor.riskLevel
               ? ` [Risk: ${roboadvisor.riskLevel}/7]`
               : "";
-            const feePercentage = (roboadvisor.totalFeePercentage * 100).toFixed(
-              2,
-            );
+            const feePercentage = (roboadvisor.totalFeePercentage * 100)
+              .toFixed(
+                2,
+              );
             return `- ${roboadvisor.name}${riskPart} (Fee: ${feePercentage}%, Account ID: ${roboadvisor.bankAccountId}, ID: ${roboadvisor.id})`;
           })
           .join("\n");
@@ -56,7 +57,8 @@ export class FilterRoboadvisorsToolService {
         }
 
         if (result.nextCursor) {
-          text += `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
+          text +=
+            `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
         }
 
         return {

@@ -9,13 +9,15 @@ export class BankAccountCalculationsService {
   constructor(private databaseService = inject(DatabaseService)) {}
 
   public async getLatestCalculation(
-    bankAccountId: number
-  ): Promise<{
-    monthlyProfit: string;
-    annualProfit: string;
-    currencyCode: string;
-    createdAt: string;
-  } | null> {
+    bankAccountId: number,
+  ): Promise<
+    {
+      monthlyProfit: string;
+      annualProfit: string;
+      currencyCode: string;
+      createdAt: string;
+    } | null
+  > {
     const db = this.databaseService.get();
 
     const [calculation] = await db
@@ -24,8 +26,8 @@ export class BankAccountCalculationsService {
       .where(
         eq(
           bankAccountCalculationsTable.bankAccountId,
-          bankAccountId
-        )
+          bankAccountId,
+        ),
       )
       .orderBy(desc(bankAccountCalculationsTable.createdAt))
       .limit(1);
@@ -46,7 +48,7 @@ export class BankAccountCalculationsService {
     bankAccountId: number,
     monthlyProfit: string,
     annualProfit: string,
-    currencyCode: string
+    currencyCode: string,
   ): Promise<void> {
     const db = this.databaseService.get();
 

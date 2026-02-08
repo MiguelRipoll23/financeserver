@@ -14,7 +14,7 @@ export class UpdateBalanceToolService {
         title: "Update bank account balance",
         description:
           "Use this when you need to update an existing balance record. Do not use for adding or deleting balances.",
-        inputSchema: UpdateBalanceToolSchema.shape,
+        inputSchema: UpdateBalanceToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,
@@ -30,12 +30,13 @@ export class UpdateBalanceToolService {
           {
             balance: parsed.balance,
             currencyCode: parsed.currencyCode,
-          }
+          },
         );
 
         // Note: bankAccountId still required in input for validation but not passed to service
 
-        const text = `Balance updated successfully: ${result.balance} ${result.currencyCode} (ID: ${result.id})`;
+        const text =
+          `Balance updated successfully: ${result.balance} ${result.currencyCode} (ID: ${result.id})`;
 
         return {
           text,

@@ -16,7 +16,7 @@ export class UpdateRoboadvisorBalanceToolService {
         title: "Update roboadvisor balance entry",
         description:
           "Use this when you need to update an existing balance entry for a roboadvisor",
-        inputSchema: UpdateBankAccountRoboadvisorBalanceToolSchema.shape,
+        inputSchema: UpdateBankAccountRoboadvisorBalanceToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,
@@ -25,11 +25,12 @@ export class UpdateRoboadvisorBalanceToolService {
         },
       },
       run: async (input: unknown) => {
-        const parsed =
-          UpdateBankAccountRoboadvisorBalanceToolSchema.parse(input);
+        const parsed = UpdateBankAccountRoboadvisorBalanceToolSchema.parse(
+          input,
+        );
 
-        const result =
-          await this.roboadvisorsService.updateBankAccountRoboadvisorBalance(
+        const result = await this.roboadvisorsService
+          .updateBankAccountRoboadvisorBalance(
             parsed.id,
             {
               date: parsed.date,
@@ -39,7 +40,8 @@ export class UpdateRoboadvisorBalanceToolService {
             },
           );
 
-        const text = `Balance entry updated successfully: ${result.type} of ${result.amount} ${result.currencyCode} on ${result.date} (ID: ${result.id})`;
+        const text =
+          `Balance entry updated successfully: ${result.type} of ${result.amount} ${result.currencyCode} on ${result.date} (ID: ${result.id})`;
 
         return {
           text,

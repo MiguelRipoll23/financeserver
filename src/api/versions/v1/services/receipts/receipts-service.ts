@@ -4,22 +4,22 @@ import {
   asc,
   desc,
   eq,
+  gte,
   ilike,
   inArray,
   isNull,
-  sql,
-  gte,
   lte,
   type SQL,
+  sql,
 } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import {
-  itemsTable,
   itemPricesTable,
+  itemsTable,
+  merchantsTable,
   receiptItemsTable,
   receiptsTable,
-  merchantsTable,
 } from "../../../../../db/schema.ts";
 import { decodeCursor } from "../../utils/cursor-utils.ts";
 import { createOffsetPagination } from "../../utils/pagination-utils.ts";
@@ -38,9 +38,9 @@ import { ServerError } from "../../models/server-error.ts";
 import type {
   CreateReceiptRequest,
   CreateReceiptResponse,
+  GetReceiptsResponse,
   UpdateReceiptRequest,
   UpdateReceiptResponse,
-  GetReceiptsResponse,
 } from "../../schemas/receipts-schemas.ts";
 import { MerchantsService } from "../merchants/merchants-service.ts";
 type NormalizedReceiptItem = {
@@ -56,21 +56,22 @@ type ReceiptItemInput = {
   unitPrice: string;
   items?: ReceiptItemInput[];
 };
+
 @injectable()
 export class ReceiptsService {
   constructor(
     private databaseService = inject(DatabaseService),
-    private merchantsService = inject(MerchantsService)
+    private merchantsService = inject(MerchantsService),
   ) {}
 
   public async createReceipt(
-    payload: CreateReceiptRequest
+    payload: CreateReceiptRequest,
   ): Promise<CreateReceiptResponse> {
     if (payload.items.length === 0) {
       throw new ServerError(
         "RECEIPT_NO_ITEMS",
         "At least one item is required to create a receipt",
-        400
+        400,
       );
     }
 
@@ -79,12 +80,12 @@ export class ReceiptsService {
     const normalizedItems = this.normalizeReceiptItems(payload.items);
     const totalInCents = normalizedItems.reduce<number>(
       (sum, item) => sum + item.unitPriceCents * item.quantity,
-      0
+      0,
     );
     const totalAmountString = this.formatAmount(totalInCents / 100);
 
     const merchantId = await this.merchantsService.getOrCreateMerchantId(
-      payload.merchant
+      payload.merchant,
     );
 
     const receiptId = await db.transaction(async (tx) => {
@@ -105,7 +106,7 @@ export class ReceiptsService {
           receiptDate,
           receiptCurrencyCode,
           lineItem,
-          null
+          null,
         );
       }
 
@@ -124,7 +125,7 @@ export class ReceiptsService {
 
   public async updateReceipt(
     receiptId: number,
-    payload: UpdateReceiptRequest
+    payload: UpdateReceiptRequest,
   ): Promise<UpdateReceiptResponse> {
     const db = this.databaseService.get();
 
@@ -145,7 +146,7 @@ export class ReceiptsService {
         throw new ServerError(
           "RECEIPT_NOT_FOUND",
           `Receipt ${receiptId} was not found`,
-          404
+          404,
         );
       }
 
@@ -155,7 +156,7 @@ export class ReceiptsService {
         throw new ServerError(
           "RECEIPT_DATE_INVALID",
           `Receipt ${receiptId} has an invalid receiptDate value`,
-          500
+          500,
         );
       }
 
@@ -168,7 +169,8 @@ export class ReceiptsService {
       } = { updatedAt: new Date() };
 
       let normalizedItems: NormalizedReceiptItem[] = [];
-      let receiptCurrencyCode = payload.currencyCode ?? existingReceipt.currencyCode;
+      let receiptCurrencyCode = payload.currencyCode ??
+        existingReceipt.currencyCode;
 
       // Handle items update
       if (payload.items !== undefined) {
@@ -176,15 +178,15 @@ export class ReceiptsService {
           throw new ServerError(
             "RECEIPT_NO_ITEMS",
             "At least one item is required when updating items",
-            400
+            400,
           );
         }
 
-          normalizedItems = this.normalizeReceiptItems(payload.items);
+        normalizedItems = this.normalizeReceiptItems(payload.items);
 
         const totalInCents = normalizedItems.reduce<number>(
           (sum, item) => sum + item.unitPriceCents * item.quantity,
-          0
+          0,
         );
         updateData.totalAmount = this.formatAmount(totalInCents / 100);
         updateData.currencyCode = receiptCurrencyCode;
@@ -220,7 +222,7 @@ export class ReceiptsService {
             receiptDate,
             receiptCurrencyCode,
             item,
-            null
+            null,
           );
         }
       }
@@ -245,7 +247,7 @@ export class ReceiptsService {
   }
 
   public async getReceipts(
-    params: ReceiptsFilter
+    params: ReceiptsFilter,
   ): Promise<GetReceiptsResponse> {
     const db = this.databaseService.get();
     const limit = this.resolveLimit(params.limit);
@@ -268,7 +270,7 @@ export class ReceiptsService {
           [],
           limit,
           offset,
-          0
+          0,
         ) as GetReceiptsResponse;
       }
       filters.push(inArray(receiptsTable.merchantId, merchantIds));
@@ -286,11 +288,11 @@ export class ReceiptsService {
       const minimumCents = this.parseAmountToCents(
         params.minimumTotalAmount,
         "RECEIPT_MIN_TOTAL_INVALID",
-        "Minimum total amount filter must be a non-negative monetary value"
+        "Minimum total amount filter must be a non-negative monetary value",
       );
 
       filters.push(
-        gte(receiptsTable.totalAmount, this.formatAmount(minimumCents / 100))
+        gte(receiptsTable.totalAmount, this.formatAmount(minimumCents / 100)),
       );
     }
 
@@ -298,11 +300,11 @@ export class ReceiptsService {
       const maximumCents = this.parseAmountToCents(
         params.maximumTotalAmount,
         "RECEIPT_MAX_TOTAL_INVALID",
-        "Maximum total amount filter must be a non-negative monetary value"
+        "Maximum total amount filter must be a non-negative monetary value",
       );
 
       filters.push(
-        lte(receiptsTable.totalAmount, this.formatAmount(maximumCents / 100))
+        lte(receiptsTable.totalAmount, this.formatAmount(maximumCents / 100)),
       );
     }
 
@@ -323,7 +325,7 @@ export class ReceiptsService {
           [],
           limit,
           offset,
-          0
+          0,
         ) as GetReceiptsResponse;
       }
 
@@ -332,7 +334,7 @@ export class ReceiptsService {
 
     const orderColumn = this.resolveReceiptSortField(
       params.sortField ?? ReceiptSortField.ReceiptDate,
-      params.sortOrder ?? SortOrder.Desc
+      params.sortOrder ?? SortOrder.Desc,
     );
 
     const [{ count }] = await db
@@ -361,7 +363,7 @@ export class ReceiptsService {
         [],
         limit,
         offset,
-        total
+        total,
       ) as GetReceiptsResponse;
     }
 
@@ -396,7 +398,7 @@ export class ReceiptsService {
         groupedByReceipt[row.receiptId as number] = collection;
         return groupedByReceipt;
       },
-      {}
+      {},
     );
 
     // Fetch all merchants for receipts in one query
@@ -430,7 +432,7 @@ export class ReceiptsService {
         const lineTotalNumber = this.parseStoredAmount(
           item.totalAmount,
           "RECEIPT_ITEM_TOTAL_CORRUPTED",
-          `Receipt ${receipt.id} item "${item.name}" total amount is invalid`
+          `Receipt ${receipt.id} item "${item.name}" total amount is invalid`,
         );
 
         const unitPriceValue = lineTotalNumber / item.quantity;
@@ -439,7 +441,7 @@ export class ReceiptsService {
           throw new ServerError(
             "RECEIPT_UNIT_PRICE_DERIVATION_FAILED",
             `Failed to derive unit price for receipt ${receipt.id} item "${item.name}"`,
-            500
+            500,
           );
         }
 
@@ -457,7 +459,7 @@ export class ReceiptsService {
             const subLineTotalNumber = this.parseStoredAmount(
               subitem.totalAmount,
               "RECEIPT_SUBITEM_TOTAL_CORRUPTED",
-              `Receipt ${receipt.id} subitem "${subitem.name}" total amount is invalid`
+              `Receipt ${receipt.id} subitem "${subitem.name}" total amount is invalid`,
             );
 
             const subUnitPriceValue = subLineTotalNumber / subitem.quantity;
@@ -466,7 +468,7 @@ export class ReceiptsService {
               throw new ServerError(
                 "RECEIPT_SUBITEM_UNIT_PRICE_DERIVATION_FAILED",
                 `Failed to derive unit price for receipt ${receipt.id} subitem "${subitem.name}"`,
-                500
+                500,
               );
             }
 
@@ -493,7 +495,7 @@ export class ReceiptsService {
         totalAmount: this.formatStoredAmount(
           receipt.totalAmount,
           "RECEIPT_TOTAL_CORRUPTED",
-          `Stored total amount for receipt ${receipt.id} is invalid`
+          `Stored total amount for receipt ${receipt.id} is invalid`,
         ),
         currencyCode: receipt.currencyCode,
         items,
@@ -505,7 +507,7 @@ export class ReceiptsService {
       summaries,
       limit,
       offset,
-      total
+      total,
     ) as GetReceiptsResponse;
   }
 
@@ -521,7 +523,7 @@ export class ReceiptsService {
       throw new ServerError(
         "RECEIPT_NOT_FOUND",
         `Receipt ${receiptId} was not found`,
-        404
+        404,
       );
     }
   }
@@ -532,7 +534,7 @@ export class ReceiptsService {
     receiptDate: string,
     currencyCode: string,
     item: NormalizedReceiptItem,
-    parentItemId: number | null
+    parentItemId: number | null,
   ): Promise<void> {
     const itemId = await this.createOrGetItem(tx, item.name, parentItemId);
 
@@ -571,7 +573,7 @@ export class ReceiptsService {
           receiptDate,
           currencyCode,
           subitem,
-          itemId
+          itemId,
         );
       }
     }
@@ -580,21 +582,20 @@ export class ReceiptsService {
   private async createOrGetItem(
     tx: NodePgDatabase,
     itemName: string,
-    parentItemId: number | null
+    parentItemId: number | null,
   ): Promise<number> {
     const normalizedName = itemName.trim();
 
     // Build the where clause to consider both name and parentItemId
-    const whereClause =
-      parentItemId === null
-        ? and(
-            eq(itemsTable.name, normalizedName),
-            isNull(itemsTable.parentItemId)
-          )
-        : and(
-            eq(itemsTable.name, normalizedName),
-            eq(itemsTable.parentItemId, parentItemId)
-          );
+    const whereClause = parentItemId === null
+      ? and(
+        eq(itemsTable.name, normalizedName),
+        isNull(itemsTable.parentItemId),
+      )
+      : and(
+        eq(itemsTable.name, normalizedName),
+        eq(itemsTable.parentItemId, parentItemId),
+      );
 
     const existingItem = await tx
       .select({ id: itemsTable.id })
@@ -631,7 +632,7 @@ export class ReceiptsService {
       throw new ServerError(
         "ITEM_CREATION_FAILED",
         `Failed to create or retrieve item "${normalizedName}"`,
-        500
+        500,
       );
     }
 
@@ -647,27 +648,28 @@ export class ReceiptsService {
   }
 
   private resolveReceiptSortField(field: ReceiptSortField, order: SortOrder) {
-    const column =
-      field === ReceiptSortField.TotalAmount
-        ? receiptsTable.totalAmount
-        : receiptsTable.receiptDate;
+    const column = field === ReceiptSortField.TotalAmount
+      ? receiptsTable.totalAmount
+      : receiptsTable.receiptDate;
 
     return order === SortOrder.Desc ? desc(column) : asc(column);
   }
 
   private normalizeReceiptItems(
-    items: UpdateReceiptRequest["items"]
+    items: UpdateReceiptRequest["items"],
   ): NormalizedReceiptItem[] {
     if (!items) {
       return [];
     }
-    return items.map((item: ReceiptItemInput) => this.normalizeSingleItem(item, false));
+    return items.map((item: ReceiptItemInput) =>
+      this.normalizeSingleItem(item, false)
+    );
   }
 
   private normalizeSingleItem(
     item: ReceiptItemInput,
     isSubitem: boolean,
-    parentName?: string
+    parentName?: string,
   ): NormalizedReceiptItem {
     const name = item.name.trim();
 
@@ -700,7 +702,7 @@ export class ReceiptsService {
         : "RECEIPT_UNIT_PRICE_INVALID",
       `Unit price for ${
         isSubitem ? "subitem" : "item"
-      } "${name}" must be a non-negative monetary value`
+      } "${name}" must be a non-negative monetary value`,
     );
 
     if (item.quantity <= 0 || !Number.isInteger(item.quantity)) {
@@ -721,7 +723,7 @@ export class ReceiptsService {
         throw new ServerError(
           "RECEIPT_SUBITEM_NESTING_NOT_ALLOWED",
           `Subitem "${name}" cannot have nested items; only one level of nesting is supported`,
-          400
+          400,
         );
       }
       subitems = item.items.map((subitem) =>
@@ -741,7 +743,7 @@ export class ReceiptsService {
   private parseAmountToCents(
     amount: string,
     errorCode: string,
-    errorMessage: string
+    errorMessage: string,
   ): number {
     if (!/^[0-9]+(\.[0-9]{1,2})?$/.test(amount)) {
       throw new ServerError(errorCode, errorMessage, 400);
@@ -763,7 +765,7 @@ export class ReceiptsService {
   private formatStoredAmount(
     value: unknown,
     errorCode: string,
-    errorMessage: string
+    errorMessage: string,
   ): string {
     const numeric = this.parseStoredAmount(value, errorCode, errorMessage);
     return this.formatAmount(numeric);
@@ -772,7 +774,7 @@ export class ReceiptsService {
   private parseStoredAmount(
     value: unknown,
     errorCode: string,
-    errorMessage: string
+    errorMessage: string,
   ): number {
     const numeric = Number.parseFloat(String(value));
 

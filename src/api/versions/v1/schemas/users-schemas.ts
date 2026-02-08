@@ -19,10 +19,10 @@ const DisplayNameValueSchema = z
 
 export const CreateUserRequestSchema = z.object({
   githubHandle: GitHubHandleSchema.describe(
-    "GitHub username handle for the new user"
+    "GitHub username handle for the new user",
   ),
   displayName: DisplayNameValueSchema.optional().describe(
-    "Optional display name for the new user"
+    "Optional display name for the new user",
   ),
 });
 
@@ -41,7 +41,7 @@ export type UserIdParams = z.infer<typeof UserIdParamSchema>;
 export const UpdateUserRequestSchema = z
   .object({
     githubHandle: GitHubHandleSchema.optional().describe(
-      "Optional new GitHub handle for the user"
+      "Optional new GitHub handle for the user",
     ),
     displayName: DisplayNameValueSchema.nullable()
       .optional()
@@ -53,7 +53,7 @@ export const UpdateUserRequestSchema = z
     {
       message: "At least one field must be provided",
       path: [],
-    }
+    },
   );
 
 export type UpdateUserRequest = z.infer<typeof UpdateUserRequestSchema>;
@@ -65,7 +65,7 @@ export const UserResponseSchema = z.object({
     .describe("Unique user identifier (UUID)")
     .openapi({ example: "8c4719f0-7336-4415-9aa5-8a2dce12d2f4" }),
   githubHandle: GitHubHandleSchema.describe(
-    "GitHub username handle for the user"
+    "GitHub username handle for the user",
   ),
   displayName: DisplayNameValueSchema.nullable()
     .describe("User display name, or null if not set")

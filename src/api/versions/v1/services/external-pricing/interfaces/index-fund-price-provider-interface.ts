@@ -7,6 +7,6 @@ export interface IndexFundPriceProvider {
    */
   getCurrentPrice(
     isin: string,
-    targetCurrencyCode: string
+    targetCurrencyCode: string,
   ): Promise<string | null>;
 }

@@ -12,7 +12,7 @@ export class V1PublicRouter {
   constructor(
     private setupRouter = inject(SetupRouter),
     private oauthRouter = inject(PublicOAuthRouter),
-    private publicAuthenticationRouter = inject(PublicAuthenticationRouter)
+    private publicAuthenticationRouter = inject(PublicAuthenticationRouter),
   ) {
     this.app = new OpenAPIHono<{ Variables: HonoVariables }>();
     this.setRoutes();
@@ -25,8 +25,11 @@ export class V1PublicRouter {
   private setRoutes(): void {
     // Passkey routes: setup -> authentication
     this.app.route("/registration/setup", this.setupRouter.getRouter());
-    this.app.route("/authentication", this.publicAuthenticationRouter.getRouter());
-    
+    this.app.route(
+      "/authentication",
+      this.publicAuthenticationRouter.getRouter(),
+    );
+
     // OAuth routes
     this.app.route("/", this.oauthRouter.getRouter());
   }

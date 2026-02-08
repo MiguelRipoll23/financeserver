@@ -3,13 +3,13 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import type { Context } from "hono";
 import { BankAccountRoboadvisorsService } from "../../services/bank-account-roboadvisors/bank-account-roboadvisors-service.ts";
 import {
+  BankAccountRoboadvisorFundIdParamSchema,
   CreateBankAccountRoboadvisorFundRequestSchema,
   CreateBankAccountRoboadvisorFundResponseSchema,
   GetBankAccountRoboadvisorFundsRequestSchema,
   GetBankAccountRoboadvisorFundsResponseSchema,
   UpdateBankAccountRoboadvisorFundRequestSchema,
   UpdateBankAccountRoboadvisorFundResponseSchema,
-  BankAccountRoboadvisorFundIdParamSchema,
 } from "../../schemas/bank-account-roboadvisor-funds-schemas.ts";
 import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
 import { ServerResponse } from "../../models/server-response.ts";
@@ -19,7 +19,9 @@ import { readJsonOrEmpty } from "../../utils/router-utils.ts";
 export class AuthenticatedBankAccountRoboadvisorFundsRouter {
   private app: OpenAPIHono<{ Variables: HonoVariables }>;
 
-  constructor(private roboadvisorsService = inject(BankAccountRoboadvisorsService)) {
+  constructor(
+    private roboadvisorsService = inject(BankAccountRoboadvisorsService),
+  ) {
     this.app = new OpenAPIHono();
     this.setRoutes();
   }
@@ -68,11 +70,14 @@ export class AuthenticatedBankAccountRoboadvisorFundsRouter {
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
-        const body = CreateBankAccountRoboadvisorFundRequestSchema.parse(await context.req.json());
-        const result = await this.roboadvisorsService.createBankAccountRoboadvisorFund(body);
+        const body = CreateBankAccountRoboadvisorFundRequestSchema.parse(
+          await context.req.json(),
+        );
+        const result = await this.roboadvisorsService
+          .createBankAccountRoboadvisorFund(body);
 
         return context.json(result, 201);
-      }
+      },
     );
   }
 
@@ -82,7 +87,8 @@ export class AuthenticatedBankAccountRoboadvisorFundsRouter {
         method: "post",
         path: "/find",
         summary: "List roboadvisor fund allocations",
-        description: "Returns paginated list of fund allocations with optional filtering by roboadvisor ID, name, ISIN, asset class, region, or currency.",
+        description:
+          "Returns paginated list of fund allocations with optional filtering by roboadvisor ID, name, ISIN, asset class, region, or currency.",
         tags: ["Roboadvisor funds"],
         request: {
           body: {
@@ -110,10 +116,11 @@ export class AuthenticatedBankAccountRoboadvisorFundsRouter {
       async (context: Context<{ Variables: HonoVariables }>) => {
         const payload = await readJsonOrEmpty(context);
         const body = GetBankAccountRoboadvisorFundsRequestSchema.parse(payload);
-        const result = await this.roboadvisorsService.getBankAccountRoboadvisorFunds(body);
+        const result = await this.roboadvisorsService
+          .getBankAccountRoboadvisorFunds(body);
 
         return context.json(result, 200);
-      }
+      },
     );
   }
 
@@ -150,15 +157,20 @@ export class AuthenticatedBankAccountRoboadvisorFundsRouter {
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
-        const { id } = BankAccountRoboadvisorFundIdParamSchema.parse(context.req.param());
-        const body = UpdateBankAccountRoboadvisorFundRequestSchema.parse(await context.req.json());
-        const result = await this.roboadvisorsService.updateBankAccountRoboadvisorFund(
-          parseInt(id, 10),
-          body
+        const { id } = BankAccountRoboadvisorFundIdParamSchema.parse(
+          context.req.param(),
         );
+        const body = UpdateBankAccountRoboadvisorFundRequestSchema.parse(
+          await context.req.json(),
+        );
+        const result = await this.roboadvisorsService
+          .updateBankAccountRoboadvisorFund(
+            parseInt(id, 10),
+            body,
+          );
 
         return context.json(result, 200);
-      }
+      },
     );
   }
 
@@ -168,7 +180,8 @@ export class AuthenticatedBankAccountRoboadvisorFundsRouter {
         method: "delete",
         path: "/{id}",
         summary: "Delete roboadvisor fund allocation",
-        description: "Permanently removes a fund allocation from a roboadvisor.",
+        description:
+          "Permanently removes a fund allocation from a roboadvisor.",
         tags: ["Roboadvisor funds"],
         request: {
           params: BankAccountRoboadvisorFundIdParamSchema,
@@ -182,11 +195,15 @@ export class AuthenticatedBankAccountRoboadvisorFundsRouter {
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
-        const { id } = BankAccountRoboadvisorFundIdParamSchema.parse(context.req.param());
-        await this.roboadvisorsService.deleteBankAccountRoboadvisorFund(parseInt(id, 10));
+        const { id } = BankAccountRoboadvisorFundIdParamSchema.parse(
+          context.req.param(),
+        );
+        await this.roboadvisorsService.deleteBankAccountRoboadvisorFund(
+          parseInt(id, 10),
+        );
 
         return context.body(null, 204);
-      }
+      },
     );
   }
 }

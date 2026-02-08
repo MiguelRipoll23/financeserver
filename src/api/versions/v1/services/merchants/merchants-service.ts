@@ -1,5 +1,5 @@
 import { inject, injectable } from "@needle-di/core";
-import { asc, desc, eq, ilike, sql, type SQL } from "drizzle-orm";
+import { asc, desc, eq, ilike, type SQL, sql } from "drizzle-orm";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import { merchantsTable } from "../../../../../db/schema.ts";
 import { MerchantInput } from "../../interfaces/merchants/merchant-input-interface.ts";
@@ -25,7 +25,7 @@ export class MerchantsService {
   constructor(private databaseService = inject(DatabaseService)) {}
 
   public async getOrCreateMerchantId(
-    merchant?: MerchantInput
+    merchant?: MerchantInput,
   ): Promise<number | undefined> {
     if (!merchant?.name) {
       return undefined;
@@ -49,7 +49,7 @@ export class MerchantsService {
   }
 
   public async getMerchantInfo(
-    merchantId?: number | null
+    merchantId?: number | null,
   ): Promise<{ id: number; name: string } | undefined> {
     if (!merchantId) return undefined;
     const db = this.databaseService.get();
@@ -63,7 +63,7 @@ export class MerchantsService {
   }
 
   public async createMerchant(
-    payload: UpsertMerchantRequest
+    payload: UpsertMerchantRequest,
   ): Promise<UpsertMerchantResponse> {
     const merchantName = payload.name.trim();
 
@@ -71,7 +71,7 @@ export class MerchantsService {
       throw new ServerError(
         "MERCHANT_NAME_REQUIRED",
         "Merchant name is required",
-        400
+        400,
       );
     }
 
@@ -89,7 +89,7 @@ export class MerchantsService {
       throw new ServerError(
         "MERCHANT_NAME_CONFLICT",
         `A merchant with name "${merchantName}" already exists`,
-        409
+        409,
       );
     }
 
@@ -112,7 +112,7 @@ export class MerchantsService {
   }
 
   public async getMerchants(
-    filters: MerchantsFilter
+    filters: MerchantsFilter,
   ): Promise<GetMerchantsResponse> {
     const db = this.databaseService.get();
     const limit = this.resolveLimit(filters.limit);
@@ -125,7 +125,9 @@ export class MerchantsService {
       conditions.push(ilike(merchantsTable.name, searchPattern));
     }
 
-    const whereClause = conditions.length > 0 ? sql`${sql.join(conditions, sql` AND `)}` : undefined;
+    const whereClause = conditions.length > 0
+      ? sql`${sql.join(conditions, sql` AND `)}`
+      : undefined;
 
     // Get total count
     const [{ count }] = await db
@@ -136,10 +138,9 @@ export class MerchantsService {
     const total = count;
 
     // Determine sort order
-    const sortOrderClause =
-      filters.sortOrder === SortOrder.Desc
-        ? desc(merchantsTable.name)
-        : asc(merchantsTable.name);
+    const sortOrderClause = filters.sortOrder === SortOrder.Desc
+      ? desc(merchantsTable.name)
+      : asc(merchantsTable.name);
 
     // Get merchants with pagination
     const rows = await db
@@ -166,13 +167,13 @@ export class MerchantsService {
       summaries,
       limit,
       offset,
-      total
+      total,
     ) as GetMerchantsResponse;
   }
 
   public async updateMerchant(
     merchantId: number,
-    payload: Partial<UpsertMerchantRequest>
+    payload: Partial<UpsertMerchantRequest>,
   ): Promise<UpsertMerchantResponse> {
     const db = this.databaseService.get();
 
@@ -188,7 +189,7 @@ export class MerchantsService {
       throw new ServerError(
         "MERCHANT_NOT_FOUND",
         `Merchant ${merchantId} was not found`,
-        404
+        404,
       );
     }
 
@@ -204,7 +205,7 @@ export class MerchantsService {
         throw new ServerError(
           "MERCHANT_NAME_REQUIRED",
           "Merchant name is required",
-          400
+          400,
         );
       }
 
@@ -213,7 +214,7 @@ export class MerchantsService {
         .select({ id: merchantsTable.id })
         .from(merchantsTable)
         .where(
-          sql`lower(${merchantsTable.name}) = lower(${merchantName}) AND ${merchantsTable.id} != ${merchantId}`
+          sql`lower(${merchantsTable.name}) = lower(${merchantName}) AND ${merchantsTable.id} != ${merchantId}`,
         )
         .limit(1)
         .then((rows) => rows[0]);
@@ -222,7 +223,7 @@ export class MerchantsService {
         throw new ServerError(
           "MERCHANT_NAME_CONFLICT",
           `Another merchant with name "${merchantName}" already exists`,
-          409
+          409,
         );
       }
 
@@ -268,7 +269,7 @@ export class MerchantsService {
       throw new ServerError(
         "MERCHANT_NOT_FOUND",
         `Merchant ${merchantId} was not found`,
-        404
+        404,
       );
     }
   }

@@ -16,7 +16,7 @@ export class FilterRoboadvisorFundsToolService {
         title: "Filter roboadvisor fund allocations",
         description:
           "Use this when you need to retrieve all fund allocations for a specific roboadvisor",
-        inputSchema: FilterBankAccountRoboadvisorFundsToolSchema.shape,
+        inputSchema: FilterBankAccountRoboadvisorFundsToolSchema,
         annotations: {
           readOnlyHint: true,
           idempotentHint: true,
@@ -27,8 +27,8 @@ export class FilterRoboadvisorFundsToolService {
       run: async (input: unknown) => {
         const parsed = FilterBankAccountRoboadvisorFundsToolSchema.parse(input);
 
-        const result =
-          await this.roboadvisorsService.getBankAccountRoboadvisorFunds({
+        const result = await this.roboadvisorsService
+          .getBankAccountRoboadvisorFunds({
             roboadvisorId: parsed.roboadvisorId,
             name: parsed.name,
             isin: parsed.isin,
@@ -49,13 +49,16 @@ export class FilterRoboadvisorFundsToolService {
           })
           .join("\n");
 
-        let text = `Found ${count} fund allocation${count !== 1 ? "s" : ""} for roboadvisor ${parsed.roboadvisorId}`;
+        let text = `Found ${count} fund allocation${
+          count !== 1 ? "s" : ""
+        } for roboadvisor ${parsed.roboadvisorId}`;
         if (count > 0) {
           text += `:\n${fundsList}`;
         }
 
         if (result.nextCursor) {
-          text += `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
+          text +=
+            `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
         }
 
         return {

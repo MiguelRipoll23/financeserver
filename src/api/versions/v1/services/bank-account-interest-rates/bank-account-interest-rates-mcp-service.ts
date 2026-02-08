@@ -9,17 +9,17 @@ import { FilterInterestRatesToolService } from "./tools/filter-interest-rates-to
 export class BankAccountInterestRatesMCPService {
   constructor(
     private createInterestRateToolService = inject(
-      CreateInterestRateToolService
+      CreateInterestRateToolService,
     ),
     private updateInterestRateToolService = inject(
-      UpdateInterestRateToolService
+      UpdateInterestRateToolService,
     ),
     private deleteInterestRateToolService = inject(
-      DeleteInterestRateToolService
+      DeleteInterestRateToolService,
     ),
     private filterInterestRatesToolService = inject(
-      FilterInterestRatesToolService
-    )
+      FilterInterestRatesToolService,
+    ),
   ) {}
 
   public getTools(): McpToolDefinition[] {

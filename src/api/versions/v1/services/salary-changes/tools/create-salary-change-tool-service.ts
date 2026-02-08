@@ -15,7 +15,7 @@ export class CreateSalaryChangeToolService {
         title: "Create salary change",
         description:
           "Use this when you need to record a new salary change for the user.",
-        inputSchema: CreateSalaryChangeToolSchema.shape,
+        inputSchema: CreateSalaryChangeToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: false,
@@ -34,7 +34,8 @@ export class CreateSalaryChangeToolService {
 
         const currencySymbol = getCurrencySymbolForCode(result.currencyCode);
 
-        const text = `Salary change recorded successfully: [${result.recurrence}] ${result.netAmount}${currencySymbol} (ID: ${result.id})`;
+        const text =
+          `Salary change recorded successfully: [${result.recurrence}] ${result.netAmount}${currencySymbol} (ID: ${result.id})`;
 
         return {
           text,

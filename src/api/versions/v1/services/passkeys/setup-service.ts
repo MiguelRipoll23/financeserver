@@ -8,7 +8,7 @@ import { passkeysTable } from "../../../../../db/schema.ts";
 export class PasskeySetupService {
   constructor(
     private databaseService = inject(DatabaseService),
-    private jwtService = inject(JWTService)
+    private jwtService = inject(JWTService),
   ) {}
 
   public async checkSetup(requestUrl: string) {

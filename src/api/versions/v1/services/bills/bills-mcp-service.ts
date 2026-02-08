@@ -11,7 +11,7 @@ export class BillsMCPService {
     private filterBillsToolService = inject(FilterBillsToolService),
     private saveBillToolService = inject(SaveBillToolService),
     private updateBillToolService = inject(UpdateBillToolService),
-    private deleteBillToolService = inject(DeleteBillToolService)
+    private deleteBillToolService = inject(DeleteBillToolService),
   ) {}
 
   public getTools(): McpToolDefinition[] {

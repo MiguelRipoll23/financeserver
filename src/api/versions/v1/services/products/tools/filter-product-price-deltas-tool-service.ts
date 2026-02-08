@@ -16,7 +16,7 @@ export class FilterProductPriceDeltasToolService {
         title: "Filter product price deltas",
         description:
           "Use this when you need to identify products with the most price variation within a date range.",
-        inputSchema: FilterProductPriceDeltasToolSchema.shape,
+        inputSchema: FilterProductPriceDeltasToolSchema,
         annotations: {
           readOnlyHint: true,
           idempotentHint: true,
@@ -27,7 +27,7 @@ export class FilterProductPriceDeltasToolService {
       run: async (input: unknown) => {
         const parsed = FilterProductPriceDeltasToolSchema.parse(input);
         const priceDeltasPage = await this.productsService.getPriceDeltas(
-          parsed
+          parsed,
         );
 
         const text = this.formatText(priceDeltasPage);

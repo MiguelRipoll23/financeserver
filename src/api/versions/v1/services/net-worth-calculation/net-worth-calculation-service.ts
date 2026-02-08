@@ -8,7 +8,7 @@ export class NetWorthCalculationService {
   constructor(
     private interestRatesService = inject(BankAccountInterestRatesService),
     private roboadvisorsService = inject(BankAccountRoboadvisorsService),
-    private cryptoBalancesService = inject(CryptoExchangeBalancesService)
+    private cryptoBalancesService = inject(CryptoExchangeBalancesService),
   ) {}
 
   /**

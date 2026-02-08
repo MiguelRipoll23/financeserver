@@ -36,11 +36,10 @@ export class CoingeckoAdapter implements CryptoPriceProvider {
 
   public async getCurrentPrice(
     symbolCode: string,
-    targetCurrencyCode: string
+    targetCurrencyCode: string,
   ): Promise<string | null> {
     try {
-      const coinId =
-        this.symbolToIdMap[symbolCode.toUpperCase()] ||
+      const coinId = this.symbolToIdMap[symbolCode.toUpperCase()] ||
         symbolCode.toLowerCase();
       const currency = targetCurrencyCode.toLowerCase();
 
@@ -57,7 +56,7 @@ export class CoingeckoAdapter implements CryptoPriceProvider {
 
       if (!response.ok) {
         console.error(
-          `CoinGecko API error: ${response.status} ${response.statusText}`
+          `CoinGecko API error: ${response.status} ${response.statusText}`,
         );
         return null;
       }
@@ -71,7 +70,7 @@ export class CoingeckoAdapter implements CryptoPriceProvider {
         data[coinId][currency] === undefined
       ) {
         console.error(
-          `No price found for ${symbolCode} in ${targetCurrencyCode}`
+          `No price found for ${symbolCode} in ${targetCurrencyCode}`,
         );
         return null;
       }

@@ -15,7 +15,7 @@ export class ListSalaryChangesToolService {
         title: "List salary changes",
         description:
           "Use this when you need to list and filter salary changes by description, net amount thresholds, etc.",
-        inputSchema: ListSalaryChangesToolSchema.shape,
+        inputSchema: ListSalaryChangesToolSchema,
         annotations: {
           readOnlyHint: true,
           idempotentHint: true,
@@ -53,7 +53,8 @@ export class ListSalaryChangesToolService {
 
           text = salaryChangesList;
           if (result.nextCursor) {
-            text += `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
+            text +=
+              `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
           }
         }
 
@@ -65,4 +66,3 @@ export class ListSalaryChangesToolService {
     };
   }
 }
-

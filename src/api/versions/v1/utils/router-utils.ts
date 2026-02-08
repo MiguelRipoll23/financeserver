@@ -7,7 +7,7 @@ import type { HonoVariables } from "../../../../core/types/hono/hono-variables-t
  * Throws 400 BadRequest for malformed JSON.
  */
 export async function readJsonOrEmpty(
-  context: Context<{ Variables: HonoVariables }>
+  context: Context<{ Variables: HonoVariables }>,
 ): Promise<unknown> {
   // Read raw body as text to distinguish empty from malformed JSON
   const bodyText = await context.req.text();
@@ -24,7 +24,7 @@ export async function readJsonOrEmpty(
     throw new ServerError(
       "INVALID_JSON",
       "Invalid JSON in request body. Please provide valid JSON.",
-      400
+      400,
     );
   }
 }

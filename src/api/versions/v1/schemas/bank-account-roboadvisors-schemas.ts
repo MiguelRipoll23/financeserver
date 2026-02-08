@@ -2,7 +2,10 @@ import { z } from "@hono/zod-openapi";
 import { PaginationQuerySchema } from "./pagination-schemas.ts";
 import { SortOrder } from "../enums/sort-order-enum.ts";
 import { BankAccountRoboadvisorSortField } from "../enums/bank-account-roboadvisor-sort-field-enum.ts";
-import { PercentageSchema, NullablePercentageSchema } from "./percentage-schema.ts";
+import {
+  NullablePercentageSchema,
+  PercentageSchema,
+} from "./percentage-schema.ts";
 
 // Roboadvisor schemas
 export const CreateBankAccountRoboadvisorRequestSchema = z.object({
@@ -95,27 +98,28 @@ export type BankAccountRoboadvisorIdParam = z.infer<
   typeof BankAccountRoboadvisorIdParamSchema
 >;
 
-export const GetBankAccountRoboadvisorsRequestSchema = PaginationQuerySchema.extend({
-  bankAccountId: z
-    .number()
-    .int()
-    .optional()
-    .openapi({ example: 1, type: "integer" })
-    .describe("Bank account identifier (optional)"),
-  name: z
-    .string()
-    .optional()
-    .openapi({ example: "My Roboadvisor" })
-    .describe("Filter by roboadvisor name"),
-  sortField: z
-    .nativeEnum(BankAccountRoboadvisorSortField)
-    .optional()
-    .openapi({ example: BankAccountRoboadvisorSortField.CreatedAt }),
-  sortOrder: z
-    .nativeEnum(SortOrder)
-    .optional()
-    .openapi({ example: SortOrder.Desc }),
-});
+export const GetBankAccountRoboadvisorsRequestSchema = PaginationQuerySchema
+  .extend({
+    bankAccountId: z
+      .number()
+      .int()
+      .optional()
+      .openapi({ example: 1, type: "integer" })
+      .describe("Bank account identifier (optional)"),
+    name: z
+      .string()
+      .optional()
+      .openapi({ example: "My Roboadvisor" })
+      .describe("Filter by roboadvisor name"),
+    sortField: z
+      .nativeEnum(BankAccountRoboadvisorSortField)
+      .optional()
+      .openapi({ example: BankAccountRoboadvisorSortField.CreatedAt }),
+    sortOrder: z
+      .nativeEnum(SortOrder)
+      .optional()
+      .openapi({ example: SortOrder.Desc }),
+  });
 
 export type GetBankAccountRoboadvisorsRequest = z.infer<
   typeof GetBankAccountRoboadvisorsRequestSchema
@@ -155,9 +159,15 @@ export const GetBankAccountRoboadvisorsResponseSchema = z.object({
     .describe("List of roboadvisor summaries"),
   limit: z.number().int().describe("Maximum number of results returned"),
   offset: z.number().int().describe("Number of results skipped"),
-  total: z.number().int().describe("Total number of roboadvisors matching the query"),
-  nextCursor: z.string().nullable().describe("Cursor for the next page of results or null"),
-  previousCursor: z.string().nullable().describe("Cursor for the previous page of results or null"),
+  total: z.number().int().describe(
+    "Total number of roboadvisors matching the query",
+  ),
+  nextCursor: z.string().nullable().describe(
+    "Cursor for the next page of results or null",
+  ),
+  previousCursor: z.string().nullable().describe(
+    "Cursor for the previous page of results or null",
+  ),
 });
 
 export type GetBankAccountRoboadvisorsResponse = z.infer<

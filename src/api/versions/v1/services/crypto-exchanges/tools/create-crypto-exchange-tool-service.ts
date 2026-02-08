@@ -6,7 +6,7 @@ import { CreateCryptoExchangeToolSchema } from "../../../schemas/mcp-crypto-exch
 @injectable()
 export class CreateCryptoExchangeToolService {
   constructor(
-    private cryptoExchangesService = inject(CryptoExchangesService)
+    private cryptoExchangesService = inject(CryptoExchangesService),
   ) {}
 
   public getDefinition(): McpToolDefinition {
@@ -16,7 +16,7 @@ export class CreateCryptoExchangeToolService {
         title: "Create crypto exchange",
         description:
           "Use this when you need to create a new crypto exchange. Do not use for updating or deleting crypto exchanges.",
-        inputSchema: CreateCryptoExchangeToolSchema.shape,
+        inputSchema: CreateCryptoExchangeToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: false,
@@ -32,7 +32,8 @@ export class CreateCryptoExchangeToolService {
           taxPercentage: parsed.taxPercentage,
         });
 
-        const text = `Crypto exchange created successfully: ${result.name} (ID: ${result.id})`;
+        const text =
+          `Crypto exchange created successfully: ${result.name} (ID: ${result.id})`;
 
         return {
           text,

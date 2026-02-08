@@ -16,7 +16,7 @@ export const SalaryChangeSchema = z.object({
     .openapi({ example: Recurrence.Monthly })
     .describe("Recurrence of the salary change"),
   netAmount: MonetaryStringSchema.describe(
-    "Net amount of the salary change as a string"
+    "Net amount of the salary change as a string",
   ),
   currencyCode: z
     .string()
@@ -43,7 +43,7 @@ export const CreateSalaryChangeRequestSchema = z.object({
     .openapi({ example: Recurrence.Monthly })
     .describe("Recurrence of the salary change"),
   netAmount: MonetaryStringSchema.describe(
-    "Net amount of the salary change as a string"
+    "Net amount of the salary change as a string",
   ),
   currencyCode: z
     .string()
@@ -69,7 +69,7 @@ export const UpdateSalaryChangeRequestSchema = z.object({
     .describe("Updated recurrence for the salary change")
     .optional(),
   netAmount: MonetaryStringSchema.describe(
-    "Net amount of the salary change as a string"
+    "Net amount of the salary change as a string",
   ).optional(),
   currencyCode: z
     .string()
@@ -107,10 +107,10 @@ export const GetSalaryChangesRequestSchema = PaginationQuerySchema.extend({
     .describe("Filter by salary change recurrence")
     .optional(),
   minimumNetAmount: MonetaryStringSchema.optional().describe(
-    "Filter salary changes with net amount greater than or equal to this value"
+    "Filter salary changes with net amount greater than or equal to this value",
   ),
   maximumNetAmount: MonetaryStringSchema.optional().describe(
-    "Filter salary changes with net amount less than or equal to this value"
+    "Filter salary changes with net amount less than or equal to this value",
   ),
   sortField: z
     .nativeEnum(SalaryChangeSortField)
@@ -155,10 +155,10 @@ export const ListSalaryChangesRequestBodySchema = z.object({
     .describe("Filter by salary change recurrence")
     .optional(),
   minimumNetAmount: MonetaryStringSchema.optional().describe(
-    "Filter salary changes with net amount greater than or equal to this value"
+    "Filter salary changes with net amount greater than or equal to this value",
   ),
   maximumNetAmount: MonetaryStringSchema.optional().describe(
-    "Filter salary changes with net amount less than or equal to this value"
+    "Filter salary changes with net amount less than or equal to this value",
   ),
   sortField: z
     .nativeEnum(SalaryChangeSortField)
@@ -177,7 +177,9 @@ export type ListSalaryChangesRequestBody = z.infer<
 >;
 
 export const GetSalaryChangesResponseSchema = z.object({
-  results: z.array(SalaryChangeSchema).describe("List of salary change summaries"),
+  results: z.array(SalaryChangeSchema).describe(
+    "List of salary change summaries",
+  ),
   limit: z.number().int().describe("Maximum number of results returned"),
   offset: z.number().int().describe("Number of results skipped"),
   total: z

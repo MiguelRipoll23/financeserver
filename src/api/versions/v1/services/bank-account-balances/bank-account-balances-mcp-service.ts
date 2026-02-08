@@ -11,7 +11,7 @@ export class BankAccountBalancesMCPService {
     private createBalanceToolService = inject(CreateBalanceToolService),
     private updateBalanceToolService = inject(UpdateBalanceToolService),
     private deleteBalanceToolService = inject(DeleteBalanceToolService),
-    private filterBalancesToolService = inject(FilterBalancesToolService)
+    private filterBalancesToolService = inject(FilterBalancesToolService),
   ) {}
 
   public getTools(): McpToolDefinition[] {

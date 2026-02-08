@@ -15,7 +15,7 @@ export class UpdateSalaryChangeToolService {
         title: "Update salary change",
         description:
           "Use this when you need to update an existing salary change. Do not use for creating new salary changes or deleting salary changes.",
-        inputSchema: UpdateSalaryChangeToolSchema.shape,
+        inputSchema: UpdateSalaryChangeToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,
@@ -37,7 +37,8 @@ export class UpdateSalaryChangeToolService {
 
         const currencySymbol = getCurrencySymbolForCode(result.currencyCode);
 
-        const text = `Salary change (ID: ${result.id}) updated successfully: [${result.recurrence}] ${result.netAmount}${currencySymbol}`;
+        const text =
+          `Salary change (ID: ${result.id}) updated successfully: [${result.recurrence}] ${result.netAmount}${currencySymbol}`;
 
         return {
           text,

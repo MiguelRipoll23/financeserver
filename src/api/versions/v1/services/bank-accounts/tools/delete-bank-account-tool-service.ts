@@ -14,7 +14,7 @@ export class DeleteBankAccountToolService {
         title: "Delete bank account",
         description:
           "Use this when you need to permanently delete a bank account. Do not use for creating or updating bank accounts. Warning: This will also delete all associated balances.",
-        inputSchema: DeleteBankAccountToolSchema.shape,
+        inputSchema: DeleteBankAccountToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,

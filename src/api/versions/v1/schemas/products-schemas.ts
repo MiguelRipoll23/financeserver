@@ -16,10 +16,10 @@ export const GetProductsRequestSchema = PaginationQuerySchema.extend({
     .describe("Search query for product name or description.")
     .optional(),
   minimumUnitPrice: MonetaryFilterSchema.describe(
-    "Minimum unit price filter."
+    "Minimum unit price filter.",
   ).optional(),
   maximumUnitPrice: MonetaryFilterSchema.describe(
-    "Maximum unit price filter."
+    "Maximum unit price filter.",
   ).optional(),
   sortField: z
     .nativeEnum(ProductSortField)
@@ -46,7 +46,7 @@ export const ProductSummarySchema = z.object({
     .openapi({ example: "Coffee beans" })
     .describe("Name of the product."),
   latestUnitPrice: MonetaryStringSchema.describe(
-    "Latest unit price of the product as a string."
+    "Latest unit price of the product as a string.",
   ),
   currencyCode: z
     .string()
@@ -79,7 +79,7 @@ export const UpdateProductRequestSchema = z.object({
     .openapi({ example: "Coffee beans" })
     .describe("Name of the product."),
   unitPrice: MonetaryStringSchema.describe(
-    "Unit price of the product as a string."
+    "Unit price of the product as a string.",
   ),
   currencyCode: z
     .string()
@@ -87,7 +87,7 @@ export const UpdateProductRequestSchema = z.object({
     .openapi({ example: "USD" })
     .describe("ISO 4217 currency code for the product price."),
   priceDate: DateOnlyStringSchema.describe(
-    "Date when the price was set (YYYY-MM-DD)."
+    "Date when the price was set (YYYY-MM-DD).",
   ).optional(),
 });
 
@@ -104,7 +104,7 @@ export const GetProductsResponseSchema = z.object({
     .number()
     .int()
     .describe(
-      "Number of products skipped before starting to collect the result set."
+      "Number of products skipped before starting to collect the result set.",
     ),
   total: z.number().int().describe("Total number of products available."),
   nextCursor: z
@@ -154,13 +154,13 @@ export const ProductPriceDeltaSchema = z.object({
     .openapi({ example: "Coffee beans" })
     .describe("Name of the product."),
   minimumPrice: MonetaryStringSchema.describe(
-    "Minimum price of the product in the selected period as a string."
+    "Minimum price of the product in the selected period as a string.",
   ),
   maximumPrice: MonetaryStringSchema.describe(
-    "Maximum price of the product in the selected period as a string."
+    "Maximum price of the product in the selected period as a string.",
   ),
   priceDelta: MonetaryStringSchema.describe(
-    "Difference between maximum and minimum price as a string."
+    "Difference between maximum and minimum price as a string.",
   ),
   currencyCode: z
     .string()
@@ -180,7 +180,7 @@ export const GetProductPriceDeltasResponseSchema = z.object({
     .number()
     .int()
     .describe(
-      "Number of product price deltas skipped before starting to collect the result set."
+      "Number of product price deltas skipped before starting to collect the result set.",
     ),
   total: z
     .number()

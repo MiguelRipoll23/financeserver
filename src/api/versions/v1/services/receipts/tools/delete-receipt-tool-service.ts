@@ -15,7 +15,7 @@ export class DeleteReceiptToolService {
         title: "Delete receipt",
         description:
           "Use this when you need to delete a receipt that contains completely invalid data. Do not use for updating or correcting receipts - use receipts.update instead.",
-        inputSchema: DeleteReceiptToolSchema.shape,
+        inputSchema: DeleteReceiptToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,

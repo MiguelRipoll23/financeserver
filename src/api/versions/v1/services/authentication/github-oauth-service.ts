@@ -31,9 +31,9 @@ import type {
 import {
   type GitHubCallbackQuery,
   type OAuthAuthorizeQuery,
+  type OAuthRevokeRequest,
   type OAuthTokenRequest,
   type OAuthTokenResponse,
-  type OAuthRevokeRequest,
 } from "../../schemas/oauth-schemas.ts";
 import { Base64Utils } from "../../../../../core/utils/base64-utils.ts";
 import { OAuthClientRegistryService } from "./oauth-client-registry-service.ts";
@@ -58,7 +58,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
 
   constructor(
     clientRegistry = inject(OAuthClientRegistryService),
-    databaseService = inject(DatabaseService)
+    databaseService = inject(DatabaseService),
   ) {
     super();
     const clientId = Deno.env.get(ENV_GITHUB_CLIENT_ID);
@@ -72,13 +72,13 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
       this.clientId = null;
       this.clientSecret = null;
       console.warn(
-        "GitHub OAuth is disabled: GITHUB_CLIENT_ID and/or GITHUB_CLIENT_SECRET environment variables are not defined or are empty"
+        "GitHub OAuth is disabled: GITHUB_CLIENT_ID and/or GITHUB_CLIENT_SECRET environment variables are not defined or are empty",
       );
     }
 
     this.requestedScope = this.getOptionalEnvironmentVariable(
       ENV_GITHUB_OAUTH_SCOPE,
-      "read:user"
+      "read:user",
     );
     this.clientRegistry = clientRegistry;
     this.databaseService = databaseService;
@@ -88,7 +88,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
     const applicationBaseURL = UrlUtils.getApplicationBaseURL(requestUrl);
     return new URL(
       GITHUB_OAUTH_CALLBACK_PATH,
-      applicationBaseURL
+      applicationBaseURL,
     ).toString();
   }
 
@@ -101,7 +101,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
   public async validateTokenResource(
     accessToken: string,
     requestUrl: string,
-    requestPath: string
+    requestPath: string,
   ): Promise<void> {
     // Look up the token in oauth_connections to get its resource claim
     const records = await this.databaseService
@@ -122,7 +122,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
       const applicationBaseURL = UrlUtils.getApplicationBaseURL(requestUrl);
       const requestedResource = new URL(
         requestPath,
-        applicationBaseURL
+        applicationBaseURL,
       ).toString();
 
       // Normalize both URLs for comparison (remove trailing slashes, etc.)
@@ -140,7 +140,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
         throw new ServerError(
           "INVALID_TOKEN_AUDIENCE",
           "Token is not valid for this resource",
-          403
+          403,
         );
       }
     }
@@ -148,7 +148,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
 
   public async createAuthorizationRedirect(
     query: OAuthAuthorizeQuery,
-    requestUrl: string
+    requestUrl: string,
   ): Promise<string> {
     this.assertEnabled("GitHub");
     await this.assertClient(query.client_id);
@@ -169,7 +169,10 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
 
     const authorizeUrl = new URL(GITHUB_OAUTH_AUTHORIZE_URL);
     authorizeUrl.searchParams.set("client_id", this.clientId!);
-    authorizeUrl.searchParams.set("redirect_uri", this.getRedirectUri(requestUrl));
+    authorizeUrl.searchParams.set(
+      "redirect_uri",
+      this.getRedirectUri(requestUrl),
+    );
     authorizeUrl.searchParams.set("scope", scope);
     authorizeUrl.searchParams.set("state", stateToken);
     authorizeUrl.searchParams.set("allow_signup", "false");
@@ -179,14 +182,14 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
 
   public async createCallbackRedirect(
     query: GitHubCallbackQuery,
-    requestUrl: string
+    requestUrl: string,
   ): Promise<string> {
     this.assertEnabled("GitHub");
     const statePayload = await this.parseSignedState(query.state);
     await this.assertClient(statePayload.clientId);
     await this.assertRedirectUri(
       statePayload.clientId,
-      statePayload.redirectUri
+      statePayload.redirectUri,
     );
 
     if (query.error !== undefined) {
@@ -197,7 +200,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
       throw new ServerError(
         "INVALID_OAUTH_CODE",
         "Missing OAuth authorization code",
-        400
+        400,
       );
     }
 
@@ -214,11 +217,10 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
       codeChallengeMethod: statePayload.codeChallengeMethod,
       scope: statePayload.scope,
       accessToken: token.access_token,
-      tokenType:
-        typeof token.token_type === "string"
-          ? token.token_type.charAt(0).toUpperCase() +
-            token.token_type.slice(1).toLowerCase()
-          : "Bearer",
+      tokenType: typeof token.token_type === "string"
+        ? token.token_type.charAt(0).toUpperCase() +
+          token.token_type.slice(1).toLowerCase()
+        : "Bearer",
       user,
       resource: statePayload.resource,
     });
@@ -232,7 +234,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
   }
 
   public async exchangeAuthorizationCode(
-    request: OAuthTokenRequest
+    request: OAuthTokenRequest,
   ): Promise<OAuthTokenResponse> {
     this.assertEnabled("GitHub");
     if (request.grant_type === "authorization_code") {
@@ -243,13 +245,13 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
       throw new ServerError(
         "UNSUPPORTED_OAUTH_GRANT",
         "Unsupported OAuth grant type",
-        400
+        400,
       );
     }
   }
 
   private async handleAuthorizationCodeGrant(
-    request: Extract<OAuthTokenRequest, { grant_type: "authorization_code" }>
+    request: Extract<OAuthTokenRequest, { grant_type: "authorization_code" }>,
   ): Promise<OAuthTokenResponse> {
     await this.assertClient(request.client_id);
     await this.assertRedirectUri(request.client_id, request.redirect_uri);
@@ -260,7 +262,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
       throw new ServerError(
         "INVALID_OAUTH_CLIENT",
         "Invalid OAuth client identifier",
-        400
+        400,
       );
     }
 
@@ -268,7 +270,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
       throw new ServerError(
         "INVALID_OAUTH_REDIRECT_URI",
         "Invalid OAuth redirect URI",
-        400
+        400,
       );
     }
 
@@ -337,7 +339,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
           .returning();
 
         return result.length > 0;
-      }
+      },
     );
 
     // If token_type_hint is access_token or refresh token wasn't found,
@@ -349,7 +351,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
           await tx
             .delete(oauthConnections)
             .where(eq(oauthConnections.accessToken, request.token));
-        }
+        },
       );
     }
 
@@ -358,7 +360,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
   }
 
   private async handleRefreshTokenGrant(
-    request: Extract<OAuthTokenRequest, { grant_type: "refresh_token" }>
+    request: Extract<OAuthTokenRequest, { grant_type: "refresh_token" }>,
   ): Promise<OAuthTokenResponse> {
     await this.assertClient(request.client_id);
 
@@ -368,7 +370,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
       throw new ServerError(
         "INVALID_OAUTH_CLIENT",
         "Invalid OAuth client identifier",
-        400
+        400,
       );
     }
 
@@ -431,7 +433,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
       throw new ServerError(
         "GITHUB_OAUTH_UNAVAILABLE",
         "GitHub OAuth validation failed",
-        502
+        502,
       );
     }
   }
@@ -462,7 +464,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
       throw new ServerError(
         "GITHUB_OAUTH_UNAVAILABLE",
         "GitHub user lookup failed",
-        502
+        502,
       );
     }
 
@@ -478,7 +480,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
       throw new ServerError(
         "INVALID_SERVER_CONFIGURATION",
         `Missing ${name} environment variable`,
-        500
+        500,
       );
     }
 
@@ -487,7 +489,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
 
   private getOptionalEnvironmentVariable(
     name: string,
-    defaultValue: string
+    defaultValue: string,
   ): string {
     const value = Deno.env.get(name);
 
@@ -506,7 +508,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
       throw new ServerError(
         "INVALID_SERVER_CONFIGURATION",
         "Invalid URL provided",
-        500
+        500,
       );
     }
   }
@@ -527,7 +529,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
 
     const supportedScopes = new Set(OAUTH_SCOPES_SUPPORTED);
     const unsupportedScopes = requestedScopes.filter(
-      (requestedScope) => !supportedScopes.has(requestedScope)
+      (requestedScope) => !supportedScopes.has(requestedScope),
     );
 
     if (unsupportedScopes.length > 0) {
@@ -554,13 +556,13 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
     throw new ServerError(
       "INVALID_OAUTH_CLIENT",
       "Unsupported OAuth client",
-      400
+      400,
     );
   }
 
   private async assertRedirectUri(
     clientId: string,
-    redirectUri: string
+    redirectUri: string,
   ): Promise<void> {
     const normalized = this.normalizeUrl(redirectUri);
 
@@ -576,16 +578,16 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
       throw new ServerError(
         "INVALID_OAUTH_REDIRECT_URI",
         "Redirect URI is not allowed",
-        400
+        400,
       );
     }
   }
 
   private async createSignedState(
-    payload: AuthorizationStatePayload
+    payload: AuthorizationStatePayload,
   ): Promise<string> {
     const encodedPayload = Base64Utils.stringToBase64Url(
-      JSON.stringify(payload)
+      JSON.stringify(payload),
     );
     const signature = await this.signState(encodedPayload);
 
@@ -593,7 +595,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
   }
 
   private async parseSignedState(
-    state: string
+    state: string,
   ): Promise<AuthorizationStatePayload> {
     const [encodedPayload, providedSignature] = state.split(".");
 
@@ -646,7 +648,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
 
   private async exchangeGitHubCodeForToken(
     code: string,
-    requestUrl: string
+    requestUrl: string,
   ): Promise<GitHubAccessTokenResponse> {
     let response: Response;
 
@@ -672,7 +674,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
       throw new ServerError(
         "GITHUB_OAUTH_UNAVAILABLE",
         "GitHub OAuth exchange failed",
-        502
+        502,
       );
     }
 
@@ -696,7 +698,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
       throw new ServerError(
         "GITHUB_OAUTH_UNAVAILABLE",
         "GitHub OAuth exchange failed",
-        502
+        502,
       );
     }
 
@@ -710,13 +712,13 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
       throw new ServerError(
         "GITHUB_OAUTH_UNAVAILABLE",
         "GitHub OAuth exchange failed",
-        502
+        502,
       );
     }
 
     if ("error" in payload) {
-      const description =
-        payload.error_description ?? "Invalid GitHub authorization code";
+      const description = payload.error_description ??
+        "Invalid GitHub authorization code";
       const logPayload = {
         error: payload.error,
         error_description: payload.error_description,
@@ -752,14 +754,14 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
         throw new ServerError(
           "INVALID_OAUTH_CODE",
           "Invalid GitHub authorization code",
-          400
+          400,
         );
       }
 
       throw new ServerError(
         "GITHUB_OAUTH_UNAVAILABLE",
         "GitHub OAuth exchange failed",
-        502
+        502,
       );
     }
 
@@ -767,13 +769,13 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
   }
 
   private async storeAuthorizationCode(
-    record: AuthorizationCodeRecordInputType
+    record: AuthorizationCodeRecordInputType,
   ): Promise<string> {
     await this.cleanupExpiredAuthorizationCodes();
 
     const code = crypto.randomUUID();
     const expiresAt = new Date(
-      Date.now() + this.authorizationCodeTtlMs
+      Date.now() + this.authorizationCodeTtlMs,
     ).toISOString();
 
     await this.databaseService.executeWithRlsClient(
@@ -792,14 +794,14 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
           resource: record.resource,
           expiresAt,
         });
-      }
+      },
     );
 
     return code;
   }
 
   private async consumeAuthorizationCode(
-    code: string
+    code: string,
   ): Promise<AuthorizationCodeRecord> {
     // First, fetch without RLS to get clientId
     const records = await this.databaseService
@@ -815,7 +817,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
       throw new ServerError(
         "INVALID_OAUTH_CODE",
         "Invalid OAuth authorization code",
-        400
+        400,
       );
     }
 
@@ -830,12 +832,12 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
           await tx
             .delete(oauthAuthorizationCodes)
             .where(eq(oauthAuthorizationCodes.code, code));
-        }
+        },
       );
       throw new ServerError(
         "EXPIRED_OAUTH_CODE",
         "Expired OAuth authorization code",
-        400
+        400,
       );
     }
 
@@ -846,7 +848,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
         await tx
           .delete(oauthAuthorizationCodes)
           .where(eq(oauthAuthorizationCodes.code, code));
-      }
+      },
     );
 
     return {
@@ -875,13 +877,13 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
 
   private async verifyCodeVerifier(
     record: AuthorizationCodeRecord,
-    codeVerifier: string
+    codeVerifier: string,
   ): Promise<void> {
     if (record.codeChallengeMethod !== "S256") {
       throw new ServerError(
         "INVALID_CODE_CHALLENGE_METHOD",
         "Unsupported code challenge method",
-        400
+        400,
       );
     }
 
@@ -891,7 +893,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
       throw new ServerError(
         "INVALID_CODE_VERIFIER",
         "Invalid OAuth code verifier",
-        400
+        400,
       );
     }
   }
@@ -905,7 +907,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
 
   private createErrorRedirect(
     state: AuthorizationStatePayload,
-    query: GitHubCallbackQuery
+    query: GitHubCallbackQuery,
   ): string {
     const redirectUrl = new URL(state.redirectUri);
     redirectUrl.searchParams.set("error", query.error ?? "access_denied");
@@ -914,7 +916,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
     if (query.error_description !== undefined) {
       redirectUrl.searchParams.set(
         "error_description",
-        query.error_description
+        query.error_description,
       );
     }
 
@@ -945,7 +947,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
       keyData,
       this.stateAlgorithm,
       false,
-      ["sign", "verify"]
+      ["sign", "verify"],
     );
 
     return await this.stateKeyPromise;
@@ -966,13 +968,13 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
   }
 
   private async storeRefreshToken(
-    record: RefreshTokenRecordInputType
+    record: RefreshTokenRecordInputType,
   ): Promise<string> {
     await this.cleanupExpiredRefreshTokens();
 
     const refreshToken = crypto.randomUUID();
     const expiresAt = new Date(
-      Date.now() + this.refreshTokenTtlMs
+      Date.now() + this.refreshTokenTtlMs,
     ).toISOString();
 
     await this.databaseService.executeWithRlsClient(
@@ -988,14 +990,14 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
           resource: record.resource,
           expiresAt,
         });
-      }
+      },
     );
 
     return refreshToken;
   }
 
   private async consumeRefreshToken(
-    refreshToken: string
+    refreshToken: string,
   ): Promise<RefreshTokenRecord> {
     // First, fetch without RLS to get clientId
     const records = await this.databaseService
@@ -1011,7 +1013,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
       throw new ServerError(
         "INVALID_REFRESH_TOKEN",
         "Invalid refresh token",
-        400
+        400,
       );
     }
 
@@ -1026,12 +1028,12 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
           await tx
             .delete(oauthConnections)
             .where(eq(oauthConnections.refreshToken, refreshToken));
-        }
+        },
       );
       throw new ServerError(
         "EXPIRED_REFRESH_TOKEN",
         "Expired refresh token",
-        400
+        400,
       );
     }
 
@@ -1042,7 +1044,7 @@ export class GitHubOAuthService extends BaseOAuthProviderService {
         await tx
           .delete(oauthConnections)
           .where(eq(oauthConnections.refreshToken, refreshToken));
-      }
+      },
     );
 
     return {

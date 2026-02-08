@@ -3,12 +3,12 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import type { Context } from "hono";
 import { SalaryChangesService } from "../../services/salary-changes/salary-changes-service.ts";
 import {
-  SalaryChangeIdParamSchema,
   CreateSalaryChangeRequestSchema,
   CreateSalaryChangeResponseSchema,
   GetSalaryChangesRequestSchema,
   GetSalaryChangesResponseSchema,
   ListSalaryChangesRequestBodySchema,
+  SalaryChangeIdParamSchema,
   SalaryChangeSchema,
   UpdateSalaryChangeRequestSchema,
   UpdateSalaryChangeResponseSchema,
@@ -123,7 +123,8 @@ export class AuthenticatedSalaryChangesRouter {
         method: "patch",
         path: "/{id}",
         summary: "Update salary change",
-        description: "Updates an existing salary change by its unique identifier.",
+        description:
+          "Updates an existing salary change by its unique identifier.",
         tags: ["Salary changes"],
         request: {
           params: SalaryChangeIdParamSchema,

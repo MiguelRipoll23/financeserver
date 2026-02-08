@@ -10,7 +10,7 @@ export interface McpToolDefinition<TStructured = unknown> {
   meta: {
     title: string;
     description: string;
-    inputSchema: z.ZodRawShape;
+    inputSchema: z.ZodTypeAny;
     annotations?: Record<string, unknown>;
   };
   run: (input: unknown) => Promise<McpToolRunResult<TStructured>>;

@@ -5,7 +5,9 @@ import { CreateBankAccountRoboadvisorFundToolSchema } from "../../../schemas/mcp
 
 @injectable()
 export class CreateRoboadvisorFundToolService {
-  constructor(private roboadvisorsService = inject(BankAccountRoboadvisorsService)) {}
+  constructor(
+    private roboadvisorsService = inject(BankAccountRoboadvisorsService),
+  ) {}
 
   public getDefinition(): McpToolDefinition {
     return {
@@ -14,7 +16,7 @@ export class CreateRoboadvisorFundToolService {
         title: "Create roboadvisor fund allocation",
         description:
           "Use this when you need to add a fund allocation to a roboadvisor. This defines which ETFs or mutual funds the roboadvisor invests in and their target weights.",
-        inputSchema: CreateBankAccountRoboadvisorFundToolSchema.shape,
+        inputSchema: CreateBankAccountRoboadvisorFundToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: false,
@@ -25,21 +27,25 @@ export class CreateRoboadvisorFundToolService {
       run: async (input: unknown) => {
         const parsed = CreateBankAccountRoboadvisorFundToolSchema.parse(input);
 
-        const result = await this.roboadvisorsService.createBankAccountRoboadvisorFund({
-          roboadvisorId: parsed.roboadvisorId,
-          name: parsed.name,
-          isin: parsed.isin,
-          assetClass: parsed.assetClass,
-          region: parsed.region,
-          fundCurrencyCode: parsed.fundCurrencyCode,
-          weight: parsed.weight,
-          shareCount: parsed.shareCount,
-        });
+        const result = await this.roboadvisorsService
+          .createBankAccountRoboadvisorFund({
+            roboadvisorId: parsed.roboadvisorId,
+            name: parsed.name,
+            isin: parsed.isin,
+            assetClass: parsed.assetClass,
+            region: parsed.region,
+            fundCurrencyCode: parsed.fundCurrencyCode,
+            weight: parsed.weight,
+            shareCount: parsed.shareCount,
+          });
 
         const weightPercentage = (result.weight * 100).toFixed(2);
         // Use a nullish check so 0 is treated as a valid share count and rendered
-        const shareInfo = result.shareCount != null ? ` with ${result.shareCount} shares` : '';
-        const text = `Fund allocation created successfully: ${result.name} (${result.isin}) - ${weightPercentage}% allocation${shareInfo} (ID: ${result.id})`;
+        const shareInfo = result.shareCount != null
+          ? ` with ${result.shareCount} shares`
+          : "";
+        const text =
+          `Fund allocation created successfully: ${result.name} (${result.isin}) - ${weightPercentage}% allocation${shareInfo} (ID: ${result.id})`;
 
         return {
           text,

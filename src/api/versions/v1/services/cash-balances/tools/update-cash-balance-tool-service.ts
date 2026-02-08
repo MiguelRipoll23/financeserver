@@ -14,7 +14,7 @@ export class UpdateCashBalanceToolService {
         title: "Update cash balance",
         description:
           "Use this when you need to update an existing cash balance's details. Do not use for creating or deleting cash balances.",
-        inputSchema: UpdateCashBalanceToolSchema.shape,
+        inputSchema: UpdateCashBalanceToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,
@@ -30,7 +30,8 @@ export class UpdateCashBalanceToolService {
           currencyCode: parsed.currencyCode,
         });
 
-        const text = `Cash balance updated successfully: ${result.balance} ${result.currencyCode} (ID: ${result.id})`;
+        const text =
+          `Cash balance updated successfully: ${result.balance} ${result.currencyCode} (ID: ${result.id})`;
 
         return {
           text,

@@ -15,7 +15,7 @@ export class UpdateBillToolService {
         title: "Update bill",
         description:
           "Use this when you need to update an existing bill. Do not use for creating new bills or deleting bills.",
-        inputSchema: UpdateBillToolSchema.shape,
+        inputSchema: UpdateBillToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,
@@ -40,7 +40,8 @@ export class UpdateBillToolService {
           : "";
         const currencySymbol = getCurrencySymbolForCode(result.currencyCode);
 
-        const text = `Bill updated successfully: ${displayDate} – ${result.category}: ${result.totalAmount}${currencySymbol}${emailDisplay} (ID: ${result.id})`;
+        const text =
+          `Bill updated successfully: ${displayDate} – ${result.category}: ${result.totalAmount}${currencySymbol}${emailDisplay} (ID: ${result.id})`;
 
         return {
           text,

@@ -18,7 +18,7 @@ export class UpdateCryptoExchangeBalanceToolService {
         title: "Update crypto exchange balance",
         description:
           "Use this when you need to update an existing crypto exchange balance entry.",
-        inputSchema: UpdateCryptoExchangeBalanceToolSchema.shape,
+        inputSchema: UpdateCryptoExchangeBalanceToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: false,
@@ -27,16 +27,18 @@ export class UpdateCryptoExchangeBalanceToolService {
         },
       },
       run: async (input: unknown) => {
-        const { id, ...payload } =
-          UpdateCryptoExchangeBalanceToolSchema.parse(input);
+        const { id, ...payload } = UpdateCryptoExchangeBalanceToolSchema.parse(
+          input,
+        );
 
-        const result =
-          await this.cryptoExchangeBalancesService.updateCryptoExchangeBalance(
+        const result = await this.cryptoExchangeBalancesService
+          .updateCryptoExchangeBalance(
             id,
             payload,
           );
 
-        const text = `Balance for ${result.symbolCode} updated successfully (ID: ${result.id})`;
+        const text =
+          `Balance for ${result.symbolCode} updated successfully (ID: ${result.id})`;
 
         return {
           text,

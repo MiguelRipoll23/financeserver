@@ -12,8 +12,8 @@ export class CashBalancesMCPService {
     private updateCashBalanceToolService = inject(UpdateCashBalanceToolService),
     private deleteCashBalanceToolService = inject(DeleteCashBalanceToolService),
     private filterCashBalancesToolService = inject(
-      FilterCashBalancesToolService
-    )
+      FilterCashBalancesToolService,
+    ),
   ) {}
 
   public getTools(): McpToolDefinition[] {

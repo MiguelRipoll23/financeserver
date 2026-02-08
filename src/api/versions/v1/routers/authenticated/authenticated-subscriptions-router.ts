@@ -3,9 +3,9 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import type { Context } from "hono";
 import { SubscriptionsService } from "../../services/subscriptions/subscriptions-service.ts";
 import {
-  SubscriptionIdParamSchema,
   GetSubscriptionsRequestSchema,
   GetSubscriptionsResponseSchema,
+  SubscriptionIdParamSchema,
   UpdateSubscriptionRequestSchema,
   UpdateSubscriptionResponseSchema,
   UpsertSubscriptionRequestSchema,
@@ -68,12 +68,12 @@ export class AuthenticatedSubscriptionsRouter {
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
         const body = UpsertSubscriptionRequestSchema.parse(
-          await context.req.json()
+          await context.req.json(),
         );
         const result = await this.subscriptionsService.createSubscription(body);
 
         return context.json(result, 201);
-      }
+      },
     );
   }
 
@@ -112,11 +112,11 @@ export class AuthenticatedSubscriptionsRouter {
         const payload = await readJsonOrEmpty(context);
         const body = GetSubscriptionsRequestSchema.parse(payload);
         const result = await this.subscriptionsService.getSubscriptions(
-          body as SubscriptionsFilter
+          body as SubscriptionsFilter,
         );
 
         return context.json(result, 200);
-      }
+      },
     );
   }
 
@@ -155,16 +155,16 @@ export class AuthenticatedSubscriptionsRouter {
       async (context: Context<{ Variables: HonoVariables }>) => {
         const params = SubscriptionIdParamSchema.parse(context.req.param());
         const payload = UpdateSubscriptionRequestSchema.parse(
-          await context.req.json()
+          await context.req.json(),
         );
 
         const result = await this.subscriptionsService.updateSubscription(
           params.id,
-          payload
+          payload,
         );
 
         return context.json(result, 200);
-      }
+      },
     );
   }
 
@@ -190,7 +190,7 @@ export class AuthenticatedSubscriptionsRouter {
         await this.subscriptionsService.deleteSubscription(params.id);
 
         return context.body(null, 204);
-      }
+      },
     );
   }
 }

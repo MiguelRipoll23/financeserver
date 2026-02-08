@@ -9,11 +9,12 @@ import { IndexFundPriceProvider } from "../interfaces/index-fund-price-provider-
  */
 @injectable()
 export class YahooFinanceAdapter implements IndexFundPriceProvider {
-  private readonly baseUrl = "https://query1.finance.yahoo.com/v8/finance/chart";
+  private readonly baseUrl =
+    "https://query1.finance.yahoo.com/v8/finance/chart";
 
   public async getCurrentPrice(
     isin: string,
-    targetCurrencyCode: string
+    targetCurrencyCode: string,
   ): Promise<string | null> {
     try {
       // Note: Yahoo Finance doesn't directly support ISIN lookups
@@ -23,10 +24,10 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
       // For now, we return null to indicate this needs external ticker mapping
 
       console.warn(
-        `YahooFinanceAdapter: ISIN-to-ticker mapping not implemented. ISIN: ${isin}`
+        `YahooFinanceAdapter: ISIN-to-ticker mapping not implemented. ISIN: ${isin}`,
       );
       console.warn(
-        `Please implement ISIN-to-ticker mapping using OpenFIGI or similar service`
+        `Please implement ISIN-to-ticker mapping using OpenFIGI or similar service`,
       );
 
       // Example of how it would work with a ticker:
@@ -41,7 +42,7 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
     } catch (error) {
       console.error(
         `Error fetching index fund price from Yahoo Finance:`,
-        error
+        error,
       );
       return null;
     }

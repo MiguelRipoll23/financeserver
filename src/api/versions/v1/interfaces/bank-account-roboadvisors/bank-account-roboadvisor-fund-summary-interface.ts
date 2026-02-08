@@ -11,4 +11,3 @@ export interface BankAccountRoboadvisorFundSummary {
   createdAt: string;
   updatedAt: string;
 }
-

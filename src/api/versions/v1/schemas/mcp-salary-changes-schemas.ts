@@ -8,15 +8,17 @@ const MonetaryRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
 export const CreateSalaryChangeToolSchema = z.object({
   recurrence: z
     .nativeEnum(Recurrence)
-    .describe("Recurrence of the salary change (weekly, bi-weekly, monthly, yearly)"),
+    .describe(
+      "Recurrence of the salary change (weekly, bi-weekly, monthly, yearly)",
+    ),
   netAmount: z
     .string()
     .regex(
       MonetaryRegex,
-      "Net amount must be a valid monetary value (format: 123.45, no currency symbol, dot as decimal separator)"
+      "Net amount must be a valid monetary value (format: 123.45, no currency symbol, dot as decimal separator)",
     )
     .describe(
-      "The net amount of the salary change (format: 123.45, no currency symbol)"
+      "The net amount of the salary change (format: 123.45, no currency symbol)",
     ),
   currencyCode: z
     .string()
@@ -26,7 +28,9 @@ export const CreateSalaryChangeToolSchema = z.object({
 
 export const UpdateSalaryChangeToolSchema = z
   .object({
-    id: z.number().int().positive().describe("ID of the salary change to update"),
+    id: z.number().int().positive().describe(
+      "ID of the salary change to update",
+    ),
   })
   .merge(CreateSalaryChangeToolSchema.partial())
   .refine((data) => Object.keys(data).some((key) => key !== "id"), {
@@ -47,14 +51,14 @@ export const ListSalaryChangesToolSchema = z.object({
     .regex(MonetaryRegex)
     .optional()
     .describe(
-      "Minimum net amount for salary changes (format: 123.45, no currency symbol)"
+      "Minimum net amount for salary changes (format: 123.45, no currency symbol)",
     ),
   maximumNetAmount: z
     .string()
     .regex(MonetaryRegex)
     .optional()
     .describe(
-      "Maximum net amount for salary changes (format: 123.45, no currency symbol)"
+      "Maximum net amount for salary changes (format: 123.45, no currency symbol)",
     ),
   sortField: z
     .nativeEnum(SalaryChangeSortField)

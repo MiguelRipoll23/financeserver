@@ -24,7 +24,7 @@ export abstract class BaseOAuthProviderService {
       throw new ServerError(
         `${providerName.toUpperCase()}_OAUTH_UNAVAILABLE`,
         `${providerName} OAuth is not configured on this server`,
-        503
+        503,
       );
     }
   }

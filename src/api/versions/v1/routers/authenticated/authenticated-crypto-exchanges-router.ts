@@ -5,11 +5,11 @@ import { CryptoExchangesService } from "../../services/crypto-exchanges/crypto-e
 import {
   CreateCryptoExchangeRequestSchema,
   CreateCryptoExchangeResponseSchema,
-  UpdateCryptoExchangeRequestSchema,
-  UpdateCryptoExchangeResponseSchema,
   CryptoExchangeIdParamSchema,
   GetCryptoExchangesRequestSchema,
   GetCryptoExchangesResponseSchema,
+  UpdateCryptoExchangeRequestSchema,
+  UpdateCryptoExchangeResponseSchema,
 } from "../../schemas/crypto-exchanges-schemas.ts";
 import type { CryptoExchangesFilter } from "../../interfaces/crypto-exchanges/crypto-exchanges-filter-interface.ts";
 import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
@@ -69,14 +69,14 @@ export class AuthenticatedCryptoExchangesRouter {
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
         const body = CreateCryptoExchangeRequestSchema.parse(
-          await context.req.json()
+          await context.req.json(),
         );
         const result = await this.cryptoExchangesService.createCryptoExchange(
-          body
+          body,
         );
 
         return context.json(result, 201);
-      }
+      },
     );
   }
 
@@ -122,11 +122,11 @@ export class AuthenticatedCryptoExchangesRouter {
           name: body.name,
         };
         const result = await this.cryptoExchangesService.getCryptoExchanges(
-          filter
+          filter,
         );
 
         return context.json(result, 200);
-      }
+      },
     );
   }
 
@@ -165,15 +165,15 @@ export class AuthenticatedCryptoExchangesRouter {
       async (context: Context<{ Variables: HonoVariables }>) => {
         const { id } = CryptoExchangeIdParamSchema.parse(context.req.param());
         const body = UpdateCryptoExchangeRequestSchema.parse(
-          await context.req.json()
+          await context.req.json(),
         );
         const result = await this.cryptoExchangesService.updateCryptoExchange(
           parseInt(id, 10),
-          body
+          body,
         );
 
         return context.json(result, 200);
-      }
+      },
     );
   }
 
@@ -200,12 +200,11 @@ export class AuthenticatedCryptoExchangesRouter {
       async (context: Context<{ Variables: HonoVariables }>) => {
         const { id } = CryptoExchangeIdParamSchema.parse(context.req.param());
         await this.cryptoExchangesService.deleteCryptoExchange(
-          parseInt(id, 10)
+          parseInt(id, 10),
         );
 
         return context.body(null, 204);
-      }
+      },
     );
   }
-
 }

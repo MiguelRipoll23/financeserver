@@ -15,7 +15,7 @@ export class UpdateSubscriptionToolService {
         title: "Update subscription",
         description:
           "Use this when you need to update an existing subscription or cancel it.",
-        inputSchema: UpdateSubscriptionToolSchema.shape,
+        inputSchema: UpdateSubscriptionToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,
@@ -27,8 +27,7 @@ export class UpdateSubscriptionToolService {
         const parsed = UpdateSubscriptionToolSchema.parse(input);
 
         // Check if this is a cancellation operation (only effectiveUntil provided)
-        const isCancellation =
-          parsed.effectiveUntil !== undefined &&
+        const isCancellation = parsed.effectiveUntil !== undefined &&
           !parsed.name &&
           !parsed.category &&
           !parsed.amount &&
@@ -48,7 +47,7 @@ export class UpdateSubscriptionToolService {
             effectiveFrom: parsed.effectiveFrom,
             effectiveUntil: parsed.effectiveUntil,
             plan: parsed.plan,
-          }
+          },
         );
 
         const displayStartDate = result.effectiveFrom.split("T")[0];
@@ -56,15 +55,12 @@ export class UpdateSubscriptionToolService {
 
         if (isCancellation) {
           const planInfo = result.plan ? ` - ${result.plan}` : "";
-          const text = `Subscription canceled successfully: ${
-            result.name
-          }${planInfo} – ${result.category} (${getCurrencySymbolForCode(
-            result.currencyCode
-          )}${result.amount}/${
-            result.recurrence
-          }, started: ${displayStartDate}, ended: ${displayEndDate}) (ID: ${
-            result.id
-          })`;
+          const text =
+            `Subscription canceled successfully: ${result.name}${planInfo} – ${result.category} (${
+              getCurrencySymbolForCode(
+                result.currencyCode,
+              )
+            }${result.amount}/${result.recurrence}, started: ${displayStartDate}, ended: ${displayEndDate}) (ID: ${result.id})`;
 
           return {
             text,
@@ -76,13 +72,12 @@ export class UpdateSubscriptionToolService {
             : " (active)";
 
           const planInfo = result.plan ? ` - ${result.plan}` : "";
-          const text = `Subscription updated successfully: ${
-            result.name
-          }${planInfo} – ${result.category} (${getCurrencySymbolForCode(
-            result.currencyCode
-          )}${result.amount}/${
-            result.recurrence
-          }, started: ${displayStartDate}${endDateDisplay}) (ID: ${result.id})`;
+          const text =
+            `Subscription updated successfully: ${result.name}${planInfo} – ${result.category} (${
+              getCurrencySymbolForCode(
+                result.currencyCode,
+              )
+            }${result.amount}/${result.recurrence}, started: ${displayStartDate}${endDateDisplay}) (ID: ${result.id})`;
 
           return {
             text,

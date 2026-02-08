@@ -14,7 +14,7 @@ export class UpdateMerchantToolService {
         title: "Update merchant",
         description:
           "Use this when you need to update an existing merchant. Do not use for creating new merchants or deleting merchants.",
-        inputSchema: UpdateMerchantToolSchema.shape,
+        inputSchema: UpdateMerchantToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,
@@ -29,7 +29,8 @@ export class UpdateMerchantToolService {
           name: parsed.name,
         });
 
-        const text = `Merchant updated successfully: ${result.name} (ID: ${result.id})`;
+        const text =
+          `Merchant updated successfully: ${result.name} (ID: ${result.id})`;
 
         return {
           text,

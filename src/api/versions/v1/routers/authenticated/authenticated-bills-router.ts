@@ -71,7 +71,7 @@ export class AuthenticatedBillsRouter {
         const result = await this.billsService.upsertBill(body);
 
         return context.json(result, 200);
-      }
+      },
     );
   }
 
@@ -112,7 +112,7 @@ export class AuthenticatedBillsRouter {
         const result = await this.billsService.getBills(body as BillsFilter);
 
         return context.json(result, 200);
-      }
+      },
     );
   }
 
@@ -156,7 +156,7 @@ export class AuthenticatedBillsRouter {
         const result = await this.billsService.updateBill(params.id, payload);
 
         return context.json(result, 200);
-      }
+      },
     );
   }
 
@@ -182,7 +182,7 @@ export class AuthenticatedBillsRouter {
         await this.billsService.deleteBill(params.id);
 
         return context.body(null, 204);
-      }
+      },
     );
   }
 }

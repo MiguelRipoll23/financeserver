@@ -6,7 +6,7 @@ import { DeleteCryptoExchangeToolSchema } from "../../../schemas/mcp-crypto-exch
 @injectable()
 export class DeleteCryptoExchangeToolService {
   constructor(
-    private cryptoExchangesService = inject(CryptoExchangesService)
+    private cryptoExchangesService = inject(CryptoExchangesService),
   ) {}
 
   public getDefinition(): McpToolDefinition {
@@ -16,7 +16,7 @@ export class DeleteCryptoExchangeToolService {
         title: "Delete crypto exchange",
         description:
           "Use this when you need to permanently delete a crypto exchange and all its balances.",
-        inputSchema: DeleteCryptoExchangeToolSchema.shape,
+        inputSchema: DeleteCryptoExchangeToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: false,

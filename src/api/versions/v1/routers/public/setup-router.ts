@@ -48,7 +48,7 @@ export class SetupRouter {
         }
 
         return c.json(response, 200);
-      }
+      },
     );
   }
 }

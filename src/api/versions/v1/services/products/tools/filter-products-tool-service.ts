@@ -16,7 +16,7 @@ export class FilterProductsToolService {
         title: "Filter products",
         description:
           "Use this when you need to search products by name with optional unit price filters and sorting.",
-        inputSchema: FilterProductsToolSchema.shape,
+        inputSchema: FilterProductsToolSchema,
         annotations: {
           readOnlyHint: true,
           idempotentHint: true,
@@ -56,7 +56,8 @@ export class FilterProductsToolService {
     const productsList = page.results
       .map((product) => {
         const currencySymbol = getCurrencySymbolForCode(product.currencyCode);
-        let text = `• ${product.name} — ${product.latestUnitPrice}${currencySymbol}`;
+        let text =
+          `• ${product.name} — ${product.latestUnitPrice}${currencySymbol}`;
         if (product.totalQuantity !== undefined) {
           text += ` (Total purchased: ${product.totalQuantity})`;
         }

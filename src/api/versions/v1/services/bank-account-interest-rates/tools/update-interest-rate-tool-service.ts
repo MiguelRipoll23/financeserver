@@ -7,8 +7,8 @@ import { UpdateBankAccountInterestRateToolSchema } from "../../../schemas/mcp-ba
 export class UpdateInterestRateToolService {
   constructor(
     private bankAccountInterestRatesService = inject(
-      BankAccountInterestRatesService
-    )
+      BankAccountInterestRatesService,
+    ),
   ) {}
 
   public getDefinition(): McpToolDefinition {
@@ -18,7 +18,7 @@ export class UpdateInterestRateToolService {
         title: "Update bank account interest rate",
         description:
           "Use this when you need to update an existing interest rate record for a bank account (e.g. correct a date or rate).",
-        inputSchema: UpdateBankAccountInterestRateToolSchema.shape,
+        inputSchema: UpdateBankAccountInterestRateToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: false,
@@ -29,17 +29,22 @@ export class UpdateInterestRateToolService {
       run: async (input: unknown) => {
         const parsed = UpdateBankAccountInterestRateToolSchema.parse(input);
 
-        const result =
-          await this.bankAccountInterestRatesService.updateBankAccountInterestRate(
+        const result = await this.bankAccountInterestRatesService
+          .updateBankAccountInterestRate(
             parsed.id,
             {
               interestRate: parsed.interestRate,
               interestRateStartDate: parsed.interestRateStartDate,
               interestRateEndDate: parsed.interestRateEndDate,
-            }
+            },
           );
 
-        const text = `Interest rate updated successfully: ${result.interestRate}% from ${result.interestRateStartDate}${result.interestRateEndDate ? ` to ${result.interestRateEndDate}` : ""} (ID: ${result.id})`;
+        const text =
+          `Interest rate updated successfully: ${result.interestRate}% from ${result.interestRateStartDate}${
+            result.interestRateEndDate
+              ? ` to ${result.interestRateEndDate}`
+              : ""
+          } (ID: ${result.id})`;
 
         return {
           text,

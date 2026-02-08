@@ -11,7 +11,7 @@ export class ReceiptsMCPService {
     private filterReceiptsToolService = inject(FilterReceiptsToolService),
     private saveReceiptToolService = inject(SaveReceiptToolService),
     private updateReceiptToolService = inject(UpdateReceiptToolService),
-    private deleteReceiptToolService = inject(DeleteReceiptToolService)
+    private deleteReceiptToolService = inject(DeleteReceiptToolService),
   ) {}
 
   public getTools(): McpToolDefinition[] {

@@ -1,7 +1,7 @@
 import { inject, injectable } from "@needle-di/core";
-import { asc, desc, eq, ilike, sql, type SQL } from "drizzle-orm";
+import { asc, desc, eq, ilike, type SQL, sql } from "drizzle-orm";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
-import { cashTable, cashBalancesTable } from "../../../../../db/schema.ts";
+import { cashBalancesTable, cashTable } from "../../../../../db/schema.ts";
 import { ServerError } from "../../models/server-error.ts";
 import { decodeCursor } from "../../utils/cursor-utils.ts";
 import { createOffsetPagination } from "../../utils/pagination-utils.ts";
@@ -20,9 +20,9 @@ import { CashBalanceSummary } from "../../interfaces/cash/cash-balance-summary-i
 import type {
   CreateCashRequest,
   CreateCashResponse,
+  GetCashResponse,
   UpdateCashRequest,
   UpdateCashResponse,
-  GetCashResponse,
 } from "../../schemas/cash-schemas.ts";
 import type {
   CreateCashBalanceRequest,
@@ -113,8 +113,9 @@ export class CashService {
       conditions.push(ilike(cashTable.label, `%${filter.label}%`));
     }
 
-    const whereClause =
-      conditions.length > 0 ? buildAndFilters(conditions) : undefined;
+    const whereClause = conditions.length > 0
+      ? buildAndFilters(conditions)
+      : undefined;
 
     const orderColumn = this.getSortColumn(sortField);
     const orderDirection = sortOrder === SortOrder.Asc ? asc : desc;
@@ -146,7 +147,7 @@ export class CashService {
       .offset(offset);
 
     const data: CashSummary[] = results.map((cash) =>
-      this.mapCashToSummary(cash),
+      this.mapCashToSummary(cash)
     );
 
     const pagination = createOffsetPagination<CashSummary>(
@@ -258,7 +259,7 @@ export class CashService {
       .offset(offset);
 
     const data: CashBalanceSummary[] = results.map((row) =>
-      this.mapBalanceToSummary(row),
+      this.mapBalanceToSummary(row)
     );
 
     const pagination = createOffsetPagination<CashBalanceSummary>(

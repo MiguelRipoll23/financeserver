@@ -16,7 +16,7 @@ export class CreateRoboadvisorToolService {
         title: "Create roboadvisor",
         description:
           "Use this when you need to create a new roboadvisor for automated investment management. This includes configuring fees, risk level, and linking it to a bank account.",
-        inputSchema: CreateBankAccountRoboadvisorToolSchema.shape,
+        inputSchema: CreateBankAccountRoboadvisorToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: false,
@@ -27,8 +27,8 @@ export class CreateRoboadvisorToolService {
       run: async (input: unknown) => {
         const parsed = CreateBankAccountRoboadvisorToolSchema.parse(input);
 
-        const result =
-          await this.roboadvisorsService.createBankAccountRoboadvisor({
+        const result = await this.roboadvisorsService
+          .createBankAccountRoboadvisor({
             name: parsed.name,
             bankAccountId: parsed.bankAccountId,
             riskLevel: parsed.riskLevel,
@@ -42,7 +42,10 @@ export class CreateRoboadvisorToolService {
             taxPercentage: parsed.taxPercentage,
           });
 
-        const text = `Roboadvisor created successfully: ${result.name} (ID: ${result.id}, Total Fee: ${(result.totalFeePercentage * 100).toFixed(2)}%)`;
+        const text =
+          `Roboadvisor created successfully: ${result.name} (ID: ${result.id}, Total Fee: ${
+            (result.totalFeePercentage * 100).toFixed(2)
+          }%)`;
 
         return {
           text,

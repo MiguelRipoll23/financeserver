@@ -21,10 +21,10 @@ const SaveReceiptSubitemToolSchema = z.object({
     .string()
     .regex(
       MonetaryRegex,
-      "Unit price must be a valid monetary value (format: 123.45, no currency symbol, dot as decimal separator)"
+      "Unit price must be a valid monetary value (format: 123.45, no currency symbol, dot as decimal separator)",
     )
     .describe(
-      "The price per unit for this subitem (format: 123.45, no currency symbol)"
+      "The price per unit for this subitem (format: 123.45, no currency symbol)",
     ),
 });
 
@@ -44,16 +44,16 @@ export const SaveReceiptItemToolSchema = z.object({
     .string()
     .regex(
       MonetaryRegex,
-      "Unit price must be a valid monetary value (format: 123.45, no currency symbol, dot as decimal separator)"
+      "Unit price must be a valid monetary value (format: 123.45, no currency symbol, dot as decimal separator)",
     )
     .describe(
-      "The price per unit for this item (format: 123.45, no currency symbol)"
+      "The price per unit for this item (format: 123.45, no currency symbol)",
     ),
   items: z
     .array(SaveReceiptSubitemToolSchema)
     .optional()
     .describe(
-      "Optional list of subitems associated with this item (nesting limited to 1 level)"
+      "Optional list of subitems associated with this item (nesting limited to 1 level)",
     ),
 });
 
@@ -105,20 +105,20 @@ export const FilterReceiptsToolSchema = z.object({
     .regex(MonetaryRegex)
     .optional()
     .describe(
-      "Minimum total amount for receipts (format: 123.45, no currency symbol)"
+      "Minimum total amount for receipts (format: 123.45, no currency symbol)",
     ),
   maximumTotalAmount: z
     .string()
     .regex(MonetaryRegex)
     .optional()
     .describe(
-      "Maximum total amount for receipts (format: 123.45, no currency symbol)"
+      "Maximum total amount for receipts (format: 123.45, no currency symbol)",
     ),
   productName: z
     .string()
     .optional()
     .describe(
-      "Filter receipts containing items with this name (partial match)"
+      "Filter receipts containing items with this name (partial match)",
     ),
   merchantName: z
     .string()

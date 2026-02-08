@@ -14,7 +14,7 @@ export class FilterCashBalancesToolService {
         title: "Filter cash balances",
         description:
           "Use this when you need to search and filter cash balances with optional sorting and pagination. You can optionally specify a cashId to filter by a specific cash source, or omit it to retrieve all balances across all cash sources.",
-        inputSchema: FilterCashBalancesToolSchema.shape,
+        inputSchema: FilterCashBalancesToolSchema,
         annotations: {
           readOnlyHint: true,
           idempotentHint: true,
@@ -47,7 +47,8 @@ export class FilterCashBalancesToolService {
         }
 
         if (result.nextCursor) {
-          text += `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
+          text +=
+            `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
         }
 
         return {

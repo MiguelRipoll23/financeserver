@@ -15,7 +15,7 @@ export class UpdateReceiptToolService {
         title: "Update receipt",
         description:
           "Use this when you need to update an existing receipt. Do not use for creating new receipts or deleting receipts.",
-        inputSchema: UpdateReceiptToolSchema.shape,
+        inputSchema: UpdateReceiptToolSchema,
         annotations: {
           readOnlyHint: false,
           idempotentHint: true,
@@ -43,12 +43,13 @@ export class UpdateReceiptToolService {
           // Calculate total items quantity
           const totalQuantity = parsed.items!.reduce(
             (sum, item) => sum + item.quantity,
-            0
+            0,
           );
           const quantityText = totalQuantity === 1 ? "product" : "products";
           const currencySymbol = getCurrencySymbolForCode(result.currencyCode);
 
-          const text = `Receipt updated successfully: ${displayDate} – ${totalQuantity} ${quantityText} across ${itemCount} ${itemsText}, total: ${result.totalAmount}${currencySymbol} (ID: ${result.id})`;
+          const text =
+            `Receipt updated successfully: ${displayDate} – ${totalQuantity} ${quantityText} across ${itemCount} ${itemsText}, total: ${result.totalAmount}${currencySymbol} (ID: ${result.id})`;
 
           return {
             text,
@@ -56,7 +57,8 @@ export class UpdateReceiptToolService {
           };
         } else {
           const currencySymbol = getCurrencySymbolForCode(result.currencyCode);
-          const text = `Receipt updated successfully: ${displayDate} – total: ${result.totalAmount}${currencySymbol} (ID: ${result.id})`;
+          const text =
+            `Receipt updated successfully: ${displayDate} – total: ${result.totalAmount}${currencySymbol} (ID: ${result.id})`;
 
           return {
             text,

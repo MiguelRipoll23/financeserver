@@ -1,5 +1,5 @@
 import { inject, injectable } from "@needle-di/core";
-import { and, asc, desc, eq, gte, lte, ne, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lte, ne, type SQL, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import {
@@ -11,7 +11,10 @@ import { ServerError } from "../../models/server-error.ts";
 import { decodeCursor } from "../../utils/cursor-utils.ts";
 import { createOffsetPagination } from "../../utils/pagination-utils.ts";
 import { buildAndFilters } from "../../utils/sql-utils.ts";
-import { toISOStringNullable, toISOStringSafe } from "../../utils/date-utils.ts";
+import {
+  toISOStringNullable,
+  toISOStringSafe,
+} from "../../utils/date-utils.ts";
 import {
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
@@ -36,11 +39,10 @@ type NormalizedCategoryInput = {
 export class BillsService {
   constructor(
     private databaseService = inject(DatabaseService),
-
   ) {}
 
   public async createBill(
-    payload: Omit<UpsertBillRequest, "senderEmail"> & { senderEmail?: string }
+    payload: Omit<UpsertBillRequest, "senderEmail"> & { senderEmail?: string },
   ): Promise<UpsertBillResponse> {
     const categoryInput = this.normalizeCategoryInput(payload.category);
 
@@ -48,7 +50,7 @@ export class BillsService {
       throw new ServerError(
         "BILL_CATEGORY_REQUIRED",
         "Category is required to create a bill",
-        400
+        400,
       );
     }
 
@@ -57,7 +59,7 @@ export class BillsService {
     const totalAmountCents = this.parseAmountToCents(
       payload.totalAmount,
       "BILL_TOTAL_INVALID",
-      "Bill total amount must be a non-negative monetary value"
+      "Bill total amount must be a non-negative monetary value",
     );
     const totalAmountString = this.formatAmount(totalAmountCents / 100);
 
@@ -76,13 +78,13 @@ export class BillsService {
         throw new ServerError(
           "BILL_DATE_CONFLICT",
           `A bill already exists for date ${billDate}`,
-          409
+          409,
         );
       }
 
       const emailId = await this.resolveOptionalEmailId(
         tx,
-        payload.senderEmail
+        payload.senderEmail,
       );
       const categoryId = await this.resolveCategoryId(tx, categoryInput);
 
@@ -102,12 +104,11 @@ export class BillsService {
       return await this.loadBillResponse(tx, billId);
     });
 
-
     return billResponse;
   }
 
   public async upsertBill(
-    payload: Omit<UpsertBillRequest, "senderEmail"> & { senderEmail?: string }
+    payload: Omit<UpsertBillRequest, "senderEmail"> & { senderEmail?: string },
   ): Promise<UpsertBillResponse> {
     const categoryInput = this.normalizeCategoryInput(payload.category);
 
@@ -115,7 +116,7 @@ export class BillsService {
       throw new ServerError(
         "BILL_CATEGORY_REQUIRED",
         "Category is required to register a bill",
-        400
+        400,
       );
     }
 
@@ -124,7 +125,7 @@ export class BillsService {
     const totalAmountCents = this.parseAmountToCents(
       payload.totalAmount,
       "BILL_TOTAL_INVALID",
-      "Bill total amount must be a non-negative monetary value"
+      "Bill total amount must be a non-negative monetary value",
     );
     const totalAmountString = this.formatAmount(totalAmountCents / 100);
 
@@ -134,7 +135,7 @@ export class BillsService {
     const billResponse = await db.transaction(async (tx) => {
       const emailId = await this.resolveOptionalEmailId(
         tx,
-        payload.senderEmail
+        payload.senderEmail,
       );
       const categoryId = await this.resolveCategoryId(tx, categoryInput);
 
@@ -182,8 +183,6 @@ export class BillsService {
       return await this.loadBillResponse(tx, billId);
     });
 
-
-
     return billResponse;
   }
 
@@ -207,7 +206,7 @@ export class BillsService {
     if (filteredCategory) {
       const normalizedFilter = this.normalizeCategoryInput(filteredCategory);
       conditions.push(
-        eq(billCategoriesTable.normalizedName, normalizedFilter.normalized)
+        eq(billCategoriesTable.normalizedName, normalizedFilter.normalized),
       );
     }
 
@@ -215,11 +214,11 @@ export class BillsService {
       const minimumCents = this.parseAmountToCents(
         filters.minimumTotalAmount,
         "BILL_MIN_TOTAL_INVALID",
-        "Minimum total amount filter must be a non-negative monetary value"
+        "Minimum total amount filter must be a non-negative monetary value",
       );
 
       conditions.push(
-        gte(billsTable.totalAmount, this.formatAmount(minimumCents / 100))
+        gte(billsTable.totalAmount, this.formatAmount(minimumCents / 100)),
       );
     }
 
@@ -227,11 +226,11 @@ export class BillsService {
       const maximumCents = this.parseAmountToCents(
         filters.maximumTotalAmount,
         "BILL_MAX_TOTAL_INVALID",
-        "Maximum total amount filter must be a non-negative monetary value"
+        "Maximum total amount filter must be a non-negative monetary value",
       );
 
       conditions.push(
-        lte(billsTable.totalAmount, this.formatAmount(maximumCents / 100))
+        lte(billsTable.totalAmount, this.formatAmount(maximumCents / 100)),
       );
     }
 
@@ -242,7 +241,7 @@ export class BillsService {
       .from(billsTable)
       .innerJoin(
         billCategoriesTable,
-        eq(billCategoriesTable.id, billsTable.categoryId)
+        eq(billCategoriesTable.id, billsTable.categoryId),
       )
       .where(predicate);
 
@@ -253,13 +252,13 @@ export class BillsService {
         [],
         limit,
         offset,
-        total
+        total,
       ) as GetBillsResponse;
     }
 
     const order = this.resolveSortField(
       filters.sortField ?? BillSortField.BillDate,
-      filters.sortOrder ?? SortOrder.Desc
+      filters.sortOrder ?? SortOrder.Desc,
     );
 
     const rows = await db
@@ -276,7 +275,7 @@ export class BillsService {
       .from(billsTable)
       .innerJoin(
         billCategoriesTable,
-        eq(billCategoriesTable.id, billsTable.categoryId)
+        eq(billCategoriesTable.id, billsTable.categoryId),
       )
       .leftJoin(billEmailsTable, eq(billEmailsTable.id, billsTable.emailId))
       .where(predicate)
@@ -292,7 +291,7 @@ export class BillsService {
       totalAmount: this.formatStoredAmount(
         row.totalAmount,
         "BILL_TOTAL_CORRUPTED",
-        `Stored bill amount for bill ${row.id} is invalid`
+        `Stored bill amount for bill ${row.id} is invalid`,
       ),
       currencyCode: row.currencyCode,
       updatedAt: toISOStringSafe(row.updatedAt),
@@ -303,7 +302,7 @@ export class BillsService {
       summaries,
       limit,
       offset,
-      total
+      total,
     ) as GetBillsResponse;
   }
 
@@ -311,7 +310,7 @@ export class BillsService {
     billId: number,
     payload: Partial<
       Omit<UpsertBillRequest, "senderEmail"> & { senderEmail?: string }
-    >
+    >,
   ): Promise<UpsertBillResponse> {
     const db = this.databaseService.get();
 
@@ -334,7 +333,7 @@ export class BillsService {
         throw new ServerError(
           "BILL_NOT_FOUND",
           `Bill ${billId} was not found`,
-          404
+          404,
         );
       }
 
@@ -358,7 +357,7 @@ export class BillsService {
             .select({ id: billsTable.id })
             .from(billsTable)
             .where(
-              and(eq(billsTable.billDate, billDate), ne(billsTable.id, billId))
+              and(eq(billsTable.billDate, billDate), ne(billsTable.id, billId)),
             )
             .limit(1)
             .then((rows) => rows[0]);
@@ -367,7 +366,7 @@ export class BillsService {
             throw new ServerError(
               "BILL_DATE_CONFLICT",
               `Another bill already exists for date ${billDate}`,
-              409
+              409,
             );
           }
         }
@@ -383,7 +382,7 @@ export class BillsService {
           throw new ServerError(
             "BILL_CATEGORY_REQUIRED",
             "Category cannot be empty",
-            400
+            400,
           );
         }
 
@@ -396,7 +395,7 @@ export class BillsService {
         const totalAmountCents = this.parseAmountToCents(
           payload.totalAmount,
           "BILL_TOTAL_INVALID",
-          "Bill total amount must be a non-negative monetary value"
+          "Bill total amount must be a non-negative monetary value",
         );
         updateData.totalAmount = this.formatAmount(totalAmountCents / 100);
       }
@@ -410,7 +409,7 @@ export class BillsService {
       if (payload.senderEmail !== undefined) {
         updateData.emailId = await this.resolveOptionalEmailId(
           tx,
-          payload.senderEmail
+          payload.senderEmail,
         );
       }
 
@@ -438,7 +437,7 @@ export class BillsService {
       throw new ServerError(
         "BILL_NOT_FOUND",
         `Bill ${billId} was not found`,
-        404
+        404,
       );
     }
   }
@@ -453,7 +452,7 @@ export class BillsService {
 
   private async loadBillResponse(
     tx: NodePgDatabase,
-    billId: number
+    billId: number,
   ): Promise<UpsertBillResponse> {
     const billRow = await tx
       .select({
@@ -469,7 +468,7 @@ export class BillsService {
       .from(billsTable)
       .innerJoin(
         billCategoriesTable,
-        eq(billCategoriesTable.id, billsTable.categoryId)
+        eq(billCategoriesTable.id, billsTable.categoryId),
       )
       .leftJoin(billEmailsTable, eq(billEmailsTable.id, billsTable.emailId))
       .where(eq(billsTable.id, billId))
@@ -480,7 +479,7 @@ export class BillsService {
       throw new ServerError(
         "BILL_NOT_FOUND",
         "Bill could not be retrieved after persistence",
-        500
+        500,
       );
     }
 
@@ -492,7 +491,7 @@ export class BillsService {
       totalAmount: this.formatStoredAmount(
         billRow.totalAmount,
         "BILL_TOTAL_CORRUPTED",
-        "Stored bill amount is not a valid number"
+        "Stored bill amount is not a valid number",
       ),
       currencyCode: billRow.currencyCode,
       updatedAt: toISOStringSafe(billRow.updatedAt),
@@ -501,12 +500,11 @@ export class BillsService {
   }
 
   private resolveSortField(field: BillSortField, order: SortOrder) {
-    const column =
-      field === BillSortField.TotalAmount
-        ? billsTable.totalAmount
-        : field === BillSortField.Category
-          ? billCategoriesTable.name
-          : billsTable.billDate;
+    const column = field === BillSortField.TotalAmount
+      ? billsTable.totalAmount
+      : field === BillSortField.Category
+      ? billCategoriesTable.name
+      : billsTable.billDate;
 
     return order === SortOrder.Desc ? desc(column) : asc(column);
   }
@@ -514,7 +512,7 @@ export class BillsService {
   private parseAmountToCents(
     amount: string,
     errorCode: string,
-    errorMessage: string
+    errorMessage: string,
   ): number {
     if (!/^[0-9]+(\.[0-9]{1,2})?$/.test(amount)) {
       throw new ServerError(errorCode, errorMessage, 400);
@@ -536,7 +534,7 @@ export class BillsService {
   private formatStoredAmount(
     value: unknown,
     errorCode: string,
-    errorMessage: string
+    errorMessage: string,
   ): string {
     const numeric = Number.parseFloat(String(value));
 
@@ -564,7 +562,7 @@ export class BillsService {
 
   private async resolveCategoryId(
     tx: NodePgDatabase,
-    category: NormalizedCategoryInput
+    category: NormalizedCategoryInput,
   ): Promise<number> {
     const existing = await tx
       .select({ id: billCategoriesTable.id })
@@ -605,13 +603,13 @@ export class BillsService {
     throw new ServerError(
       "BILL_CATEGORY_RESOLUTION_FAILED",
       `Failed to persist bill category "${category.name}"`,
-      500
+      500,
     );
   }
 
   private async resolveOptionalEmailId(
     tx: NodePgDatabase,
-    senderEmail?: string
+    senderEmail?: string,
   ): Promise<number | null> {
     if (!senderEmail || senderEmail.trim().length === 0) {
       return null;
@@ -622,7 +620,7 @@ export class BillsService {
 
   private async resolveEmailId(
     tx: NodePgDatabase,
-    senderEmail: string
+    senderEmail: string,
   ): Promise<number> {
     const normalizedEmail = senderEmail.trim().toLowerCase();
 
@@ -630,7 +628,7 @@ export class BillsService {
       throw new ServerError(
         "BILL_SENDER_EMAIL_REQUIRED",
         "Sender email is required",
-        400
+        400,
       );
     }
 
@@ -670,9 +668,7 @@ export class BillsService {
     throw new ServerError(
       "BILL_EMAIL_RESOLUTION_FAILED",
       `Failed to persist sender email "${normalizedEmail}"`,
-      500
+      500,
     );
   }
-
-
 }

@@ -14,7 +14,7 @@ export class FilterBankAccountsToolService {
         title: "Filter bank accounts",
         description:
           "Use this when you need to search and filter bank accounts with optional sorting and pagination.",
-        inputSchema: FilterBankAccountsToolSchema.shape,
+        inputSchema: FilterBankAccountsToolSchema,
         annotations: {
           readOnlyHint: true,
           idempotentHint: true,
@@ -36,7 +36,9 @@ export class FilterBankAccountsToolService {
 
         const count = result.results.length;
         const accountsList = result.results
-          .map((account) => `- ${account.name} (${account.type}) (ID: ${account.id})`)
+          .map((account) =>
+            `- ${account.name} (${account.type}) (ID: ${account.id})`
+          )
           .join("\n");
 
         let text = `Found ${count} bank account${count !== 1 ? "s" : ""}`;
@@ -45,7 +47,8 @@ export class FilterBankAccountsToolService {
         }
 
         if (result.nextCursor) {
-          text += `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
+          text +=
+            `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
         }
 
         return {
