@@ -80,9 +80,9 @@ export class AuthenticatedConversationsRouter {
       createRoute({
         method: "post",
         path: "/stream-message",
-        summary: "Stream a message",
+        summary: "Stream a message with full context",
         description:
-          "Sends a message and streams the response back as text chunks.",
+          "Sends a message and streams the response back as a data stream (including text chunks, tool calls, and results).",
         tags: ["Conversations"],
         request: {
           body: {
@@ -98,7 +98,7 @@ export class AuthenticatedConversationsRouter {
           200: {
             description: "Streaming response",
             content: {
-              "text/plain": {
+              "text/event-stream": {
                 schema: z.string(),
               },
             },
@@ -115,20 +115,9 @@ export class AuthenticatedConversationsRouter {
         try {
           const body = await c.req.json();
           const payload = SendMessageSchema.parse(body);
-          const stream = await this.conversationsService.streamMessage(payload);
+          const result = await this.conversationsService.streamMessage(payload);
 
-          return streamText(c, async (streamWriter) => {
-            const reader = stream.getReader();
-            try {
-              while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                await streamWriter.write(value);
-              }
-            } finally {
-              reader.releaseLock();
-            }
-          });
+          return result.toUIMessageStreamResponse();
         } catch (error) {
           // Handle errors BEFORE streaming starts
           if (error instanceof ServerError) {
