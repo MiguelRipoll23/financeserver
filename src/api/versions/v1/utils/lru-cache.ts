@@ -34,7 +34,7 @@ export class LRUCache<K, V> {
     this.cache.delete(key);
 
     // Evict oldest entry if at capacity
-    if (this.cache.size >= this.maxEntries) {
+    if (this.maxEntries > 0 && this.cache.size >= this.maxEntries) {
       const firstKey = this.cache.keys().next().value;
       if (firstKey !== undefined) {
         this.cache.delete(firstKey);
