@@ -1,6 +1,5 @@
 import { inject, injectable } from "@needle-di/core";
 import { createOpenAI } from "@ai-sdk/openai";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import {
   type ImagePart,
   type ModelMessage,
@@ -17,7 +16,6 @@ import {
   ENV_OPENAI_BASE_URL,
 } from "../../constants/environment-constants.ts";
 import {
-  GOOGLE_GEMINI_API_BASE_URL,
   MAX_SESSION_CACHE_ENTRIES,
   SESSION_TTL_MS,
 } from "../../constants/api-constants.ts";
@@ -71,23 +69,12 @@ export class ConversationsService {
       );
     }
 
-    // Detect provider and return appropriate model
-    const isGoogleGemini = baseUrl.includes(
-      "generativelanguage.googleapis.com",
-    );
-
-    if (isGoogleGemini) {
-      // Use Google native SDK
-      const googleProvider = createGoogleGenerativeAI({ apiKey });
-      return googleProvider(model);
-    } else {
-      // Use OpenAI-compatible provider
-      const openAIProvider = createOpenAI({
-        apiKey,
-        baseURL: baseUrl,
-      });
-      return openAIProvider.chat(model);
-    }
+    // Use OpenAI-compatible provider
+    const openAIProvider = createOpenAI({
+      apiKey,
+      baseURL: baseUrl,
+    });
+    return openAIProvider.chat(model);
   }
 
   public async listModels() {
@@ -98,27 +85,10 @@ export class ConversationsService {
       throw new Error("OpenAI configuration is missing");
     }
 
-    // Detect if using Google Gemini API
-    const isGoogleGemini = baseUrl.includes(
-      "generativelanguage.googleapis.com",
-    );
-
-    let fetchUrl: string;
-    let headers: Record<string, string>;
-
-    if (isGoogleGemini) {
-      // Google Gemini API uses different auth and endpoint
-      fetchUrl = `${GOOGLE_GEMINI_API_BASE_URL}/models`;
-      headers = {
-        "X-Goog-Api-Key": apiKey,
-      };
-    } else {
-      // Standard OpenAI-compatible endpoint
-      fetchUrl = `${baseUrl}/models`;
-      headers = {
-        "Authorization": `Bearer ${apiKey}`,
-      };
-    }
+    const fetchUrl = `${baseUrl.replace(/\/+$/, "")}/models`;
+    const headers = {
+      "Authorization": `Bearer ${apiKey}`,
+    };
 
     const response = await fetch(fetchUrl, { headers });
 
@@ -126,10 +96,7 @@ export class ConversationsService {
       throw new Error(`Failed to fetch models: ${response.statusText}`);
     }
 
-    const data = await response.json();
-
-    // Google returns { models: [...] }, OpenAI returns { data: [...] }
-    return data.models || data.data || [];
+    return response.json();
   }
 
   public async attachImage(sessionId: string, file: File): Promise<void> {

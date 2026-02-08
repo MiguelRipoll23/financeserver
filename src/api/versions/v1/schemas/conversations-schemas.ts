@@ -8,7 +8,7 @@ export const SendMessageSchema = z.object({
     example: "Analyze this receipt",
   }),
   model: z.string().openapi({
-    example: "models/gemini-2.5-flash",
+    example: "big-pickle",
   }),
   mcpServer: z.enum(["GLOBAL", "PORTFOLIO", "EXPENSES"]).openapi({
     example: "GLOBAL",
