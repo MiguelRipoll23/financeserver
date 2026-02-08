@@ -96,9 +96,7 @@ export class ConversationsService {
       throw new Error(`Failed to fetch models: ${response.statusText}`);
     }
 
-    const data = await response.json();
-
-    return data.models || data.data || [];
+    return response.json();
   }
 
   public async attachImage(sessionId: string, file: File): Promise<void> {
