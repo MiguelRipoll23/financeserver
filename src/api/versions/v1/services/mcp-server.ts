@@ -32,7 +32,9 @@ export class MCPService {
     private bankAccountInterestRatesMCPService = inject(
       BankAccountInterestRatesMCPService,
     ),
-    private bankAccountRoboadvisorsMCPService = inject(BankAccountRoboadvisorsMCPService),
+    private bankAccountRoboadvisorsMCPService = inject(
+      BankAccountRoboadvisorsMCPService,
+    ),
     private cryptoExchangesMCPService = inject(CryptoExchangesMCPService),
     private cashMCPService = inject(CashMCPService),
     private cashBalancesMCPService = inject(CashBalancesMCPService),
@@ -96,7 +98,7 @@ export class MCPService {
         ];
         break;
     }
-    return providers.flatMap((p) => p.getTools());
+    return providers.flatMap((provider) => provider.getTools());
   }
 
   public createPortfolioServer(): McpServer {
@@ -167,12 +169,14 @@ export class MCPService {
           };
         } catch (error) {
           const executionTime = Date.now() - startTime;
-          const logMessage = `Tool ${tool.name} executed by ${userId} (${executionTime}ms) failed with error:`;
+          const logMessage =
+            `Tool ${tool.name} executed by ${userId} (${executionTime}ms) failed with error:`;
           console.error(logMessage, error);
 
           // Return error as text content for MCP client
-          const errorMessage =
-            error instanceof Error ? error.message : "Unknown error occurred";
+          const errorMessage = error instanceof Error
+            ? error.message
+            : "Unknown error occurred";
           return {
             content: [
               { type: "text" as const, text: `Error: ${errorMessage}` },

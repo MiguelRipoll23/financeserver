@@ -12,8 +12,8 @@ export class BankAccountsMCPService {
     private updateBankAccountToolService = inject(UpdateBankAccountToolService),
     private deleteBankAccountToolService = inject(DeleteBankAccountToolService),
     private filterBankAccountsToolService = inject(
-      FilterBankAccountsToolService
-    )
+      FilterBankAccountsToolService,
+    ),
   ) {}
 
   public getTools(): McpToolDefinition[] {

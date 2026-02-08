@@ -3,9 +3,9 @@ import { eq } from "drizzle-orm";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import { ServerError } from "../../models/server-error.ts";
 import {
-  usersTable,
   type UserEntity,
   type UserInsertEntity,
+  usersTable,
 } from "../../../../../db/tables/users-table.ts";
 import type {
   CreateUserRequest,
@@ -20,7 +20,7 @@ export class UsersService {
   constructor(private databaseService = inject(DatabaseService)) {}
 
   public async createUser(
-    payload: CreateUserRequest
+    payload: CreateUserRequest,
   ): Promise<CreateUserResponse> {
     const db = this.databaseService.get();
     const sanitizedHandle = this.sanitizeHandle(payload.githubHandle);
@@ -46,7 +46,7 @@ export class UsersService {
         throw new ServerError(
           "USER_CREATION_FAILED",
           "Failed to create user",
-          500
+          500,
         );
       }
 
@@ -61,7 +61,7 @@ export class UsersService {
 
   public async updateUser(
     id: string,
-    payload: UpdateUserRequest
+    payload: UpdateUserRequest,
   ): Promise<UpdateUserResponse> {
     const db = this.databaseService.get();
 
@@ -76,8 +76,8 @@ export class UsersService {
     }
 
     if (payload.displayName !== undefined) {
-      values.displayName =
-        this.sanitizeDisplayName(payload.displayName) ?? null;
+      values.displayName = this.sanitizeDisplayName(payload.displayName) ??
+        null;
     }
 
     try {
@@ -97,7 +97,7 @@ export class UsersService {
         throw new ServerError(
           "USER_NOT_FOUND",
           `User ${id} was not found`,
-          404
+          404,
         );
       }
 
@@ -124,7 +124,7 @@ export class UsersService {
   }
 
   public async getAuthorizedUserByGitHubLogin(
-    login: string
+    login: string,
   ): Promise<UserInterface | null> {
     const db = this.databaseService.get();
     const normalizedHandle = this.normalizeHandle(login);
@@ -157,7 +157,7 @@ export class UsersService {
   }
 
   private sanitizeDisplayName(
-    value: string | null | undefined
+    value: string | null | undefined,
   ): string | null | undefined {
     if (value === undefined) {
       return undefined;
@@ -180,7 +180,7 @@ export class UsersService {
     entity: Pick<
       UserEntity,
       "id" | "githubHandle" | "displayName" | "createdAt" | "updatedAt"
-    >
+    >,
   ): UserInterface {
     return {
       id: entity.id,
@@ -202,7 +202,7 @@ export class UsersService {
       throw new ServerError(
         "USER_TIMESTAMP_INVALID",
         "Stored user timestamp is invalid",
-        500
+        500,
       );
     }
 
@@ -218,7 +218,7 @@ export class UsersService {
       return new ServerError(
         "USER_ALREADY_EXISTS",
         "GitHub handle is already authorized",
-        409
+        409,
       );
     }
 
@@ -227,7 +227,7 @@ export class UsersService {
     return new ServerError(
       "USER_PERSISTENCE_ERROR",
       "User persistence failed",
-      500
+      500,
     );
   }
 }

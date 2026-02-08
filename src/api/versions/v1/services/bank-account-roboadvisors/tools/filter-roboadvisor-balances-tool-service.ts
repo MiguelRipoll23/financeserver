@@ -25,11 +25,12 @@ export class FilterRoboadvisorBalancesToolService {
         },
       },
       run: async (input: unknown) => {
-        const parsed =
-          FilterBankAccountRoboadvisorBalancesToolSchema.parse(input);
+        const parsed = FilterBankAccountRoboadvisorBalancesToolSchema.parse(
+          input,
+        );
 
-        const result =
-          await this.roboadvisorsService.getBankAccountRoboadvisorBalances({
+        const result = await this.roboadvisorsService
+          .getBankAccountRoboadvisorBalances({
             roboadvisorId: parsed.roboadvisorId,
             pageSize: parsed.pageSize,
             cursor: parsed.cursor,
@@ -50,7 +51,8 @@ export class FilterRoboadvisorBalancesToolService {
         }
 
         if (result.nextCursor) {
-          text += `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
+          text +=
+            `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
         }
 
         return {

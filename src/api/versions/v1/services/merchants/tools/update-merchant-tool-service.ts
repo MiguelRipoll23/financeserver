@@ -29,7 +29,8 @@ export class UpdateMerchantToolService {
           name: parsed.name,
         });
 
-        const text = `Merchant updated successfully: ${result.name} (ID: ${result.id})`;
+        const text =
+          `Merchant updated successfully: ${result.name} (ID: ${result.id})`;
 
         return {
           text,

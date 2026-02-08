@@ -6,7 +6,7 @@ import { DeleteCryptoExchangeToolSchema } from "../../../schemas/mcp-crypto-exch
 @injectable()
 export class DeleteCryptoExchangeToolService {
   constructor(
-    private cryptoExchangesService = inject(CryptoExchangesService)
+    private cryptoExchangesService = inject(CryptoExchangesService),
   ) {}
 
   public getDefinition(): McpToolDefinition {

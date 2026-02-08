@@ -31,7 +31,8 @@ export class CreateBalanceToolService {
           currencyCode: parsed.currencyCode,
         });
 
-        const text = `Balance recorded successfully: ${result.balance} ${result.currencyCode} (ID: ${result.id})`;
+        const text =
+          `Balance recorded successfully: ${result.balance} ${result.currencyCode} (ID: ${result.id})`;
 
         return {
           text,

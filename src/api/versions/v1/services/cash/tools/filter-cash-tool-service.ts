@@ -44,7 +44,8 @@ export class FilterCashToolService {
         }
 
         if (result.nextCursor) {
-          text += `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
+          text +=
+            `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
         }
 
         return {

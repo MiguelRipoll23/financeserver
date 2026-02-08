@@ -24,7 +24,7 @@ export const UpsertSubscriptionRequestSchema = z.object({
     .describe("Recurrence interval for the subscription")
     .openapi({ example: Recurrence.Monthly }),
   amount: MonetaryStringSchema.describe(
-    "Subscription price amount as a string"
+    "Subscription price amount as a string",
   ),
   currencyCode: z
     .string()
@@ -32,7 +32,7 @@ export const UpsertSubscriptionRequestSchema = z.object({
     .describe("ISO 4217 currency code")
     .openapi({ example: "USD" }),
   effectiveFrom: DateOnlyStringSchema.describe(
-    "Start date of the subscription"
+    "Start date of the subscription",
   ),
   effectiveUntil: DateOnlyStringSchema.nullable()
     .optional()
@@ -70,7 +70,7 @@ export const UpsertSubscriptionResponseSchema = z.object({
     .describe("Recurrence interval for the subscription")
     .openapi({ example: "monthly" }),
   amount: MonetaryStringSchema.describe(
-    "Subscription price amount as a string"
+    "Subscription price amount as a string",
   ),
   currencyCode: z
     .string()
@@ -137,10 +137,10 @@ export const GetSubscriptionsRequestSchema = PaginationQuerySchema.extend({
     .openapi({ example: Recurrence.Monthly })
     .optional(),
   minimumAmount: MonetaryStringSchema.describe(
-    "Minimum subscription amount filter"
+    "Minimum subscription amount filter",
   ).optional(),
   maximumAmount: MonetaryStringSchema.describe(
-    "Maximum subscription amount filter"
+    "Maximum subscription amount filter",
   ).optional(),
   startDate: DateOnlyStringSchema.describe("Filter by start date").optional(),
   endDate: DateOnlyStringSchema.describe("Filter by end date").optional(),

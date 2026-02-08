@@ -29,7 +29,8 @@ export class SaveMerchantToolService {
           name: parsed.name,
         });
 
-        const text = `Merchant saved successfully: ${result.name} (ID: ${result.id})`;
+        const text =
+          `Merchant saved successfully: ${result.name} (ID: ${result.id})`;
 
         return {
           text,

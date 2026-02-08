@@ -5,7 +5,9 @@ import { CreateBankAccountRoboadvisorBalanceToolSchema } from "../../../schemas/
 
 @injectable()
 export class CreateRoboadvisorBalanceToolService {
-  constructor(private roboadvisorsService = inject(BankAccountRoboadvisorsService)) {}
+  constructor(
+    private roboadvisorsService = inject(BankAccountRoboadvisorsService),
+  ) {}
 
   public getDefinition(): McpToolDefinition {
     return {
@@ -23,17 +25,21 @@ export class CreateRoboadvisorBalanceToolService {
         },
       },
       run: async (input: unknown) => {
-        const parsed = CreateBankAccountRoboadvisorBalanceToolSchema.parse(input);
+        const parsed = CreateBankAccountRoboadvisorBalanceToolSchema.parse(
+          input,
+        );
 
-        const result = await this.roboadvisorsService.createBankAccountRoboadvisorBalance({
-          roboadvisorId: parsed.roboadvisorId,
-          date: parsed.date,
-          type: parsed.type,
-          amount: parsed.amount,
-          currencyCode: parsed.currencyCode,
-        });
+        const result = await this.roboadvisorsService
+          .createBankAccountRoboadvisorBalance({
+            roboadvisorId: parsed.roboadvisorId,
+            date: parsed.date,
+            type: parsed.type,
+            amount: parsed.amount,
+            currencyCode: parsed.currencyCode,
+          });
 
-        const text = `Balance entry recorded successfully: ${result.type} of ${result.amount} ${result.currencyCode} on ${result.date} (ID: ${result.id})`;
+        const text =
+          `Balance entry recorded successfully: ${result.type} of ${result.amount} ${result.currencyCode} on ${result.date} (ID: ${result.id})`;
 
         return {
           text,

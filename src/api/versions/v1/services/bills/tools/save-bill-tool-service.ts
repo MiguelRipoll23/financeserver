@@ -40,7 +40,8 @@ export class SaveBillToolService {
           : "";
         const currencySymbol = getCurrencySymbolForCode(result.currencyCode);
 
-        const text = `Bill saved successfully: ${displayDate} – ${result.category}: ${result.totalAmount}${currencySymbol}${emailDisplay} (ID: ${result.id})`;
+        const text =
+          `Bill saved successfully: ${displayDate} – ${result.category}: ${result.totalAmount}${currencySymbol}${emailDisplay} (ID: ${result.id})`;
 
         return {
           text,

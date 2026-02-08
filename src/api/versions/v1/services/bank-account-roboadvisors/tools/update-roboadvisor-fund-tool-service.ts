@@ -27,8 +27,8 @@ export class UpdateRoboadvisorFundToolService {
       run: async (input: unknown) => {
         const parsed = UpdateBankAccountRoboadvisorFundToolSchema.parse(input);
 
-        const result =
-          await this.roboadvisorsService.updateBankAccountRoboadvisorFund(
+        const result = await this.roboadvisorsService
+          .updateBankAccountRoboadvisorFund(
             parsed.id,
             {
               name: parsed.name,
@@ -43,8 +43,11 @@ export class UpdateRoboadvisorFundToolService {
 
         const weightPercentage = (result.weight * 100).toFixed(2);
         // Treat 0 as a valid share count by checking for null/undefined explicitly
-        const shareInfo = result.shareCount != null ? ` with ${result.shareCount} shares` : '';
-        const text = `Fund allocation updated successfully: ${result.name} (${result.isin}) - ${weightPercentage}% allocation${shareInfo} (ID: ${result.id})`;
+        const shareInfo = result.shareCount != null
+          ? ` with ${result.shareCount} shares`
+          : "";
+        const text =
+          `Fund allocation updated successfully: ${result.name} (${result.isin}) - ${weightPercentage}% allocation${shareInfo} (ID: ${result.id})`;
 
         return {
           text,

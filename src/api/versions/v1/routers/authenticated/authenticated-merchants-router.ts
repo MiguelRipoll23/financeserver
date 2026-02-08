@@ -3,9 +3,9 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import type { Context } from "hono";
 import { MerchantsService } from "../../services/merchants/merchants-service.ts";
 import {
-  MerchantIdParamSchema,
   GetMerchantsRequestSchema,
   GetMerchantsResponseSchema,
+  MerchantIdParamSchema,
   UpdateMerchantRequestSchema,
   UpdateMerchantResponseSchema,
   UpsertMerchantRequestSchema,
@@ -69,12 +69,12 @@ export class AuthenticatedMerchantsRouter {
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
         const body = UpsertMerchantRequestSchema.parse(
-          await context.req.json()
+          await context.req.json(),
         );
         const result = await this.merchantsService.createMerchant(body);
 
         return context.json(result, 201);
-      }
+      },
     );
   }
 
@@ -113,11 +113,11 @@ export class AuthenticatedMerchantsRouter {
         const payload = await readJsonOrEmpty(context);
         const body = GetMerchantsRequestSchema.parse(payload);
         const result = await this.merchantsService.getMerchants(
-          body as MerchantsFilter
+          body as MerchantsFilter,
         );
 
         return context.json(result, 200);
-      }
+      },
     );
   }
 
@@ -157,16 +157,16 @@ export class AuthenticatedMerchantsRouter {
       async (context: Context<{ Variables: HonoVariables }>) => {
         const params = MerchantIdParamSchema.parse(context.req.param());
         const payload = UpdateMerchantRequestSchema.parse(
-          await context.req.json()
+          await context.req.json(),
         );
 
         const result = await this.merchantsService.updateMerchant(
           params.id,
-          payload
+          payload,
         );
 
         return context.json(result, 200);
-      }
+      },
     );
   }
 
@@ -192,7 +192,7 @@ export class AuthenticatedMerchantsRouter {
         await this.merchantsService.deleteMerchant(params.id);
 
         return context.body(null, 204);
-      }
+      },
     );
   }
 }

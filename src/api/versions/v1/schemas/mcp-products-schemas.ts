@@ -9,21 +9,21 @@ export const FilterProductsToolSchema = z.object({
     .string()
     .optional()
     .describe(
-      "Search query to filter products by name (partial match). Try singular/plural if no results."
+      "Search query to filter products by name (partial match). Try singular/plural if no results.",
     ),
   minimumUnitPrice: z
     .string()
     .regex(MonetaryRegex)
     .optional()
     .describe(
-      "Minimum unit price for products (format: 123.45, no currency symbol)"
+      "Minimum unit price for products (format: 123.45, no currency symbol)",
     ),
   maximumUnitPrice: z
     .string()
     .regex(MonetaryRegex)
     .optional()
     .describe(
-      "Maximum unit price for products (format: 123.45, no currency symbol)"
+      "Maximum unit price for products (format: 123.45, no currency symbol)",
     ),
   sortField: z
     .nativeEnum(ProductSortField)

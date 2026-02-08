@@ -4,12 +4,12 @@ import {
   asc,
   desc,
   eq,
-  ilike,
   gte,
+  ilike,
   lte,
   ne,
-  sql,
   type SQL,
+  sql,
 } from "drizzle-orm";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import {
@@ -50,13 +50,13 @@ export class ProductsService {
 
     if (params.minimumUnitPrice !== undefined) {
       filters.push(
-        sql`latest_prices.unit_price >= ${params.minimumUnitPrice.toFixed(2)}`
+        sql`latest_prices.unit_price >= ${params.minimumUnitPrice.toFixed(2)}`,
       );
     }
 
     if (params.maximumUnitPrice !== undefined) {
       filters.push(
-        sql`latest_prices.unit_price <= ${params.maximumUnitPrice.toFixed(2)}`
+        sql`latest_prices.unit_price <= ${params.maximumUnitPrice.toFixed(2)}`,
       );
     }
 
@@ -86,7 +86,9 @@ export class ProductsService {
       latestUnitPrice: sql<string>`latest_prices.unit_price`,
       currencyCode: sql<string>`latest_prices.currency_code`,
       ...(needsQuantityData && {
-        totalQuantity: sql<number>`COALESCE(total_quantities.total_quantity, 0)`,
+        totalQuantity: sql<
+          number
+        >`COALESCE(total_quantities.total_quantity, 0)`,
       }),
     };
 
@@ -96,13 +98,13 @@ export class ProductsService {
       .from(itemsTable)
       .innerJoin(
         sql`${latestPriceSubquery} AS latest_prices`,
-        eq(itemsTable.id, sql`latest_prices.item_id`)
+        eq(itemsTable.id, sql`latest_prices.item_id`),
       );
 
     if (needsQuantityData) {
       countQuery.leftJoin(
         sql`${totalQuantitySubquery} AS total_quantities`,
-        eq(itemsTable.id, sql`total_quantities.item_id`)
+        eq(itemsTable.id, sql`total_quantities.item_id`),
       );
     }
 
@@ -111,7 +113,7 @@ export class ProductsService {
 
     const orderColumn = this.resolveProductSortField(
       params.sortField ?? ProductSortField.ProductName,
-      params.sortOrder ?? SortOrder.Asc
+      params.sortOrder ?? SortOrder.Asc,
     );
 
     // Main query
@@ -120,13 +122,13 @@ export class ProductsService {
       .from(itemsTable)
       .innerJoin(
         sql`${latestPriceSubquery} AS latest_prices`,
-        eq(itemsTable.id, sql`latest_prices.item_id`)
+        eq(itemsTable.id, sql`latest_prices.item_id`),
       );
 
     if (needsQuantityData) {
       mainQuery.leftJoin(
         sql`${totalQuantitySubquery} AS total_quantities`,
-        eq(itemsTable.id, sql`total_quantities.item_id`)
+        eq(itemsTable.id, sql`total_quantities.item_id`),
       );
     }
 
@@ -155,7 +157,7 @@ export class ProductsService {
       summaries,
       limit,
       offset,
-      total
+      total,
     );
   }
 
@@ -175,8 +177,9 @@ export class ProductsService {
       dateFilters.push(lte(itemPricesTable.priceDate, params.endDate));
     }
 
-    const whereClause =
-      dateFilters.length > 0 ? and(...dateFilters) : undefined;
+    const whereClause = dateFilters.length > 0
+      ? and(...dateFilters)
+      : undefined;
 
     const [{ count }] = await db
       .select({
@@ -186,15 +189,17 @@ export class ProductsService {
         db
           .select({
             itemId: itemPricesTable.itemId,
-            priceDelta: sql<string>`MAX(${itemPricesTable.unitPrice}) - MIN(${itemPricesTable.unitPrice})`,
+            priceDelta: sql<
+              string
+            >`MAX(${itemPricesTable.unitPrice}) - MIN(${itemPricesTable.unitPrice})`,
           })
           .from(itemPricesTable)
           .where(whereClause)
           .groupBy(itemPricesTable.itemId)
           .having(
-            sql`MAX(${itemPricesTable.unitPrice}) - MIN(${itemPricesTable.unitPrice}) > 0`
+            sql`MAX(${itemPricesTable.unitPrice}) - MIN(${itemPricesTable.unitPrice}) > 0`,
           )
-          .as("filtered_items")
+          .as("filtered_items"),
       );
 
     const total = Number(count ?? 0);
@@ -205,7 +210,9 @@ export class ProductsService {
         name: itemsTable.name,
         minimumPrice: sql<string>`MIN(${itemPricesTable.unitPrice})`,
         maximumPrice: sql<string>`MAX(${itemPricesTable.unitPrice})`,
-        priceDelta: sql<string>`MAX(${itemPricesTable.unitPrice}) - MIN(${itemPricesTable.unitPrice})`,
+        priceDelta: sql<
+          string
+        >`MAX(${itemPricesTable.unitPrice}) - MIN(${itemPricesTable.unitPrice})`,
         currencyCode: sql<string>`MIN(${itemPricesTable.currencyCode})`,
       })
       .from(itemPricesTable)
@@ -213,16 +220,16 @@ export class ProductsService {
       .where(whereClause)
       .groupBy(itemsTable.id)
       .having(
-        sql`MAX(${itemPricesTable.unitPrice}) - MIN(${itemPricesTable.unitPrice}) > 0`
+        sql`MAX(${itemPricesTable.unitPrice}) - MIN(${itemPricesTable.unitPrice}) > 0`,
       )
       .orderBy(
         sortOrder === SortOrder.Desc
           ? desc(
-              sql`MAX(${itemPricesTable.unitPrice}) - MIN(${itemPricesTable.unitPrice})`
-            )
+            sql`MAX(${itemPricesTable.unitPrice}) - MIN(${itemPricesTable.unitPrice})`,
+          )
           : asc(
-              sql`MAX(${itemPricesTable.unitPrice}) - MIN(${itemPricesTable.unitPrice})`
-            )
+            sql`MAX(${itemPricesTable.unitPrice}) - MIN(${itemPricesTable.unitPrice})`,
+          ),
       )
       .limit(limit)
       .offset(offset);
@@ -240,19 +247,19 @@ export class ProductsService {
       results,
       limit,
       offset,
-      total
+      total,
     );
   }
 
   public async updateProduct(
     productId: number,
-    payload: Partial<UpdateProductRequest>
+    payload: Partial<UpdateProductRequest>,
   ): Promise<ProductSummary> {
     if (!payload.name && !payload.unitPrice) {
       throw new ServerError(
         "PRODUCT_UPDATE_REQUIRED",
         "At least one field (name or unitPrice) must be provided for update",
-        400
+        400,
       );
     }
 
@@ -273,7 +280,7 @@ export class ProductsService {
         throw new ServerError(
           "PRODUCT_NOT_FOUND",
           `Product ${productId} was not found`,
-          404
+          404,
         );
       }
 
@@ -287,7 +294,7 @@ export class ProductsService {
           throw new ServerError(
             "PRODUCT_NAME_REQUIRED",
             "Product name must not be empty",
-            400
+            400,
           );
         }
 
@@ -298,8 +305,8 @@ export class ProductsService {
             .where(
               and(
                 eq(itemsTable.name, normalizedName),
-                ne(itemsTable.id, productId)
-              )
+                ne(itemsTable.id, productId),
+              ),
             )
             .limit(1)
             .then((rows) => rows[0]);
@@ -308,7 +315,7 @@ export class ProductsService {
             throw new ServerError(
               "PRODUCT_NAME_CONFLICT",
               `Another product already uses the name "${normalizedName}"`,
-              409
+              409,
             );
           }
 
@@ -330,18 +337,18 @@ export class ProductsService {
           throw new ServerError(
             "PRODUCT_CURRENCY_REQUIRED",
             "Currency code is required when updating unit price",
-            400
+            400,
           );
         }
 
         const unitPriceCents = this.parseAmountToCents(
           payload.unitPrice,
           "PRODUCT_UNIT_PRICE_INVALID",
-          "Product unit price must be a non-negative monetary value"
+          "Product unit price must be a non-negative monetary value",
         );
         const unitPriceString = this.formatAmount(unitPriceCents / 100);
-        const priceDate =
-          payload.priceDate ?? new Date().toISOString().split("T")[0];
+        const priceDate = payload.priceDate ??
+          new Date().toISOString().split("T")[0];
 
         await tx
           .insert(itemPricesTable)
@@ -382,7 +389,7 @@ export class ProductsService {
           throw new ServerError(
             "PRODUCT_PRICE_NOT_FOUND",
             `Product ${productId} has no price records`,
-            500
+            500,
           );
         }
 
@@ -415,7 +422,7 @@ export class ProductsService {
       throw new ServerError(
         "PRODUCT_NOT_FOUND",
         `Product ${productId} was not found`,
-        404
+        404,
       );
     }
 
@@ -454,7 +461,7 @@ export class ProductsService {
   private parseAmountToCents(
     amount: string,
     errorCode: string,
-    errorMessage: string
+    errorMessage: string,
   ): number {
     if (!/^[0-9]+(\.[0-9]{1,2})?$/.test(amount)) {
       throw new ServerError(errorCode, errorMessage, 400);
@@ -476,7 +483,7 @@ export class ProductsService {
       throw new ServerError(
         "PRODUCT_PRICE_INVALID",
         "Failed to format product monetary value",
-        500
+        500,
       );
     }
 
@@ -484,7 +491,7 @@ export class ProductsService {
   }
 
   private async assertNotReferencedByReceipts(
-    productId: number
+    productId: number,
   ): Promise<void> {
     const usage = await this.databaseService
       .get()
@@ -498,7 +505,7 @@ export class ProductsService {
       throw new ServerError(
         "PRODUCT_IN_USE",
         `Product ${productId} is referenced by existing receipts and cannot be deleted`,
-        409
+        409,
       );
     }
   }
@@ -516,7 +523,7 @@ export class ProductsService {
       throw new ServerError(
         "PRODUCT_HAS_CHILD_ITEMS",
         `Product ${productId} has child items and cannot be deleted. Remove or reassign child items first.`,
-        409
+        409,
       );
     }
   }

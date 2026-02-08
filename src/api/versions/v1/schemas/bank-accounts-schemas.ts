@@ -114,7 +114,9 @@ export const GetBankAccountsRequestSchema = PaginationQuerySchema.extend({
     .optional()
     .openapi({ example: SortOrder.Desc }),
   name: z.string().optional().openapi({ example: "Savings" }),
-  type: z.nativeEnum(BankAccountType).optional().openapi({ example: "savings" }),
+  type: z.nativeEnum(BankAccountType).optional().openapi({
+    example: "savings",
+  }),
 });
 
 export type GetBankAccountsRequest = z.infer<

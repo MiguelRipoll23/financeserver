@@ -1,21 +1,21 @@
 import { inject, injectable } from "@needle-di/core";
 import {
+  and,
   asc,
   desc,
   eq,
   gte,
-  lte,
-  sql,
-  type SQL,
-  and,
   isNull,
+  lte,
   or,
+  type SQL,
+  sql,
 } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import {
-  subscriptionsTable,
   subscriptionPricesTable,
+  subscriptionsTable,
 } from "../../../../../db/schema.ts";
 import { ServerError } from "../../models/server-error.ts";
 import { decodeCursor } from "../../utils/cursor-utils.ts";
@@ -42,7 +42,7 @@ export class SubscriptionsService {
   constructor(private databaseService = inject(DatabaseService)) {}
 
   public async createSubscription(
-    payload: UpsertSubscriptionRequest
+    payload: UpsertSubscriptionRequest,
   ): Promise<UpsertSubscriptionResponse> {
     this.validateSubscriptionPayload(payload);
 
@@ -51,7 +51,7 @@ export class SubscriptionsService {
     const amountCents = this.parseAmountToCents(
       payload.amount,
       "SUBSCRIPTION_AMOUNT_INVALID",
-      "Subscription amount must be a non-negative monetary value"
+      "Subscription amount must be a non-negative monetary value",
     );
     const amountString = this.formatAmount(amountCents / 100);
 
@@ -83,7 +83,7 @@ export class SubscriptionsService {
   }
 
   public async getSubscriptions(
-    filters: SubscriptionsFilter
+    filters: SubscriptionsFilter,
   ): Promise<GetSubscriptionsResponse> {
     const db = this.databaseService.get();
     const limit = this.resolveLimit(filters.limit);
@@ -94,22 +94,23 @@ export class SubscriptionsService {
     if (filters.name) {
       const normalizedName = filters.name.trim().toLowerCase();
       conditions.push(
-        sql`LOWER(${subscriptionsTable.name}) LIKE ${`%${normalizedName}%`}`
+        sql`LOWER(${subscriptionsTable.name}) LIKE ${`%${normalizedName}%`}`,
       );
     }
 
     if (filters.category) {
       const normalizedCategory = filters.category.trim().toLowerCase();
       conditions.push(
-        sql`LOWER(${
-          subscriptionsTable.category
-        }) LIKE ${`%${normalizedCategory}%`}`
+        sql`LOWER(${subscriptionsTable.category}) LIKE ${`%${normalizedCategory}%`}`,
       );
     }
 
     if (filters.recurrence) {
       conditions.push(
-        eq(subscriptionPricesTable.recurrence, filters.recurrence as Recurrence)
+        eq(
+          subscriptionPricesTable.recurrence,
+          filters.recurrence as Recurrence,
+        ),
       );
     }
 
@@ -117,14 +118,14 @@ export class SubscriptionsService {
       const minimumCents = this.parseAmountToCents(
         filters.minimumAmount,
         "SUBSCRIPTION_MIN_AMOUNT_INVALID",
-        "Minimum amount filter must be a non-negative monetary value"
+        "Minimum amount filter must be a non-negative monetary value",
       );
 
       conditions.push(
         gte(
           subscriptionPricesTable.amount,
-          this.formatAmount(minimumCents / 100)
-        )
+          this.formatAmount(minimumCents / 100),
+        ),
       );
     }
 
@@ -132,14 +133,14 @@ export class SubscriptionsService {
       const maximumCents = this.parseAmountToCents(
         filters.maximumAmount,
         "SUBSCRIPTION_MAX_AMOUNT_INVALID",
-        "Maximum amount filter must be a non-negative monetary value"
+        "Maximum amount filter must be a non-negative monetary value",
       );
 
       conditions.push(
         lte(
           subscriptionPricesTable.amount,
-          this.formatAmount(maximumCents / 100)
-        )
+          this.formatAmount(maximumCents / 100),
+        ),
       );
     }
 
@@ -151,8 +152,8 @@ export class SubscriptionsService {
         sql`${subscriptionPricesTable.effectiveFrom} <= ${filters.endDate}`,
         or(
           isNull(subscriptionPricesTable.effectiveUntil),
-          sql`${subscriptionPricesTable.effectiveUntil} >= ${filters.startDate}`
-        )!
+          sql`${subscriptionPricesTable.effectiveUntil} >= ${filters.startDate}`,
+        )!,
       );
       if (dateRangeCondition) {
         conditions.push(dateRangeCondition);
@@ -162,19 +163,19 @@ export class SubscriptionsService {
       conditions.push(
         or(
           isNull(subscriptionPricesTable.effectiveUntil),
-          sql`${subscriptionPricesTable.effectiveUntil} >= ${filters.startDate}`
-        )!
+          sql`${subscriptionPricesTable.effectiveUntil} >= ${filters.startDate}`,
+        )!,
       );
     } else if (filters.endDate) {
       // Any price that started on or before the endDate
       conditions.push(
-        sql`${subscriptionPricesTable.effectiveFrom} <= ${filters.endDate}`
+        sql`${subscriptionPricesTable.effectiveFrom} <= ${filters.endDate}`,
       );
     }
 
     if (filters.currencyCode) {
       conditions.push(
-        eq(subscriptionPricesTable.currencyCode, filters.currencyCode)
+        eq(subscriptionPricesTable.currencyCode, filters.currencyCode),
       );
     }
 
@@ -182,18 +183,18 @@ export class SubscriptionsService {
       if (filters.isActive) {
         // Active subscriptions: started and either no end date OR end date is in the future
         conditions.push(
-          sql`${subscriptionPricesTable.effectiveFrom} <= CURRENT_DATE`
+          sql`${subscriptionPricesTable.effectiveFrom} <= CURRENT_DATE`,
         );
         conditions.push(
           or(
             isNull(subscriptionPricesTable.effectiveUntil),
-            sql`${subscriptionPricesTable.effectiveUntil} >= CURRENT_DATE`
-          )!
+            sql`${subscriptionPricesTable.effectiveUntil} >= CURRENT_DATE`,
+          )!,
         );
       } else {
         // Inactive subscriptions: end date is in the past
         conditions.push(
-          sql`${subscriptionPricesTable.effectiveUntil} IS NOT NULL AND ${subscriptionPricesTable.effectiveUntil} < CURRENT_DATE`
+          sql`${subscriptionPricesTable.effectiveUntil} IS NOT NULL AND ${subscriptionPricesTable.effectiveUntil} < CURRENT_DATE`,
         );
       }
     }
@@ -208,7 +209,7 @@ export class SubscriptionsService {
           WHERE sp.subscription_id = ${subscriptionsTable.id} 
           ORDER BY sp.effective_from DESC 
           LIMIT 1
-        )`
+        )`,
       );
     }
 
@@ -220,7 +221,7 @@ export class SubscriptionsService {
       .from(subscriptionsTable)
       .innerJoin(
         subscriptionPricesTable,
-        eq(subscriptionsTable.id, subscriptionPricesTable.subscriptionId)
+        eq(subscriptionsTable.id, subscriptionPricesTable.subscriptionId),
       )
       .where(conditions.length > 0 ? predicate : undefined);
 
@@ -231,13 +232,13 @@ export class SubscriptionsService {
         [],
         limit,
         offset,
-        total
+        total,
       ) as GetSubscriptionsResponse;
     }
 
     const order = this.resolveSortField(
       filters.sortField ?? SubscriptionSortField.StartDate,
-      filters.sortOrder ?? SortOrder.Desc
+      filters.sortOrder ?? SortOrder.Desc,
     );
 
     const rows = await db
@@ -248,7 +249,7 @@ export class SubscriptionsService {
       .from(subscriptionsTable)
       .innerJoin(
         subscriptionPricesTable,
-        eq(subscriptionsTable.id, subscriptionPricesTable.subscriptionId)
+        eq(subscriptionsTable.id, subscriptionPricesTable.subscriptionId),
       )
       .where(conditions.length > 0 ? predicate : undefined)
       .orderBy(order)
@@ -263,7 +264,7 @@ export class SubscriptionsService {
       amount: this.formatStoredAmount(
         row.price.amount,
         "SUBSCRIPTION_AMOUNT_CORRUPTED",
-        `Stored subscription amount for subscription ${row.subscription.id} is invalid`
+        `Stored subscription amount for subscription ${row.subscription.id} is invalid`,
       ),
       currencyCode: row.price.currencyCode,
       effectiveFrom: toISOStringSafe(row.price.effectiveFrom),
@@ -278,13 +279,13 @@ export class SubscriptionsService {
       summaries,
       limit,
       offset,
-      total
+      total,
     ) as GetSubscriptionsResponse;
   }
 
   public async updateSubscription(
     id: number,
-    payload: Partial<UpsertSubscriptionRequest>
+    payload: Partial<UpsertSubscriptionRequest>,
   ): Promise<UpsertSubscriptionResponse> {
     const db = this.databaseService.get();
 
@@ -303,7 +304,7 @@ export class SubscriptionsService {
       throw new ServerError(
         "SUBSCRIPTION_NOT_FOUND",
         `Subscription ${id} was not found`,
-        404
+        404,
       );
     }
 
@@ -318,7 +319,7 @@ export class SubscriptionsService {
           throw new ServerError(
             "SUBSCRIPTION_NAME_REQUIRED",
             "Subscription name cannot be empty",
-            400
+            400,
           );
         }
         updateData.name = payload.name.trim();
@@ -329,7 +330,7 @@ export class SubscriptionsService {
           throw new ServerError(
             "SUBSCRIPTION_CATEGORY_REQUIRED",
             "Subscription category cannot be empty",
-            400
+            400,
           );
         }
         updateData.category = payload.category.trim();
@@ -342,8 +343,7 @@ export class SubscriptionsService {
     }
 
     // Check if we need to update price info
-    const hasPriceUpdate =
-      payload.amount ||
+    const hasPriceUpdate = payload.amount ||
       payload.currencyCode ||
       payload.recurrence ||
       payload.effectiveFrom ||
@@ -361,16 +361,15 @@ export class SubscriptionsService {
             sql`${subscriptionPricesTable.effectiveFrom} <= CURRENT_DATE`,
             or(
               isNull(subscriptionPricesTable.effectiveUntil),
-              sql`${subscriptionPricesTable.effectiveUntil} >= CURRENT_DATE`
-            )!
-          )
+              sql`${subscriptionPricesTable.effectiveUntil} >= CURRENT_DATE`,
+            )!,
+          ),
         )
         .limit(1)
         .then((rows) => rows[0]);
 
       // Check if this is a cancellation operation (only effectiveUntil provided)
-      const isCancellation =
-        payload.effectiveUntil !== undefined &&
+      const isCancellation = payload.effectiveUntil !== undefined &&
         !payload.amount &&
         !payload.currencyCode &&
         !payload.recurrence &&
@@ -383,7 +382,7 @@ export class SubscriptionsService {
           throw new ServerError(
             "SUBSCRIPTION_NO_ACTIVE_PRICE",
             "No active price period found to cancel",
-            404
+            404,
           );
         }
 
@@ -391,7 +390,7 @@ export class SubscriptionsService {
           throw new ServerError(
             "SUBSCRIPTION_INVALID_DATE_RANGE",
             "effectiveUntil must be greater than or equal to the current effectiveFrom",
-            400
+            400,
           );
         }
 
@@ -418,7 +417,7 @@ export class SubscriptionsService {
           throw new ServerError(
             "SUBSCRIPTION_EFFECTIVE_FROM_REQUIRED",
             "effectiveFrom is required when creating a new price period",
-            400
+            400,
           );
         }
 
@@ -426,14 +425,14 @@ export class SubscriptionsService {
         const amount = payload.amount || currentPrice?.amount;
         const currencyCode = payload.currencyCode || currentPrice?.currencyCode;
         const recurrence = payload.recurrence || currentPrice?.recurrence;
-        const effectiveFrom =
-          payload.effectiveFrom || currentPrice?.effectiveFrom;
+        const effectiveFrom = payload.effectiveFrom ||
+          currentPrice?.effectiveFrom;
 
         if (!amount || !currencyCode || !recurrence || !effectiveFrom) {
           throw new ServerError(
             "SUBSCRIPTION_PRICE_INFO_REQUIRED",
             "Missing required price information (amount, currencyCode, recurrence, effectiveFrom)",
-            400
+            400,
           );
         }
 
@@ -441,7 +440,7 @@ export class SubscriptionsService {
         const amountCents = this.parseAmountToCents(
           amount,
           "SUBSCRIPTION_AMOUNT_INVALID",
-          "Subscription amount must be a non-negative monetary value"
+          "Subscription amount must be a non-negative monetary value",
         );
         const amountString = this.formatAmount(amountCents / 100);
 
@@ -450,7 +449,7 @@ export class SubscriptionsService {
           throw new ServerError(
             "SUBSCRIPTION_INVALID_DATE_RANGE",
             "effectiveUntil must be greater than or equal to effectiveFrom",
-            400
+            400,
           );
         }
 
@@ -476,10 +475,9 @@ export class SubscriptionsService {
             currencyCode,
             effectiveFrom,
             effectiveUntil: payload.effectiveUntil || null,
-            plan:
-              payload.plan !== undefined
-                ? payload.plan
-                : currentPrice?.plan || null,
+            plan: payload.plan !== undefined
+              ? payload.plan
+              : currentPrice?.plan || null,
           };
 
           await tx.insert(subscriptionPricesTable).values(priceValues);
@@ -502,14 +500,14 @@ export class SubscriptionsService {
       throw new ServerError(
         "SUBSCRIPTION_NOT_FOUND",
         `Subscription ${id} was not found`,
-        404
+        404,
       );
     }
   }
 
   public async saveSubscriptionEndDate(
     id: number,
-    endDate: string
+    endDate: string,
   ): Promise<UpsertSubscriptionResponse> {
     const db = this.databaseService.get();
 
@@ -524,7 +522,7 @@ export class SubscriptionsService {
       throw new ServerError(
         "SUBSCRIPTION_NOT_FOUND",
         `Subscription ${id} was not found`,
-        404
+        404,
       );
     }
 
@@ -538,9 +536,9 @@ export class SubscriptionsService {
           sql`${subscriptionPricesTable.effectiveFrom} <= CURRENT_DATE`,
           or(
             isNull(subscriptionPricesTable.effectiveUntil),
-            sql`${subscriptionPricesTable.effectiveUntil} >= CURRENT_DATE`
-          )!
-        )
+            sql`${subscriptionPricesTable.effectiveUntil} >= CURRENT_DATE`,
+          )!,
+        ),
       )
       .limit(1)
       .then((rows) => rows[0]);
@@ -567,13 +565,13 @@ export class SubscriptionsService {
   }
 
   private validateSubscriptionPayload(
-    payload: UpsertSubscriptionRequest
+    payload: UpsertSubscriptionRequest,
   ): void {
     if (!payload.name || payload.name.trim().length === 0) {
       throw new ServerError(
         "SUBSCRIPTION_NAME_REQUIRED",
         "Subscription name is required",
-        400
+        400,
       );
     }
 
@@ -581,7 +579,7 @@ export class SubscriptionsService {
       throw new ServerError(
         "SUBSCRIPTION_CATEGORY_REQUIRED",
         "Subscription category is required",
-        400
+        400,
       );
     }
 
@@ -589,7 +587,7 @@ export class SubscriptionsService {
       throw new ServerError(
         "SUBSCRIPTION_AMOUNT_REQUIRED",
         "Subscription amount is required",
-        400
+        400,
       );
     }
 
@@ -600,7 +598,7 @@ export class SubscriptionsService {
       throw new ServerError(
         "SUBSCRIPTION_INVALID_DATE_RANGE",
         "Effective until date cannot be before effective from date",
-        400
+        400,
       );
     }
 
@@ -608,7 +606,7 @@ export class SubscriptionsService {
       throw new ServerError(
         "SUBSCRIPTION_INVALID_CURRENCY_CODE",
         "Currency code must be a 3-letter uppercase code (e.g., EUR, USD)",
-        400
+        400,
       );
     }
   }
@@ -623,7 +621,7 @@ export class SubscriptionsService {
 
   private async loadSubscriptionResponse(
     db: NodePgDatabase,
-    id: number
+    id: number,
   ): Promise<UpsertSubscriptionResponse> {
     // First try to get current/active price
     let result = await db
@@ -634,7 +632,7 @@ export class SubscriptionsService {
       .from(subscriptionsTable)
       .innerJoin(
         subscriptionPricesTable,
-        eq(subscriptionsTable.id, subscriptionPricesTable.subscriptionId)
+        eq(subscriptionsTable.id, subscriptionPricesTable.subscriptionId),
       )
       .where(
         and(
@@ -642,9 +640,9 @@ export class SubscriptionsService {
           sql`${subscriptionPricesTable.effectiveFrom} <= CURRENT_DATE`,
           or(
             isNull(subscriptionPricesTable.effectiveUntil),
-            sql`${subscriptionPricesTable.effectiveUntil} >= CURRENT_DATE`
-          )!
-        )
+            sql`${subscriptionPricesTable.effectiveUntil} >= CURRENT_DATE`,
+          )!,
+        ),
       )
       .orderBy(desc(subscriptionPricesTable.effectiveFrom))
       .limit(1)
@@ -660,7 +658,7 @@ export class SubscriptionsService {
         .from(subscriptionsTable)
         .innerJoin(
           subscriptionPricesTable,
-          eq(subscriptionsTable.id, subscriptionPricesTable.subscriptionId)
+          eq(subscriptionsTable.id, subscriptionPricesTable.subscriptionId),
         )
         .where(eq(subscriptionsTable.id, id))
         .orderBy(desc(subscriptionPricesTable.effectiveFrom))
@@ -672,7 +670,7 @@ export class SubscriptionsService {
       throw new ServerError(
         "SUBSCRIPTION_NOT_FOUND",
         "Subscription could not be retrieved after persistence",
-        500
+        500,
       );
     }
 
@@ -684,7 +682,7 @@ export class SubscriptionsService {
       amount: this.formatStoredAmount(
         result.price.amount,
         "SUBSCRIPTION_AMOUNT_CORRUPTED",
-        "Stored subscription amount is not a valid number"
+        "Stored subscription amount is not a valid number",
       ),
       currencyCode: result.price.currencyCode,
       effectiveFrom: toISOStringSafe(result.price.effectiveFrom),
@@ -730,7 +728,7 @@ export class SubscriptionsService {
   private parseAmountToCents(
     amount: string,
     errorCode: string,
-    errorMessage: string
+    errorMessage: string,
   ): number {
     if (!/^[0-9]+(\.[0-9]{1,2})?$/.test(amount)) {
       throw new ServerError(errorCode, errorMessage, 400);
@@ -752,7 +750,7 @@ export class SubscriptionsService {
   private formatStoredAmount(
     value: unknown,
     errorCode: string,
-    errorMessage: string
+    errorMessage: string,
   ): string {
     const numeric = Number.parseFloat(String(value));
 

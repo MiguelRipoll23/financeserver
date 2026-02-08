@@ -29,8 +29,8 @@ export class FilterCryptoExchangeBalancesToolService {
       run: async (input: unknown) => {
         const parsed = FilterCryptoExchangeBalancesToolSchema.parse(input);
 
-        const result =
-          await this.cryptoExchangeBalancesService.getCryptoExchangeBalances({
+        const result = await this.cryptoExchangeBalancesService
+          .getCryptoExchangeBalances({
             cryptoExchangeId: parsed.cryptoExchangeId,
             sortOrder: parsed.sortOrder,
             limit: parsed.pageSize,

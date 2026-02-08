@@ -7,6 +7,6 @@ export interface CryptoPriceProvider {
    */
   getCurrentPrice(
     symbolCode: string,
-    targetCurrencyCode: string
+    targetCurrencyCode: string,
   ): Promise<string | null>;
 }

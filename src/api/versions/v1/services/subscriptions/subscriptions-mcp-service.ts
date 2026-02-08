@@ -9,15 +9,15 @@ import { DeleteSubscriptionToolService } from "./tools/delete-subscription-tool-
 export class SubscriptionsMCPService {
   constructor(
     private filterSubscriptionsToolService = inject(
-      FilterSubscriptionsToolService
+      FilterSubscriptionsToolService,
     ),
     private saveSubscriptionToolService = inject(SaveSubscriptionToolService),
     private updateSubscriptionToolService = inject(
-      UpdateSubscriptionToolService
+      UpdateSubscriptionToolService,
     ),
     private deleteSubscriptionToolService = inject(
-      DeleteSubscriptionToolService
-    )
+      DeleteSubscriptionToolService,
+    ),
   ) {}
 
   public getTools(): McpToolDefinition[] {

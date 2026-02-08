@@ -1,5 +1,5 @@
 import { inject, injectable } from "@needle-di/core";
-import { asc, desc, eq, gte, lte, sql, type SQL } from "drizzle-orm";
+import { asc, desc, eq, gte, lte, type SQL, sql } from "drizzle-orm";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import { salaryChangesTable } from "../../../../../db/schema.ts";
 import { ServerError } from "../../models/server-error.ts";
@@ -136,7 +136,7 @@ export class SalaryChangesService {
       .offset(offset);
 
     const salaryChanges = rows.map((row) =>
-      this.mapSalaryChangeToResponse(row),
+      this.mapSalaryChangeToResponse(row)
     );
 
     return createOffsetPagination<SalaryChangeResponse>(
@@ -230,12 +230,11 @@ export class SalaryChangesService {
   }
 
   private resolveSortField(field: SalaryChangeSortField, order: SortOrder) {
-    const column =
-      field === SalaryChangeSortField.NetAmount
-        ? salaryChangesTable.netAmount
-        : field === SalaryChangeSortField.CreatedAt
-          ? salaryChangesTable.createdAt
-          : salaryChangesTable.updatedAt;
+    const column = field === SalaryChangeSortField.NetAmount
+      ? salaryChangesTable.netAmount
+      : field === SalaryChangeSortField.CreatedAt
+      ? salaryChangesTable.createdAt
+      : salaryChangesTable.updatedAt;
 
     return order === SortOrder.Desc ? desc(column) : asc(column);
   }

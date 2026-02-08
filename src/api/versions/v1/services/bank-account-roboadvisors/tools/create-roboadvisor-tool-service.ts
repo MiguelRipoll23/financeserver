@@ -27,8 +27,8 @@ export class CreateRoboadvisorToolService {
       run: async (input: unknown) => {
         const parsed = CreateBankAccountRoboadvisorToolSchema.parse(input);
 
-        const result =
-          await this.roboadvisorsService.createBankAccountRoboadvisor({
+        const result = await this.roboadvisorsService
+          .createBankAccountRoboadvisor({
             name: parsed.name,
             bankAccountId: parsed.bankAccountId,
             riskLevel: parsed.riskLevel,
@@ -42,7 +42,10 @@ export class CreateRoboadvisorToolService {
             taxPercentage: parsed.taxPercentage,
           });
 
-        const text = `Roboadvisor created successfully: ${result.name} (ID: ${result.id}, Total Fee: ${(result.totalFeePercentage * 100).toFixed(2)}%)`;
+        const text =
+          `Roboadvisor created successfully: ${result.name} (ID: ${result.id}, Total Fee: ${
+            (result.totalFeePercentage * 100).toFixed(2)
+          }%)`;
 
         return {
           text,

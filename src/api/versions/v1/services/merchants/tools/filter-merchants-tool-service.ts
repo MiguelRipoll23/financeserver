@@ -27,7 +27,7 @@ export class FilterMerchantsToolService {
         const parsed = FilterMerchantsToolSchema.parse(input);
 
         const result = await this.merchantsService.getMerchants(
-          parsed as MerchantsFilter
+          parsed as MerchantsFilter,
         );
 
         let text = `Found ${result.total} merchant(s)`;
@@ -40,7 +40,8 @@ export class FilterMerchantsToolService {
         }
 
         if (result.nextCursor) {
-          text += `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
+          text +=
+            `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
         }
 
         return {

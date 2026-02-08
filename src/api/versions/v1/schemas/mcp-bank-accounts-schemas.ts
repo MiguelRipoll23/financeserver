@@ -32,7 +32,9 @@ export const UpdateBankAccountToolSchema = z
       .max(255, "Name must be between 1-255 characters")
       .optional()
       .describe("The new name of the bank account"),
-    type: z.nativeEnum(BankAccountType).optional().describe("The new type of the bank account"),
+    type: z.nativeEnum(BankAccountType).optional().describe(
+      "The new type of the bank account",
+    ),
     taxPercentage: z
       .number()
       .min(0)
@@ -55,7 +57,9 @@ export const FilterBankAccountsToolSchema = z.object({
     .max(255)
     .optional()
     .describe("Filter bank accounts by name (partial match)"),
-  type: z.nativeEnum(BankAccountType).optional().describe("Filter bank accounts by type"),
+  type: z.nativeEnum(BankAccountType).optional().describe(
+    "Filter bank accounts by type",
+  ),
   sortField: z
     .nativeEnum(BankAccountSortField)
     .optional()

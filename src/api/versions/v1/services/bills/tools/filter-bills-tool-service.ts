@@ -48,7 +48,7 @@ export class FilterBillsToolService {
               const displayDate = bill.date.split("T")[0];
               const amount = bill.totalAmount;
               const currencySymbol = getCurrencySymbolForCode(
-                bill.currencyCode
+                bill.currencyCode,
               );
               const email = bill.senderEmail ?? "unassigned";
               return `• ${displayDate} – ${bill.category}: ${amount}${currencySymbol} (${email})`;
@@ -57,7 +57,8 @@ export class FilterBillsToolService {
 
           let text = billsList;
           if (result.nextCursor) {
-            text += `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
+            text +=
+              `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
           }
 
           return {

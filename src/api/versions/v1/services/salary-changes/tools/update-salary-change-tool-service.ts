@@ -37,7 +37,8 @@ export class UpdateSalaryChangeToolService {
 
         const currencySymbol = getCurrencySymbolForCode(result.currencyCode);
 
-        const text = `Salary change (ID: ${result.id}) updated successfully: [${result.recurrence}] ${result.netAmount}${currencySymbol}`;
+        const text =
+          `Salary change (ID: ${result.id}) updated successfully: [${result.recurrence}] ${result.netAmount}${currencySymbol}`;
 
         return {
           text,

@@ -11,6 +11,10 @@ import type { Context } from "hono";
 import { streamText } from "hono/streaming";
 import { z } from "@hono/zod-openapi";
 import { ServerError } from "../../models/server-error.ts";
+import {
+  ALLOWED_IMAGE_MIME_TYPES,
+  MAX_IMAGE_BYTES,
+} from "../../constants/api-constants.ts";
 
 @injectable()
 export class AuthenticatedConversationsRouter {
@@ -103,9 +107,7 @@ export class AuthenticatedConversationsRouter {
         try {
           const body = await c.req.json();
           const payload = SendMessageSchema.parse(body);
-          const requestUrl = new URL(c.req.url).href;
-          const authHeader = c.req.header('Authorization');
-          const stream = await this.conversationsService.streamMessage(payload, requestUrl, authHeader);
+          const stream = await this.conversationsService.streamMessage(payload);
 
           return streamText(c, async (streamWriter) => {
             const reader = stream.getReader();
@@ -124,7 +126,7 @@ export class AuthenticatedConversationsRouter {
           if (error instanceof ServerError) {
             return c.json(
               { code: error.getCode(), message: error.getMessage() },
-              error.getStatusCode()
+              error.getStatusCode(),
             );
           }
           throw error;
@@ -177,10 +179,39 @@ export class AuthenticatedConversationsRouter {
         const body = await c.req.parseBody();
 
         if (!(body["image"] instanceof File)) {
-          return c.json({ error: "No image file provided" }, 400);
+          return c.json(
+            { code: "INVALID_IMAGE", message: "No image file provided" },
+            400,
+          );
         }
 
-        await this.conversationsService.attachImage(sessionId, body["image"]);
+        const imageFile = body["image"];
+
+        if (!ALLOWED_IMAGE_MIME_TYPES.includes(imageFile.type as any)) {
+          return c.json(
+            {
+              code: "INVALID_IMAGE_TYPE",
+              message: `Invalid image type. Allowed types: ${
+                ALLOWED_IMAGE_MIME_TYPES.join(", ")
+              }`,
+            },
+            400,
+          );
+        }
+
+        if (imageFile.size > MAX_IMAGE_BYTES) {
+          return c.json(
+            {
+              code: "IMAGE_TOO_LARGE",
+              message: `Image size exceeds maximum allowed size of ${
+                MAX_IMAGE_BYTES / 1024 / 1024
+              } MB`,
+            },
+            400,
+          );
+        }
+
+        await this.conversationsService.attachImage(sessionId, imageFile);
 
         return c.json({ success: true });
       },

@@ -56,7 +56,8 @@ export class FilterProductsToolService {
     const productsList = page.results
       .map((product) => {
         const currencySymbol = getCurrencySymbolForCode(product.currencyCode);
-        let text = `• ${product.name} — ${product.latestUnitPrice}${currencySymbol}`;
+        let text =
+          `• ${product.name} — ${product.latestUnitPrice}${currencySymbol}`;
         if (product.totalQuantity !== undefined) {
           text += ` (Total purchased: ${product.totalQuantity})`;
         }

@@ -3,13 +3,13 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import type { Context } from "hono";
 import { BankAccountsService } from "../../services/bank-accounts/bank-accounts-service.ts";
 import {
+  BankAccountBalanceIdParamSchema,
   CreateBankAccountBalanceRequestSchema,
   CreateBankAccountBalanceResponseSchema,
   GetBankAccountBalancesRequestSchema,
   GetBankAccountBalancesResponseSchema,
   UpdateBankAccountBalanceRequestSchema,
   UpdateBankAccountBalanceResponseSchema,
-  BankAccountBalanceIdParamSchema,
 } from "../../schemas/bank-account-balances-schemas.ts";
 import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
 import { ServerResponse } from "../../models/server-response.ts";
@@ -69,13 +69,14 @@ export class AuthenticatedBankAccountBalancesRouter {
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
         const body = CreateBankAccountBalanceRequestSchema.parse(
-          await context.req.json()
+          await context.req.json(),
         );
-        const result =
-          await this.bankAccountsService.createBankAccountBalance(body);
+        const result = await this.bankAccountsService.createBankAccountBalance(
+          body,
+        );
 
         return context.json(result, 201);
-      }
+      },
     );
   }
 
@@ -113,11 +114,12 @@ export class AuthenticatedBankAccountBalancesRouter {
       async (context: Context<{ Variables: HonoVariables }>) => {
         const payload = await readJsonOrEmpty(context);
         const body = GetBankAccountBalancesRequestSchema.parse(payload);
-        const result =
-          await this.bankAccountsService.getBankAccountBalances(body);
+        const result = await this.bankAccountsService.getBankAccountBalances(
+          body,
+        );
 
         return context.json(result, 200);
-      }
+      },
     );
   }
 
@@ -156,18 +158,18 @@ export class AuthenticatedBankAccountBalancesRouter {
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
         const { id } = BankAccountBalanceIdParamSchema.parse(
-          context.req.param()
+          context.req.param(),
         );
         const body = UpdateBankAccountBalanceRequestSchema.parse(
-          await context.req.json()
+          await context.req.json(),
         );
         const result = await this.bankAccountsService.updateBankAccountBalance(
           parseInt(id, 10),
-          body
+          body,
         );
 
         return context.json(result, 200);
-      }
+      },
     );
   }
 
@@ -192,15 +194,14 @@ export class AuthenticatedBankAccountBalancesRouter {
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
         const { id } = BankAccountBalanceIdParamSchema.parse(
-          context.req.param()
+          context.req.param(),
         );
         await this.bankAccountsService.deleteBankAccountBalance(
-          parseInt(id, 10)
+          parseInt(id, 10),
         );
 
         return context.body(null, 204);
-      }
+      },
     );
   }
-
 }

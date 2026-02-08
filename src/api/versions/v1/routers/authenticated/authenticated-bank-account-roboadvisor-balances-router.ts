@@ -3,13 +3,13 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import type { Context } from "hono";
 import { BankAccountRoboadvisorsService } from "../../services/bank-account-roboadvisors/bank-account-roboadvisors-service.ts";
 import {
+  BankAccountRoboadvisorBalanceIdParamSchema,
   CreateBankAccountRoboadvisorBalanceRequestSchema,
   CreateBankAccountRoboadvisorBalanceResponseSchema,
   GetBankAccountRoboadvisorBalancesRequestSchema,
   GetBankAccountRoboadvisorBalancesResponseSchema,
   UpdateBankAccountRoboadvisorBalanceRequestSchema,
   UpdateBankAccountRoboadvisorBalanceResponseSchema,
-  BankAccountRoboadvisorBalanceIdParamSchema,
 } from "../../schemas/bank-account-roboadvisor-balances-schemas.ts";
 import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
 import { ServerResponse } from "../../models/server-response.ts";
@@ -19,7 +19,9 @@ import { readJsonOrEmpty } from "../../utils/router-utils.ts";
 export class AuthenticatedBankAccountRoboadvisorBalancesRouter {
   private app: OpenAPIHono<{ Variables: HonoVariables }>;
 
-  constructor(private roboadvisorsService = inject(BankAccountRoboadvisorsService)) {
+  constructor(
+    private roboadvisorsService = inject(BankAccountRoboadvisorsService),
+  ) {
     this.app = new OpenAPIHono();
     this.setRoutes();
   }
@@ -69,12 +71,13 @@ export class AuthenticatedBankAccountRoboadvisorBalancesRouter {
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
         const body = CreateBankAccountRoboadvisorBalanceRequestSchema.parse(
-          await context.req.json()
+          await context.req.json(),
         );
-        const result = await this.roboadvisorsService.createBankAccountRoboadvisorBalance(body);
+        const result = await this.roboadvisorsService
+          .createBankAccountRoboadvisorBalance(body);
 
         return context.json(result, 201);
-      }
+      },
     );
   }
 
@@ -111,11 +114,14 @@ export class AuthenticatedBankAccountRoboadvisorBalancesRouter {
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
         const payload = await readJsonOrEmpty(context);
-        const body = GetBankAccountRoboadvisorBalancesRequestSchema.parse(payload);
-        const result = await this.roboadvisorsService.getBankAccountRoboadvisorBalances(body);
+        const body = GetBankAccountRoboadvisorBalancesRequestSchema.parse(
+          payload,
+        );
+        const result = await this.roboadvisorsService
+          .getBankAccountRoboadvisorBalances(body);
 
         return context.json(result, 200);
-      }
+      },
     );
   }
 
@@ -152,17 +158,20 @@ export class AuthenticatedBankAccountRoboadvisorBalancesRouter {
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
-        const { id } = BankAccountRoboadvisorBalanceIdParamSchema.parse(context.req.param());
+        const { id } = BankAccountRoboadvisorBalanceIdParamSchema.parse(
+          context.req.param(),
+        );
         const body = UpdateBankAccountRoboadvisorBalanceRequestSchema.parse(
-          await context.req.json()
+          await context.req.json(),
         );
-        const result = await this.roboadvisorsService.updateBankAccountRoboadvisorBalance(
-          parseInt(id, 10),
-          body
-        );
+        const result = await this.roboadvisorsService
+          .updateBankAccountRoboadvisorBalance(
+            parseInt(id, 10),
+            body,
+          );
 
         return context.json(result, 200);
-      }
+      },
     );
   }
 
@@ -186,12 +195,15 @@ export class AuthenticatedBankAccountRoboadvisorBalancesRouter {
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
-        const { id } = BankAccountRoboadvisorBalanceIdParamSchema.parse(context.req.param());
-        await this.roboadvisorsService.deleteBankAccountRoboadvisorBalance(parseInt(id, 10));
+        const { id } = BankAccountRoboadvisorBalanceIdParamSchema.parse(
+          context.req.param(),
+        );
+        await this.roboadvisorsService.deleteBankAccountRoboadvisorBalance(
+          parseInt(id, 10),
+        );
 
         return context.body(null, 204);
-      }
+      },
     );
   }
-
 }

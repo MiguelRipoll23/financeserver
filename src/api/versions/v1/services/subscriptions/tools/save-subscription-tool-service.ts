@@ -43,13 +43,12 @@ export class SaveSubscriptionToolService {
           : " (active)";
 
         const planInfo = result.plan ? ` - ${result.plan}` : "";
-        const text = `Subscription saved successfully: ${
-          result.name
-        }${planInfo} – ${result.category} (${getCurrencySymbolForCode(
-          result.currencyCode
-        )}${result.amount}/${
-          result.recurrence
-        }, started: ${displayStartDate}${endDateDisplay}) (ID: ${result.id})`;
+        const text =
+          `Subscription saved successfully: ${result.name}${planInfo} – ${result.category} (${
+            getCurrencySymbolForCode(
+              result.currencyCode,
+            )
+          }${result.amount}/${result.recurrence}, started: ${displayStartDate}${endDateDisplay}) (ID: ${result.id})`;
 
         return {
           text,

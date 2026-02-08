@@ -42,7 +42,8 @@ export const CreateBankAccountRoboadvisorBalanceRequestSchema = z.object({
     .string()
     .regex(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/)
     .refine((value) => isValidDateString(value), {
-      message: "Invalid calendar date. Please provide a valid date in YYYY-MM-DD format (e.g., 2026-01-15).",
+      message:
+        "Invalid calendar date. Please provide a valid date in YYYY-MM-DD format (e.g., 2026-01-15).",
     })
     .openapi({ example: "2026-01-15" })
     .describe("Transaction date (YYYY-MM-DD)"),
@@ -95,22 +96,23 @@ export type BankAccountRoboadvisorBalanceIdParam = z.infer<
   typeof BankAccountRoboadvisorBalanceIdParamSchema
 >;
 
-export const GetBankAccountRoboadvisorBalancesRequestSchema = PaginationQuerySchema.extend({
-  roboadvisorId: z
-    .number()
-    .int()
-    .optional()
-    .openapi({ example: 1, type: "integer" })
-    .describe("Roboadvisor identifier (optional)"),
-  sortField: z
-    .nativeEnum(BankAccountRoboadvisorBalanceSortField)
-    .optional()
-    .openapi({ example: BankAccountRoboadvisorBalanceSortField.Date }),
-  sortOrder: z
-    .nativeEnum(SortOrder)
-    .optional()
-    .openapi({ example: SortOrder.Desc }),
-});
+export const GetBankAccountRoboadvisorBalancesRequestSchema =
+  PaginationQuerySchema.extend({
+    roboadvisorId: z
+      .number()
+      .int()
+      .optional()
+      .openapi({ example: 1, type: "integer" })
+      .describe("Roboadvisor identifier (optional)"),
+    sortField: z
+      .nativeEnum(BankAccountRoboadvisorBalanceSortField)
+      .optional()
+      .openapi({ example: BankAccountRoboadvisorBalanceSortField.Date }),
+    sortOrder: z
+      .nativeEnum(SortOrder)
+      .optional()
+      .openapi({ example: SortOrder.Desc }),
+  });
 
 export type GetBankAccountRoboadvisorBalancesRequest = z.infer<
   typeof GetBankAccountRoboadvisorBalancesRequestSchema
@@ -133,9 +135,15 @@ export const GetBankAccountRoboadvisorBalancesResponseSchema = z.object({
     .describe("List of roboadvisor balance records"),
   limit: z.number().int().describe("Maximum number of results returned"),
   offset: z.number().int().describe("Number of results skipped"),
-  total: z.number().int().describe("Total number of balance records matching the query"),
-  nextCursor: z.string().nullable().describe("Cursor for the next page of results or null"),
-  previousCursor: z.string().nullable().describe("Cursor for the previous page of results or null"),
+  total: z.number().int().describe(
+    "Total number of balance records matching the query",
+  ),
+  nextCursor: z.string().nullable().describe(
+    "Cursor for the next page of results or null",
+  ),
+  previousCursor: z.string().nullable().describe(
+    "Cursor for the previous page of results or null",
+  ),
 });
 
 export type GetBankAccountRoboadvisorBalancesResponse = z.infer<
@@ -148,7 +156,8 @@ export const UpdateBankAccountRoboadvisorBalanceRequestSchema = z
       .string()
       .regex(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/)
       .refine((value) => isValidDateString(value), {
-        message: "Invalid calendar date. Please provide a valid date in YYYY-MM-DD format (e.g., 2026-01-15).",
+        message:
+          "Invalid calendar date. Please provide a valid date in YYYY-MM-DD format (e.g., 2026-01-15).",
       })
       .optional()
       .openapi({ example: "2026-01-15" })

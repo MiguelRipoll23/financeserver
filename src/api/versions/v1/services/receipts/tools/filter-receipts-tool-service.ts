@@ -63,16 +63,20 @@ export class FilterReceiptsToolService {
     const receiptsList = page.results
       .map((receipt) => {
         const receiptCurrencySymbol = getCurrencySymbolForCode(
-          receipt.currencyCode
+          receipt.currencyCode,
         );
-        const humanReadableDate = this.formatHumanReadableDateTime(receipt.date);
-        const header = `🧾 Receipt #${receipt.id} (${humanReadableDate})${receipt.merchant ? ` (Merchant: ${receipt.merchant.name})` : ''} — Total ${receiptCurrencySymbol}${receipt.totalAmount}`;
+        const humanReadableDate = this.formatHumanReadableDateTime(
+          receipt.date,
+        );
+        const header = `🧾 Receipt #${receipt.id} (${humanReadableDate})${
+          receipt.merchant ? ` (Merchant: ${receipt.merchant.name})` : ""
+        } — Total ${receiptCurrencySymbol}${receipt.totalAmount}`;
         const lines = receipt.items
           .map((item: ReceiptLineItem) => {
             const formatItemLine = (
               lineItem: ReceiptLineItem,
               prefix: string,
-              currencyCode: string
+              currencyCode: string,
             ): string => {
               const currencySymbol = getCurrencySymbolForCode(currencyCode);
               return `${prefix} ${lineItem.name} x${lineItem.quantity} — ${currencySymbol}${lineItem.totalAmount}`;
@@ -82,7 +86,9 @@ export class FilterReceiptsToolService {
 
             if (item.items && item.items.length > 0) {
               const subitemsLines = item.items
-                .map((subitem: ReceiptLineItem) => formatItemLine(subitem, "   ◦", receipt.currencyCode))
+                .map((subitem: ReceiptLineItem) =>
+                  formatItemLine(subitem, "   ◦", receipt.currencyCode)
+                )
                 .join("\n");
               itemLine += "\n" + subitemsLines;
             }
@@ -106,11 +112,11 @@ export class FilterReceiptsToolService {
 
   private formatHumanReadableDateTime(isoDateString: string): string {
     const date = new Date(isoDateString);
-    return date.toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      timeZone: 'UTC',
+    return date.toLocaleString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      timeZone: "UTC",
     });
   }
 }

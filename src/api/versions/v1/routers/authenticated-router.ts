@@ -32,7 +32,9 @@ export class V1AuthenticatedRouter {
   constructor(
     private authenticationMiddleware = inject(AuthenticationMiddleware),
     private authorizationMiddleware = inject(AuthorizationMiddleware),
-    private authenticatedRegistrationRouter = inject(AuthenticatedRegistrationRouter),
+    private authenticatedRegistrationRouter = inject(
+      AuthenticatedRegistrationRouter,
+    ),
     private usersRouter = inject(AuthenticatedUsersRouter),
     private mcpRouter = inject(AuthenticatedMCPRouter),
     private conversationsRouter = inject(AuthenticatedConversationsRouter),
@@ -56,7 +58,9 @@ export class V1AuthenticatedRouter {
     private receiptsRouter = inject(AuthenticatedReceiptsRouter),
     private productsRouter = inject(AuthenticatedProductsRouter),
     private salaryChangesRouter = inject(AuthenticatedSalaryChangesRouter),
-    private bankAccountRoboadvisorsRouter = inject(AuthenticatedBankAccountRoboadvisorsRouter),
+    private bankAccountRoboadvisorsRouter = inject(
+      AuthenticatedBankAccountRoboadvisorsRouter,
+    ),
     private bankAccountRoboadvisorBalancesRouter = inject(
       AuthenticatedBankAccountRoboadvisorBalancesRouter,
     ),
@@ -88,8 +92,11 @@ export class V1AuthenticatedRouter {
 
   private setRoutes(): void {
     // Passkey routes: registration
-    this.app.route("/registration", this.authenticatedRegistrationRouter.getRouter());
-    
+    this.app.route(
+      "/registration",
+      this.authenticatedRegistrationRouter.getRouter(),
+    );
+
     this.app.route("/mcp", this.mcpRouter.getRouter());
     this.app.route("/conversations", this.conversationsRouter.getRouter());
     this.app.route("/users", this.usersRouter.getRouter());

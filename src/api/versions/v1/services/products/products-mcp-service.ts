@@ -8,8 +8,8 @@ export class ProductsMCPService {
   constructor(
     private filterProductsToolService = inject(FilterProductsToolService),
     private filterProductPriceDeltasToolService = inject(
-      FilterProductPriceDeltasToolService
-    )
+      FilterProductPriceDeltasToolService,
+    ),
   ) {}
 
   public getTools(): McpToolDefinition[] {

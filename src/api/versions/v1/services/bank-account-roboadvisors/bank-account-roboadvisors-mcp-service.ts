@@ -19,15 +19,33 @@ export class BankAccountRoboadvisorsMCPService {
     private createRoboadvisorToolService = inject(CreateRoboadvisorToolService),
     private updateRoboadvisorToolService = inject(UpdateRoboadvisorToolService),
     private deleteRoboadvisorToolService = inject(DeleteRoboadvisorToolService),
-    private filterRoboadvisorsToolService = inject(FilterRoboadvisorsToolService),
-    private createRoboadvisorBalanceToolService = inject(CreateRoboadvisorBalanceToolService),
-    private updateRoboadvisorBalanceToolService = inject(UpdateRoboadvisorBalanceToolService),
-    private deleteRoboadvisorBalanceToolService = inject(DeleteRoboadvisorBalanceToolService),
-    private filterRoboadvisorBalancesToolService = inject(FilterRoboadvisorBalancesToolService),
-    private createRoboadvisorFundToolService = inject(CreateRoboadvisorFundToolService),
-    private updateRoboadvisorFundToolService = inject(UpdateRoboadvisorFundToolService),
-    private deleteRoboadvisorFundToolService = inject(DeleteRoboadvisorFundToolService),
-    private filterRoboadvisorFundsToolService = inject(FilterRoboadvisorFundsToolService)
+    private filterRoboadvisorsToolService = inject(
+      FilterRoboadvisorsToolService,
+    ),
+    private createRoboadvisorBalanceToolService = inject(
+      CreateRoboadvisorBalanceToolService,
+    ),
+    private updateRoboadvisorBalanceToolService = inject(
+      UpdateRoboadvisorBalanceToolService,
+    ),
+    private deleteRoboadvisorBalanceToolService = inject(
+      DeleteRoboadvisorBalanceToolService,
+    ),
+    private filterRoboadvisorBalancesToolService = inject(
+      FilterRoboadvisorBalancesToolService,
+    ),
+    private createRoboadvisorFundToolService = inject(
+      CreateRoboadvisorFundToolService,
+    ),
+    private updateRoboadvisorFundToolService = inject(
+      UpdateRoboadvisorFundToolService,
+    ),
+    private deleteRoboadvisorFundToolService = inject(
+      DeleteRoboadvisorFundToolService,
+    ),
+    private filterRoboadvisorFundsToolService = inject(
+      FilterRoboadvisorFundsToolService,
+    ),
   ) {}
 
   public getTools(): McpToolDefinition[] {

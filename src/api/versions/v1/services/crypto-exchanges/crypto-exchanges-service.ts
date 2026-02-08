@@ -1,10 +1,18 @@
 import { inject, injectable } from "@needle-di/core";
-import { asc, desc, eq, getTableColumns, ilike, sql, type SQL } from "drizzle-orm";
+import {
+  asc,
+  desc,
+  eq,
+  getTableColumns,
+  ilike,
+  type SQL,
+  sql,
+} from "drizzle-orm";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import {
-  cryptoExchangesTable,
-  cryptoExchangeCalculationsTable,
   cryptoExchangeBalancesTable,
+  cryptoExchangeCalculationsTable,
+  cryptoExchangesTable,
 } from "../../../../../db/schema.ts";
 import { ServerError } from "../../models/server-error.ts";
 import { decodeCursor } from "../../utils/cursor-utils.ts";
@@ -22,9 +30,9 @@ import { CryptoExchangeSummary } from "../../interfaces/crypto-exchanges/crypto-
 import type {
   CreateCryptoExchangeRequest,
   CreateCryptoExchangeResponse,
+  GetCryptoExchangesResponse,
   UpdateCryptoExchangeRequest,
   UpdateCryptoExchangeResponse,
-  GetCryptoExchangesResponse,
 } from "../../schemas/crypto-exchanges-schemas.ts";
 import { CryptoExchangeBalancesService } from "../crypto-exchanges-balances/crypto-exchange-balances-service.ts";
 
@@ -75,10 +83,9 @@ export class CryptoExchangesService {
     }
 
     if (payload.taxPercentage !== undefined) {
-      updateValues.taxPercentage =
-        payload.taxPercentage === null
-          ? null
-          : payload.taxPercentage.toString();
+      updateValues.taxPercentage = payload.taxPercentage === null
+        ? null
+        : payload.taxPercentage.toString();
     }
 
     const [result] = await db
@@ -126,11 +133,13 @@ export class CryptoExchangesService {
     });
   }
 
-  private async getLatestCalculation(exchangeId: number): Promise<{
-    currentValue: string;
-    currencyCode: string;
-    calculatedAt: string;
-  } | null> {
+  private async getLatestCalculation(exchangeId: number): Promise<
+    {
+      currentValue: string;
+      currencyCode: string;
+      calculatedAt: string;
+    } | null
+  > {
     const db = this.databaseService.get();
 
     const [calculation] = await db
@@ -205,8 +214,9 @@ export class CryptoExchangesService {
       conditions.push(ilike(cryptoExchangesTable.name, `%${filter.name}%`));
     }
 
-    const whereClause =
-      conditions.length > 0 ? buildAndFilters(conditions) : undefined;
+    const whereClause = conditions.length > 0
+      ? buildAndFilters(conditions)
+      : undefined;
 
     const orderColumn = this.getSortColumn(sortField);
     const orderDirection = sortOrder === SortOrder.Asc ? asc : desc;
@@ -232,11 +242,13 @@ export class CryptoExchangesService {
     const results = await db
       .select({
         ...getTableColumns(cryptoExchangesTable),
-        latestCalculation: sql<{
-          currentValue: string;
-          currencyCode: string;
-          calculatedAt: string;
-        } | null>`(
+        latestCalculation: sql<
+          {
+            currentValue: string;
+            currencyCode: string;
+            calculatedAt: string;
+          } | null
+        >`(
           SELECT json_build_object(
             'currentValue', calculation.current_value,
             'currencyCode', latest_balance.invested_currency_code,
@@ -263,7 +275,7 @@ export class CryptoExchangesService {
       .offset(offset);
 
     const data: CryptoExchangeSummary[] = results.map((exchange) =>
-      this.mapCryptoExchangeToSummary(exchange),
+      this.mapCryptoExchangeToSummary(exchange)
     );
 
     const pagination = createOffsetPagination<CryptoExchangeSummary>(
@@ -300,7 +312,9 @@ export class CryptoExchangesService {
     return {
       id: exchange.id,
       name: exchange.name,
-      taxPercentage: exchange.taxPercentage ? parseFloat(exchange.taxPercentage) : null,
+      taxPercentage: exchange.taxPercentage
+        ? parseFloat(exchange.taxPercentage)
+        : null,
       createdAt: toISOStringSafe(exchange.createdAt),
       updatedAt: toISOStringSafe(exchange.updatedAt),
     };
@@ -318,15 +332,19 @@ export class CryptoExchangesService {
     return {
       id: exchange.id,
       name: exchange.name,
-      taxPercentage: exchange.taxPercentage ? parseFloat(exchange.taxPercentage) : null,
+      taxPercentage: exchange.taxPercentage
+        ? parseFloat(exchange.taxPercentage)
+        : null,
       createdAt: toISOStringSafe(exchange.createdAt),
       updatedAt: toISOStringSafe(exchange.updatedAt),
       latestCalculation: exchange.latestCalculation
         ? {
-            currentValue: exchange.latestCalculation.currentValue.toString(),
-            currencyCode: exchange.latestCalculation.currencyCode,
-            calculatedAt: toISOStringSafe(exchange.latestCalculation.calculatedAt),
-          }
+          currentValue: exchange.latestCalculation.currentValue.toString(),
+          currencyCode: exchange.latestCalculation.currencyCode,
+          calculatedAt: toISOStringSafe(
+            exchange.latestCalculation.calculatedAt,
+          ),
+        }
         : null,
     };
   }

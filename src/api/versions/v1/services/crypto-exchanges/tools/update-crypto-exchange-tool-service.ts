@@ -6,7 +6,7 @@ import { UpdateCryptoExchangeToolSchema } from "../../../schemas/mcp-crypto-exch
 @injectable()
 export class UpdateCryptoExchangeToolService {
   constructor(
-    private cryptoExchangesService = inject(CryptoExchangesService)
+    private cryptoExchangesService = inject(CryptoExchangesService),
   ) {}
 
   public getDefinition(): McpToolDefinition {
@@ -29,10 +29,11 @@ export class UpdateCryptoExchangeToolService {
 
         const result = await this.cryptoExchangesService.updateCryptoExchange(
           id,
-          payload
+          payload,
         );
 
-        const text = `Crypto exchange updated successfully: ${result.name} (ID: ${result.id})`;
+        const text =
+          `Crypto exchange updated successfully: ${result.name} (ID: ${result.id})`;
 
         return {
           text,

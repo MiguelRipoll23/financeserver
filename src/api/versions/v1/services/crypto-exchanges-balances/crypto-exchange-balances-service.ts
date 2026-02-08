@@ -1,10 +1,10 @@
 import { inject, injectable } from "@needle-di/core";
-import { and, asc, desc, eq, sql, getTableColumns } from "drizzle-orm";
+import { and, asc, desc, eq, getTableColumns, sql } from "drizzle-orm";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import {
-  cryptoExchangesTable,
   cryptoExchangeBalancesTable,
   cryptoExchangeCalculationsTable,
+  cryptoExchangesTable,
 } from "../../../../../db/schema.ts";
 import { ServerError } from "../../models/server-error.ts";
 import { decodeCursor } from "../../utils/cursor-utils.ts";
@@ -31,7 +31,7 @@ export class CryptoExchangeBalancesService {
   constructor(
     private databaseService = inject(DatabaseService),
     private calculationsService = inject(CryptoExchangeCalculationsService),
-    private priceProviderFactory = inject(CryptoPriceProviderFactory)
+    private priceProviderFactory = inject(CryptoPriceProviderFactory),
   ) {}
 
   public async createCryptoExchangeBalance(
@@ -154,7 +154,7 @@ export class CryptoExchangeBalancesService {
       .offset(offset);
 
     const data: CryptoExchangeBalanceSummary[] = results.map((balance) =>
-      this.mapBalanceToSummary(balance),
+      this.mapBalanceToSummary(balance)
     );
 
     const pagination = createOffsetPagination<CryptoExchangeBalanceSummary>(
@@ -337,11 +337,13 @@ export class CryptoExchangeBalancesService {
   public async calculateCryptoValueAfterTax(
     cryptoExchangeId: number,
     symbolCode: string,
-    exchange?: typeof cryptoExchangesTable.$inferSelect
-  ): Promise<{
-    currentValue: string;
-    currencyCode: string;
-  } | null> {
+    exchange?: typeof cryptoExchangesTable.$inferSelect,
+  ): Promise<
+    {
+      currentValue: string;
+      currencyCode: string;
+    } | null
+  > {
     try {
       const db = this.databaseService.get();
 
@@ -357,7 +359,7 @@ export class CryptoExchangeBalancesService {
 
       if (!exchange) {
         console.warn(
-          `Crypto exchange with ID ${cryptoExchangeId} not found`
+          `Crypto exchange with ID ${cryptoExchangeId} not found`,
         );
         return null;
       }
@@ -368,33 +370,36 @@ export class CryptoExchangeBalancesService {
         .from(cryptoExchangeBalancesTable)
         .where(
           sql`${cryptoExchangeBalancesTable.cryptoExchangeId} = ${cryptoExchangeId} 
-              AND ${cryptoExchangeBalancesTable.symbolCode} = ${symbolCode}`
+              AND ${cryptoExchangeBalancesTable.symbolCode} = ${symbolCode}`,
         )
         .limit(1)
         .then((rows) => rows[0]);
 
       if (!balance) {
         console.warn(
-          `Balance not found for exchange ${cryptoExchangeId} and symbol ${symbolCode}. Clearing calculations.`
+          `Balance not found for exchange ${cryptoExchangeId} and symbol ${symbolCode}. Clearing calculations.`,
         );
-        
+
         // Clear stale calculations for this symbol if balance is missing
         await db
           .delete(cryptoExchangeCalculationsTable)
           .where(
             and(
-              eq(cryptoExchangeCalculationsTable.cryptoExchangeId, cryptoExchangeId),
-              eq(cryptoExchangeCalculationsTable.symbolCode, symbolCode)
-            )
+              eq(
+                cryptoExchangeCalculationsTable.cryptoExchangeId,
+                cryptoExchangeId,
+              ),
+              eq(cryptoExchangeCalculationsTable.symbolCode, symbolCode),
+            ),
           );
-          
+
         return null;
       }
 
       // Get invested amount and currency
       if (!balance.investedAmount || !balance.investedCurrencyCode) {
         console.warn(
-          `Invested amount or currency not set for balance ${balance.id}`
+          `Invested amount or currency not set for balance ${balance.id}`,
         );
         return null;
       }
@@ -408,12 +413,12 @@ export class CryptoExchangeBalancesService {
       // Fetch current price for the crypto symbol
       const priceString = await priceProvider.getCurrentPrice(
         symbolCode,
-        currencyCode
+        currencyCode,
       );
 
       if (!priceString) {
         console.warn(
-          `Unable to fetch price for symbol ${symbolCode} in ${currencyCode}`
+          `Unable to fetch price for symbol ${symbolCode} in ${currencyCode}`,
         );
         return null;
       }
@@ -446,7 +451,7 @@ export class CryptoExchangeBalancesService {
       await this.calculationsService.storeCalculation(
         cryptoExchangeId,
         symbolCode,
-        valueAfterTax.toFixed(2)
+        valueAfterTax.toFixed(2),
       );
 
       return {
@@ -456,7 +461,7 @@ export class CryptoExchangeBalancesService {
     } catch (error) {
       console.error(
         "Error calculating crypto value after tax:",
-        error
+        error,
       );
       return null;
     }
@@ -484,12 +489,12 @@ export class CryptoExchangeBalancesService {
         try {
           await this.calculateCryptoValueAfterTax(
             balance.cryptoExchangeId,
-            balance.symbolCode
+            balance.symbolCode,
           );
         } catch (error) {
           console.error(
             `Failed to calculate crypto balance for exchange ${balance.cryptoExchangeId} symbol ${balance.symbolCode}:`,
-            error
+            error,
           );
         }
       }

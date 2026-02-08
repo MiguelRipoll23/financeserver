@@ -167,9 +167,15 @@ export const GetBankAccountRoboadvisorFundsResponseSchema = z.object({
     .describe("List of roboadvisor funds"),
   limit: z.number().int().describe("Maximum number of results returned"),
   offset: z.number().int().describe("Number of results skipped"),
-  total: z.number().int().describe("Total number of fund allocations matching the query"),
-  nextCursor: z.string().nullable().describe("Cursor for the next page of results or null"),
-  previousCursor: z.string().nullable().describe("Cursor for the previous page of results or null"),
+  total: z.number().int().describe(
+    "Total number of fund allocations matching the query",
+  ),
+  nextCursor: z.string().nullable().describe(
+    "Cursor for the next page of results or null",
+  ),
+  previousCursor: z.string().nullable().describe(
+    "Cursor for the previous page of results or null",
+  ),
 });
 
 export type GetBankAccountRoboadvisorFundsResponse = z.infer<

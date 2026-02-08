@@ -29,7 +29,8 @@ export class UpdateCashToolService {
           label: parsed.label,
         });
 
-        const text = `Cash source updated successfully: ${result.label} (ID: ${result.id})`;
+        const text =
+          `Cash source updated successfully: ${result.label} (ID: ${result.id})`;
 
         return {
           text,

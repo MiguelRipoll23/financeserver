@@ -1,12 +1,20 @@
 import { inject, injectable } from "@needle-di/core";
-import { asc, desc, eq, ilike, sql, type SQL, getTableColumns } from "drizzle-orm";
+import {
+  asc,
+  desc,
+  eq,
+  getTableColumns,
+  ilike,
+  type SQL,
+  sql,
+} from "drizzle-orm";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import {
   bankAccountsTable,
-  roboadvisors,
   roboadvisorBalances,
-  roboadvisorFunds,
   roboadvisorFundCalculationsTable,
+  roboadvisorFunds,
+  roboadvisors,
 } from "../../../../../db/schema.ts";
 import { ServerError } from "../../models/server-error.ts";
 import { decodeCursor } from "../../utils/cursor-utils.ts";
@@ -30,23 +38,23 @@ import { BankAccountRoboadvisorFundSummary } from "../../interfaces/bank-account
 import type {
   CreateBankAccountRoboadvisorRequest,
   CreateBankAccountRoboadvisorResponse,
+  GetBankAccountRoboadvisorsResponse,
   UpdateBankAccountRoboadvisorRequest,
   UpdateBankAccountRoboadvisorResponse,
-  GetBankAccountRoboadvisorsResponse,
 } from "../../schemas/bank-account-roboadvisors-schemas.ts";
 import type {
   CreateBankAccountRoboadvisorBalanceRequest,
   CreateBankAccountRoboadvisorBalanceResponse,
+  GetBankAccountRoboadvisorBalancesResponse,
   UpdateBankAccountRoboadvisorBalanceRequest,
   UpdateBankAccountRoboadvisorBalanceResponse,
-  GetBankAccountRoboadvisorBalancesResponse,
 } from "../../schemas/bank-account-roboadvisor-balances-schemas.ts";
 import type {
   CreateBankAccountRoboadvisorFundRequest,
   CreateBankAccountRoboadvisorFundResponse,
+  GetBankAccountRoboadvisorFundsResponse,
   UpdateBankAccountRoboadvisorFundRequest,
   UpdateBankAccountRoboadvisorFundResponse,
-  GetBankAccountRoboadvisorFundsResponse,
 } from "../../schemas/bank-account-roboadvisor-funds-schemas.ts";
 import { BankAccountRoboadvisorFundCalculationsService } from "../bank-account-roboadvisor-fund-calculations/bank-account-roboadvisor-fund-calculations-service.ts";
 import { IndexFundPriceProviderFactory } from "../external-pricing/factory/index-fund-price-provider-factory.ts";
@@ -56,9 +64,9 @@ export class BankAccountRoboadvisorsService {
   constructor(
     private databaseService = inject(DatabaseService),
     private calculationsService = inject(
-      BankAccountRoboadvisorFundCalculationsService
+      BankAccountRoboadvisorFundCalculationsService,
     ),
-    private priceProviderFactory = inject(IndexFundPriceProviderFactory)
+    private priceProviderFactory = inject(IndexFundPriceProviderFactory),
   ) {}
 
   // Roboadvisor CRUD operations
@@ -116,8 +124,8 @@ export class BankAccountRoboadvisorsService {
       MAX_PAGE_SIZE,
     );
     const offset = filter.cursor ? decodeCursor(filter.cursor) : 0;
-    const sortField =
-      filter.sortField ?? BankAccountRoboadvisorSortField.CreatedAt;
+    const sortField = filter.sortField ??
+      BankAccountRoboadvisorSortField.CreatedAt;
     const sortOrder = filter.sortOrder ?? SortOrder.Desc;
 
     const conditions: SQL[] = [];
@@ -132,8 +140,9 @@ export class BankAccountRoboadvisorsService {
       conditions.push(ilike(roboadvisors.name, `%${filter.name}%`));
     }
 
-    const whereClause =
-      conditions.length > 0 ? buildAndFilters(conditions) : undefined;
+    const whereClause = conditions.length > 0
+      ? buildAndFilters(conditions)
+      : undefined;
 
     const orderColumn = this.getRoboadvisorSortColumn(sortField);
     const orderDirection = sortOrder === SortOrder.Asc ? asc : desc;
@@ -159,11 +168,13 @@ export class BankAccountRoboadvisorsService {
     const results = await db
       .select({
         ...getTableColumns(roboadvisors),
-        latestCalculation: sql<{
-          currentValue: string;
-          currencyCode: string;
-          calculatedAt: string;
-        } | null>`(
+        latestCalculation: sql<
+          {
+            currentValue: string;
+            currencyCode: string;
+            calculatedAt: string;
+          } | null
+        >`(
           SELECT json_build_object(
             'currentValue', fund_calculation.current_value,
             'currencyCode', latest_balance.currency_code,
@@ -186,13 +197,13 @@ export class BankAccountRoboadvisorsService {
       .where(whereClause)
       .orderBy(
         orderDirection(orderColumn),
-        orderDirection(roboadvisors.id)
+        orderDirection(roboadvisors.id),
       )
       .limit(pageSize)
       .offset(offset);
 
     const data: BankAccountRoboadvisorSummary[] = results.map((roboadvisor) =>
-      this.mapRoboadvisorToSummary(roboadvisor),
+      this.mapRoboadvisorToSummary(roboadvisor)
     );
 
     const pagination = createOffsetPagination<BankAccountRoboadvisorSummary>(
@@ -239,27 +250,37 @@ export class BankAccountRoboadvisorsService {
     };
 
     if (payload.name !== undefined) updateValues.name = payload.name;
-    if (payload.riskLevel !== undefined)
+    if (payload.riskLevel !== undefined) {
       updateValues.riskLevel = payload.riskLevel;
-    if (payload.managementFeePercentage !== undefined)
-      updateValues.managementFeePercentage = payload.managementFeePercentage.toString();
-    if (payload.custodyFeePercentage !== undefined)
-      updateValues.custodyFeePercentage = payload.custodyFeePercentage.toString();
-    if (payload.fundTerPercentage !== undefined)
+    }
+    if (payload.managementFeePercentage !== undefined) {
+      updateValues.managementFeePercentage = payload.managementFeePercentage
+        .toString();
+    }
+    if (payload.custodyFeePercentage !== undefined) {
+      updateValues.custodyFeePercentage = payload.custodyFeePercentage
+        .toString();
+    }
+    if (payload.fundTerPercentage !== undefined) {
       updateValues.fundTerPercentage = payload.fundTerPercentage.toString();
-    if (payload.totalFeePercentage !== undefined)
+    }
+    if (payload.totalFeePercentage !== undefined) {
       updateValues.totalFeePercentage = payload.totalFeePercentage.toString();
-    if (payload.managementFeeFrequency !== undefined)
+    }
+    if (payload.managementFeeFrequency !== undefined) {
       updateValues.managementFeeFrequency = payload.managementFeeFrequency;
-    if (payload.custodyFeeFrequency !== undefined)
+    }
+    if (payload.custodyFeeFrequency !== undefined) {
       updateValues.custodyFeeFrequency = payload.custodyFeeFrequency;
-    if (payload.terPricedInNav !== undefined)
+    }
+    if (payload.terPricedInNav !== undefined) {
       updateValues.terPricedInNav = payload.terPricedInNav;
-    if (payload.taxPercentage !== undefined)
-      updateValues.taxPercentage =
-        payload.taxPercentage === null
-          ? null
-          : payload.taxPercentage.toString();
+    }
+    if (payload.taxPercentage !== undefined) {
+      updateValues.taxPercentage = payload.taxPercentage === null
+        ? null
+        : payload.taxPercentage.toString();
+    }
 
     const [result] = await db
       .update(roboadvisors)
@@ -299,11 +320,13 @@ export class BankAccountRoboadvisorsService {
     });
   }
 
-  private async getLatestCalculation(roboadvisorId: number): Promise<{
-    currentValue: string;
-    currencyCode: string;
-    calculatedAt: string;
-  } | null> {
+  private async getLatestCalculation(roboadvisorId: number): Promise<
+    {
+      currentValue: string;
+      currencyCode: string;
+      calculatedAt: string;
+    } | null
+  > {
     const db = this.databaseService.get();
 
     const [calculation] = await db
@@ -392,12 +415,14 @@ export class BankAccountRoboadvisorsService {
       })
       .returning();
 
-    this.calculateRoboadvisorValueAfterTax(payload.roboadvisorId).catch((error) => {
-      console.error(
-        `Failed to trigger async calculation for roboadvisor ${payload.roboadvisorId}:`,
-        error,
-      );
-    });
+    this.calculateRoboadvisorValueAfterTax(payload.roboadvisorId).catch(
+      (error) => {
+        console.error(
+          `Failed to trigger async calculation for roboadvisor ${payload.roboadvisorId}:`,
+          error,
+        );
+      },
+    );
 
     return this.mapBalanceToResponse(result);
   }
@@ -412,8 +437,8 @@ export class BankAccountRoboadvisorsService {
       MAX_PAGE_SIZE,
     );
     const offset = filter.cursor ? decodeCursor(filter.cursor) : 0;
-    const sortField =
-      filter.sortField ?? BankAccountRoboadvisorBalanceSortField.Date;
+    const sortField = filter.sortField ??
+      BankAccountRoboadvisorBalanceSortField.Date;
     const sortOrder = filter.sortOrder ?? SortOrder.Desc;
 
     const conditions: SQL[] = [];
@@ -427,8 +452,9 @@ export class BankAccountRoboadvisorsService {
       );
     }
 
-    const whereClause =
-      conditions.length > 0 ? buildAndFilters(conditions) : undefined;
+    const whereClause = conditions.length > 0
+      ? buildAndFilters(conditions)
+      : undefined;
 
     const orderColumn = this.getBalanceSortColumn(sortField);
     const orderDirection = sortOrder === SortOrder.Asc ? asc : desc;
@@ -466,13 +492,14 @@ export class BankAccountRoboadvisorsService {
       (balance) => this.mapBalanceToSummary(balance),
     );
 
-    const pagination =
-      createOffsetPagination<BankAccountRoboadvisorBalanceSummary>(
-        data,
-        pageSize,
-        offset,
-        total,
-      );
+    const pagination = createOffsetPagination<
+      BankAccountRoboadvisorBalanceSummary
+    >(
+      data,
+      pageSize,
+      offset,
+      total,
+    );
 
     return {
       results: pagination.results,
@@ -513,8 +540,9 @@ export class BankAccountRoboadvisorsService {
     if (payload.date !== undefined) updateValues.date = payload.date;
     if (payload.type !== undefined) updateValues.type = payload.type;
     if (payload.amount !== undefined) updateValues.amount = payload.amount;
-    if (payload.currencyCode !== undefined)
+    if (payload.currencyCode !== undefined) {
       updateValues.currencyCode = payload.currencyCode;
+    }
 
     const [result] = await db
       .update(roboadvisorBalances)
@@ -613,12 +641,14 @@ export class BankAccountRoboadvisorsService {
       })
       .returning();
 
-    this.calculateRoboadvisorValueAfterTax(payload.roboadvisorId).catch((error) => {
-      console.error(
-        `Failed to trigger async calculation for roboadvisor ${payload.roboadvisorId}:`,
-        error,
-      );
-    });
+    this.calculateRoboadvisorValueAfterTax(payload.roboadvisorId).catch(
+      (error) => {
+        console.error(
+          `Failed to trigger async calculation for roboadvisor ${payload.roboadvisorId}:`,
+          error,
+        );
+      },
+    );
 
     return this.mapFundToResponse(result);
   }
@@ -633,8 +663,8 @@ export class BankAccountRoboadvisorsService {
       MAX_PAGE_SIZE,
     );
     const offset = filter.cursor ? decodeCursor(filter.cursor) : 0;
-    const sortField =
-      filter.sortField ?? BankAccountRoboadvisorFundSortField.Name;
+    const sortField = filter.sortField ??
+      BankAccountRoboadvisorFundSortField.Name;
     const sortOrder = filter.sortOrder ?? SortOrder.Asc;
 
     const conditions: SQL[] = [];
@@ -681,8 +711,9 @@ export class BankAccountRoboadvisorsService {
       );
     }
 
-    const whereClause =
-      conditions.length > 0 ? buildAndFilters(conditions) : undefined;
+    const whereClause = conditions.length > 0
+      ? buildAndFilters(conditions)
+      : undefined;
 
     const orderColumn = this.getFundSortColumn(sortField);
     const orderDirection = sortOrder === SortOrder.Asc ? asc : desc;
@@ -714,16 +745,17 @@ export class BankAccountRoboadvisorsService {
       .offset(offset);
 
     const data: BankAccountRoboadvisorFundSummary[] = results.map((fund) =>
-      this.mapFundToSummary(fund),
+      this.mapFundToSummary(fund)
     );
 
-    const pagination =
-      createOffsetPagination<BankAccountRoboadvisorFundSummary>(
-        data,
-        pageSize,
-        offset,
-        total,
-      );
+    const pagination = createOffsetPagination<
+      BankAccountRoboadvisorFundSummary
+    >(
+      data,
+      pageSize,
+      offset,
+      total,
+    );
 
     return {
       results: pagination.results,
@@ -763,14 +795,21 @@ export class BankAccountRoboadvisorsService {
 
     if (payload.name !== undefined) updateValues.name = payload.name;
     if (payload.isin !== undefined) updateValues.isin = payload.isin;
-    if (payload.assetClass !== undefined)
+    if (payload.assetClass !== undefined) {
       updateValues.assetClass = payload.assetClass;
+    }
     if (payload.region !== undefined) updateValues.region = payload.region;
-    if (payload.fundCurrencyCode !== undefined)
+    if (payload.fundCurrencyCode !== undefined) {
       updateValues.fundCurrencyCode = payload.fundCurrencyCode;
-    if (payload.weight !== undefined) updateValues.weight = payload.weight.toString();
-    if (payload.shareCount !== undefined)
-      updateValues.shareCount = payload.shareCount ? payload.shareCount.toString() : null;
+    }
+    if (payload.weight !== undefined) {
+      updateValues.weight = payload.weight.toString();
+    }
+    if (payload.shareCount !== undefined) {
+      updateValues.shareCount = payload.shareCount
+        ? payload.shareCount.toString()
+        : null;
+    }
 
     const [result] = await db
       .update(roboadvisorFunds)
@@ -778,12 +817,14 @@ export class BankAccountRoboadvisorsService {
       .where(eq(roboadvisorFunds.id, fundId))
       .returning();
 
-    this.calculateRoboadvisorValueAfterTax(existing.roboadvisorId).catch((error) => {
-      console.error(
-        `Failed to trigger async calculation for roboadvisor ${existing.roboadvisorId}:`,
-        error,
-      );
-    });
+    this.calculateRoboadvisorValueAfterTax(existing.roboadvisorId).catch(
+      (error) => {
+        console.error(
+          `Failed to trigger async calculation for roboadvisor ${existing.roboadvisorId}:`,
+          error,
+        );
+      },
+    );
 
     return this.mapFundToResponse(result);
   }
@@ -871,7 +912,9 @@ export class BankAccountRoboadvisorsService {
       managementFeeFrequency: roboadvisor.managementFeeFrequency,
       custodyFeeFrequency: roboadvisor.custodyFeeFrequency,
       terPricedInNav: roboadvisor.terPricedInNav,
-      taxPercentage: roboadvisor.taxPercentage ? parseFloat(roboadvisor.taxPercentage) : null,
+      taxPercentage: roboadvisor.taxPercentage
+        ? parseFloat(roboadvisor.taxPercentage)
+        : null,
       createdAt: toISOStringSafe(roboadvisor.createdAt),
       updatedAt: toISOStringSafe(roboadvisor.updatedAt),
     };
@@ -898,17 +941,19 @@ export class BankAccountRoboadvisorsService {
       managementFeeFrequency: roboadvisor.managementFeeFrequency,
       custodyFeeFrequency: roboadvisor.custodyFeeFrequency,
       terPricedInNav: roboadvisor.terPricedInNav,
-      taxPercentage: roboadvisor.taxPercentage ? parseFloat(roboadvisor.taxPercentage) : null,
+      taxPercentage: roboadvisor.taxPercentage
+        ? parseFloat(roboadvisor.taxPercentage)
+        : null,
       createdAt: toISOStringSafe(roboadvisor.createdAt),
       updatedAt: toISOStringSafe(roboadvisor.updatedAt),
       latestCalculation: roboadvisor.latestCalculation
         ? {
-            currentValue: roboadvisor.latestCalculation.currentValue.toString(),
-            currencyCode: roboadvisor.latestCalculation.currencyCode,
-            calculatedAt: toISOStringSafe(
-              new Date(roboadvisor.latestCalculation.calculatedAt)
-            ),
-          }
+          currentValue: roboadvisor.latestCalculation.currentValue.toString(),
+          currencyCode: roboadvisor.latestCalculation.currencyCode,
+          calculatedAt: toISOStringSafe(
+            new Date(roboadvisor.latestCalculation.calculatedAt),
+          ),
+        }
         : null,
     };
   }
@@ -1010,11 +1055,13 @@ export class BankAccountRoboadvisorsService {
    * @returns Current portfolio value after tax, or null if unable to calculate
    */
   public async calculateRoboadvisorValueAfterTax(
-    roboadvisorId: number
-  ): Promise<{
-    currentValue: string;
-    currencyCode: string;
-  } | null> {
+    roboadvisorId: number,
+  ): Promise<
+    {
+      currentValue: string;
+      currencyCode: string;
+    } | null
+  > {
     try {
       const db = this.databaseService.get();
 
@@ -1028,7 +1075,7 @@ export class BankAccountRoboadvisorsService {
 
       if (!roboadvisor) {
         console.warn(
-          `Roboadvisor with ID ${roboadvisorId} not found`
+          `Roboadvisor with ID ${roboadvisorId} not found`,
         );
         return null;
       }
@@ -1038,12 +1085,12 @@ export class BankAccountRoboadvisorsService {
         .select()
         .from(roboadvisorFunds)
         .where(
-          eq(roboadvisorFunds.roboadvisorId, roboadvisorId)
+          eq(roboadvisorFunds.roboadvisorId, roboadvisorId),
         );
 
       if (funds.length === 0) {
         console.warn(
-          `No funds found for roboadvisor ${roboadvisorId}`
+          `No funds found for roboadvisor ${roboadvisorId}`,
         );
         return null;
       }
@@ -1055,13 +1102,13 @@ export class BankAccountRoboadvisorsService {
         .where(
           eq(
             roboadvisorBalances.roboadvisorId,
-            roboadvisorId
-          )
+            roboadvisorId,
+          ),
         );
 
       if (balances.length === 0) {
         console.warn(
-          `No balances found for roboadvisor ${roboadvisorId}`
+          `No balances found for roboadvisor ${roboadvisorId}`,
         );
         return null;
       }
@@ -1086,12 +1133,12 @@ export class BankAccountRoboadvisorsService {
       let totalCurrentValue = 0;
       let successfulPriceFetches = 0;
       let eligibleFundsCount = 0;
-      
+
       for (const fund of funds) {
         // Skip funds without share count - cannot calculate value
         if (!fund.shareCount) {
           console.warn(
-            `Fund ${fund.name} (ISIN: ${fund.isin}) has no share count, skipping`
+            `Fund ${fund.name} (ISIN: ${fund.isin}) has no share count, skipping`,
           );
           continue;
         }
@@ -1102,12 +1149,12 @@ export class BankAccountRoboadvisorsService {
         try {
           const priceString = await priceProvider.getCurrentPrice(
             fund.isin,
-            currencyCode
+            currencyCode,
           );
 
           if (!priceString) {
             console.warn(
-              `Unable to fetch price for ISIN ${fund.isin}, skipping fund`
+              `Unable to fetch price for ISIN ${fund.isin}, skipping fund`,
             );
             continue;
           }
@@ -1123,7 +1170,7 @@ export class BankAccountRoboadvisorsService {
             successfulPriceFetches++;
           } else {
             console.warn(
-              `Skipping fund ${fund.name} (ISIN: ${fund.isin}) due to invalid numeric values: price='${priceString}', shareCount='${fund.shareCount}'`
+              `Skipping fund ${fund.name} (ISIN: ${fund.isin}) due to invalid numeric values: price='${priceString}', shareCount='${fund.shareCount}'`,
             );
             // skip adding to totalCurrentValue
             continue;
@@ -1132,7 +1179,7 @@ export class BankAccountRoboadvisorsService {
         } catch (error) {
           console.error(
             `Error fetching price for ISIN ${fund.isin}:`,
-            error
+            error,
           );
           continue;
         }
@@ -1140,9 +1187,12 @@ export class BankAccountRoboadvisorsService {
 
       // Return null if we couldn't fetch prices for most/all funds
       // This prevents returning misleading portfolio values
-      if (successfulPriceFetches === 0 || successfulPriceFetches < eligibleFundsCount / 2) {
+      if (
+        successfulPriceFetches === 0 ||
+        successfulPriceFetches < eligibleFundsCount / 2
+      ) {
         console.warn(
-          `Unable to calculate portfolio value: only ${successfulPriceFetches} out of ${eligibleFundsCount} eligible fund prices retrieved`
+          `Unable to calculate portfolio value: only ${successfulPriceFetches} out of ${eligibleFundsCount} eligible fund prices retrieved`,
         );
         return null;
       }
@@ -1156,7 +1206,7 @@ export class BankAccountRoboadvisorsService {
         : 0;
 
       let valueAfterTax: number;
-      
+
       if (capitalGain > 0) {
         // Tax only applies to the gain portion
         const taxAmount = capitalGain * taxPercentage;
@@ -1169,7 +1219,7 @@ export class BankAccountRoboadvisorsService {
       // Store calculation
       await this.calculationsService.storeCalculation(
         roboadvisorId,
-        valueAfterTax.toFixed(2)
+        valueAfterTax.toFixed(2),
       );
 
       return {
@@ -1179,7 +1229,7 @@ export class BankAccountRoboadvisorsService {
     } catch (error) {
       console.error(
         "Error calculating roboadvisor value after tax:",
-        error
+        error,
       );
       return null;
     }
@@ -1206,7 +1256,7 @@ export class BankAccountRoboadvisorsService {
         } catch (error) {
           console.error(
             `Failed to calculate roboadvisor ${roboadvisor.id}:`,
-            error
+            error,
           );
         }
       }

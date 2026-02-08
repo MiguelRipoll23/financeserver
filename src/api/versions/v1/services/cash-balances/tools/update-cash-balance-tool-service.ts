@@ -30,7 +30,8 @@ export class UpdateCashBalanceToolService {
           currencyCode: parsed.currencyCode,
         });
 
-        const text = `Cash balance updated successfully: ${result.balance} ${result.currencyCode} (ID: ${result.id})`;
+        const text =
+          `Cash balance updated successfully: ${result.balance} ${result.currencyCode} (ID: ${result.id})`;
 
         return {
           text,

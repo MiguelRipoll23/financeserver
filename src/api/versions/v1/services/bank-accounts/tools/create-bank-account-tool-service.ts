@@ -31,7 +31,8 @@ export class CreateBankAccountToolService {
           taxPercentage: parsed.taxPercentage,
         });
 
-        const text = `Bank account created successfully: ${result.name} (${result.type}) (ID: ${result.id})`;
+        const text =
+          `Bank account created successfully: ${result.name} (${result.type}) (ID: ${result.id})`;
 
         return {
           text,

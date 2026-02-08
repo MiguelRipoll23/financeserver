@@ -33,7 +33,8 @@ export class DeleteCryptoExchangeBalanceToolService {
           id,
         );
 
-        const text = `Crypto exchange balance with ID ${id} deleted successfully.`;
+        const text =
+          `Crypto exchange balance with ID ${id} deleted successfully.`;
 
         return {
           text,

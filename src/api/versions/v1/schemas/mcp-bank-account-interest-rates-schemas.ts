@@ -14,7 +14,7 @@ export const CreateBankAccountInterestRateToolSchema = z.object({
     .string()
     .regex(DateOnlyRegex, "Date must be in YYYY-MM-DD format")
     .describe(
-      "Start date of interest rate period (format: YYYY-MM-DD)"
+      "Start date of interest rate period (format: YYYY-MM-DD)",
     ),
   interestRateEndDate: z
     .string()
@@ -22,7 +22,7 @@ export const CreateBankAccountInterestRateToolSchema = z.object({
     .nullable()
     .optional()
     .describe(
-      "End date of interest rate period (format: YYYY-MM-DD, optional)"
+      "End date of interest rate period (format: YYYY-MM-DD, optional)",
     ),
 });
 
@@ -72,7 +72,7 @@ export const UpdateBankAccountInterestRateToolSchema = z.object({
     .regex(DateOnlyRegex, "Date must be in YYYY-MM-DD format")
     .optional()
     .describe(
-      "Start date of interest rate period (format: YYYY-MM-DD, optional)"
+      "Start date of interest rate period (format: YYYY-MM-DD, optional)",
     ),
   interestRateEndDate: z
     .string()
@@ -80,6 +80,6 @@ export const UpdateBankAccountInterestRateToolSchema = z.object({
     .nullable()
     .optional()
     .describe(
-      "End date of interest rate period (format: YYYY-MM-DD, optional)"
+      "End date of interest rate period (format: YYYY-MM-DD, optional)",
     ),
 });

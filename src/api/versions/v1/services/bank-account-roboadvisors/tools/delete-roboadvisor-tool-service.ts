@@ -29,7 +29,8 @@ export class DeleteRoboadvisorToolService {
 
         await this.roboadvisorsService.deleteBankAccountRoboadvisor(parsed.id);
 
-        const text = `Roboadvisor with ID ${parsed.id} has been deleted successfully`;
+        const text =
+          `Roboadvisor with ID ${parsed.id} has been deleted successfully`;
 
         return {
           text,

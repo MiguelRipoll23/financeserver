@@ -5,7 +5,7 @@ export const createOffsetPagination = <T>(
   items: T[],
   limit: number,
   offset: number,
-  total: number
+  total: number,
 ): OffsetPaginationResponse<T> => ({
   results: items,
   limit,

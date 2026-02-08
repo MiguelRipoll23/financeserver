@@ -5,7 +5,7 @@ export const OAuthAuthorizeQuerySchema = z
     response_type: z
       .literal("code")
       .describe(
-        "OAuth 2.0 response type, must be 'code' for authorization code flow."
+        "OAuth 2.0 response type, must be 'code' for authorization code flow.",
       ),
     client_id: z
       .string()
@@ -24,7 +24,7 @@ export const OAuthAuthorizeQuerySchema = z
       .string()
       .min(1)
       .describe(
-        "Opaque value used by the client to maintain state between request and callback."
+        "Opaque value used by the client to maintain state between request and callback.",
       ),
     code_challenge: z
       .string()
@@ -39,7 +39,7 @@ export const OAuthAuthorizeQuerySchema = z
       .url()
       .optional()
       .describe(
-        "RFC 8707: Target resource for which the token is being requested. Must be the canonical URI of the MCP server."
+        "RFC 8707: Target resource for which the token is being requested. Must be the canonical URI of the MCP server.",
       ),
   })
   .describe("OAuth 2.0 Authorization Request Query Parameters");
@@ -53,7 +53,7 @@ export const GitHubCallbackQuerySchema = z
       .min(1)
       .optional()
       .describe(
-        "Authorization code returned by GitHub after user authorization."
+        "Authorization code returned by GitHub after user authorization.",
       ),
     state: z
       .string()
@@ -97,7 +97,7 @@ export const OAuthTokenRequestFormSchema = z
         .string()
         .min(1)
         .describe(
-          "Client identifier issued to the client during registration."
+          "Client identifier issued to the client during registration.",
         ),
       code_verifier: z
         .string()
@@ -109,7 +109,7 @@ export const OAuthTokenRequestFormSchema = z
         .url()
         .optional()
         .describe(
-          "RFC 8707: Target resource for which the token is being requested."
+          "RFC 8707: Target resource for which the token is being requested.",
         ),
     }),
     z.object({
@@ -124,7 +124,7 @@ export const OAuthTokenRequestFormSchema = z
         .string()
         .min(1)
         .describe(
-          "Client identifier issued to the client during registration."
+          "Client identifier issued to the client during registration.",
         ),
       scope: z
         .string()
@@ -162,7 +162,7 @@ export const OAuthTokenRequestSchema = z.discriminatedUnion("grant_type", [
       .url()
       .optional()
       .describe(
-        "RFC 8707: Target resource for which the token is being requested."
+        "RFC 8707: Target resource for which the token is being requested.",
       ),
   }),
   z.object({
@@ -254,7 +254,7 @@ export const OAuthClientRegistrationRequestSchema = z.object({
     .enum(["client_secret_basic", "client_secret_post", "none"])
     .optional()
     .describe(
-      "Authentication method for the token endpoint. Supported values: 'client_secret_basic', 'client_secret_post', 'none'."
+      "Authentication method for the token endpoint. Supported values: 'client_secret_basic', 'client_secret_post', 'none'.",
     ),
   client_secret: z
     .string()
@@ -303,7 +303,7 @@ export const OAuthClientRegistrationResponseSchema = z.object({
   token_endpoint_auth_method: z
     .enum(["client_secret_basic", "client_secret_post", "none"])
     .describe(
-      "Authentication method for the token endpoint. 'client_secret_basic' and 'client_secret_post' are for confidential clients, 'none' is for public clients."
+      "Authentication method for the token endpoint. 'client_secret_basic' and 'client_secret_post' are for confidential clients, 'none' is for public clients.",
     ),
   grant_types: z
     .array(z.literal("authorization_code"))

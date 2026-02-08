@@ -40,12 +40,13 @@ export class SaveReceiptToolService {
         // Calculate total items quantity
         const totalQuantity = parsed.items.reduce(
           (sum, item) => sum + item.quantity,
-          0
+          0,
         );
         const quantityText = totalQuantity === 1 ? "product" : "products";
         const currencySymbol = getCurrencySymbolForCode(result.currencyCode);
 
-        const text = `Receipt saved successfully: ${displayDate} – ${totalQuantity} ${quantityText} across ${itemCount} ${itemsText}, total: ${result.totalAmount}${currencySymbol} (ID: ${result.id})`;
+        const text =
+          `Receipt saved successfully: ${displayDate} – ${totalQuantity} ${quantityText} across ${itemCount} ${itemsText}, total: ${result.totalAmount}${currencySymbol} (ID: ${result.id})`;
 
         return {
           text,

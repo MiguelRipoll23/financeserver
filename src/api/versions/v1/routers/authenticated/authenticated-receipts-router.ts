@@ -72,7 +72,7 @@ export class AuthenticatedReceiptsRouter {
         const result = await this.receiptsService.createReceipt(body);
 
         return c.json(result, 201);
-      }
+      },
     );
   }
 
@@ -111,11 +111,11 @@ export class AuthenticatedReceiptsRouter {
         const payload = await readJsonOrEmpty(c);
         const body = GetReceiptsRequestSchema.parse(payload);
         const result = await this.receiptsService.getReceipts(
-          body as ReceiptsFilter
+          body as ReceiptsFilter,
         );
 
         return c.json(result, 200);
-      }
+      },
     );
   }
 
@@ -158,11 +158,11 @@ export class AuthenticatedReceiptsRouter {
         const body = UpdateReceiptRequestSchema.parse(payload);
         const result = await this.receiptsService.updateReceipt(
           params.id,
-          body
+          body,
         );
 
         return c.json(result, 200);
-      }
+      },
     );
   }
 
@@ -188,7 +188,7 @@ export class AuthenticatedReceiptsRouter {
         await this.receiptsService.deleteReceipt(params.id);
 
         return c.body(null, 204);
-      }
+      },
     );
   }
 }

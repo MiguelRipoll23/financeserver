@@ -126,14 +126,14 @@ export const ReceiptIdParamSchema = z.object({
 
 export const GetReceiptsRequestSchema = PaginationQuerySchema.extend({
   startDate: OptionalDateOnlySchema.describe(
-    "Start date for filtering receipts"
+    "Start date for filtering receipts",
   ),
   endDate: OptionalDateOnlySchema.describe("End date for filtering receipts"),
   minimumTotalAmount: MonetaryStringSchema.optional().describe(
-    "Minimum total amount filter"
+    "Minimum total amount filter",
   ),
   maximumTotalAmount: MonetaryStringSchema.optional().describe(
-    "Maximum total amount filter"
+    "Maximum total amount filter",
   ),
   productName: z
     .string()
@@ -171,7 +171,7 @@ export const ReceiptItemSchema = z.object({
   quantity: z.number().describe("Quantity of the item").openapi({ example: 2 }),
   unitPrice: MonetaryStringSchema.describe("Unit price as a string"),
   totalAmount: MonetaryStringSchema.describe(
-    "Total amount for the item as a string"
+    "Total amount for the item as a string",
   ),
 });
 

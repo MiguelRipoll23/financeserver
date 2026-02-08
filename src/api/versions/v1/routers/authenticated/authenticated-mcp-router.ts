@@ -27,21 +27,21 @@ export class AuthenticatedMCPRouter {
       "/global",
       "Connect global",
       "Establishes a unified streaming Model Context Protocol session with access to all financial tools.",
-      () => this.mcpService.createUnifiedServer()
+      () => this.mcpService.createUnifiedServer(),
     );
 
     this.registerMcpRoutes(
       "/portfolio",
       "Connect portfolio",
       "Establishes a portfolio-focused streaming Model Context Protocol session for bank accounts, crypto exchanges, and balances.",
-      () => this.mcpService.createPortfolioServer()
+      () => this.mcpService.createPortfolioServer(),
     );
 
     this.registerMcpRoutes(
       "/expenses",
       "Connect expenses",
       "Establishes an expenses-focused streaming Model Context Protocol session for bills, receipts, and subscriptions.",
-      () => this.mcpService.createExpensesServer()
+      () => this.mcpService.createExpensesServer(),
     );
   }
 
@@ -49,7 +49,7 @@ export class AuthenticatedMCPRouter {
     path: string,
     summary: string,
     description: string,
-    serverFactory: McpServerFactory
+    serverFactory: McpServerFactory,
   ): void {
     const methods: McpHttpMethod[] = ["get", "post"];
 
@@ -86,7 +86,7 @@ export class AuthenticatedMCPRouter {
           }
 
           return response;
-        }
+        },
       );
     }
   }

@@ -71,10 +71,14 @@ export const GetMerchantsRequestSchema = PaginationQuerySchema.extend({
 export type GetMerchantsRequest = z.infer<typeof GetMerchantsRequestSchema>;
 
 export const GetMerchantsResponseSchema = z.object({
-  results: z.array(MerchantSummarySchema).describe("List of merchant summaries"),
+  results: z.array(MerchantSummarySchema).describe(
+    "List of merchant summaries",
+  ),
   limit: z.number().int().describe("Maximum number of results returned"),
   offset: z.number().int().describe("Number of results skipped"),
-  total: z.number().int().describe("Total number of merchants matching the query"),
+  total: z.number().int().describe(
+    "Total number of merchants matching the query",
+  ),
   nextCursor: z
     .string()
     .nullable()
@@ -87,12 +91,13 @@ export const GetMerchantsResponseSchema = z.object({
 
 export type GetMerchantsResponse = z.infer<typeof GetMerchantsResponseSchema>;
 
-export const UpdateMerchantRequestSchema = UpsertMerchantRequestSchema.partial().refine(
-  (data) => Object.keys(data).length > 0,
-  {
-    message: "At least one field to update must be provided.",
-  }
-);
+export const UpdateMerchantRequestSchema = UpsertMerchantRequestSchema.partial()
+  .refine(
+    (data) => Object.keys(data).length > 0,
+    {
+      message: "At least one field to update must be provided.",
+    },
+  );
 export type UpdateMerchantRequest = z.infer<typeof UpdateMerchantRequestSchema>;
 
 export const UpdateMerchantResponseSchema = UpsertMerchantResponseSchema;

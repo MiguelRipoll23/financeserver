@@ -27,7 +27,7 @@ export const CreateBankAccountInterestRateRequestSchema = z
       if (!data.interestRateEndDate) return true;
       return (
         new Date(data.interestRateEndDate) >=
-        new Date(data.interestRateStartDate)
+          new Date(data.interestRateStartDate)
       );
     },
     {
@@ -72,8 +72,8 @@ export type BankAccountInterestRateIdParam = z.infer<
   typeof BankAccountInterestRateIdParamSchema
 >;
 
-export const GetBankAccountInterestRatesRequestSchema =
-  PaginationQuerySchema.extend({
+export const GetBankAccountInterestRatesRequestSchema = PaginationQuerySchema
+  .extend({
     bankAccountId: z
       .number()
       .int()

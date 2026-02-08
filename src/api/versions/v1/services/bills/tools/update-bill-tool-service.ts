@@ -40,7 +40,8 @@ export class UpdateBillToolService {
           : "";
         const currencySymbol = getCurrencySymbolForCode(result.currencyCode);
 
-        const text = `Bill updated successfully: ${displayDate} – ${result.category}: ${result.totalAmount}${currencySymbol}${emailDisplay} (ID: ${result.id})`;
+        const text =
+          `Bill updated successfully: ${displayDate} – ${result.category}: ${result.totalAmount}${currencySymbol}${emailDisplay} (ID: ${result.id})`;
 
         return {
           text,

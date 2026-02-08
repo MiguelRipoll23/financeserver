@@ -9,11 +9,13 @@ export class BankAccountRoboadvisorFundCalculationsService {
   constructor(private databaseService = inject(DatabaseService)) {}
 
   public async getLatestCalculation(
-    roboadvisorId: number
-  ): Promise<{
-    currentValue: string;
-    createdAt: string;
-  } | null> {
+    roboadvisorId: number,
+  ): Promise<
+    {
+      currentValue: string;
+      createdAt: string;
+    } | null
+  > {
     const db = this.databaseService.get();
 
     const [calculation] = await db
@@ -22,8 +24,8 @@ export class BankAccountRoboadvisorFundCalculationsService {
       .where(
         eq(
           roboadvisorFundCalculationsTable.roboadvisorId,
-          roboadvisorId
-        )
+          roboadvisorId,
+        ),
       )
       .orderBy(desc(roboadvisorFundCalculationsTable.createdAt))
       .limit(1);
@@ -40,7 +42,7 @@ export class BankAccountRoboadvisorFundCalculationsService {
 
   public async storeCalculation(
     roboadvisorId: number,
-    currentValue: string
+    currentValue: string,
   ): Promise<void> {
     const db = this.databaseService.get();
 

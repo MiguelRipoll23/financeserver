@@ -29,7 +29,8 @@ export class CreateCashToolService {
           label: parsed.label,
         });
 
-        const text = `Cash source created successfully: ${result.label} (ID: ${result.id})`;
+        const text =
+          `Cash source created successfully: ${result.label} (ID: ${result.id})`;
 
         return {
           text,

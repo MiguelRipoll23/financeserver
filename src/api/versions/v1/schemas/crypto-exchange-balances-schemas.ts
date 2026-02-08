@@ -65,8 +65,8 @@ export type CryptoExchangeBalanceIdParam = z.infer<
   typeof CryptoExchangeBalanceIdParamSchema
 >;
 
-export const GetCryptoExchangeBalancesRequestSchema =
-  PaginationQuerySchema.extend({
+export const GetCryptoExchangeBalancesRequestSchema = PaginationQuerySchema
+  .extend({
     cryptoExchangeId: z
       .number()
       .int()

@@ -11,7 +11,7 @@ export class CashMCPService {
     private createCashToolService = inject(CreateCashToolService),
     private updateCashToolService = inject(UpdateCashToolService),
     private deleteCashToolService = inject(DeleteCashToolService),
-    private filterCashToolService = inject(FilterCashToolService)
+    private filterCashToolService = inject(FilterCashToolService),
   ) {}
 
   public getTools(): McpToolDefinition[] {

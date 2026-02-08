@@ -109,7 +109,6 @@ export type GetCryptoExchangesRequest = z.infer<
   typeof GetCryptoExchangesRequestSchema
 >;
 
-
 export const GetCryptoExchangesResponseSchema = z.object({
   results: z
     .array(CryptoExchangeSummarySchema)

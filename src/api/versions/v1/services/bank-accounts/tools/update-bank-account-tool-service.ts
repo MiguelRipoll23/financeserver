@@ -31,10 +31,11 @@ export class UpdateBankAccountToolService {
             name: parsed.name,
             type: parsed.type,
             taxPercentage: parsed.taxPercentage,
-          }
+          },
         );
 
-        const text = `Bank account updated successfully: ${result.name} (${result.type}) (ID: ${result.id})`;
+        const text =
+          `Bank account updated successfully: ${result.name} (${result.type}) (ID: ${result.id})`;
 
         return {
           text,

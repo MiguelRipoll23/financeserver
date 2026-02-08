@@ -10,11 +10,13 @@ export class CryptoExchangeCalculationsService {
 
   public async getLatestCalculation(
     cryptoExchangeId: number,
-    symbolCode: string
-  ): Promise<{
-    currentValue: string;
-    createdAt: string;
-  } | null> {
+    symbolCode: string,
+  ): Promise<
+    {
+      currentValue: string;
+      createdAt: string;
+    } | null
+  > {
     const db = this.databaseService.get();
 
     const [calculation] = await db
@@ -22,9 +24,12 @@ export class CryptoExchangeCalculationsService {
       .from(cryptoExchangeCalculationsTable)
       .where(
         and(
-          eq(cryptoExchangeCalculationsTable.cryptoExchangeId, cryptoExchangeId),
-          eq(cryptoExchangeCalculationsTable.symbolCode, symbolCode)
-        )
+          eq(
+            cryptoExchangeCalculationsTable.cryptoExchangeId,
+            cryptoExchangeId,
+          ),
+          eq(cryptoExchangeCalculationsTable.symbolCode, symbolCode),
+        ),
       )
       .orderBy(desc(cryptoExchangeCalculationsTable.createdAt))
       .limit(1);
@@ -42,7 +47,7 @@ export class CryptoExchangeCalculationsService {
   public async storeCalculation(
     cryptoExchangeId: number,
     symbolCode: string,
-    currentValue: string
+    currentValue: string,
   ): Promise<void> {
     const db = this.databaseService.get();
 

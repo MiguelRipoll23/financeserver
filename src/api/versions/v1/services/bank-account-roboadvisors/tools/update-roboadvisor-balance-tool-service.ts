@@ -25,11 +25,12 @@ export class UpdateRoboadvisorBalanceToolService {
         },
       },
       run: async (input: unknown) => {
-        const parsed =
-          UpdateBankAccountRoboadvisorBalanceToolSchema.parse(input);
+        const parsed = UpdateBankAccountRoboadvisorBalanceToolSchema.parse(
+          input,
+        );
 
-        const result =
-          await this.roboadvisorsService.updateBankAccountRoboadvisorBalance(
+        const result = await this.roboadvisorsService
+          .updateBankAccountRoboadvisorBalance(
             parsed.id,
             {
               date: parsed.date,
@@ -39,7 +40,8 @@ export class UpdateRoboadvisorBalanceToolService {
             },
           );
 
-        const text = `Balance entry updated successfully: ${result.type} of ${result.amount} ${result.currencyCode} on ${result.date} (ID: ${result.id})`;
+        const text =
+          `Balance entry updated successfully: ${result.type} of ${result.amount} ${result.currencyCode} on ${result.date} (ID: ${result.id})`;
 
         return {
           text,

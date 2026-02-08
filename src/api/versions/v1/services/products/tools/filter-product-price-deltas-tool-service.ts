@@ -27,7 +27,7 @@ export class FilterProductPriceDeltasToolService {
       run: async (input: unknown) => {
         const parsed = FilterProductPriceDeltasToolSchema.parse(input);
         const priceDeltasPage = await this.productsService.getPriceDeltas(
-          parsed
+          parsed,
         );
 
         const text = this.formatText(priceDeltasPage);

@@ -5,9 +5,9 @@ import { CryptoExchangeBalancesService } from "../../services/crypto-exchanges-b
 import {
   CreateCryptoExchangeBalanceRequestSchema,
   CreateCryptoExchangeBalanceResponseSchema,
+  CryptoExchangeBalanceIdParamSchema,
   GetCryptoExchangeBalancesRequestSchema,
   GetCryptoExchangeBalancesResponseSchema,
-  CryptoExchangeBalanceIdParamSchema,
   UpdateCryptoExchangeBalanceRequestSchema,
   UpdateCryptoExchangeBalanceResponseSchema,
 } from "../../schemas/crypto-exchange-balances-schemas.ts";
@@ -73,8 +73,8 @@ export class AuthenticatedCryptoExchangeBalancesRouter {
         const body = CreateCryptoExchangeBalanceRequestSchema.parse(
           await context.req.json(),
         );
-        const result =
-          await this.cryptoExchangeBalancesService.createCryptoExchangeBalance(
+        const result = await this.cryptoExchangeBalancesService
+          .createCryptoExchangeBalance(
             body.cryptoExchangeId,
             body,
           );
@@ -120,8 +120,8 @@ export class AuthenticatedCryptoExchangeBalancesRouter {
         const body = GetCryptoExchangeBalancesRequestSchema.parse(
           await context.req.json(),
         );
-        const result =
-          await this.cryptoExchangeBalancesService.getCryptoExchangeBalances({
+        const result = await this.cryptoExchangeBalancesService
+          .getCryptoExchangeBalances({
             cryptoExchangeId: body.cryptoExchangeId,
             limit: body.limit,
             cursor: body.cursor,
@@ -172,8 +172,8 @@ export class AuthenticatedCryptoExchangeBalancesRouter {
         const body = UpdateCryptoExchangeBalanceRequestSchema.parse(
           await context.req.json(),
         );
-        const result =
-          await this.cryptoExchangeBalancesService.updateCryptoExchangeBalance(
+        const result = await this.cryptoExchangeBalancesService
+          .updateCryptoExchangeBalance(
             parseInt(id, 10),
             body,
           );

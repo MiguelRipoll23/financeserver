@@ -14,7 +14,7 @@ export const UpsertBillRequestSchema = z.object({
     .openapi({ example: "gas" })
     .describe("Bill category name"),
   totalAmount: MonetaryStringSchema.describe(
-    "Total amount of the bill as a string"
+    "Total amount of the bill as a string",
   ),
   currencyCode: z
     .string()
@@ -46,7 +46,7 @@ export const UpsertBillResponseSchema = z.object({
     .openapi({ example: "gas" })
     .describe("Bill category name"),
   totalAmount: MonetaryStringSchema.describe(
-    "Total amount of the bill as a string"
+    "Total amount of the bill as a string",
   ),
   currencyCode: z
     .string()
@@ -89,10 +89,10 @@ export type BillIdParams = z.infer<typeof BillIdParamSchema>;
 
 export const GetBillsRequestSchema = PaginationQuerySchema.extend({
   startDate: DateOnlyStringSchema.optional().describe(
-    "Filter bills from this start date (YYYY-MM-DD)"
+    "Filter bills from this start date (YYYY-MM-DD)",
   ),
   endDate: DateOnlyStringSchema.optional().describe(
-    "Filter bills up to this end date (YYYY-MM-DD)"
+    "Filter bills up to this end date (YYYY-MM-DD)",
   ),
   category: z
     .string()
@@ -102,10 +102,10 @@ export const GetBillsRequestSchema = PaginationQuerySchema.extend({
     .describe("Filter by bill category name")
     .optional(),
   minimumTotalAmount: MonetaryStringSchema.optional().describe(
-    "Filter bills with total amount greater than or equal to this value"
+    "Filter bills with total amount greater than or equal to this value",
   ),
   maximumTotalAmount: MonetaryStringSchema.optional().describe(
-    "Filter bills with total amount less than or equal to this value"
+    "Filter bills with total amount less than or equal to this value",
   ),
   sortField: z
     .nativeEnum(BillSortField)

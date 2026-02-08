@@ -15,16 +15,16 @@ export const SaveBillToolSchema = z.object({
     .min(1)
     .max(128, "Category must be between 1-128 characters")
     .describe(
-      "The category of the bill in English (e.g., utilities, rent, insurance)"
+      "The category of the bill in English (e.g., utilities, rent, insurance)",
     ),
   totalAmount: z
     .string()
     .regex(
       MonetaryRegex,
-      "Total amount must be a valid monetary value (format: 123.45, no currency symbol, dot as decimal separator)"
+      "Total amount must be a valid monetary value (format: 123.45, no currency symbol, dot as decimal separator)",
     )
     .describe(
-      "The total amount of the bill (format: 123.45, no currency symbol)"
+      "The total amount of the bill (format: 123.45, no currency symbol)",
     ),
   currencyCode: z
     .string()
@@ -35,7 +35,7 @@ export const SaveBillToolSchema = z.object({
     .email("Sender email must be a valid email address")
     .optional()
     .describe(
-      "Email address of the bill sender or service provider (optional)"
+      "Email address of the bill sender or service provider (optional)",
     ),
 });
 
@@ -74,14 +74,14 @@ export const FilterBillsToolSchema = z.object({
     .regex(MonetaryRegex)
     .optional()
     .describe(
-      "Minimum total amount for bills (format: 123.45, no currency symbol)"
+      "Minimum total amount for bills (format: 123.45, no currency symbol)",
     ),
   maximumTotalAmount: z
     .string()
     .regex(MonetaryRegex)
     .optional()
     .describe(
-      "Maximum total amount for bills (format: 123.45, no currency symbol)"
+      "Maximum total amount for bills (format: 123.45, no currency symbol)",
     ),
   sortField: z
     .nativeEnum(BillSortField)

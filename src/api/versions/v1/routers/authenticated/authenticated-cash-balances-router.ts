@@ -3,13 +3,13 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import type { Context } from "hono";
 import { CashService } from "../../services/cash/cash-service.ts";
 import {
+  CashBalanceIdParamSchema,
   CreateCashBalanceRequestSchema,
   CreateCashBalanceResponseSchema,
   GetCashBalancesRequestSchema,
   GetCashBalancesResponseSchema,
   UpdateCashBalanceRequestSchema,
   UpdateCashBalanceResponseSchema,
-  CashBalanceIdParamSchema,
 } from "../../schemas/cash-balances-schemas.ts";
 import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
 import { ServerResponse } from "../../models/server-response.ts";
@@ -190,5 +190,4 @@ export class AuthenticatedCashBalancesRouter {
       },
     );
   }
-
 }

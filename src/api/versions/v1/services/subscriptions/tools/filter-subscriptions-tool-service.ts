@@ -56,17 +56,16 @@ export class FilterSubscriptionsToolService {
               const planInfo = subscription.plan
                 ? ` - ${subscription.plan}`
                 : "";
-              return `• ${subscription.name}${planInfo} – ${
-                subscription.category
-              } (${getCurrencySymbolForCode(subscription.currencyCode)}${
-                subscription.amount
-              }/${subscription.recurrence}, started: ${startDate}${endDate})`;
+              return `• ${subscription.name}${planInfo} – ${subscription.category} (${
+                getCurrencySymbolForCode(subscription.currencyCode)
+              }${subscription.amount}/${subscription.recurrence}, started: ${startDate}${endDate})`;
             })
             .join("\n");
 
           let text = subscriptionsList;
           if (result.nextCursor) {
-            text += `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
+            text +=
+              `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
           }
 
           return {

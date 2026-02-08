@@ -27,8 +27,8 @@ export class UpdateRoboadvisorToolService {
       run: async (input: unknown) => {
         const parsed = UpdateBankAccountRoboadvisorToolSchema.parse(input);
 
-        const result =
-          await this.roboadvisorsService.updateBankAccountRoboadvisor(
+        const result = await this.roboadvisorsService
+          .updateBankAccountRoboadvisor(
             parsed.id,
             {
               name: parsed.name,
@@ -46,7 +46,8 @@ export class UpdateRoboadvisorToolService {
 
         // Use a non-abbreviated variable name to comply with project naming rules
         const feePercentage = (result.totalFeePercentage * 100).toFixed(2);
-        const text = `Roboadvisor updated successfully: ${result.name} (ID: ${result.id}, Total Fee: ${feePercentage}%)`;
+        const text =
+          `Roboadvisor updated successfully: ${result.name} (ID: ${result.id}, Total Fee: ${feePercentage}%)`;
 
         return {
           text,

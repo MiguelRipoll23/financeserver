@@ -1,11 +1,11 @@
 import { inject, injectable } from "@needle-di/core";
-import { and, asc, desc, eq, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, type SQL, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import {
-  bankAccountsTable,
-  bankAccountInterestRatesTable,
   bankAccountBalancesTable,
+  bankAccountInterestRatesTable,
+  bankAccountsTable,
 } from "../../../../../db/schema.ts";
 import { ServerError } from "../../models/server-error.ts";
 import { decodeCursor } from "../../utils/cursor-utils.ts";
@@ -35,7 +35,7 @@ type BankAccountInterestRateSummary = z.infer<
 export class BankAccountInterestRatesService {
   constructor(
     private databaseService = inject(DatabaseService),
-    private calculationsService = inject(BankAccountCalculationsService)
+    private calculationsService = inject(BankAccountCalculationsService),
   ) {}
 
   public async createBankAccountInterestRate(
@@ -78,7 +78,7 @@ export class BankAccountInterestRatesService {
       );
 
       const [result] = await tx
-      .insert(bankAccountInterestRatesTable)
+        .insert(bankAccountInterestRatesTable)
         .values({
           bankAccountId: accountId,
           interestRate: payload.interestRate.toString(),
@@ -169,7 +169,7 @@ export class BankAccountInterestRatesService {
       .offset(offset);
 
     const data: BankAccountInterestRateSummary[] = results.map((rate) =>
-      this.mapInterestRateToSummary(rate),
+      this.mapInterestRateToSummary(rate)
     );
 
     const pagination = createOffsetPagination<BankAccountInterestRateSummary>(
@@ -236,12 +236,11 @@ export class BankAccountInterestRatesService {
 
     const response = await db.transaction(async (tx) => {
       // Validate interest rate period if being updated
-      const newStartDate =
-        payload.interestRateStartDate ?? existingRate.interestRateStartDate;
-      const newEndDate =
-        payload.interestRateEndDate !== undefined
-          ? payload.interestRateEndDate
-          : existingRate.interestRateEndDate;
+      const newStartDate = payload.interestRateStartDate ??
+        existingRate.interestRateStartDate;
+      const newEndDate = payload.interestRateEndDate !== undefined
+        ? payload.interestRateEndDate
+        : existingRate.interestRateEndDate;
 
       // Treat null end date as far future
       const effectiveEndDate = newEndDate === null ? "9999-12-31" : newEndDate;
@@ -310,8 +309,8 @@ export class BankAccountInterestRatesService {
     db:
       | NodePgDatabase<Record<string, never>>
       | Parameters<
-          Parameters<NodePgDatabase<Record<string, never>>["transaction"]>[0]
-        >[0],
+        Parameters<NodePgDatabase<Record<string, never>>["transaction"]>[0]
+      >[0],
     bankAccountId: number,
     startDate: string,
     endDate: string,
@@ -357,7 +356,9 @@ export class BankAccountInterestRatesService {
       const existing = overlapping[0];
       throw new ServerError(
         "OVERLAPPING_INTEREST_RATE_PERIOD",
-        `Interest rate period ${startDate} to ${endDate} overlaps with existing period ${existing.startDate} to ${existing.endDate ?? "ongoing"}`,
+        `Interest rate period ${startDate} to ${endDate} overlaps with existing period ${existing.startDate} to ${
+          existing.endDate ?? "ongoing"
+        }`,
         400,
       );
     }
@@ -367,8 +368,8 @@ export class BankAccountInterestRatesService {
     db:
       | NodePgDatabase<Record<string, never>>
       | Parameters<
-          Parameters<NodePgDatabase<Record<string, never>>["transaction"]>[0]
-        >[0],
+        Parameters<NodePgDatabase<Record<string, never>>["transaction"]>[0]
+      >[0],
     bankAccountId: number,
     newRateStartDate: string,
   ): Promise<void> {
@@ -430,12 +431,14 @@ export class BankAccountInterestRatesService {
   public async calculateInterestAfterTax(
     bankAccountId: number,
     currentBalance: string,
-    currencyCode: string
-  ): Promise<{
-    monthlyProfit: string;
-    annualProfit: string;
-    currencyCode: string;
-  } | null> {
+    currencyCode: string,
+  ): Promise<
+    {
+      monthlyProfit: string;
+      annualProfit: string;
+      currencyCode: string;
+    } | null
+  > {
     try {
       const db = this.databaseService.get();
 
@@ -449,24 +452,24 @@ export class BankAccountInterestRatesService {
         .from(bankAccountInterestRatesTable)
         .innerJoin(
           bankAccountsTable,
-          eq(bankAccountsTable.id, bankAccountInterestRatesTable.bankAccountId)
+          eq(bankAccountsTable.id, bankAccountInterestRatesTable.bankAccountId),
         )
         .where(
           and(
             eq(bankAccountInterestRatesTable.bankAccountId, bankAccountId),
             sql`${bankAccountInterestRatesTable.interestRateStartDate} <= ${now}`,
-            sql`(${bankAccountInterestRatesTable.interestRateEndDate} IS NULL OR ${bankAccountInterestRatesTable.interestRateEndDate} >= ${now})`
-          )
+            sql`(${bankAccountInterestRatesTable.interestRateEndDate} IS NULL OR ${bankAccountInterestRatesTable.interestRateEndDate} >= ${now})`,
+          ),
         )
         .orderBy(
           desc(bankAccountInterestRatesTable.interestRateStartDate),
-          desc(bankAccountInterestRatesTable.createdAt)
+          desc(bankAccountInterestRatesTable.createdAt),
         )
         .limit(1);
 
       if (!activeRate) {
         console.warn(
-          `No active interest rate found for bank account ${bankAccountId}`
+          `No active interest rate found for bank account ${bankAccountId}`,
         );
         return null;
       }
@@ -493,7 +496,7 @@ export class BankAccountInterestRatesService {
         bankAccountId,
         monthlyProfit.toFixed(2),
         annualProfit.toFixed(2),
-        currencyCode
+        currencyCode,
       );
 
       return {
@@ -522,7 +525,7 @@ export class BankAccountInterestRatesService {
 
       // Get all bank accounts with their latest balances using a subquery
       const latestBalances = db
-        .$with('latest_balances')
+        .$with("latest_balances")
         .as(
           db
             .select({
@@ -531,9 +534,12 @@ export class BankAccountInterestRatesService {
               currencyCode: bankAccountBalancesTable.currencyCode,
               createdAt: bankAccountBalancesTable.createdAt,
               id: bankAccountBalancesTable.id,
-              rowNumber: sql<number>`ROW_NUMBER() OVER (PARTITION BY ${bankAccountBalancesTable.bankAccountId} ORDER BY ${bankAccountBalancesTable.createdAt} DESC, ${bankAccountBalancesTable.id} DESC)`.as('row_number')
+              rowNumber: sql<
+                number
+              >`ROW_NUMBER() OVER (PARTITION BY ${bankAccountBalancesTable.bankAccountId} ORDER BY ${bankAccountBalancesTable.createdAt} DESC, ${bankAccountBalancesTable.id} DESC)`
+                .as("row_number"),
             })
-            .from(bankAccountBalancesTable)
+            .from(bankAccountBalancesTable),
         );
 
       const bankAccountsWithBalances = await db
@@ -547,7 +553,7 @@ export class BankAccountInterestRatesService {
         .where(eq(latestBalances.rowNumber, 1));
 
       console.log(
-        `Processing ${bankAccountsWithBalances.length} bank accounts with interest rates`
+        `Processing ${bankAccountsWithBalances.length} bank accounts with interest rates`,
       );
 
       // Calculate interest after tax for each account
@@ -556,12 +562,12 @@ export class BankAccountInterestRatesService {
           await this.calculateInterestAfterTax(
             account.bankAccountId,
             account.balance,
-            account.currencyCode
+            account.currencyCode,
           );
         } catch (error) {
           console.error(
             `Failed to calculate interest for bank account ${account.bankAccountId}:`,
-            error
+            error,
           );
         }
       }
@@ -571,7 +577,9 @@ export class BankAccountInterestRatesService {
     }
   }
 
-  public async triggerInterestCalculationForAccount(bankAccountId: number): Promise<void> {
+  public async triggerInterestCalculationForAccount(
+    bankAccountId: number,
+  ): Promise<void> {
     const db = this.databaseService.get();
 
     // Get the latest balance for the account

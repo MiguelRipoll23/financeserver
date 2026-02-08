@@ -27,16 +27,18 @@ export class UpdateCryptoExchangeBalanceToolService {
         },
       },
       run: async (input: unknown) => {
-        const { id, ...payload } =
-          UpdateCryptoExchangeBalanceToolSchema.parse(input);
+        const { id, ...payload } = UpdateCryptoExchangeBalanceToolSchema.parse(
+          input,
+        );
 
-        const result =
-          await this.cryptoExchangeBalancesService.updateCryptoExchangeBalance(
+        const result = await this.cryptoExchangeBalancesService
+          .updateCryptoExchangeBalance(
             id,
             payload,
           );
 
-        const text = `Balance for ${result.symbolCode} updated successfully (ID: ${result.id})`;
+        const text =
+          `Balance for ${result.symbolCode} updated successfully (ID: ${result.id})`;
 
         return {
           text,

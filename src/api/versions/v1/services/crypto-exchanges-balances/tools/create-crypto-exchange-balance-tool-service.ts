@@ -29,13 +29,14 @@ export class CreateCryptoExchangeBalanceToolService {
       run: async (input: unknown) => {
         const parsed = CreateCryptoExchangeBalanceToolSchema.parse(input);
 
-        const result =
-          await this.cryptoExchangeBalancesService.createCryptoExchangeBalance(
+        const result = await this.cryptoExchangeBalancesService
+          .createCryptoExchangeBalance(
             parsed.cryptoExchangeId,
             parsed,
           );
 
-        const text = `Balance for ${result.symbolCode} created successfully on exchange ID ${result.cryptoExchangeId}. (ID: ${result.id})`;
+        const text =
+          `Balance for ${result.symbolCode} created successfully on exchange ID ${result.cryptoExchangeId}. (ID: ${result.id})`;
 
         return {
           text,

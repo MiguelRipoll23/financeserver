@@ -3,13 +3,13 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import type { Context } from "hono";
 import { BankAccountsService } from "../../services/bank-accounts/bank-accounts-service.ts";
 import {
+  BankAccountIdParamSchema,
   CreateBankAccountRequestSchema,
   CreateBankAccountResponseSchema,
-  UpdateBankAccountRequestSchema,
-  UpdateBankAccountResponseSchema,
-  BankAccountIdParamSchema,
   GetBankAccountsRequestSchema,
   GetBankAccountsResponseSchema,
+  UpdateBankAccountRequestSchema,
+  UpdateBankAccountResponseSchema,
 } from "../../schemas/bank-accounts-schemas.ts";
 import type { BankAccountsFilter } from "../../interfaces/bank-accounts/bank-accounts-filter-interface.ts";
 import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
@@ -68,12 +68,12 @@ export class AuthenticatedBankAccountsRouter {
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
         const body = CreateBankAccountRequestSchema.parse(
-          await context.req.json()
+          await context.req.json(),
         );
         const result = await this.bankAccountsService.createBankAccount(body);
 
         return context.json(result, 201);
-      }
+      },
     );
   }
 
@@ -122,7 +122,7 @@ export class AuthenticatedBankAccountsRouter {
         const result = await this.bankAccountsService.getBankAccounts(filter);
 
         return context.json(result, 200);
-      }
+      },
     );
   }
 
@@ -161,15 +161,15 @@ export class AuthenticatedBankAccountsRouter {
       async (context: Context<{ Variables: HonoVariables }>) => {
         const { id } = BankAccountIdParamSchema.parse(context.req.param());
         const body = UpdateBankAccountRequestSchema.parse(
-          await context.req.json()
+          await context.req.json(),
         );
         const result = await this.bankAccountsService.updateBankAccount(
           parseInt(id, 10),
-          body
+          body,
         );
 
         return context.json(result, 200);
-      }
+      },
     );
   }
 
@@ -197,8 +197,7 @@ export class AuthenticatedBankAccountsRouter {
         await this.bankAccountsService.deleteBankAccount(parseInt(id, 10));
 
         return context.body(null, 204);
-      }
+      },
     );
   }
-
 }

@@ -29,7 +29,8 @@ export class DeleteBalanceToolService {
 
         // Note: bankAccountId still required in input for validation context but not passed to service
 
-        const text = `Balance with ID ${parsed.id} has been deleted successfully`;
+        const text =
+          `Balance with ID ${parsed.id} has been deleted successfully`;
 
         return {
           text,

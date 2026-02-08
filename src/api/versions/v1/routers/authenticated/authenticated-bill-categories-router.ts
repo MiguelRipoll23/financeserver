@@ -4,11 +4,11 @@ import type { Context } from "hono";
 import { BillCategoriesService } from "../../services/bill-categories/bill-categories-service.ts";
 import {
   BillCategoryIdParamSchema,
+  BillCategorySchema,
   CreateBillCategoryRequestSchema,
   CreateBillCategoryResponseSchema,
   GetBillCategoriesRequestSchema,
   GetBillCategoriesResponseSchema,
-  BillCategorySchema,
   UpdateBillCategoryRequestSchema,
   UpdateBillCategoryResponseSchema,
 } from "../../schemas/bill-categories-schemas.ts";
@@ -114,7 +114,9 @@ export class AuthenticatedBillCategoriesRouter {
         const body = CreateBillCategoryRequestSchema.parse(
           await context.req.json(),
         );
-        const result = await this.billCategoriesService.createBillCategory(body);
+        const result = await this.billCategoriesService.createBillCategory(
+          body,
+        );
 
         return context.json(result, 201);
       },
@@ -127,7 +129,8 @@ export class AuthenticatedBillCategoriesRouter {
         method: "patch",
         path: "/{id}",
         summary: "Update bill category",
-        description: "Updates an existing bill category by its unique identifier.",
+        description:
+          "Updates an existing bill category by its unique identifier.",
         tags: ["Bill Categories"],
         request: {
           params: BillCategoryIdParamSchema,

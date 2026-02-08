@@ -3,13 +3,13 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import type { Context } from "hono";
 import { BankAccountRoboadvisorsService } from "../../services/bank-account-roboadvisors/bank-account-roboadvisors-service.ts";
 import {
+  BankAccountRoboadvisorIdParamSchema,
   CreateBankAccountRoboadvisorRequestSchema,
   CreateBankAccountRoboadvisorResponseSchema,
   GetBankAccountRoboadvisorsRequestSchema,
   GetBankAccountRoboadvisorsResponseSchema,
   UpdateBankAccountRoboadvisorRequestSchema,
   UpdateBankAccountRoboadvisorResponseSchema,
-  BankAccountRoboadvisorIdParamSchema,
 } from "../../schemas/bank-account-roboadvisors-schemas.ts";
 import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
 import { ServerResponse } from "../../models/server-response.ts";
@@ -19,7 +19,9 @@ import { readJsonOrEmpty } from "../../utils/router-utils.ts";
 export class AuthenticatedBankAccountRoboadvisorsRouter {
   private app: OpenAPIHono<{ Variables: HonoVariables }>;
 
-  constructor(private roboadvisorsService = inject(BankAccountRoboadvisorsService)) {
+  constructor(
+    private roboadvisorsService = inject(BankAccountRoboadvisorsService),
+  ) {
     this.app = new OpenAPIHono();
     this.setRoutes();
   }
@@ -68,11 +70,14 @@ export class AuthenticatedBankAccountRoboadvisorsRouter {
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
-        const body = CreateBankAccountRoboadvisorRequestSchema.parse(await context.req.json());
-        const result = await this.roboadvisorsService.createBankAccountRoboadvisor(body);
+        const body = CreateBankAccountRoboadvisorRequestSchema.parse(
+          await context.req.json(),
+        );
+        const result = await this.roboadvisorsService
+          .createBankAccountRoboadvisor(body);
 
         return context.json(result, 201);
-      }
+      },
     );
   }
 
@@ -111,10 +116,11 @@ export class AuthenticatedBankAccountRoboadvisorsRouter {
       async (context: Context<{ Variables: HonoVariables }>) => {
         const payload = await readJsonOrEmpty(context);
         const body = GetBankAccountRoboadvisorsRequestSchema.parse(payload);
-        const result = await this.roboadvisorsService.getBankAccountRoboadvisors(body);
+        const result = await this.roboadvisorsService
+          .getBankAccountRoboadvisors(body);
 
         return context.json(result, 200);
-      }
+      },
     );
   }
 
@@ -124,7 +130,8 @@ export class AuthenticatedBankAccountRoboadvisorsRouter {
         method: "patch",
         path: "/{id}",
         summary: "Update roboadvisor",
-        description: "Updates an existing roboadvisor configuration by identifier.",
+        description:
+          "Updates an existing roboadvisor configuration by identifier.",
         tags: ["Roboadvisors"],
         request: {
           params: BankAccountRoboadvisorIdParamSchema,
@@ -151,15 +158,20 @@ export class AuthenticatedBankAccountRoboadvisorsRouter {
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
-        const { id } = BankAccountRoboadvisorIdParamSchema.parse(context.req.param());
-        const body = UpdateBankAccountRoboadvisorRequestSchema.parse(await context.req.json());
-        const result = await this.roboadvisorsService.updateBankAccountRoboadvisor(
-          parseInt(id, 10),
-          body
+        const { id } = BankAccountRoboadvisorIdParamSchema.parse(
+          context.req.param(),
         );
+        const body = UpdateBankAccountRoboadvisorRequestSchema.parse(
+          await context.req.json(),
+        );
+        const result = await this.roboadvisorsService
+          .updateBankAccountRoboadvisor(
+            parseInt(id, 10),
+            body,
+          );
 
         return context.json(result, 200);
-      }
+      },
     );
   }
 
@@ -169,7 +181,8 @@ export class AuthenticatedBankAccountRoboadvisorsRouter {
         method: "delete",
         path: "/{id}",
         summary: "Delete roboadvisor",
-        description: "Permanently deletes a roboadvisor and all associated data.",
+        description:
+          "Permanently deletes a roboadvisor and all associated data.",
         tags: ["Roboadvisors"],
         request: {
           params: BankAccountRoboadvisorIdParamSchema,
@@ -183,11 +196,15 @@ export class AuthenticatedBankAccountRoboadvisorsRouter {
         },
       }),
       async (context: Context<{ Variables: HonoVariables }>) => {
-        const { id } = BankAccountRoboadvisorIdParamSchema.parse(context.req.param());
-        await this.roboadvisorsService.deleteBankAccountRoboadvisor(parseInt(id, 10));
+        const { id } = BankAccountRoboadvisorIdParamSchema.parse(
+          context.req.param(),
+        );
+        await this.roboadvisorsService.deleteBankAccountRoboadvisor(
+          parseInt(id, 10),
+        );
 
         return context.body(null, 204);
-      }
+      },
     );
   }
 }

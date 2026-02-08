@@ -4,18 +4,18 @@ import {
   asc,
   desc,
   eq,
-  ilike,
-  sql,
-  type SQL,
   getTableColumns,
+  ilike,
+  type SQL,
+  sql,
 } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import {
-  bankAccountsTable,
   bankAccountBalancesTable,
-  bankAccountInterestRatesTable,
   bankAccountCalculationsTable,
+  bankAccountInterestRatesTable,
+  bankAccountsTable,
 } from "../../../../../db/schema.ts";
 import { ServerError } from "../../models/server-error.ts";
 import { decodeCursor } from "../../utils/cursor-utils.ts";
@@ -36,9 +36,9 @@ import { BankAccountBalanceSummary } from "../../interfaces/bank-accounts/bank-a
 import type {
   CreateBankAccountRequest,
   CreateBankAccountResponse,
+  GetBankAccountsResponse,
   UpdateBankAccountRequest,
   UpdateBankAccountResponse,
-  GetBankAccountsResponse,
 } from "../../schemas/bank-accounts-schemas.ts";
 import type {
   CreateBankAccountBalanceRequest,
@@ -103,10 +103,9 @@ export class BankAccountsService {
     }
 
     if (payload.taxPercentage !== undefined) {
-      updateValues.taxPercentage =
-        payload.taxPercentage === null
-          ? null
-          : payload.taxPercentage.toString();
+      updateValues.taxPercentage = payload.taxPercentage === null
+        ? null
+        : payload.taxPercentage.toString();
     }
 
     const [result] = await db
@@ -142,12 +141,14 @@ export class BankAccountsService {
     });
   }
 
-  private async getLatestCalculation(accountId: number): Promise<{
-    monthlyProfit: string;
-    annualProfit: string;
-    currencyCode: string;
-    calculatedAt: string;
-  } | null> {
+  private async getLatestCalculation(accountId: number): Promise<
+    {
+      monthlyProfit: string;
+      annualProfit: string;
+      currencyCode: string;
+      calculatedAt: string;
+    } | null
+  > {
     const db = this.databaseService.get();
 
     const [calculation] = await db
@@ -216,8 +217,9 @@ export class BankAccountsService {
       conditions.push(eq(bankAccountsTable.type, filter.type));
     }
 
-    const whereClause =
-      conditions.length > 0 ? buildAndFilters(conditions) : undefined;
+    const whereClause = conditions.length > 0
+      ? buildAndFilters(conditions)
+      : undefined;
 
     const orderColumn = this.getSortColumn(sortField);
     const orderDirection = sortOrder === SortOrder.Asc ? asc : desc;
@@ -243,12 +245,14 @@ export class BankAccountsService {
     const results = await db
       .select({
         ...getTableColumns(bankAccountsTable),
-        latestCalculation: sql<{
-          monthlyProfit: string;
-          annualProfit: string;
-          currencyCode: string;
-          calculatedAt: string;
-        } | null>`(
+        latestCalculation: sql<
+          {
+            monthlyProfit: string;
+            annualProfit: string;
+            currencyCode: string;
+            calculatedAt: string;
+          } | null
+        >`(
           SELECT json_build_object(
             'monthlyProfit', calculation.monthly_profit,
             'annualProfit', calculation.annual_profit,
@@ -268,7 +272,7 @@ export class BankAccountsService {
       .offset(offset);
 
     const data: BankAccountSummary[] = results.map((account) =>
-      this.mapBankAccountToSummary(account),
+      this.mapBankAccountToSummary(account)
     );
 
     const pagination = createOffsetPagination<BankAccountSummary>(
@@ -348,8 +352,8 @@ export class BankAccountsService {
     const accountId = payload.bankAccountId;
     const pageSize = payload.limit ?? DEFAULT_PAGE_SIZE;
     const cursor = payload.cursor;
-    const sortField =
-      payload.sortField ?? BankAccountBalanceSortField.CreatedAt;
+    const sortField = payload.sortField ??
+      BankAccountBalanceSortField.CreatedAt;
     const sortOrder = payload.sortOrder ?? SortOrder.Desc;
 
     // Verify bank account exists if accountId is provided
@@ -374,10 +378,9 @@ export class BankAccountsService {
     const offset = cursor ? decodeCursor(cursor) : 0;
 
     const orderDirection = sortOrder === SortOrder.Asc ? asc : desc;
-    const orderColumn =
-      sortField === BankAccountBalanceSortField.InterestRate
-        ? bankAccountInterestRatesTable.interestRate
-        : bankAccountBalancesTable.createdAt;
+    const orderColumn = sortField === BankAccountBalanceSortField.InterestRate
+      ? bankAccountInterestRatesTable.interestRate
+      : bankAccountBalancesTable.createdAt;
 
     const countQuery = db
       .select({ count: sql<number>`COUNT(*)` })
@@ -433,7 +436,7 @@ export class BankAccountsService {
       .offset(offset);
 
     const data: BankAccountBalanceSummary[] = results.map((row) =>
-      this.mapBalanceToSummary(row),
+      this.mapBalanceToSummary(row)
     );
 
     const pagination = createOffsetPagination<BankAccountBalanceSummary>(
@@ -602,13 +605,13 @@ export class BankAccountsService {
       updatedAt: toISOStringSafe(account.updatedAt),
       latestCalculation: account.latestCalculation
         ? {
-            monthlyProfit: account.latestCalculation.monthlyProfit.toString(),
-            annualProfit: account.latestCalculation.annualProfit.toString(),
-            currencyCode: account.latestCalculation.currencyCode,
-            calculatedAt: toISOStringSafe(
-              new Date(account.latestCalculation.calculatedAt)
-            ),
-          }
+          monthlyProfit: account.latestCalculation.monthlyProfit.toString(),
+          annualProfit: account.latestCalculation.annualProfit.toString(),
+          currencyCode: account.latestCalculation.currencyCode,
+          calculatedAt: toISOStringSafe(
+            new Date(account.latestCalculation.calculatedAt),
+          ),
+        }
         : null,
     };
   }

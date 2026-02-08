@@ -11,7 +11,7 @@ export class MerchantsMCPService {
     private filterMerchantsToolService = inject(FilterMerchantsToolService),
     private saveMerchantToolService = inject(SaveMerchantToolService),
     private updateMerchantToolService = inject(UpdateMerchantToolService),
-    private deleteMerchantToolService = inject(DeleteMerchantToolService)
+    private deleteMerchantToolService = inject(DeleteMerchantToolService),
   ) {}
 
   public getTools(): McpToolDefinition[] {

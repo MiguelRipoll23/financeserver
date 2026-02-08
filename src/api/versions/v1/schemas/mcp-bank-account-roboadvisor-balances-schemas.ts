@@ -21,7 +21,10 @@ export const CreateBankAccountRoboadvisorBalanceToolSchema = z.object({
     .describe("Transaction type: deposit, withdrawal, or adjustment"),
   amount: z
     .string()
-    .regex(MonetaryRegex, "Amount must be a valid monetary value (e.g., 1000.00)")
+    .regex(
+      MonetaryRegex,
+      "Amount must be a valid monetary value (e.g., 1000.00)",
+    )
     .describe("Transaction amount (e.g., 1000.00)"),
   currencyCode: z
     .string()
@@ -40,7 +43,9 @@ export const FilterBankAccountRoboadvisorBalancesToolSchema = z.object({
     .nativeEnum(BankAccountRoboadvisorBalanceSortField)
     .optional()
     .describe("Sort field (default: date)"),
-  sortOrder: z.nativeEnum(SortOrder).optional().describe("Sort order (default: desc)"),
+  sortOrder: z.nativeEnum(SortOrder).optional().describe(
+    "Sort order (default: desc)",
+  ),
   pageSize: z
     .number()
     .int()
@@ -52,7 +57,9 @@ export const FilterBankAccountRoboadvisorBalancesToolSchema = z.object({
 });
 
 export const UpdateBankAccountRoboadvisorBalanceToolSchema = z.object({
-  id: z.number().int().positive().describe("ID of the balance record to update"),
+  id: z.number().int().positive().describe(
+    "ID of the balance record to update",
+  ),
   date: z
     .string()
     .regex(DateRegex, "Date must be in YYYY-MM-DD format")
@@ -64,7 +71,10 @@ export const UpdateBankAccountRoboadvisorBalanceToolSchema = z.object({
     .describe("Transaction type: deposit, withdrawal, or adjustment"),
   amount: z
     .string()
-    .regex(MonetaryRegex, "Amount must be a valid monetary value (e.g., 1000.00)")
+    .regex(
+      MonetaryRegex,
+      "Amount must be a valid monetary value (e.g., 1000.00)",
+    )
     .optional()
     .describe("Transaction amount (e.g., 1000.00)"),
   currencyCode: z
@@ -75,5 +85,7 @@ export const UpdateBankAccountRoboadvisorBalanceToolSchema = z.object({
 });
 
 export const DeleteBankAccountRoboadvisorBalanceToolSchema = z.object({
-  id: z.number().int().positive().describe("ID of the balance record to delete"),
+  id: z.number().int().positive().describe(
+    "ID of the balance record to delete",
+  ),
 });
