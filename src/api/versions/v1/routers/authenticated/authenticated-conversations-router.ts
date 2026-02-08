@@ -50,7 +50,15 @@ export class AuthenticatedConversationsRouter {
             content: {
               "application/json": {
                 schema: z.object({
-                  models: z.array(z.any()),
+                  object: z.literal("list").openapi({ example: "list" }),
+                  data: z.array(
+                    z.object({
+                      id: z.string().openapi({ example: "big-pickle" }),
+                      object: z.literal("model").openapi({ example: "model" }),
+                      created: z.number().openapi({ example: 1770577167 }),
+                      owned_by: z.string().openapi({ example: "opencode" }),
+                    }),
+                  ),
                 }),
               },
             },
@@ -62,7 +70,7 @@ export class AuthenticatedConversationsRouter {
       }),
       async (c: Context<{ Variables: HonoVariables }>) => {
         const models = await this.conversationsService.listModels();
-        return c.json({ models });
+        return c.json(models);
       },
     );
   }
