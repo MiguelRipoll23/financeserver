@@ -5,6 +5,7 @@ import {
   type ModelMessage,
   stepCountIs,
   streamText,
+  type StreamTextResult,
   type TextPart,
   tool as aiTool,
 } from "ai";
@@ -21,6 +22,7 @@ import {
 } from "../../constants/api-constants.ts";
 import { APICallError, InvalidPromptError, RetryError } from "ai";
 import { LRUCache } from "../../utils/lru-cache.ts";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 @injectable()
 export class ConversationsService {
@@ -191,7 +193,7 @@ export class ConversationsService {
       return new ServerError(
         "AI_API_ERROR",
         error.message || "AI API request failed",
-        error.statusCode || 500,
+        (error.statusCode as ContentfulStatusCode) || 500,
       );
     }
 
@@ -225,7 +227,7 @@ export class ConversationsService {
 
   public async streamMessage(
     payload: SendMessageRequest,
-  ): Promise<ReadableStream<string>> {
+  ): Promise<StreamTextResult<any, any>> {
     const { sessionId, userMessage, mcpServer, model } = payload;
 
     try {
@@ -258,7 +260,7 @@ export class ConversationsService {
       };
       const messages = [...history, newMessage];
 
-      const result = await streamText({
+      return await streamText({
         model: aiModel,
         messages,
         tools,
@@ -267,8 +269,6 @@ export class ConversationsService {
           this.updateHistory(sessionId, [...messages, ...response.messages]);
         },
       });
-
-      return result.textStream;
     } catch (error) {
       throw this.handleAIError(error);
     }
