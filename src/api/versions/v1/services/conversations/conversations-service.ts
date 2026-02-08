@@ -85,7 +85,7 @@ export class ConversationsService {
       throw new Error("OpenAI configuration is missing");
     }
 
-    const fetchUrl = `${baseUrl}/models`;
+    const fetchUrl = `${baseUrl.replace(/\/+$/, "")}/models`;
     const headers = {
       "Authorization": `Bearer ${apiKey}`,
     };
