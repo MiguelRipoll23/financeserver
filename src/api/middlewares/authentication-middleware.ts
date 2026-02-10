@@ -3,7 +3,7 @@ import { inject, injectable } from "@needle-di/core";
 import type { Payload } from "@wok/djwt";
 import { ServerError } from "../versions/v1/models/server-error.ts";
 import { JWTService } from "../../core/services/jwt-service.ts";
-import { GitHubOAuthService } from "../versions/v1/services/authentication/github-oauth-service.ts";
+import { OAuthAuthorizationService } from "../versions/v1/services/authentication/oauth-authorization-service.ts";
 import type { AuthenticationPrincipalType } from "../versions/v1/types/authentication/authentication-principal-type.ts";
 import { UrlUtils } from "../../core/utils/url-utils.ts";
 
@@ -13,7 +13,7 @@ export class AuthenticationMiddleware {
 
   constructor(
     private jwtService = inject(JWTService),
-    private gitHubOAuthService = inject(GitHubOAuthService)
+    private oauthAuthorizationService = inject(OAuthAuthorizationService),
   ) {}
 
   public create() {
@@ -50,22 +50,17 @@ export class AuthenticationMiddleware {
   private async resolvePrincipal(
     token: string
   ): Promise<AuthenticationPrincipalType> {
+    // Try JWT first
     if (this.isJwtToken(token)) {
       try {
         return await this.resolveInternalPrincipal(token);
       } catch (error) {
-        if (
-          error instanceof ServerError &&
-          error.getCode() === "INVALID_TOKEN"
-        ) {
-          return await this.resolveGitHubPrincipal(token);
-        }
-
-        throw error;
+        // JWT verification failed, continue to OAuth
       }
     }
 
-    return await this.resolveGitHubPrincipal(token);
+    // Try OAuth access token
+    return await this.resolveOAuthPrincipal(token);
   }
 
   private async resolveInternalPrincipal(
@@ -99,18 +94,22 @@ export class AuthenticationMiddleware {
     };
   }
 
-  private async resolveGitHubPrincipal(
+  private async resolveOAuthPrincipal(
     token: string
   ): Promise<AuthenticationPrincipalType> {
-    const user = await this.gitHubOAuthService.getAuthenticatedUser(token);
+    const connection = await this.oauthAuthorizationService.validateAccessToken(token);
+
+    if (!connection) {
+      throw new ServerError("INVALID_TOKEN", "Invalid OAuth access token", 401);
+    }
+
+    const user = connection.user as { id: string; displayName?: string };
 
     return {
-      id: String(user.id),
-      name: user.name ?? user.login,
-      userHandle: user.login,
-      avatarUrl: user.avatar_url ?? undefined,
+      id: user.id,
+      name: user.displayName || "User",
       roles: [],
-      provider: "github",
+      provider: "oauth",
     };
   }
 
@@ -121,13 +120,9 @@ export class AuthenticationMiddleware {
   ): Promise<void> {
     const url = new URL(requestUrl);
     
-    if (principal.provider === "github") {
-      // Only validate audience for MCP endpoints for GitHub tokens
-      if (!url.pathname.includes("/mcp/")) {
-        return;
-      }
-      // For GitHub OAuth tokens, validate they were issued for this resource
-      await this.gitHubOAuthService.validateTokenResource(
+    if (principal.provider === "oauth") {
+      // For OAuth tokens, validate resource claim per RFC 8707
+      await this.oauthAuthorizationService.validateTokenResource(
         token,
         requestUrl,
         url.pathname

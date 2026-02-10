@@ -1,3 +1,5 @@
+import { ENV_RP_ALLOWED_ORIGINS, ENV_RP_NAME } from "../../api/versions/v1/constants/environment-constants.ts";
+
 /**
  * Utility functions for WebAuthn origin validation and relying party configuration
  */
@@ -7,7 +9,7 @@ export class WebAuthnUtils {
    * @returns Array of allowed origin patterns (may include wildcards)
    */
   public static getAllowedOrigins(): string[] {
-    const originsEnv = Deno.env.get("RP_ALLOWED_ORIGINS");
+    const originsEnv = Deno.env.get(ENV_RP_ALLOWED_ORIGINS);
     if (!originsEnv) {
       // Default to localhost:5173 for development
       return ["http://localhost:5173"];
@@ -73,6 +75,6 @@ export class WebAuthnUtils {
    * @returns The configured RP name
    */
   public static getRelyingPartyName(): string {
-    return Deno.env.get("RP_NAME") || "Finance server";
+    return Deno.env.get(ENV_RP_NAME) || "Finance server";
   }
 }

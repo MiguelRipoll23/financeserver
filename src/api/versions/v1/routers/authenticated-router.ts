@@ -1,7 +1,6 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { inject, injectable } from "@needle-di/core";
 import { AuthenticationMiddleware } from "../../../middlewares/authentication-middleware.ts";
-import { AuthorizationMiddleware } from "../../../middlewares/authorization-middleware.ts";
 import { AuthenticatedReceiptsRouter } from "./authenticated/authenticated-receipts-router.ts";
 import { AuthenticatedProductsRouter } from "./authenticated/authenticated-products-router.ts";
 import { AuthenticatedBillsRouter } from "./authenticated/authenticated-bills-router.ts";
@@ -16,13 +15,13 @@ import { AuthenticatedCryptoExchangeBalancesRouter } from "./authenticated/authe
 import { AuthenticatedCashRouter } from "./authenticated/authenticated-cash-router.ts";
 import { AuthenticatedCashBalancesRouter } from "./authenticated/authenticated-cash-balances-router.ts";
 import { AuthenticatedMCPRouter } from "./authenticated/authenticated-mcp-router.ts";
-import { AuthenticatedUsersRouter } from "./authenticated/authenticated-users-router.ts";
 import { AuthenticatedSalaryChangesRouter } from "./authenticated/authenticated-salary-changes-router.ts";
 import { AuthenticatedBankAccountRoboadvisorsRouter } from "./authenticated/authenticated-bank-account-roboadvisors-router.ts";
 import { AuthenticatedBankAccountRoboadvisorBalancesRouter } from "./authenticated/authenticated-bank-account-roboadvisor-balances-router.ts";
 import { AuthenticatedBankAccountRoboadvisorFundsRouter } from "./authenticated/authenticated-bank-account-roboadvisor-funds-router.ts";
 import { AuthenticatedRegistrationRouter } from "./authenticated/authenticated-registration-router.ts";
 import { AuthenticatedConversationsRouter } from "./authenticated/authenticated-conversations-router.ts";
+import { AuthenticatedOAuthRouter } from "./authenticated/authenticated-oauth-router.ts";
 import { HonoVariables } from "../../../../core/types/hono/hono-variables-type.ts";
 
 @injectable()
@@ -31,13 +30,12 @@ export class V1AuthenticatedRouter {
 
   constructor(
     private authenticationMiddleware = inject(AuthenticationMiddleware),
-    private authorizationMiddleware = inject(AuthorizationMiddleware),
     private authenticatedRegistrationRouter = inject(
       AuthenticatedRegistrationRouter,
     ),
-    private usersRouter = inject(AuthenticatedUsersRouter),
     private mcpRouter = inject(AuthenticatedMCPRouter),
     private conversationsRouter = inject(AuthenticatedConversationsRouter),
+    private oauthRouter = inject(AuthenticatedOAuthRouter),
     private billsRouter = inject(AuthenticatedBillsRouter),
     private subscriptionsRouter = inject(AuthenticatedSubscriptionsRouter),
     private merchantsRouter = inject(AuthenticatedMerchantsRouter),
@@ -79,15 +77,10 @@ export class V1AuthenticatedRouter {
 
   private setMiddlewares(): void {
     this.setAuthenticationMiddleware();
-    this.setAuthorizationMiddleware();
   }
 
   private setAuthenticationMiddleware(): void {
     this.app.use("*", this.authenticationMiddleware.create());
-  }
-
-  private setAuthorizationMiddleware(): void {
-    this.app.use("*", this.authorizationMiddleware.create());
   }
 
   private setRoutes(): void {
@@ -99,7 +92,7 @@ export class V1AuthenticatedRouter {
 
     this.app.route("/mcp", this.mcpRouter.getRouter());
     this.app.route("/conversations", this.conversationsRouter.getRouter());
-    this.app.route("/users", this.usersRouter.getRouter());
+    this.app.route("/oauth", this.oauthRouter.getRouter());
     this.app.route("/cash", this.cashRouter.getRouter());
     this.app.route("/cash-balances", this.cashBalancesRouter.getRouter());
     // Salary changes must be registered before bank accounts

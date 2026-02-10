@@ -1,13 +1,15 @@
 import { inject, injectable } from "@needle-di/core";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import type { Context } from "hono";
-import { GitHubOAuthService } from "../../services/authentication/github-oauth-service.ts";
+import { z } from "zod";
 import { OAuthClientRegistryService } from "../../services/authentication/oauth-client-registry-service.ts";
+import { OAuthRequestService } from "../../services/authentication/oauth-request-service.ts";
+import { OAuthAuthorizationService } from "../../services/authentication/oauth-authorization-service.ts";
 import {
-  GitHubCallbackQuerySchema,
   OAuthAuthorizeQuerySchema,
   OAuthClientRegistrationRequestSchema,
   OAuthClientRegistrationResponseSchema,
+  OAuthRequestDetailsSchema,
   OAuthRevokeRequestFormSchema,
   OAuthTokenRequestFormSchema,
   OAuthTokenRequestSchema,
@@ -15,14 +17,16 @@ import {
 } from "../../schemas/oauth-schemas.ts";
 import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
 import { ServerResponse } from "../../models/server-response.ts";
+import { ENV_OAUTH_FRONTEND_URL } from "../../constants/environment-constants.ts";
 
 @injectable()
 export class PublicOAuthRouter {
   private app: OpenAPIHono<{ Variables: HonoVariables }>;
 
   constructor(
-    private gitHubOAuthService = inject(GitHubOAuthService),
+    private oauthAuthorizationService = inject(OAuthAuthorizationService),
     private oauthClientRegistryService = inject(OAuthClientRegistryService),
+    private oauthRequestService = inject(OAuthRequestService),
   ) {
     this.app = new OpenAPIHono();
     this.setRoutes();
@@ -35,7 +39,7 @@ export class PublicOAuthRouter {
   private setRoutes(): void {
     this.registerClientRegistrationRoute();
     this.registerAuthorizeRoute();
-    this.registerGitHubCallbackRoute();
+    this.registerGetRequestRoute();
     this.registerTokenRoute();
     this.registerRevokeRoute();
   }
@@ -91,51 +95,77 @@ export class PublicOAuthRouter {
         path: "/oauth/authorize",
         summary: "Start OAuth authorization",
         description:
-          "Validates the authorization request and redirects the user to GitHub for consent.",
+          "Validates the authorization request and redirects the user to the frontend authorization page.",
         tags: ["OAuth"],
         request: {
           query: OAuthAuthorizeQuerySchema,
         },
         responses: {
-          302: { description: "Redirects to provider" },
+          302: { description: "Redirects to frontend authorization page" },
           ...ServerResponse.BadRequest,
           ...ServerResponse.Unauthorized,
         },
       }),
       async (context: Context) => {
         const query = OAuthAuthorizeQuerySchema.parse(context.req.query());
-        const redirectUrl = await this.gitHubOAuthService
-          .createAuthorizationRedirect(query, context.req.url);
 
-        return context.redirect(redirectUrl, 302);
+        await this.oauthAuthorizationService.assertClient(query.client_id);
+        await this.oauthAuthorizationService.assertRedirectUri(
+          query.client_id,
+          query.redirect_uri,
+        );
+
+        const requestId = await this.oauthRequestService.createRequest(query);
+
+        const frontendUrl = Deno.env.get(ENV_OAUTH_FRONTEND_URL) ||
+          "http://localhost:5173";
+        const redirectUrl = new URL("/authorize", frontendUrl);
+        redirectUrl.searchParams.set("request_id", requestId);
+
+        return context.redirect(redirectUrl.toString(), 302);
       },
     );
   }
 
-  private registerGitHubCallbackRoute(): void {
+  private registerGetRequestRoute(): void {
     this.app.openapi(
       createRoute({
         method: "get",
-        path: "/oauth/github/callback",
-        summary: "Handle authentication callback",
+        path: "/oauth/requests/{request_id}",
+        summary: "Get OAuth request details",
         description:
-          "Validates the OAuth state, exchanges the upstream authorization code, and redirects back to the client.",
+          "Retrieves the details of a pending OAuth authorization request for the frontend to display.",
         tags: ["OAuth"],
         request: {
-          query: GitHubCallbackQuerySchema,
+          params: z.object({
+            request_id: z.string().min(1).describe("OAuth request identifier"),
+          }),
         },
         responses: {
-          302: { description: "Redirects back to OAuth client" },
+          200: {
+            description: "OAuth request details retrieved successfully",
+            content: {
+              "application/json": {
+                schema: OAuthRequestDetailsSchema,
+              },
+            },
+          },
+          ...ServerResponse.NotFound,
           ...ServerResponse.BadRequest,
-          ...ServerResponse.Unauthorized,
         },
       }),
       async (context: Context) => {
-        const query = GitHubCallbackQuerySchema.parse(context.req.query());
-        const redirectUrl = await this.gitHubOAuthService
-          .createCallbackRedirect(query, context.req.url);
+        const { request_id } = context.req.param();
+        const request = await this.oauthRequestService.getRequest(request_id);
 
-        return context.redirect(redirectUrl, 302);
+        return context.json({
+          requestId: request.requestId,
+          clientId: request.clientId,
+          scope: request.scope,
+          status: request.status,
+          createdAt: request.createdAt,
+          expiresAt: request.expiresAt,
+        }, 200);
       },
     );
   }
@@ -175,7 +205,7 @@ export class PublicOAuthRouter {
       async (context: Context) => {
         const body = await context.req.parseBody();
         const payload = OAuthTokenRequestSchema.parse(body);
-        const tokenResponse = await this.gitHubOAuthService
+        const tokenResponse = await this.oauthAuthorizationService
           .exchangeAuthorizationCode(payload);
 
         return context.json(tokenResponse, 200);
@@ -213,7 +243,7 @@ export class PublicOAuthRouter {
       async (context: Context) => {
         const body = await context.req.parseBody();
         const payload = OAuthRevokeRequestFormSchema.parse(body);
-        await this.gitHubOAuthService.revokeToken(payload);
+        await this.oauthAuthorizationService.revokeToken(payload);
 
         return context.body(null, 200);
       },

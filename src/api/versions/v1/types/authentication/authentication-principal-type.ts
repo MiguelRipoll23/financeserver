@@ -1,4 +1,4 @@
-export type AuthenticationProviderType = "internal" | "github";
+export type AuthenticationProviderType = "internal" | "oauth";
 
 export type AuthenticationPrincipalType = {
   id: string;

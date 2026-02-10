@@ -13,7 +13,6 @@ export {
   recurrenceEnum,
 } from "./tables/subscriptions-table.ts";
 export { subscriptionPricesTable } from "./tables/subscription-prices-table.ts";
-export { usersTable } from "./tables/users-table.ts";
 export { oauthClientsTable } from "./tables/oauth-clients-table.ts";
 export { oauthAuthorizationCodes } from "./tables/oauth-authorization-codes-table.ts";
 export { oauthConnections } from "./tables/oauth-connections-table.ts";

@@ -3,6 +3,7 @@ import type {
   PublicKeyCredentialCreationOptionsJSON,
   PublicKeyCredentialRequestOptionsJSON,
 } from "@simplewebauthn/server";
+import type { OAuthRequestData } from "../../api/versions/v1/interfaces/authentication/oauth-request-data-interface.ts";
 
 export interface RegistrationOptionsKV {
   data: PublicKeyCredentialCreationOptionsJSON & { displayName?: string };
@@ -108,5 +109,76 @@ export class KVService {
       this.kv.close();
       this.kv = null;
     }
+  }
+
+  public async setOAuthRequest(
+    requestId: string,
+    data: OAuthRequestData,
+    ttlMs: number
+  ): Promise<void> {
+    const kv = await this.getKV();
+    await kv.set(["oauth_request", requestId], data, { expireIn: ttlMs });
+  }
+
+  public async getOAuthRequest(
+    requestId: string
+  ): Promise<OAuthRequestData | null> {
+    const kv = await this.getKV();
+    const result = await kv.get<OAuthRequestData>(["oauth_request", requestId]);
+    return result.value;
+  }
+
+  public async updateOAuthRequestStatus(
+    requestId: string,
+    status: "approved" | "denied"
+  ): Promise<boolean> {
+    const kv = await this.getKV();
+    const result = await kv.get<OAuthRequestData>(["oauth_request", requestId]);
+
+    if (result.value === null) {
+      return false;
+    }
+
+    const updatedData: OAuthRequestData = {
+      ...result.value,
+      status,
+    };
+
+    const updateResult = await kv
+      .atomic()
+      .check({
+        key: ["oauth_request", requestId],
+        versionstamp: result.versionstamp,
+      })
+      .set(["oauth_request", requestId], updatedData)
+      .commit();
+
+    return updateResult.ok;
+  }
+
+  public async consumeOAuthRequest(
+    requestId: string
+  ): Promise<OAuthRequestData | null> {
+    const kv = await this.getKV();
+    const result = await kv.get<OAuthRequestData>(["oauth_request", requestId]);
+
+    if (result.value === null) {
+      return null;
+    }
+
+    const deleteResult = await kv
+      .atomic()
+      .check({
+        key: ["oauth_request", requestId],
+        versionstamp: result.versionstamp,
+      })
+      .delete(["oauth_request", requestId])
+      .commit();
+
+    if (!deleteResult.ok) {
+      return null;
+    }
+
+    return result.value;
   }
 }
