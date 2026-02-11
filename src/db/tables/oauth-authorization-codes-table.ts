@@ -23,7 +23,6 @@ export const oauthAuthorizationCodes = pgTable(
     codeChallenge: text("code_challenge").notNull(),
     codeChallengeMethod: text("code_challenge_method").notNull(),
     scope: text().notNull(),
-    accessTokenHash: text("access_token_hash").notNull(),
     tokenType: text("token_type").notNull(),
     user: jsonb().notNull(),
     resource: text(),

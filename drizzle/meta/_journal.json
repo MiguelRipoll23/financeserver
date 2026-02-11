@@ -281,6 +281,13 @@
       "when": 1770822390873,
       "tag": "0039_foamy_mantis",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1770823469650,
+      "tag": "0040_sharp_exodus",
+      "breakpoints": true
     }
   ]
 }

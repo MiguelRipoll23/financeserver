@@ -95,8 +95,9 @@ export class AuthenticatedOAuthRouter {
           // If authorization code creation fails, reject the approval to avoid inconsistent state
           try {
             await this.oauthRequestService.denyRequest(request_id);
-          } catch {
-            // Rollback failed — log or handle, but don't suppress original error
+          } catch (rollbackError) {
+            // Rollback failed — don't suppress original error
+            console.error("Failed to rollback OAuth request approval for request:", request_id, "rollback error:", rollbackError);
           }
           throw error;
         }

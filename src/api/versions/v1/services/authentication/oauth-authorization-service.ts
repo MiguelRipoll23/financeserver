@@ -47,7 +47,7 @@ export class OAuthAuthorizationService {
     const normalized = this.normalizeUrl(redirectUri);
     const client = await this.clientRegistry.getClient(clientId);
 
-    if (client === null || !client.redirectUris.includes(normalized)) {
+    if (client === null || !client.redirectUris.map(uri => this.normalizeUrl(uri)).includes(normalized)) {
       throw new ServerError(
         "INVALID_OAUTH_REDIRECT_URI",
         "Redirect URI is not allowed",
@@ -62,8 +62,6 @@ export class OAuthAuthorizationService {
   ): Promise<string> {
     const code = Base64Utils.generateRandomString(32);
     const codeHash = await TokenHashUtils.hashToken(code);
-    const accessToken = Base64Utils.generateRandomString(32);
-    const accessTokenHash = await TokenHashUtils.hashToken(accessToken);
     const expiresAt = new Date(Date.now() + this.authorizationCodeTtlMs);
 
     // Store authorization code in database with hashed token
@@ -74,7 +72,6 @@ export class OAuthAuthorizationService {
       codeChallenge: request.codeChallenge,
       codeChallengeMethod: request.codeChallengeMethod,
       scope: request.scope,
-      accessTokenHash,
       tokenType: "Bearer",
       user: {
         id: principal.passkeyId,
