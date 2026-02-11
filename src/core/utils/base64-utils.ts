@@ -35,4 +35,10 @@ export class Base64Utils {
   public static base64UrlToString(base64url: string): string {
     return new TextDecoder().decode(this.base64UrlToArrayBuffer(base64url));
   }
+
+  public static generateRandomString(length: number): string {
+    const randomBytes = new Uint8Array(length);
+    crypto.getRandomValues(randomBytes);
+    return this.arrayBufferToBase64Url(randomBytes.buffer);
+  }
 }

@@ -15,8 +15,12 @@ export const oauthConnections = pgTable(
   "oauth_connections",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    refreshToken: text("refresh_token").notNull(),
-    accessToken: text("access_token").notNull(),
+    refreshTokenHash: text("refresh_token_hash")
+      .notNull()
+      .unique(),
+    accessTokenHash: text("access_token_hash")
+      .notNull()
+      .unique(),
     clientId: text("client_id")
       .notNull()
       .references(() => oauthClientsTable.clientId, { onDelete: "cascade" }),
@@ -25,6 +29,10 @@ export const oauthConnections = pgTable(
     user: jsonb().notNull(),
     resource: text(),
     expiresAt: timestamp("expires_at", {
+      withTimezone: true,
+      mode: "string",
+    }).notNull(),
+    refreshTokenExpiresAt: timestamp("refresh_token_expires_at", {
       withTimezone: true,
       mode: "string",
     }).notNull(),

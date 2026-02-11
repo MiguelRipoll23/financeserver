@@ -46,39 +46,6 @@ export const OAuthAuthorizeQuerySchema = z
 
 export type OAuthAuthorizeQuery = z.infer<typeof OAuthAuthorizeQuerySchema>;
 
-export const GitHubCallbackQuerySchema = z
-  .object({
-    code: z
-      .string()
-      .min(1)
-      .optional()
-      .describe(
-        "Authorization code returned by GitHub after user authorization.",
-      ),
-    state: z
-      .string()
-      .min(1)
-      .describe("State parameter to prevent CSRF attacks and maintain state."),
-    error: z
-      .string()
-      .min(1)
-      .optional()
-      .describe("Error code if the authorization request failed."),
-    error_description: z
-      .string()
-      .min(1)
-      .optional()
-      .describe("Human-readable description of the error."),
-    error_uri: z
-      .string()
-      .url()
-      .optional()
-      .describe("URI to a web page with information about the error."),
-  })
-  .describe("GitHub OAuth Callback Query Parameters");
-
-export type GitHubCallbackQuery = z.infer<typeof GitHubCallbackQuerySchema>;
-
 export const OAuthTokenRequestFormSchema = z
   .union([
     z.object({
@@ -209,18 +176,12 @@ export const OAuthTokenResponseSchema = z.object({
     .describe("Refresh token issued to the client."),
   user: z
     .object({
-      id: z.number().describe("Unique identifier for the user."),
-      login: z.string().min(1).describe("User's login name."),
-      name: z
+      id: z.string().describe("Unique identifier for the user."),
+      displayName: z
         .string()
         .nullable()
+        .optional()
         .describe("User's display name, if available."),
-      avatarUrl: z
-        .string()
-        .url()
-        .nullable()
-        .describe("URL to the user's avatar image."),
-      htmlUrl: z.string().url().describe("URL to the user's profile page."),
     })
     .describe("Authenticated user information."),
 });
@@ -335,3 +296,20 @@ export const OAuthRevokeRequestFormSchema = z.object({
 });
 
 export type OAuthRevokeRequest = z.infer<typeof OAuthRevokeRequestFormSchema>;
+
+export const OAuthRequestDetailsSchema = z.object({
+  requestId: z.string().min(1).describe("Unique identifier for the OAuth request."),
+  clientId: z.string().min(1).describe("Client identifier for the requesting application."),
+  scope: z.string().describe("Requested OAuth scopes."),
+  status: z.enum(["pending", "approved", "denied"]).describe("Current status of the OAuth request."),
+  createdAt: z.number().describe("Timestamp when the request was created."),
+  expiresAt: z.number().describe("Timestamp when the request expires."),
+});
+
+export type OAuthRequestDetails = z.infer<typeof OAuthRequestDetailsSchema>;
+
+export const OAuthRequestApproveResponseSchema = z.object({
+  success: z.boolean().describe("Indicates if the approval was successful."),
+});
+
+export type OAuthRequestApproveResponse = z.infer<typeof OAuthRequestApproveResponseSchema>;

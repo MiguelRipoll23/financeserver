@@ -1,7 +1,5 @@
 export const OAUTH_SERVICE_DOCUMENTATION_URL =
   "https://github.com/MiguelRipoll23/financeserver";
-export const GITHUB_APPLICATION_CONNECTIONS_BASE_URL =
-  "https://github.com/settings/connections/applications";
 export const OAUTH_PROTECTED_RESOURCE_PATH = "/api/v1/mcp/global";
 export const OAUTH_PROTECTED_RESOURCE_DOCUMENTATION_URL =
   "https://github.com/MiguelRipoll23/financeserver#protected-resource";

@@ -260,6 +260,34 @@
       "when": 1770398086764,
       "tag": "0036_lame_mariko_yashida",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1770742918313,
+      "tag": "0037_overjoyed_magik",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1770820841742,
+      "tag": "0038_wide_dust",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1770822390873,
+      "tag": "0039_foamy_mantis",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1770823469650,
+      "tag": "0040_sharp_exodus",
+      "breakpoints": true
     }
   ]
 }
