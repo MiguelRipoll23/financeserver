@@ -32,6 +32,10 @@ export const oauthConnections = pgTable(
       withTimezone: true,
       mode: "string",
     }).notNull(),
+    refreshTokenExpiresAt: timestamp("refresh_token_expires_at", {
+      withTimezone: true,
+      mode: "string",
+    }).notNull(),
     createdAt: timestamp("created_at", {
       withTimezone: true,
       mode: "string",

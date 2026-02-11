@@ -274,6 +274,13 @@
       "when": 1770820841742,
       "tag": "0038_wide_dust",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1770822390873,
+      "tag": "0039_foamy_mantis",
+      "breakpoints": true
     }
   ]
 }

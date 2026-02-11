@@ -13,10 +13,9 @@ import { authenticatedUserRole, isCurrentClient } from "../rls.ts";
 export const oauthAuthorizationCodes = pgTable(
   "oauth_authorization_codes",
   {
-    code: text().primaryKey().notNull(),
     codeHash: text("code_hash")
-      .notNull()
-      .unique(),
+      .primaryKey()
+      .notNull(),
     clientId: text("client_id")
       .notNull()
       .references(() => oauthClientsTable.clientId, { onDelete: "cascade" }),

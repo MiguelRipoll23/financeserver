@@ -17,7 +17,7 @@ import { OAuthClientRegistryService } from "./oauth-client-registry-service.ts";
 import { Base64Utils } from "../../../../../core/utils/base64-utils.ts";
 import { TokenHashUtils } from "../../../../../core/utils/token-hash-utils.ts";
 import { UrlUtils } from "../../../../../core/utils/url-utils.ts";
-import { OAUTH_ACCESS_TOKEN_EXPIRES_IN_SECONDS } from "../../../../../core/constants/oauth-constants.ts";
+import { OAUTH_ACCESS_TOKEN_EXPIRES_IN_SECONDS, OAUTH_REFRESH_TOKEN_EXPIRES_IN_SECONDS } from "../../../../../core/constants/oauth-constants.ts";
 
 @injectable()
 export class OAuthAuthorizationService {
@@ -68,7 +68,6 @@ export class OAuthAuthorizationService {
 
     // Store authorization code in database with hashed token
     await this.databaseService.get().insert(oauthAuthorizationCodes).values({
-      code,
       codeHash,
       clientId: request.clientId,
       redirectUri: request.redirectUri,
@@ -142,6 +141,7 @@ export class OAuthAuthorizationService {
     const accessToken = Base64Utils.generateRandomString(32);
     const accessTokenHash = await TokenHashUtils.hashToken(accessToken);
     const expiresAt = new Date(Date.now() + OAUTH_ACCESS_TOKEN_EXPIRES_IN_SECONDS * 1000);
+    const refreshTokenExpiresAt = new Date(Date.now() + OAUTH_REFRESH_TOKEN_EXPIRES_IN_SECONDS * 1000);
 
     // Store connection with hashed tokens
     await this.databaseService.get().insert(oauthConnections).values({
@@ -153,6 +153,7 @@ export class OAuthAuthorizationService {
       user: record.user,
       resource: record.resource,
       expiresAt: expiresAt.toISOString(),
+      refreshTokenExpiresAt: refreshTokenExpiresAt.toISOString(),
     });
 
     return {
@@ -198,12 +199,22 @@ export class OAuthAuthorizationService {
       );
     }
 
+    // Check if refresh token is expired
+    if (new Date(connection.refreshTokenExpiresAt) < new Date()) {
+      throw new ServerError(
+        "INVALID_REFRESH_TOKEN",
+        "Refresh token has expired",
+        400,
+      );
+    }
+
     // Generate new tokens
     const newAccessToken = Base64Utils.generateRandomString(32);
     const newAccessTokenHash = await TokenHashUtils.hashToken(newAccessToken);
     const newRefreshToken = Base64Utils.generateRandomString(32);
     const newRefreshTokenHash = await TokenHashUtils.hashToken(newRefreshToken);
     const expiresAt = new Date(Date.now() + OAUTH_ACCESS_TOKEN_EXPIRES_IN_SECONDS * 1000);
+    const refreshTokenExpiresAt = new Date(Date.now() + OAUTH_REFRESH_TOKEN_EXPIRES_IN_SECONDS * 1000);
 
     // Update connection with hashed tokens
     await this.databaseService
@@ -213,6 +224,7 @@ export class OAuthAuthorizationService {
         accessTokenHash: newAccessTokenHash,
         refreshTokenHash: newRefreshTokenHash,
         expiresAt: expiresAt.toISOString(),
+        refreshTokenExpiresAt: refreshTokenExpiresAt.toISOString(),
       })
       .where(eq(oauthConnections.id, connection.id));
 

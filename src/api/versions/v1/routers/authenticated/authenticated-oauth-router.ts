@@ -93,7 +93,11 @@ export class AuthenticatedOAuthRouter {
           return context.json({ redirectUrl }, 200);
         } catch (error) {
           // If authorization code creation fails, reject the approval to avoid inconsistent state
-          await this.oauthRequestService.denyRequest(request_id);
+          try {
+            await this.oauthRequestService.denyRequest(request_id);
+          } catch {
+            // Rollback failed — log or handle, but don't suppress original error
+          }
           throw error;
         }
       },
