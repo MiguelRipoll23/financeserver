@@ -144,13 +144,21 @@ export class KVService {
       status,
     };
 
+    // Calculate remaining TTL from original expiration
+    const now = Date.now();
+    const ttl = result.value.expiresAt - now;
+
     const updateResult = await kv
       .atomic()
       .check({
         key: ["oauth_request", requestId],
         versionstamp: result.versionstamp,
       })
-      .set(["oauth_request", requestId], updatedData)
+      .set(
+        ["oauth_request", requestId],
+        updatedData,
+        ttl > 0 ? { expireIn: ttl } : undefined
+      )
       .commit();
 
     return updateResult.ok;

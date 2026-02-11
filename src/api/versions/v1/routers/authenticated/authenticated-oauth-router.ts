@@ -62,11 +62,8 @@ export class AuthenticatedOAuthRouter {
       }),
       async (context: Context) => {
         const { request_id } = context.req.param();
-        const request = await this.oauthRequestService.approveRequest(
-          request_id,
-        );
 
-        // Get authenticated user from context (set by auth middleware)
+        // Validate user context first
         const passkeyId = context.get("userId");
         const displayName = context.get("userDisplayName");
 
@@ -83,10 +80,22 @@ export class AuthenticatedOAuthRouter {
           displayName,
         };
 
-        const redirectUrl = await this.oauthAuthorizationService
-          .createAuthorizationCode(request, principal);
+        // Approve the request
+        const request = await this.oauthRequestService.approveRequest(
+          request_id,
+        );
 
-        return context.json({ redirectUrl }, 200);
+        // Create authorization code and handle potential failure
+        try {
+          const redirectUrl = await this.oauthAuthorizationService
+            .createAuthorizationCode(request, principal);
+
+          return context.json({ redirectUrl }, 200);
+        } catch (error) {
+          // If authorization code creation fails, reject the approval to avoid inconsistent state
+          await this.oauthRequestService.denyRequest(request_id);
+          throw error;
+        }
       },
     );
   }

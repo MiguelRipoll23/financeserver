@@ -81,9 +81,9 @@ export class OAuthRequestService {
 
     if (!updated) {
       throw new ServerError(
-        "OAUTH_REQUEST_UPDATE_FAILED",
-        "Failed to update OAuth request status",
-        500,
+        "OAUTH_REQUEST_CONFLICT",
+        "OAuth request was modified by another request (conflict)",
+        409,
       );
     }
 
@@ -111,9 +111,9 @@ export class OAuthRequestService {
 
     if (!updated) {
       throw new ServerError(
-        "OAUTH_REQUEST_UPDATE_FAILED",
-        "Failed to update OAuth request status",
-        500,
+        "OAUTH_REQUEST_CONFLICT",
+        "OAuth request was modified by another request (conflict)",
+        409,
       );
     }
 

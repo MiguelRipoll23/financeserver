@@ -14,6 +14,9 @@ export const oauthAuthorizationCodes = pgTable(
   "oauth_authorization_codes",
   {
     code: text().primaryKey().notNull(),
+    codeHash: text("code_hash")
+      .notNull()
+      .unique(),
     clientId: text("client_id")
       .notNull()
       .references(() => oauthClientsTable.clientId, { onDelete: "cascade" }),
@@ -21,7 +24,7 @@ export const oauthAuthorizationCodes = pgTable(
     codeChallenge: text("code_challenge").notNull(),
     codeChallengeMethod: text("code_challenge_method").notNull(),
     scope: text().notNull(),
-    accessToken: text("access_token").notNull(),
+    accessTokenHash: text("access_token_hash").notNull(),
     tokenType: text("token_type").notNull(),
     user: jsonb().notNull(),
     resource: text(),

@@ -12,16 +12,16 @@ import type {
   OAuthTokenResponse,
 } from "../../schemas/oauth-schemas.ts";
 import type { OAuthRequestData } from "../../interfaces/authentication/oauth-request-data-interface.ts";
-import type { AuthenticationPrincipal } from "../../types/authentication/authentication-principal-type.ts";
+import type { AuthenticationPrincipal } from "../../interfaces/authentication/authentication-principal-interface.ts";
 import { OAuthClientRegistryService } from "./oauth-client-registry-service.ts";
 import { Base64Utils } from "../../../../../core/utils/base64-utils.ts";
+import { TokenHashUtils } from "../../../../../core/utils/token-hash-utils.ts";
 import { UrlUtils } from "../../../../../core/utils/url-utils.ts";
-import { OAUTH_ACCESS_TOKEN_EXPIRES_IN_SECONDS, OAUTH_REFRESH_TOKEN_EXPIRES_IN_SECONDS } from "../../../../../core/constants/oauth-constants.ts";
+import { OAUTH_ACCESS_TOKEN_EXPIRES_IN_SECONDS } from "../../../../../core/constants/oauth-constants.ts";
 
 @injectable()
 export class OAuthAuthorizationService {
   private readonly authorizationCodeTtlMs = 5 * 60 * 1000;
-  private readonly refreshTokenTtlMs = 7 * 24 * 60 * 60 * 1000; // 7 days
 
   constructor(
     private clientRegistry = inject(OAuthClientRegistryService),
@@ -61,18 +61,21 @@ export class OAuthAuthorizationService {
     principal: AuthenticationPrincipal,
   ): Promise<string> {
     const code = Base64Utils.generateRandomString(32);
+    const codeHash = await TokenHashUtils.hashToken(code);
     const accessToken = Base64Utils.generateRandomString(32);
+    const accessTokenHash = await TokenHashUtils.hashToken(accessToken);
     const expiresAt = new Date(Date.now() + this.authorizationCodeTtlMs);
 
-    // Store authorization code in database
+    // Store authorization code in database with hashed token
     await this.databaseService.get().insert(oauthAuthorizationCodes).values({
       code,
+      codeHash,
       clientId: request.clientId,
       redirectUri: request.redirectUri,
       codeChallenge: request.codeChallenge,
       codeChallengeMethod: request.codeChallengeMethod,
       scope: request.scope,
-      accessToken,
+      accessTokenHash,
       tokenType: "Bearer",
       user: {
         id: principal.passkeyId,
@@ -82,7 +85,7 @@ export class OAuthAuthorizationService {
       expiresAt: expiresAt.toISOString(),
     });
 
-    // Build redirect URL with authorization code
+    // Build redirect URL with authorization code (raw token returned to client)
     const redirectUrl = new URL(request.redirectUri);
     redirectUrl.searchParams.set("code", code);
     redirectUrl.searchParams.set("state", request.state);
@@ -135,13 +138,15 @@ export class OAuthAuthorizationService {
 
     // Generate tokens
     const refreshToken = Base64Utils.generateRandomString(32);
+    const refreshTokenHash = await TokenHashUtils.hashToken(refreshToken);
     const accessToken = Base64Utils.generateRandomString(32);
+    const accessTokenHash = await TokenHashUtils.hashToken(accessToken);
     const expiresAt = new Date(Date.now() + OAUTH_ACCESS_TOKEN_EXPIRES_IN_SECONDS * 1000);
 
-    // Store connection
+    // Store connection with hashed tokens
     await this.databaseService.get().insert(oauthConnections).values({
-      refreshToken,
-      accessToken,
+      refreshTokenHash,
+      accessTokenHash,
       clientId: request.client_id,
       scope: record.scope,
       tokenType: "Bearer",
@@ -165,12 +170,14 @@ export class OAuthAuthorizationService {
   ): Promise<OAuthTokenResponse> {
     await this.assertClient(request.client_id);
 
-    // Find connection by refresh token
+    const refreshTokenHash = await TokenHashUtils.hashToken(request.refresh_token);
+
+    // Find connection by refresh token hash
     const connections = await this.databaseService
       .get()
       .select()
       .from(oauthConnections)
-      .where(eq(oauthConnections.refreshToken, request.refresh_token))
+      .where(eq(oauthConnections.refreshTokenHash, refreshTokenHash))
       .limit(1);
 
     if (connections.length === 0) {
@@ -193,16 +200,18 @@ export class OAuthAuthorizationService {
 
     // Generate new tokens
     const newAccessToken = Base64Utils.generateRandomString(32);
+    const newAccessTokenHash = await TokenHashUtils.hashToken(newAccessToken);
     const newRefreshToken = Base64Utils.generateRandomString(32);
+    const newRefreshTokenHash = await TokenHashUtils.hashToken(newRefreshToken);
     const expiresAt = new Date(Date.now() + OAUTH_ACCESS_TOKEN_EXPIRES_IN_SECONDS * 1000);
 
-    // Update connection
+    // Update connection with hashed tokens
     await this.databaseService
       .get()
       .update(oauthConnections)
       .set({
-        accessToken: newAccessToken,
-        refreshToken: newRefreshToken,
+        accessTokenHash: newAccessTokenHash,
+        refreshTokenHash: newRefreshTokenHash,
         expiresAt: expiresAt.toISOString(),
       })
       .where(eq(oauthConnections.id, connection.id));
@@ -220,11 +229,13 @@ export class OAuthAuthorizationService {
   public async revokeToken(request: OAuthRevokeRequest): Promise<void> {
     await this.assertClient(request.client_id);
 
-    // Try to delete from connections
+    const tokenHash = await TokenHashUtils.hashToken(request.token);
+
+    // Try to delete from connections using refresh token hash
     const deleted = await this.databaseService
       .get()
       .delete(oauthConnections)
-      .where(eq(oauthConnections.refreshToken, request.token))
+      .where(eq(oauthConnections.refreshTokenHash, tokenHash))
       .returning({ id: oauthConnections.id });
 
     if (deleted.length === 0) {
@@ -232,7 +243,7 @@ export class OAuthAuthorizationService {
       await this.databaseService
         .get()
         .delete(oauthConnections)
-        .where(eq(oauthConnections.accessToken, request.token));
+        .where(eq(oauthConnections.accessTokenHash, tokenHash));
     }
   }
 
@@ -244,12 +255,14 @@ export class OAuthAuthorizationService {
     user: unknown;
     resource?: string | null;
   }> {
+    const codeHash = await TokenHashUtils.hashToken(code);
+
+    // Atomically delete and return the authorization code record
     const records = await this.databaseService
       .get()
-      .select()
-      .from(oauthAuthorizationCodes)
-      .where(eq(oauthAuthorizationCodes.code, code))
-      .limit(1);
+      .delete(oauthAuthorizationCodes)
+      .where(eq(oauthAuthorizationCodes.codeHash, codeHash))
+      .returning();
 
     if (records.length === 0) {
       throw new ServerError(
@@ -262,23 +275,12 @@ export class OAuthAuthorizationService {
     const record = records[0];
 
     if (new Date(record.expiresAt) < new Date()) {
-      await this.databaseService
-        .get()
-        .delete(oauthAuthorizationCodes)
-        .where(eq(oauthAuthorizationCodes.code, code));
-
       throw new ServerError(
         "EXPIRED_OAUTH_CODE",
         "OAuth authorization code has expired",
         400,
       );
     }
-
-    // Delete the code (one-time use)
-    await this.databaseService
-      .get()
-      .delete(oauthAuthorizationCodes)
-      .where(eq(oauthAuthorizationCodes.code, code));
 
     return record;
   }
@@ -323,11 +325,13 @@ export class OAuthAuthorizationService {
     user: unknown;
     resource?: string | null;
   } | null> {
+    const accessTokenHash = await TokenHashUtils.hashToken(accessToken);
+
     const connections = await this.databaseService
       .get()
       .select()
       .from(oauthConnections)
-      .where(eq(oauthConnections.accessToken, accessToken))
+      .where(eq(oauthConnections.accessTokenHash, accessTokenHash))
       .limit(1);
 
     if (connections.length === 0) {
