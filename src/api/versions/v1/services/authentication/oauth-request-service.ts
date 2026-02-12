@@ -3,6 +3,8 @@ import { KVService } from "../../../../../core/services/kv-service.ts";
 import type { OAuthRequestData } from "../../interfaces/authentication/oauth-request-data-interface.ts";
 import { ServerError } from "../../models/server-error.ts";
 import type { OAuthAuthorizeQuery } from "../../schemas/oauth-schemas.ts";
+import { OAuthAuthorizationService } from "./oauth-authorization-service.ts";
+import { ENV_OAUTH_APP_BASE_URL } from "../../constants/environment-constants.ts";
 
 @injectable()
 export class OAuthRequestService {
@@ -10,11 +12,29 @@ export class OAuthRequestService {
 
   constructor(
     private kvService = inject(KVService),
+    private oauthAuthorizationService = inject(OAuthAuthorizationService),
   ) {}
 
-  public async createRequest(
+  public async initiateAuthorizationRequest(
     query: OAuthAuthorizeQuery,
   ): Promise<string> {
+    await this.oauthAuthorizationService.assertClient(query.client_id);
+    await this.oauthAuthorizationService.assertRedirectUri(
+      query.client_id,
+      query.redirect_uri,
+    );
+
+    const requestId = await this.createRequest(query);
+
+    const frontendUrl =
+      Deno.env.get(ENV_OAUTH_APP_BASE_URL) || "http://localhost:5173";
+    const redirectUrl = new URL("/authorize", frontendUrl);
+    redirectUrl.searchParams.set("request_id", requestId);
+
+    return redirectUrl.toString();
+  }
+
+  public async createRequest(query: OAuthAuthorizeQuery): Promise<string> {
     const requestId = crypto.randomUUID();
     const now = Date.now();
 

@@ -17,7 +17,6 @@ import {
 } from "../../schemas/oauth-schemas.ts";
 import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
 import { ServerResponse } from "../../models/server-response.ts";
-import { ENV_OAUTH_FRONTEND_URL } from "../../constants/environment-constants.ts";
 
 @injectable()
 export class PublicOAuthRouter {
@@ -80,8 +79,8 @@ export class PublicOAuthRouter {
           await context.req.json(),
         );
 
-        const response = await this.oauthClientRegistryService
-          .registerPublicClient(payload);
+        const response =
+          await this.oauthClientRegistryService.registerPublicClient(payload);
 
         return context.json(response, 201);
       },
@@ -108,21 +107,9 @@ export class PublicOAuthRouter {
       }),
       async (context: Context) => {
         const query = OAuthAuthorizeQuerySchema.parse(context.req.query());
-
-        await this.oauthAuthorizationService.assertClient(query.client_id);
-        await this.oauthAuthorizationService.assertRedirectUri(
-          query.client_id,
-          query.redirect_uri,
-        );
-
-        const requestId = await this.oauthRequestService.createRequest(query);
-
-        const frontendUrl = Deno.env.get(ENV_OAUTH_FRONTEND_URL) ||
-          "http://localhost:5173";
-        const redirectUrl = new URL("/authorize", frontendUrl);
-        redirectUrl.searchParams.set("request_id", requestId);
-
-        return context.redirect(redirectUrl.toString(), 302);
+        const redirectUrl =
+          await this.oauthRequestService.initiateAuthorizationRequest(query);
+        return context.redirect(redirectUrl, 302);
       },
     );
   }
@@ -158,14 +145,17 @@ export class PublicOAuthRouter {
         const { request_id } = context.req.param();
         const request = await this.oauthRequestService.getRequest(request_id);
 
-        return context.json({
-          requestId: request.requestId,
-          clientId: request.clientId,
-          scope: request.scope,
-          status: request.status,
-          createdAt: request.createdAt,
-          expiresAt: request.expiresAt,
-        }, 200);
+        return context.json(
+          {
+            requestId: request.requestId,
+            clientId: request.clientId,
+            scope: request.scope,
+            status: request.status,
+            createdAt: request.createdAt,
+            expiresAt: request.expiresAt,
+          },
+          200,
+        );
       },
     );
   }
@@ -205,8 +195,10 @@ export class PublicOAuthRouter {
       async (context: Context) => {
         const body = await context.req.parseBody();
         const payload = OAuthTokenRequestSchema.parse(body);
-        const tokenResponse = await this.oauthAuthorizationService
-          .exchangeAuthorizationCode(payload);
+        const tokenResponse =
+          await this.oauthAuthorizationService.exchangeAuthorizationCode(
+            payload,
+          );
 
         return context.json(tokenResponse, 200);
       },
