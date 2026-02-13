@@ -1,1 +1,0 @@
-ALTER TABLE "oauth_authorization_codes" DROP COLUMN "access_token_hash";

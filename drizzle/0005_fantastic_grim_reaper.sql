@@ -1,9 +1,0 @@
-ALTER TABLE "oauth_authorization_codes" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-ALTER TABLE "oauth_clients" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-ALTER TABLE "oauth_connections" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-CREATE POLICY "oauth_authorization_codes_select_own" ON "oauth_authorization_codes" AS PERMISSIVE FOR SELECT TO "authenticated_user" USING ((current_setting('app.client_id', true)::string = "oauth_authorization_codes"."client_id"));--> statement-breakpoint
-CREATE POLICY "oauth_authorization_codes_delete_own" ON "oauth_authorization_codes" AS PERMISSIVE FOR DELETE TO "authenticated_user" USING ((current_setting('app.client_id', true)::string = "oauth_authorization_codes"."client_id"));--> statement-breakpoint
-CREATE POLICY "oauth_clients_select_own" ON "oauth_clients" AS PERMISSIVE FOR SELECT TO "authenticated_user" USING ((current_setting('app.client_id', true)::string = "oauth_clients"."client_id"));--> statement-breakpoint
-CREATE POLICY "oauth_clients_update_own" ON "oauth_clients" AS PERMISSIVE FOR UPDATE TO "authenticated_user" USING ((current_setting('app.client_id', true)::string = "oauth_clients"."client_id")) WITH CHECK ((current_setting('app.client_id', true)::string = "oauth_clients"."client_id"));--> statement-breakpoint
-CREATE POLICY "oauth_connections_select_own" ON "oauth_connections" AS PERMISSIVE FOR SELECT TO "authenticated_user" USING ((current_setting('app.client_id', true)::string = "oauth_connections"."client_id"));--> statement-breakpoint
-CREATE POLICY "oauth_connections_update_own" ON "oauth_connections" AS PERMISSIVE FOR UPDATE TO "authenticated_user" USING ((current_setting('app.client_id', true)::string = "oauth_connections"."client_id")) WITH CHECK ((current_setting('app.client_id', true)::string = "oauth_connections"."client_id"));

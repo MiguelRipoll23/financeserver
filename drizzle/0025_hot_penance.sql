@@ -1,1 +1,0 @@
-ALTER TABLE "bank_accounts" ADD COLUMN "type" "bank_account_type" DEFAULT 'checking' NOT NULL;
