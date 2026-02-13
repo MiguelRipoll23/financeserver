@@ -9,4 +9,4 @@ export const authenticatedUserRole = pgRole("authenticated_user", {
 
 // Helper function to check if current user ID matches a client ID column
 export const isCurrentClient = (clientIdColumn: AnyPgColumn) =>
-  sql`(current_setting('app.client_id', true)::string = ${clientIdColumn})`;
+  sql`(current_setting('app.client_id', true)::text = ${clientIdColumn})`;
