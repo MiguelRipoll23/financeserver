@@ -1,1 +1,0 @@
-CREATE POLICY "oauth_connections_delete_own" ON "oauth_connections" AS PERMISSIVE FOR DELETE TO "authenticated_user" USING ((current_setting('app.client_id', true)::string = "oauth_connections"."client_id"));

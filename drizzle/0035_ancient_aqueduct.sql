@@ -1,1 +1,0 @@
-ALTER TABLE "passkeys" DROP COLUMN "display_name";
