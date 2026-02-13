@@ -1,5 +1,5 @@
 {
-  "id": "2eec8def-ad98-4ffe-bdfb-21259b0d4dda",
+  "id": "cecff218-e67c-4c9e-be49-631248bf75ad",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1479,7 +1479,7 @@
           "to": [
             "authenticated_user"
           ],
-          "using": "(current_setting('app.client_id', true)::string = \"oauth_authorization_codes\".\"client_id\")"
+          "using": "(current_setting('app.client_id', true)::text = \"oauth_authorization_codes\".\"client_id\")"
         },
         "oauth_authorization_codes_delete_own": {
           "name": "oauth_authorization_codes_delete_own",
@@ -1488,7 +1488,7 @@
           "to": [
             "authenticated_user"
           ],
-          "using": "(current_setting('app.client_id', true)::string = \"oauth_authorization_codes\".\"client_id\")"
+          "using": "(current_setting('app.client_id', true)::text = \"oauth_authorization_codes\".\"client_id\")"
         }
       },
       "checkConstraints": {
@@ -1578,7 +1578,7 @@
           "to": [
             "authenticated_user"
           ],
-          "using": "(current_setting('app.client_id', true)::string = \"oauth_clients\".\"client_id\")"
+          "using": "(current_setting('app.client_id', true)::text = \"oauth_clients\".\"client_id\")"
         },
         "oauth_clients_update_own": {
           "name": "oauth_clients_update_own",
@@ -1587,8 +1587,8 @@
           "to": [
             "authenticated_user"
           ],
-          "using": "(current_setting('app.client_id', true)::string = \"oauth_clients\".\"client_id\")",
-          "withCheck": "(current_setting('app.client_id', true)::string = \"oauth_clients\".\"client_id\")"
+          "using": "(current_setting('app.client_id', true)::text = \"oauth_clients\".\"client_id\")",
+          "withCheck": "(current_setting('app.client_id', true)::text = \"oauth_clients\".\"client_id\")"
         }
       },
       "checkConstraints": {
@@ -1733,7 +1733,7 @@
           "to": [
             "authenticated_user"
           ],
-          "using": "(current_setting('app.client_id', true)::string = \"oauth_connections\".\"client_id\")"
+          "using": "(current_setting('app.client_id', true)::text = \"oauth_connections\".\"client_id\")"
         },
         "oauth_connections_update_own": {
           "name": "oauth_connections_update_own",
@@ -1742,8 +1742,8 @@
           "to": [
             "authenticated_user"
           ],
-          "using": "(current_setting('app.client_id', true)::string = \"oauth_connections\".\"client_id\")",
-          "withCheck": "(current_setting('app.client_id', true)::string = \"oauth_connections\".\"client_id\")"
+          "using": "(current_setting('app.client_id', true)::text = \"oauth_connections\".\"client_id\")",
+          "withCheck": "(current_setting('app.client_id', true)::text = \"oauth_connections\".\"client_id\")"
         },
         "oauth_connections_delete_own": {
           "name": "oauth_connections_delete_own",
@@ -1752,7 +1752,7 @@
           "to": [
             "authenticated_user"
           ],
-          "using": "(current_setting('app.client_id', true)::string = \"oauth_connections\".\"client_id\")"
+          "using": "(current_setting('app.client_id', true)::text = \"oauth_connections\".\"client_id\")"
         }
       },
       "checkConstraints": {
@@ -2849,7 +2849,14 @@
   },
   "schemas": {},
   "sequences": {},
-  "roles": {},
+  "roles": {
+    "authenticated_user": {
+      "name": "authenticated_user",
+      "createDb": false,
+      "createRole": true,
+      "inherit": true
+    }
+  },
   "policies": {},
   "views": {},
   "_meta": {

@@ -2,6 +2,7 @@ CREATE TYPE "public"."balance_type" AS ENUM('deposit', 'withdrawal', 'adjustment
 CREATE TYPE "public"."bank_account_type" AS ENUM('checking', 'savings', 'credit_card', 'investment', 'loan', 'deposit', 'other');--> statement-breakpoint
 CREATE TYPE "public"."fee_frequency" AS ENUM('monthly', 'quarterly', 'yearly');--> statement-breakpoint
 CREATE TYPE "public"."recurrence" AS ENUM('weekly', 'bi-weekly', 'monthly', 'yearly');--> statement-breakpoint
+CREATE ROLE "authenticated_user" WITH CREATEROLE;--> statement-breakpoint
 CREATE TABLE "bank_account_balances" (
 	"id" bigserial PRIMARY KEY NOT NULL,
 	"bank_account_id" bigint NOT NULL,
@@ -366,10 +367,10 @@ CREATE INDEX "subscription_prices_effective_until_idx" ON "subscription_prices" 
 CREATE INDEX "subscription_prices_subscription_id_effective_from_desc_idx" ON "subscription_prices" USING btree ("subscription_id","effective_from" DESC NULLS LAST);--> statement-breakpoint
 CREATE INDEX "subscription_prices_effective_dates_idx" ON "subscription_prices" USING btree ("effective_from","effective_until");--> statement-breakpoint
 CREATE INDEX "idx_subscriptions_is_active" ON "subscriptions" USING btree ("is_active");--> statement-breakpoint
-CREATE POLICY "oauth_authorization_codes_select_own" ON "oauth_authorization_codes" AS PERMISSIVE FOR SELECT TO "authenticated_user" USING ((current_setting('app.client_id', true)::string = "oauth_authorization_codes"."client_id"));--> statement-breakpoint
-CREATE POLICY "oauth_authorization_codes_delete_own" ON "oauth_authorization_codes" AS PERMISSIVE FOR DELETE TO "authenticated_user" USING ((current_setting('app.client_id', true)::string = "oauth_authorization_codes"."client_id"));--> statement-breakpoint
-CREATE POLICY "oauth_clients_select_own" ON "oauth_clients" AS PERMISSIVE FOR SELECT TO "authenticated_user" USING ((current_setting('app.client_id', true)::string = "oauth_clients"."client_id"));--> statement-breakpoint
-CREATE POLICY "oauth_clients_update_own" ON "oauth_clients" AS PERMISSIVE FOR UPDATE TO "authenticated_user" USING ((current_setting('app.client_id', true)::string = "oauth_clients"."client_id")) WITH CHECK ((current_setting('app.client_id', true)::string = "oauth_clients"."client_id"));--> statement-breakpoint
-CREATE POLICY "oauth_connections_select_own" ON "oauth_connections" AS PERMISSIVE FOR SELECT TO "authenticated_user" USING ((current_setting('app.client_id', true)::string = "oauth_connections"."client_id"));--> statement-breakpoint
-CREATE POLICY "oauth_connections_update_own" ON "oauth_connections" AS PERMISSIVE FOR UPDATE TO "authenticated_user" USING ((current_setting('app.client_id', true)::string = "oauth_connections"."client_id")) WITH CHECK ((current_setting('app.client_id', true)::string = "oauth_connections"."client_id"));--> statement-breakpoint
-CREATE POLICY "oauth_connections_delete_own" ON "oauth_connections" AS PERMISSIVE FOR DELETE TO "authenticated_user" USING ((current_setting('app.client_id', true)::string = "oauth_connections"."client_id"));
+CREATE POLICY "oauth_authorization_codes_select_own" ON "oauth_authorization_codes" AS PERMISSIVE FOR SELECT TO "authenticated_user" USING ((current_setting('app.client_id', true)::text = "oauth_authorization_codes"."client_id"));--> statement-breakpoint
+CREATE POLICY "oauth_authorization_codes_delete_own" ON "oauth_authorization_codes" AS PERMISSIVE FOR DELETE TO "authenticated_user" USING ((current_setting('app.client_id', true)::text = "oauth_authorization_codes"."client_id"));--> statement-breakpoint
+CREATE POLICY "oauth_clients_select_own" ON "oauth_clients" AS PERMISSIVE FOR SELECT TO "authenticated_user" USING ((current_setting('app.client_id', true)::text = "oauth_clients"."client_id"));--> statement-breakpoint
+CREATE POLICY "oauth_clients_update_own" ON "oauth_clients" AS PERMISSIVE FOR UPDATE TO "authenticated_user" USING ((current_setting('app.client_id', true)::text = "oauth_clients"."client_id")) WITH CHECK ((current_setting('app.client_id', true)::text = "oauth_clients"."client_id"));--> statement-breakpoint
+CREATE POLICY "oauth_connections_select_own" ON "oauth_connections" AS PERMISSIVE FOR SELECT TO "authenticated_user" USING ((current_setting('app.client_id', true)::text = "oauth_connections"."client_id"));--> statement-breakpoint
+CREATE POLICY "oauth_connections_update_own" ON "oauth_connections" AS PERMISSIVE FOR UPDATE TO "authenticated_user" USING ((current_setting('app.client_id', true)::text = "oauth_connections"."client_id")) WITH CHECK ((current_setting('app.client_id', true)::text = "oauth_connections"."client_id"));--> statement-breakpoint
+CREATE POLICY "oauth_connections_delete_own" ON "oauth_connections" AS PERMISSIVE FOR DELETE TO "authenticated_user" USING ((current_setting('app.client_id', true)::text = "oauth_connections"."client_id"));
