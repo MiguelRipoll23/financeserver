@@ -2,6 +2,7 @@ CREATE TYPE "public"."balance_type" AS ENUM('deposit', 'withdrawal', 'adjustment
 CREATE TYPE "public"."bank_account_type" AS ENUM('checking', 'savings', 'credit_card', 'investment', 'loan', 'deposit', 'other');--> statement-breakpoint
 CREATE TYPE "public"."fee_frequency" AS ENUM('monthly', 'quarterly', 'yearly');--> statement-breakpoint
 CREATE TYPE "public"."recurrence" AS ENUM('weekly', 'bi-weekly', 'monthly', 'yearly');--> statement-breakpoint
+CREATE ROLE "authenticated_user" WITH CREATEROLE;--> statement-breakpoint
 CREATE TABLE "bank_account_balances" (
 	"id" bigserial PRIMARY KEY NOT NULL,
 	"bank_account_id" bigint NOT NULL,

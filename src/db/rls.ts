@@ -1,10 +1,11 @@
 import { sql } from "drizzle-orm";
+import { pgRole } from "drizzle-orm/pg-core";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 
-// Define role name constant for Row Level Security
-// Note: The role is created in migration 0000_friendly_night_nurse.sql
-// We use a string reference instead of pgRole to avoid recreation attempts
-export const authenticatedUserRole = "authenticated_user";
+// Define the authenticated_user role for Row Level Security
+export const authenticatedUserRole = pgRole("authenticated_user", {
+  createRole: true,
+});
 
 // Helper function to check if current user ID matches a client ID column
 export const isCurrentClient = (clientIdColumn: AnyPgColumn) =>
