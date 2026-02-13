@@ -3,9 +3,7 @@ import { pgRole } from "drizzle-orm/pg-core";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 
 // Define the authenticated_user role for Row Level Security
-export const authenticatedUserRole = pgRole("authenticated_user", {
-  createRole: true,
-});
+export const authenticatedUserRole = pgRole("authenticated_user");
 
 // Helper function to check if current user ID matches a client ID column
 export const isCurrentClient = (clientIdColumn: AnyPgColumn) =>
