@@ -1,5 +1,5 @@
 {
-"imports": {
+  "imports": {
     "@ai-sdk/openai": "npm:@ai-sdk/openai@^3.0.26",
     "ai": "npm:ai@^6.0.77",
     "@hono/zod-openapi": "npm:@hono/zod-openapi@^1.2.1",
@@ -46,5 +46,12 @@
     "studio": "deno run --permission-set=database --node-modules-dir npm:drizzle-kit studio",
     "generate": "deno run --permission-set=database --node-modules-dir npm:drizzle-kit generate",
     "push": "deno run --permission-set=database --node-modules-dir npm:drizzle-kit push"
+  },
+  "deploy": {
+    "predeploy": "deno task push",
+    "runtime": {
+      "entrypoint": "src/main.ts",
+      "args": ["--unstable-kv"]
+    }
   }
 }
