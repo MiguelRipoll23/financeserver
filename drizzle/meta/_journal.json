@@ -8,6 +8,13 @@
       "when": 1771003273582,
       "tag": "0000_clean_scarlet_witch",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1771075765735,
+      "tag": "0001_next_shinobi_shaw",
+      "breakpoints": true
     }
   ]
 }

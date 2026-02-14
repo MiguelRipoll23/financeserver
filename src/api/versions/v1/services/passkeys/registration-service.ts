@@ -115,7 +115,7 @@ export class PasskeyRegistrationService {
     // Save passkey to database with displayName
     const { credential } = verification.registrationInfo;
     await this.databaseService.get().insert(passkeysTable).values({
-      credentialId: credential.id,
+      id: credential.id,
       publicKey: Buffer.from(credential.publicKey).toString("base64url"),
       counter: credential.counter,
       transports: sanitizedTransports,

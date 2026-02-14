@@ -74,7 +74,7 @@ export class OAuthAuthorizationService {
       scope: request.scope,
       tokenType: "Bearer",
       user: {
-        id: principal.passkeyId,
+        id: principal.id,
         displayName: principal.displayName,
       },
       resource: request.resource,

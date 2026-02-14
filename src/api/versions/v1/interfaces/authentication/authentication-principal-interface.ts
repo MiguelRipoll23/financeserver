@@ -1,4 +1,4 @@
 export interface AuthenticationPrincipal {
-  passkeyId: string;
+  id: string;
   displayName?: string;
 }

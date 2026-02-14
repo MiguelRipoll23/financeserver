@@ -2,16 +2,13 @@ import {
   pgTable,
   text,
   timestamp,
-  uniqueIndex,
-  uuid,
   integer,
 } from "drizzle-orm/pg-core";
 
 export const passkeysTable = pgTable(
   "passkeys",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    credentialId: text("credential_id").notNull(),
+    id: text("id").primaryKey(),
     publicKey: text("public_key").notNull(),
     counter: integer("counter").notNull(),
     transports: text("transports").array(),
@@ -21,9 +18,6 @@ export const passkeysTable = pgTable(
       .notNull(),
     lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
   },
-  (table) => [
-    uniqueIndex("passkeys_credential_id_unique").on(table.credentialId),
-  ]
 );
 
 export type PasskeyEntity = typeof passkeysTable.$inferSelect;
