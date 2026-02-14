@@ -8,35 +8,33 @@ A finance server that helps you manage your portfolio and expenses using an Open
 
 Follow the steps below after using the Deploy button above this section:
 
-- On the Deno Deploy project page go to Settings → Environment Variables.
-- Drag & drop a .env.example file onto the Environment Variables panel, or click
-  Import and select the file.
+- On the Deno Deploy project page, go to Settings → Environment Variables.
+- Drag and drop the `.env.example` file from this repository onto the Environment
+  Variables panel, or click Import and select the file.
 
 ## Database configuration
 
 Below is a short example showing how to create and connect a Neon database and
-point the app's `DATABASE_URL` environment variable to it.
-
-Example service — Neon:
+point the app:
 
 - Sign up at [Neon](https://neon.tech) and create a new project.
 - Create a database branch (Neon uses branches for isolated environments).
-- From the Neon dashboard open "Connection strings" and copy the PostgreSQL
 - From the Neon dashboard, open "Connection strings" and copy the PostgreSQL
   connection URL for the branch you created.
 - Paste that URL into your deployment or local `.env` file as `DATABASE_URL`.
 
 ## OpenAI configuration
 
-Configure the OpenAI-compatible LLM settings in your `.env` file:
+Configure the OpenAI-compatible LLM settings in your deployment or local
+`.env` file:
 
-- `OPENAI_API_KEY` — your API key for the LLM provider
-- `OPENAI_BASE_URL` — base URL for the LLM API
+- `OPENAI_API_KEY` — your API key for the LLM provider.
+- `OPENAI_BASE_URL` — base URL for the LLM API.
 
 Example provider — OpenCode Zen:
 
-- Base URL: `https://opencode.ai/zen/v1` (set in `OPENAI_BASE_URL`)
-- Create an API key at [OpenCode Auth](https://opencode.ai/auth)
+- Base URL: `https://opencode.ai/zen/v1` (set in `OPENAI_BASE_URL`).
+- Create an API key at [OpenCode Auth](https://opencode.ai/auth).
 
 ## OAuth & WebAuthn configuration
 
