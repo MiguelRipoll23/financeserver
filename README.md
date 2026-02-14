@@ -12,7 +12,7 @@ Follow the steps below after using the Deploy on Deno button at the top of this
 README.
 
 - On the Deno Deploy project page go to Settings → Environment Variables.
-- Drag & drop a `.env.template` file onto the Environment Variables panel, or
+- Drag & drop a .env.example file onto the Environment Variables panel, or
   click Import and select the file. Deno Deploy will parse the key/value pairs
   and show them for review.
 
