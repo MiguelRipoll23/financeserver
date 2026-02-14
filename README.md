@@ -1,8 +1,6 @@
 # Finance server
 
-A Deno-based finance server with MCP integration that helps you manage bills,
-subscriptions, receipts, and investment portfolios through natural-language
-interactions and programmatic MCP tools.
+A finance server that helps you manage your portfolio and expenses using an OpenAPI-documented API and MCP tools.
 
 [![Deploy on Deno](https://deno.com/button)](https://console.deno.com/new?clone=https://github.com/MiguelRipoll23/financeserver&predeploy=deno%20task%20push)
 
@@ -13,9 +11,6 @@ Follow the steps below after using the Deploy button above this section:
 - On the Deno Deploy project page go to Settings → Environment Variables.
 - Drag & drop a .env.example file onto the Environment Variables panel, or click
   Import and select the file.
-- On the Deno Deploy project page, go to Settings → Environment Variables.
-- Drag and drop a `.env.example` file onto the Environment Variables panel, or
-  click Import and select the file.
 
 ## Database configuration
 
