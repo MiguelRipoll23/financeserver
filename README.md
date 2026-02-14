@@ -4,7 +4,7 @@ A finance server that helps you manage your portfolio and expenses using an Open
 
 [![Deploy on Deno](https://deno.com/button)](https://console.deno.com/new?clone=https://github.com/MiguelRipoll23/financeserver&predeploy=deno%20task%20push)
 
-## Deno Deploy configuration
+## Configuration
 
 Follow the steps below after using the Deploy button above this section:
 
@@ -12,7 +12,7 @@ Follow the steps below after using the Deploy button above this section:
 - Drag and drop the `.env.example` file from this repository onto the Environment
   Variables panel, or click Import and select the file.
 
-## Database configuration
+### Database configuration
 
 Below is a short example showing how to create and connect a Neon database and
 point the app:
@@ -23,7 +23,7 @@ point the app:
   connection URL for the branch you created.
 - Paste that URL into your deployment or local `.env` file as `DATABASE_URL`.
 
-## OpenAI configuration
+### OpenAI configuration
 
 Configure the OpenAI-compatible LLM settings in your deployment or local
 `.env` file:
@@ -36,7 +36,7 @@ Example provider — OpenCode Zen:
 - Base URL: `https://opencode.ai/zen/v1` (set in `OPENAI_BASE_URL`).
 - Create an API key at [OpenCode Auth](https://opencode.ai/auth).
 
-## OAuth & WebAuthn configuration
+### OAuth & WebAuthn configuration
 
 This project includes OAuth and WebAuthn flows used by MCP clients and the
 front-end application.
@@ -51,7 +51,7 @@ To use these features, set the following environment variables:
 If you want to use the front-end too,
 [see this repository](https://github.com/MiguelRipoll23/pasta)
 
-### Running the server
+## Running the server
 
 Start the server in development mode:
 
