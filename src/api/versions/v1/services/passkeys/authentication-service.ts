@@ -78,7 +78,7 @@ export class PasskeyAuthenticationService {
       .get()
       .select()
       .from(passkeysTable)
-      .where(eq(passkeysTable.credentialId, authenticationResponse.id))
+      .where(eq(passkeysTable.id, authenticationResponse.id))
       .limit(1)
       .then((res: PasskeyEntity[]) => res[0]);
 
@@ -92,7 +92,7 @@ export class PasskeyAuthenticationService {
       expectedOrigin: origin,
       expectedRPID,
       credential: {
-        id: passkey.credentialId,
+        id: passkey.id,
         publicKey: new Uint8Array(
           Buffer.from(passkey.publicKey, "base64url"),
         ),

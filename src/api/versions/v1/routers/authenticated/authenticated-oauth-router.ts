@@ -64,10 +64,10 @@ export class AuthenticatedOAuthRouter {
         const { request_id } = context.req.param();
 
         // Validate user context first
-        const passkeyId = context.get("userId");
+        const id = context.get("userId");
         const displayName = context.get("userDisplayName");
 
-        if (!passkeyId) {
+        if (!id) {
           throw new ServerError(
             "UNAUTHORIZED",
             "Authentication required to approve OAuth request",
@@ -76,7 +76,7 @@ export class AuthenticatedOAuthRouter {
         }
 
         const principal = {
-          passkeyId,
+          id,
           displayName,
         };
 
