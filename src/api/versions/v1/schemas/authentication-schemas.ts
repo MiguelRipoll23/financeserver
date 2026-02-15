@@ -1,4 +1,5 @@
 import { z } from "@hono/zod-openapi";
+import type { AuthenticationResponseJSON } from "@simplewebauthn/server";
 
 export const GetAuthenticationOptionsRequestSchema = z.object({
   transactionId: z
@@ -37,7 +38,7 @@ export const VerifyAuthenticationRequestSchema = z.object({
       example: "00000000-0000-0000-0000-000000000000",
     }),
   authenticationResponse: z
-    .looseObject({})
+    .custom<AuthenticationResponseJSON>((val) => typeof val === "object" && val !== null)
     .describe("The authentication response from the authenticator"),
 });
 

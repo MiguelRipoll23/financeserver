@@ -135,7 +135,7 @@ export class AuthenticatedRegistrationRouter {
           origin,
           requestUrl,
           transactionId,
-          registrationResponse as any, // Zod validation ensures correct shape
+          registrationResponse,
         );
 
         return c.json(response, 200);

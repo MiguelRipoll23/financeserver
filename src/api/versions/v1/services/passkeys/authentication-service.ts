@@ -25,11 +25,7 @@ export class PasskeyAuthenticationService {
     private jwtService = inject(JWTService),
   ) {}
 
-  public async getLoginOptions(
-    origin: string,
-    requestUrl: string,
-    transactionId: string,
-  ) {
+  public async getLoginOptions(origin: string, transactionId: string) {
     // Validate origin is allowed
     if (!WebAuthnUtils.isOriginAllowed(origin)) {
       throw new ServerError(

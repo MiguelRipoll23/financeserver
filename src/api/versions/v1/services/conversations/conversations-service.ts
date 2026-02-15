@@ -8,6 +8,7 @@ import {
   type StreamTextResult,
   type TextPart,
   tool as aiTool,
+  type Tool,
 } from "ai";
 import { MCPService } from "../mcp-server.ts";
 import { SendMessageRequest } from "../../schemas/conversations-schemas.ts";
@@ -16,6 +17,7 @@ import {
   ENV_OPENAI_API_KEY,
   ENV_OPENAI_BASE_URL,
 } from "../../constants/environment-constants.ts";
+import { OPENAI_SYSTEM_PROMPT } from "../../constants/ai-constants.ts";
 import {
   MAX_SESSION_CACHE_ENTRIES,
   SESSION_TTL_MS,
@@ -44,16 +46,19 @@ export class ConversationsService {
   constructor(private mcpService = inject(MCPService)) {
     // Start cleanup job if not already started
     if (ConversationsService.cleanupInterval === null) {
-      ConversationsService.cleanupInterval = setInterval(() => {
-        const expiredSessions = ConversationsService.sessions.evictExpired();
-        const expiredImages = ConversationsService.imageAttachments
-          .evictExpired();
-        if (expiredSessions > 0 || expiredImages > 0) {
-          console.log(
-            `Cleaned up ${expiredSessions} expired sessions and ${expiredImages} expired image attachments`,
-          );
-        }
-      }, 60 * 60 * 1000); // Run every hour
+      ConversationsService.cleanupInterval = setInterval(
+        () => {
+          const expiredSessions = ConversationsService.sessions.evictExpired();
+          const expiredImages =
+            ConversationsService.imageAttachments.evictExpired();
+          if (expiredSessions > 0 || expiredImages > 0) {
+            console.log(
+              `Cleaned up ${expiredSessions} expired sessions and ${expiredImages} expired image attachments`,
+            );
+          }
+        },
+        60 * 60 * 1000,
+      ); // Run every hour
     }
   }
 
@@ -89,7 +94,7 @@ export class ConversationsService {
 
     const fetchUrl = `${baseUrl.replace(/\/+$/, "")}/models`;
     const headers = {
-      "Authorization": `Bearer ${apiKey}`,
+      Authorization: `Bearer ${apiKey}`,
     };
 
     const response = await fetch(fetchUrl, { headers });
@@ -132,15 +137,15 @@ export class ConversationsService {
 
   private getTools(
     mcpServer: "GLOBAL" | "PORTFOLIO" | "EXPENSES",
-  ): Record<string, any> {
+  ): Record<string, Tool> {
     const mcpTools = this.mcpService.getToolsForServer(mcpServer);
-    const tools: Record<string, any> = {};
+    const tools: Record<string, Tool> = {};
 
     for (const mcpTool of mcpTools) {
       tools[mcpTool.name] = aiTool({
         description: mcpTool.meta.description || "",
         inputSchema: mcpTool.meta.inputSchema,
-        execute: async (args: any) => {
+        execute: async (args: unknown) => {
           const result = await mcpTool.run(args);
           return result.structured || result.text;
         },
@@ -227,6 +232,7 @@ export class ConversationsService {
 
   public async streamMessage(
     payload: SendMessageRequest,
+    // deno-lint-ignore no-explicit-any
   ): Promise<StreamTextResult<any, any>> {
     const { sessionId, userMessage, mcpServer, model } = payload;
 
@@ -258,14 +264,25 @@ export class ConversationsService {
         role: "user",
         content: messageContent,
       };
-      const messages = [...history, newMessage];
+
+      const systemMessage: ModelMessage = {
+        role: "system",
+        content: OPENAI_SYSTEM_PROMPT,
+      };
+
+      let messages: ModelMessage[];
+      if (history.length === 0 || history[0].role !== "system") {
+        messages = [systemMessage, ...history, newMessage];
+      } else {
+        messages = [...history, newMessage];
+      }
 
       return await streamText({
         model: aiModel,
         messages,
         tools,
         stopWhen: stepCountIs(25), // Allow up to 25 tool call steps
-        onFinish: async ({ response }) => {
+        onFinish: ({ response }) => {
           this.updateHistory(sessionId, [...messages, ...response.messages]);
         },
       });

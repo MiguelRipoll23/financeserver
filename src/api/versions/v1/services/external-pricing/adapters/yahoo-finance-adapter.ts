@@ -12,9 +12,9 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
   private readonly baseUrl =
     "https://query1.finance.yahoo.com/v8/finance/chart";
 
-  public async getCurrentPrice(
+  public getCurrentPrice(
     isin: string,
-    targetCurrencyCode: string,
+    _targetCurrencyCode: string,
   ): Promise<string | null> {
     try {
       // Note: Yahoo Finance doesn't directly support ISIN lookups
@@ -38,13 +38,13 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
       // const response = await fetch(url);
       // ... parse response and return price
 
-      return null;
+      return Promise.resolve(null);
     } catch (error) {
       console.error(
         `Error fetching index fund price from Yahoo Finance:`,
         error,
       );
-      return null;
+      return Promise.resolve(null);
     }
   }
 
@@ -52,7 +52,7 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
    * Placeholder for ISIN to ticker conversion
    * In production, implement using OpenFIGI API or similar
    */
-  private async convertIsinToTicker(isin: string): Promise<string | null> {
+  private convertIsinToTicker(_isin: string): string | null {
     // TODO: Implement ISIN to ticker conversion
     // Example using OpenFIGI:
     // const response = await fetch('https://api.openfigi.com/v3/mapping', {

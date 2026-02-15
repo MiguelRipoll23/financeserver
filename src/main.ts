@@ -10,12 +10,12 @@ databaseService.init();
 const httpService = container.get(HTTPService);
 await httpService.listen();
 
-Deno.addSignalListener("SIGTERM", async () => {
+Deno.addSignalListener("SIGTERM", () => {
   console.log("SIGTERM received. Shutting down gracefully...");
   Deno.exit(0);
 });
 
-Deno.addSignalListener("SIGINT", async () => {
+Deno.addSignalListener("SIGINT", () => {
   console.log("SIGINT received. Shutting down gracefully...");
   Deno.exit(0);
 });

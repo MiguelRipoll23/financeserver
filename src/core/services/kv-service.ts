@@ -104,7 +104,7 @@ export class KVService {
     return result.value;
   }
 
-  public async close(): Promise<void> {
+  public close(): void {
     if (this.kv !== null) {
       this.kv.close();
       this.kv = null;

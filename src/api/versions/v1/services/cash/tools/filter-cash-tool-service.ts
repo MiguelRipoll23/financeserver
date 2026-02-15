@@ -2,6 +2,7 @@ import { inject, injectable } from "@needle-di/core";
 import { McpToolDefinition } from "../../../interfaces/mcp/mcp-tool-interface.ts";
 import { CashService } from "../cash-service.ts";
 import { FilterCashToolSchema } from "../../../schemas/mcp-cash-schemas.ts";
+import type { CashSummary } from "../../../schemas/cash-schemas.ts";
 
 @injectable()
 export class FilterCashToolService {
@@ -35,7 +36,7 @@ export class FilterCashToolService {
 
         const count = result.results.length;
         const cashList = result.results
-          .map((cash: any) => `- ${cash.label} (ID: ${cash.id})`)
+          .map((cash: CashSummary) => `- ${cash.label} (ID: ${cash.id})`)
           .join("\n");
 
         let text = `Found ${count} cash source${count !== 1 ? "s" : ""}`;

@@ -24,7 +24,7 @@ export class PasskeyRegistrationService {
 
   public async getRegistrationOptions(
     origin: string,
-    requestUrl: string,
+    _requestUrl: string,
     transactionId: string,
     displayName: string,
   ) {

@@ -8,7 +8,6 @@ import {
 } from "../../schemas/conversations-schemas.ts";
 import { HonoVariables } from "../../../../../core/types/hono/hono-variables-type.ts";
 import type { Context } from "hono";
-import { streamText } from "hono/streaming";
 import { z } from "@hono/zod-openapi";
 import { ServerError } from "../../models/server-error.ts";
 import {
@@ -184,13 +183,13 @@ export class AuthenticatedConversationsRouter {
 
         const imageFile = body["image"];
 
-        if (!ALLOWED_IMAGE_MIME_TYPES.includes(imageFile.type as any)) {
+        if (!ALLOWED_IMAGE_MIME_TYPES.some((t) => t === imageFile.type)) {
           return c.json(
             {
               code: "INVALID_IMAGE_TYPE",
-              message: `Invalid image type. Allowed types: ${
-                ALLOWED_IMAGE_MIME_TYPES.join(", ")
-              }`,
+              message: `Invalid image type. Allowed types: ${ALLOWED_IMAGE_MIME_TYPES.join(
+                ", ",
+              )}`,
             },
             400,
           );

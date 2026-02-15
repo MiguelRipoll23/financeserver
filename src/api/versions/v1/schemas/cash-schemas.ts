@@ -80,6 +80,8 @@ export const CashSummarySchema = z.object({
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
 });
 
+export type CashSummary = z.infer<typeof CashSummarySchema>;
+
 export const GetCashResponseSchema = z.object({
   results: z.array(CashSummarySchema).describe("List of cash source summaries"),
   limit: z.number().int().describe("Maximum number of results returned"),

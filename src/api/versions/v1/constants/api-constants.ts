@@ -1,10 +1,10 @@
 // Image upload constants
 export const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB
-export const ALLOWED_IMAGE_MIME_TYPES = [
+export const ALLOWED_IMAGE_MIME_TYPES: string[] = [
   "image/png",
   "image/jpeg",
   "image/webp",
-] as const;
+];
 
 // Session cache constants
 export const MAX_SESSION_CACHE_ENTRIES = 1000;
