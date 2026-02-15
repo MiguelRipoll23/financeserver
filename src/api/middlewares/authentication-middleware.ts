@@ -54,7 +54,7 @@ export class AuthenticationMiddleware {
     if (this.isJwtToken(token)) {
       try {
         return await this.resolveInternalPrincipal(token);
-      } catch (error) {
+      } catch (_error) {
         // JWT verification failed, continue to OAuth
       }
     }

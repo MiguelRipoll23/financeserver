@@ -15,37 +15,23 @@
     "hono": "npm:hono@^4.11.8",
     "zod": "npm:zod@^4.3.6"
   },
+  "unstable": [
+    "kv"
+  ],
   "permissions": {
-    "default": {
-      "env": true,
-      "read": true,
-      "write": true,
-      "net": true
-    },
     "development": {
       "env": true,
       "read": true,
-      "write": true,
-      "net": true,
-      "sys": true,
-      "run": true
-    },
-    "database": {
-      "env": true,
-      "read": true,
-      "write": true,
-      "net": true,
-      "run": true,
-      "sys": true
+      "net": true
     }
   },
   "tasks": {
     "dev": "deno run --unstable-kv --permission-set=development --env --watch src/main.ts",
     "debug": "deno run --unstable-kv --inspect-wait --permission-set=development --env --watch src/main.ts",
     "check": "deno check --unstable-kv src/main.ts",
-    "studio": "deno run --permission-set=database --node-modules-dir npm:drizzle-kit studio",
-    "generate": "deno run --permission-set=database --node-modules-dir npm:drizzle-kit generate",
-    "migrate": "deno run --permission-set=database --node-modules-dir npm:drizzle-kit migrate"
+    "studio": "dx npm:drizzle-kit studio",
+    "generate": "dx npm:drizzle-kit generate",
+    "migrate": "dx npm:drizzle-kit migrate"
   },
   "deploy": {
     "predeploy": "deno task migrate",

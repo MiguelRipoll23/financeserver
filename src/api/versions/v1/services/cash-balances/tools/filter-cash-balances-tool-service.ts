@@ -2,6 +2,7 @@ import { inject, injectable } from "@needle-di/core";
 import { McpToolDefinition } from "../../../interfaces/mcp/mcp-tool-interface.ts";
 import { CashService } from "../../cash/cash-service.ts";
 import { FilterCashBalancesToolSchema } from "../../../schemas/mcp-cash-balances-schemas.ts";
+import type { CashBalanceSummary } from "../../../schemas/cash-balances-schemas.ts";
 
 @injectable()
 export class FilterCashBalancesToolService {
@@ -36,7 +37,7 @@ export class FilterCashBalancesToolService {
         const count = result.results.length;
         const balancesList = result.results
           .map(
-            (balance: any) =>
+            (balance: CashBalanceSummary) =>
               `- ${balance.balance} ${balance.currencyCode} (ID: ${balance.id}, Created: ${balance.createdAt})`,
           )
           .join("\n");

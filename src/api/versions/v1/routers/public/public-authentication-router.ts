@@ -135,7 +135,7 @@ export class PublicAuthenticationRouter {
           origin,
           requestUrl,
           transactionId,
-          authenticationResponse as any, // Zod validation ensures correct shape
+          authenticationResponse,
         );
 
         return c.json(response, 200);

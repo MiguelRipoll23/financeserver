@@ -3,7 +3,6 @@ import { PaginationQuerySchema } from "./pagination-schemas.ts";
 import { SortOrder } from "../enums/sort-order-enum.ts";
 import { BankAccountBalanceSortField } from "../enums/bank-account-balance-sort-field-enum.ts";
 import { MonetaryStringSchema } from "./monetary-string-schema.ts";
-import { DateOnlyStringSchema } from "./date-only-string-schema.ts";
 
 // Bank Account Balance schemas
 export const CreateBankAccountBalanceRequestSchema = z.object({

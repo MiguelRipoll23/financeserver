@@ -27,7 +27,7 @@ export class PasskeyAuthenticationService {
 
   public async getLoginOptions(
     origin: string,
-    requestUrl: string,
+    _requestUrl: string,
     transactionId: string,
   ) {
     // Validate origin is allowed

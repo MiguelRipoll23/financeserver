@@ -4,7 +4,7 @@ import type { Context } from "hono";
 import { BillCategoriesService } from "../../services/bill-categories/bill-categories-service.ts";
 import {
   BillCategoryIdParamSchema,
-  BillCategorySchema,
+  BillCategorySchema as _BillCategorySchema,
   CreateBillCategoryRequestSchema,
   CreateBillCategoryResponseSchema,
   GetBillCategoriesRequestSchema,

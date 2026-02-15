@@ -169,7 +169,7 @@ export class ReceiptsService {
       } = { updatedAt: new Date() };
 
       let normalizedItems: NormalizedReceiptItem[] = [];
-      let receiptCurrencyCode = payload.currencyCode ??
+      const receiptCurrencyCode = payload.currencyCode ??
         existingReceipt.currencyCode;
 
       // Handle items update

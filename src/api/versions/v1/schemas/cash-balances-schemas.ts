@@ -84,6 +84,8 @@ export const CashBalanceSummarySchema = z.object({
   updatedAt: z.string().datetime().openapi({ example: "2026-01-13T10:30:00Z" }),
 });
 
+export type CashBalanceSummary = z.infer<typeof CashBalanceSummarySchema>;
+
 export const GetCashBalancesResponseSchema = z.object({
   results: z
     .array(CashBalanceSummarySchema)

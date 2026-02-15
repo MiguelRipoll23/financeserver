@@ -9,7 +9,7 @@ import {
   type SQL,
   sql,
 } from "drizzle-orm";
-import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import {
   bankAccountBalancesTable,
@@ -48,8 +48,7 @@ import type {
   UpdateBankAccountBalanceResponse,
 } from "../../schemas/bank-account-balances-schemas.ts";
 
-import { z } from "zod";
-import { BankAccountCalculationsService } from "../bank-account-calculations/bank-account-calculations-service.ts";
+
 import { BankAccountInterestRatesService } from "../bank-account-interest-rates/bank-account-interest-rates-service.ts";
 
 @injectable()
