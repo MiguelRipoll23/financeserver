@@ -187,9 +187,9 @@ export class AuthenticatedConversationsRouter {
           return c.json(
             {
               code: "INVALID_IMAGE_TYPE",
-              message: `Invalid image type. Allowed types: ${
-                ALLOWED_IMAGE_MIME_TYPES.join(", ")
-              }`,
+              message: `Invalid image type. Allowed types: ${ALLOWED_IMAGE_MIME_TYPES.join(
+                ", ",
+              )}`,
             },
             400,
           );
