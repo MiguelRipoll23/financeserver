@@ -57,6 +57,14 @@ export class BankAccountCalculationsService {
       monthlyProfit,
       annualProfit,
       currencyCode,
+    }).onConflictDoUpdate({
+      target: [bankAccountCalculationsTable.bankAccountId],
+      set: {
+        monthlyProfit,
+        annualProfit,
+        currencyCode,
+        updatedAt: new Date(),
+      },
     });
   }
 }

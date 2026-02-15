@@ -49,6 +49,12 @@ export class BankAccountRoboadvisorFundCalculationsService {
     await db.insert(roboadvisorFundCalculationsTable).values({
       roboadvisorId: roboadvisorId,
       currentValue,
+    }).onConflictDoUpdate({
+      target: [roboadvisorFundCalculationsTable.roboadvisorId],
+      set: {
+        currentValue,
+        updatedAt: new Date(),
+      },
     });
   }
 }

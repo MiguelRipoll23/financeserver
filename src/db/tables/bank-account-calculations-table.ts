@@ -2,6 +2,7 @@ import {
   bigint,
   bigserial,
   index,
+  uniqueIndex,
   numeric,
   pgTable,
   timestamp,
@@ -33,6 +34,9 @@ export const bankAccountCalculationsTable = pgTable(
       .notNull(),
   },
   (table) => [
+    uniqueIndex("uq_bank_account_calculations_account").on(
+      table.bankAccountId,
+    ),
     index("idx_bank_account_calculations_account_created").on(
       table.bankAccountId,
       table.createdAt.desc()

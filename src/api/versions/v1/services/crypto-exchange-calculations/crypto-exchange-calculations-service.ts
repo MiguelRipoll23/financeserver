@@ -55,6 +55,15 @@ export class CryptoExchangeCalculationsService {
       cryptoExchangeId,
       symbolCode,
       currentValue,
+    }).onConflictDoUpdate({
+      target: [
+        cryptoExchangeCalculationsTable.cryptoExchangeId,
+        cryptoExchangeCalculationsTable.symbolCode,
+      ],
+      set: {
+        currentValue,
+        updatedAt: new Date(),
+      },
     });
   }
 }
