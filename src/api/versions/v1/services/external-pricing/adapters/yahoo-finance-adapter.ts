@@ -9,14 +9,51 @@ import { IndexFundPriceProvider } from "../interfaces/index-fund-price-provider-
  */
 @injectable()
 export class YahooFinanceAdapter implements IndexFundPriceProvider {
-  private readonly baseUrl =
-    "https://query1.finance.yahoo.com/v8/finance/chart";
+  private readonly baseUrl = "https://query1.finance.yahoo.com/v8/finance/chart";
 
-  // Simple in-memory cache for ISIN→ticker mappings
-  private readonly isinTickerCache = new Map<string, string | null>();
+  // Read OPENFIGI key once at class initialization
+  private readonly openFigiKey: string | undefined = (typeof Deno !== "undefined" && Deno.env?.get)
+    ? Deno.env.get("OPENFIGI_API_KEY")
+    : undefined;
+
+  // Simple LRU-like in-memory cache for ISIN→ticker mappings with a fixed max size
+  private readonly isinTickerCache = new Map<string, string>();
+  private readonly cacheMaxSize = 1000;
 
   private isISIN(code: string): boolean {
-    return typeof code === "string" && /^[A-Z]{2}[A-Z0-9]{10}$/i.test(code);
+    if (typeof code !== "string") return false;
+    const upper = code.toUpperCase();
+    return /^[A-Z]{2}[A-Z0-9]{10}$/.test(upper);
+  }
+
+  private isValidTicker(ticker: string): boolean {
+    if (typeof ticker !== "string") return false;
+    // Strict alphanumeric validation to avoid path traversal/SSRF risks
+    return /^[A-Z0-9]+$/.test(ticker.toUpperCase());
+  }
+
+  private getCachedTicker(isin: string): string | undefined {
+    const key = isin;
+    const value = this.isinTickerCache.get(key);
+    if (value !== undefined) {
+      // Promote to most-recently-used by re-inserting
+      this.isinTickerCache.delete(key);
+      this.isinTickerCache.set(key, value);
+    }
+    return value;
+  }
+
+  private setCachedTicker(isin: string, ticker: string): void {
+    const key = isin;
+    if (this.isinTickerCache.has(key)) {
+      this.isinTickerCache.delete(key);
+    }
+    this.isinTickerCache.set(key, ticker);
+    // Evict oldest entry if over capacity
+    if (this.isinTickerCache.size > this.cacheMaxSize) {
+      const firstKey = this.isinTickerCache.keys().next().value;
+      if (firstKey) this.isinTickerCache.delete(firstKey);
+    }
   }
 
   public async getCurrentPrice(
@@ -24,23 +61,32 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
     _targetCurrencyCode: string,
   ): Promise<string | null> {
     try {
-      let ticker: string | null = isinOrTicker;
+      if (!isinOrTicker || typeof isinOrTicker !== "string") return null;
+
+      let ticker: string | null = null;
 
       if (this.isISIN(isinOrTicker)) {
         ticker = await this.convertIsinToTicker(isinOrTicker);
         if (!ticker) {
-          console.warn(
-            `YahooFinanceAdapter: ISIN-to-ticker mapping failed for ISIN: ${isinOrTicker}`,
-          );
+          console.warn(`YahooFinanceAdapter: ISIN-to-ticker mapping failed for ISIN: ${isinOrTicker}`);
           return null;
         }
+      } else {
+        ticker = isinOrTicker;
       }
 
-      const url = `${this.baseUrl}/${encodeURIComponent(ticker)}?range=1d&interval=1d`;
+      const normalizedTicker = ticker.toUpperCase();
 
+      if (!this.isValidTicker(normalizedTicker)) {
+        console.warn(`YahooFinanceAdapter: Invalid ticker supplied: ${normalizedTicker}`);
+        return null;
+      }
+
+      const url = `${this.baseUrl}/${encodeURIComponent(normalizedTicker)}?range=1d&interval=1d`;
       const response = await fetch(url);
+
       if (!response.ok) {
-        console.warn(`YahooFinanceAdapter: Yahoo fetch failed for ${ticker}: ${response.status}`);
+        console.warn(`YahooFinanceAdapter: Yahoo fetch failed for ${normalizedTicker}: ${response.status}`);
         return null;
       }
 
@@ -55,57 +101,53 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
 
       return price != null ? String(price) : null;
     } catch (error) {
-      console.error(
-        `Error fetching index fund price from Yahoo Finance:`,
-        error,
-      );
+      console.error(`Error fetching index fund price from Yahoo Finance:`, error);
       return null;
     }
   }
 
   /**
    * Convert ISIN to ticker using OpenFIGI if API key is provided.
-   * Caches results in-memory to reduce external calls.
+   * Caches successful mappings in-memory to reduce external calls.
    */
   private async convertIsinToTicker(isin: string): Promise<string | null> {
-    if (this.isinTickerCache.has(isin)) {
-      return this.isinTickerCache.get(isin) ?? null;
-    }
+    const normalizedIsin = isin.toUpperCase();
 
-    const openFigiKey = (typeof Deno !== "undefined" && Deno.env?.get)
-      ? Deno.env.get("OPENFIGI_API_KEY")
-      : undefined;
+    const cached = this.getCachedTicker(normalizedIsin);
+    if (cached) return cached;
 
-    if (!openFigiKey) {
-      console.warn(`YahooFinanceAdapter: OPENFIGI_API_KEY not set; cannot convert ISIN: ${isin}`);
-      this.isinTickerCache.set(isin, null);
+    if (!this.openFigiKey) {
+      console.warn(`YahooFinanceAdapter: OPENFIGI_API_KEY not set; cannot convert ISIN: ${normalizedIsin}`);
       return null;
     }
 
     try {
-      const resp = await fetch("https://api.openfigi.com/v3/mapping", {
+      const response = await fetch("https://api.openfigi.com/v3/mapping", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-OPENFIGI-APIKEY": openFigiKey,
+          "X-OPENFIGI-APIKEY": this.openFigiKey,
         },
-        body: JSON.stringify([{ idType: "ID_ISIN", idValue: isin }]),
+        body: JSON.stringify([{ idType: "ID_ISIN", idValue: normalizedIsin }]),
       });
 
-      if (!resp.ok) {
-        console.warn(`YahooFinanceAdapter: OpenFIGI lookup failed for ${isin}: ${resp.status}`);
-        this.isinTickerCache.set(isin, null);
+      if (!response.ok) {
+        console.warn(`YahooFinanceAdapter: OpenFIGI lookup failed for ${normalizedIsin}: ${response.status}`);
         return null;
       }
 
-      const data = await resp.json();
+      const data = await response.json();
       const ticker = data?.[0]?.data?.[0]?.ticker ?? null;
 
-      this.isinTickerCache.set(isin, ticker ?? null);
-      return ticker ?? null;
-    } catch (err) {
-      console.warn(`YahooFinanceAdapter: Error converting ISIN ${isin}:`, err);
-      this.isinTickerCache.set(isin, null);
+      if (ticker) {
+        const normalizedTicker = String(ticker).toUpperCase();
+        this.setCachedTicker(normalizedIsin, normalizedTicker);
+        return normalizedTicker;
+      }
+
+      return null;
+    } catch (error) {
+      console.warn(`YahooFinanceAdapter: Error converting ISIN ${normalizedIsin}:`, error);
       return null;
     }
   }
