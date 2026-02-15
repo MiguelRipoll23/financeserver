@@ -12,55 +12,101 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
   private readonly baseUrl =
     "https://query1.finance.yahoo.com/v8/finance/chart";
 
-  public getCurrentPrice(
-    isin: string,
+  // Simple in-memory cache for ISIN→ticker mappings
+  private readonly isinTickerCache = new Map<string, string | null>();
+
+  private isISIN(code: string): boolean {
+    return typeof code === "string" && /^[A-Z]{2}[A-Z0-9]{10}$/i.test(code);
+  }
+
+  public async getCurrentPrice(
+    isinOrTicker: string,
     _targetCurrencyCode: string,
   ): Promise<string | null> {
     try {
-      // Note: Yahoo Finance doesn't directly support ISIN lookups
-      // In a production environment, you would:
-      // 1. Use OpenFIGI API to convert ISIN to ticker symbol
-      // 2. Then query Yahoo Finance with the ticker
-      // For now, we return null to indicate this needs external ticker mapping
+      let ticker: string | null = isinOrTicker;
 
-      console.warn(
-        `YahooFinanceAdapter: ISIN-to-ticker mapping not implemented. ISIN: ${isin}`,
-      );
-      console.warn(
-        `Please implement ISIN-to-ticker mapping using OpenFIGI or similar service`,
-      );
+      if (this.isISIN(isinOrTicker)) {
+        ticker = await this.convertIsinToTicker(isinOrTicker);
+        if (!ticker) {
+          console.warn(
+            `YahooFinanceAdapter: ISIN-to-ticker mapping failed for ISIN: ${isinOrTicker}`,
+          );
+          return null;
+        }
+      }
 
-      // Example of how it would work with a ticker:
-      // const ticker = await this.convertIsinToTicker(isin);
-      // if (!ticker) return null;
-      //
-      // const url = `${this.baseUrl}/${ticker}`;
-      // const response = await fetch(url);
-      // ... parse response and return price
+      const url = `${this.baseUrl}/${encodeURIComponent(ticker)}?range=1d&interval=1d`;
 
-      return Promise.resolve(null);
+      const response = await fetch(url);
+      if (!response.ok) {
+        console.warn(`YahooFinanceAdapter: Yahoo fetch failed for ${ticker}: ${response.status}`);
+        return null;
+      }
+
+      const json = await response.json();
+      const result = json?.chart?.result?.[0];
+      if (!result) return null;
+
+      const closes = result?.indicators?.quote?.[0]?.close;
+      const price = Array.isArray(closes) && closes.length
+        ? closes[closes.length - 1]
+        : result?.meta?.regularMarketPrice;
+
+      return price != null ? String(price) : null;
     } catch (error) {
       console.error(
         `Error fetching index fund price from Yahoo Finance:`,
         error,
       );
-      return Promise.resolve(null);
+      return null;
     }
   }
 
   /**
-   * Placeholder for ISIN to ticker conversion
-   * In production, implement using OpenFIGI API or similar
+   * Convert ISIN to ticker using OpenFIGI if API key is provided.
+   * Caches results in-memory to reduce external calls.
    */
-  private convertIsinToTicker(_isin: string): string | null {
-    // TODO: Implement ISIN to ticker conversion
-    // Example using OpenFIGI:
-    // const response = await fetch('https://api.openfigi.com/v3/mapping', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify([{ idType: 'ID_ISIN', idValue: isin }])
-    // });
-    // ... parse response to get ticker
-    return null;
+  private async convertIsinToTicker(isin: string): Promise<string | null> {
+    if (this.isinTickerCache.has(isin)) {
+      return this.isinTickerCache.get(isin) ?? null;
+    }
+
+    const openFigiKey = (typeof Deno !== "undefined" && Deno.env?.get)
+      ? Deno.env.get("OPENFIGI_API_KEY")
+      : undefined;
+
+    if (!openFigiKey) {
+      console.warn(`YahooFinanceAdapter: OPENFIGI_API_KEY not set; cannot convert ISIN: ${isin}`);
+      this.isinTickerCache.set(isin, null);
+      return null;
+    }
+
+    try {
+      const resp = await fetch("https://api.openfigi.com/v3/mapping", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-OPENFIGI-APIKEY": openFigiKey,
+        },
+        body: JSON.stringify([{ idType: "ID_ISIN", idValue: isin }]),
+      });
+
+      if (!resp.ok) {
+        console.warn(`YahooFinanceAdapter: OpenFIGI lookup failed for ${isin}: ${resp.status}`);
+        this.isinTickerCache.set(isin, null);
+        return null;
+      }
+
+      const data = await resp.json();
+      const ticker = data?.[0]?.data?.[0]?.ticker ?? null;
+
+      this.isinTickerCache.set(isin, ticker ?? null);
+      return ticker ?? null;
+    } catch (err) {
+      console.warn(`YahooFinanceAdapter: Error converting ISIN ${isin}:`, err);
+      this.isinTickerCache.set(isin, null);
+      return null;
+    }
   }
 }

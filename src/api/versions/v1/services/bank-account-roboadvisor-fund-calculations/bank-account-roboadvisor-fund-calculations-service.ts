@@ -46,6 +46,30 @@ export class BankAccountRoboadvisorFundCalculationsService {
   ): Promise<void> {
     const db = this.databaseService.get();
 
+    const [existing] = await db
+      .select()
+      .from(roboadvisorFundCalculationsTable)
+      .where(
+        eq(
+          roboadvisorFundCalculationsTable.roboadvisorId,
+          roboadvisorId,
+        ),
+      )
+      .orderBy(desc(roboadvisorFundCalculationsTable.createdAt))
+      .limit(1);
+
+    if (existing) {
+      await db
+        .update(roboadvisorFundCalculationsTable)
+        .set({
+          currentValue,
+          updatedAt: new Date(),
+        })
+        .where(eq(roboadvisorFundCalculationsTable.id, existing.id));
+
+      return;
+    }
+
     await db.insert(roboadvisorFundCalculationsTable).values({
       roboadvisorId: roboadvisorId,
       currentValue,
