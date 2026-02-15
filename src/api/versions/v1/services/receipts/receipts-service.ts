@@ -260,7 +260,7 @@ export class ReceiptsService {
       filters.push(eq(receiptsTable.merchantId, params.merchantId));
     }
 
-    // merchantName filter removed in favor of exact merchantId filtering
+    
 
     if (params.startDate) {
       filters.push(gte(receiptsTable.receiptDate, params.startDate));
