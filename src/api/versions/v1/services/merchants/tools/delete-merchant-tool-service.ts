@@ -13,7 +13,7 @@ export class DeleteMerchantToolService {
       meta: {
         title: "Delete merchant",
         description:
-          "Use this when you need to delete an existing merchant. Do not use for creating or updating merchants.",
+          "Use this when you need to delete an existing merchant.",
         inputSchema: DeleteMerchantToolSchema,
         annotations: {
           readOnlyHint: false,

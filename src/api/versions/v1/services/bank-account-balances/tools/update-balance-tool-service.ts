@@ -13,7 +13,7 @@ export class UpdateBalanceToolService {
       meta: {
         title: "Update bank account balance",
         description:
-          "Use this when you need to update an existing balance record. Do not use for adding or deleting balances.",
+          "Use this when you need to update an existing balance record.",
         inputSchema: UpdateBalanceToolSchema,
         annotations: {
           readOnlyHint: false,

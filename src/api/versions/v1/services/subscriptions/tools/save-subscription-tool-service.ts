@@ -14,7 +14,7 @@ export class SaveSubscriptionToolService {
       meta: {
         title: "Save subscription",
         description:
-          "Use this when you need to save a new subscription. Do not use for updating or deleting subscriptions.",
+          "Use this when you need to save a new subscription.",
         inputSchema: SaveSubscriptionToolSchema,
         annotations: {
           readOnlyHint: false,

@@ -13,7 +13,7 @@ export class DeleteCashBalanceToolService {
       meta: {
         title: "Delete cash balance",
         description:
-          "Use this when you need to permanently delete a cash balance record. Do not use for creating or updating cash balances.",
+          "Use this when you need to permanently delete a cash balance record.",
         inputSchema: DeleteCashBalanceToolSchema,
         annotations: {
           readOnlyHint: false,

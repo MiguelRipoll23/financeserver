@@ -13,7 +13,7 @@ export class DeleteBalanceToolService {
       meta: {
         title: "Delete bank account balance",
         description:
-          "Use this when you need to permanently delete a balance record. Do not use for adding or editing balances.",
+          "Use this when you need to permanently delete a balance record.",
         inputSchema: DeleteBalanceToolSchema,
         annotations: {
           readOnlyHint: false,

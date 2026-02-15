@@ -13,7 +13,7 @@ export class DeleteBankAccountToolService {
       meta: {
         title: "Delete bank account",
         description:
-          "Use this when you need to permanently delete a bank account. Do not use for creating or updating bank accounts. Warning: This will also delete all associated balances.",
+          "Use this when you need to permanently delete a bank account. Warning: This will also delete all associated balances.",
         inputSchema: DeleteBankAccountToolSchema,
         annotations: {
           readOnlyHint: false,
