@@ -13,7 +13,7 @@ export class UpdateCashBalanceToolService {
       meta: {
         title: "Update cash balance",
         description:
-          "Use this when you need to update an existing cash balance's details. Do not use for creating or deleting cash balances.",
+          "Use this when you need to update an existing cash balance's details.",
         inputSchema: UpdateCashBalanceToolSchema,
         annotations: {
           readOnlyHint: false,

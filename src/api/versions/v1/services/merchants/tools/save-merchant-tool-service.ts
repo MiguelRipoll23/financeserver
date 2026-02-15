@@ -13,7 +13,7 @@ export class SaveMerchantToolService {
       meta: {
         title: "Save merchant",
         description:
-          "Use this when you need to save a new merchant. Do not use for updating or deleting merchants.",
+          "Use this when you need to save a new merchant.",
         inputSchema: SaveMerchantToolSchema,
         annotations: {
           readOnlyHint: false,

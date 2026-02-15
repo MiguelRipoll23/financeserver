@@ -14,7 +14,7 @@ export class UpdateReceiptToolService {
       meta: {
         title: "Update receipt",
         description:
-          "Use this when you need to update an existing receipt. Do not use for creating new receipts or deleting receipts.",
+          "Use this when you need to update an existing receipt.",
         inputSchema: UpdateReceiptToolSchema,
         annotations: {
           readOnlyHint: false,

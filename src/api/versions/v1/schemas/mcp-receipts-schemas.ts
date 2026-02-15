@@ -120,10 +120,12 @@ export const FilterReceiptsToolSchema = z.object({
     .describe(
       "Filter receipts containing items with this name (partial match)",
     ),
-  merchantName: z
-    .string()
+  merchantId: z
+    .number()
+    .int()
+    .positive()
     .optional()
-    .describe("Filter receipts by merchant name (partial match)"),
+    .describe("Filter receipts by exact merchant ID"),
   sortField: z
     .nativeEnum(ReceiptSortField)
     .optional()

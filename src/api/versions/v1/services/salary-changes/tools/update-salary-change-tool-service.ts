@@ -14,7 +14,7 @@ export class UpdateSalaryChangeToolService {
       meta: {
         title: "Update salary change",
         description:
-          "Use this when you need to update an existing salary change. Do not use for creating new salary changes or deleting salary changes.",
+          "Use this when you need to update an existing salary change.",
         inputSchema: UpdateSalaryChangeToolSchema,
         annotations: {
           readOnlyHint: false,

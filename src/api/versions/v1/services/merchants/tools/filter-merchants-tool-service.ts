@@ -14,7 +14,7 @@ export class FilterMerchantsToolService {
       meta: {
         title: "Filter merchants",
         description:
-          "Use this when you need to search for merchants by name or retrieve a list of all merchants. Do not use for creating, updating or deleting merchants.",
+          "Use this when you need to search for merchants by name or retrieve a list of all merchants.",
         inputSchema: FilterMerchantsToolSchema,
         annotations: {
           readOnlyHint: true,

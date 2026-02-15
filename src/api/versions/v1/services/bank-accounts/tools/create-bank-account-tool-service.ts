@@ -13,7 +13,7 @@ export class CreateBankAccountToolService {
       meta: {
         title: "Create bank account",
         description:
-          "Use this when you need to create a new bank account. Do not use for updating or deleting bank accounts.",
+          "Use this when you need to create a new bank account.",
         inputSchema: CreateBankAccountToolSchema,
         annotations: {
           readOnlyHint: false,

@@ -8,7 +8,7 @@ export interface ReceiptsFilter extends PaginationParams {
   minimumTotalAmount?: string;
   maximumTotalAmount?: string;
   productName?: string;
-  merchantName?: string;
+  merchantId?: number;
   sortField?: ReceiptSortField;
   sortOrder?: SortOrder;
 }

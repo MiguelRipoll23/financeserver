@@ -13,7 +13,7 @@ export class UpdateCashToolService {
       meta: {
         title: "Update cash source",
         description:
-          "Use this when you need to update an existing cash source's details. Do not use for creating or deleting cash sources.",
+          "Use this when you need to update an existing cash source's details.",
         inputSchema: UpdateCashToolSchema,
         annotations: {
           readOnlyHint: false,

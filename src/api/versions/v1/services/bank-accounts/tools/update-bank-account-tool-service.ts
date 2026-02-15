@@ -13,7 +13,7 @@ export class UpdateBankAccountToolService {
       meta: {
         title: "Update bank account",
         description:
-          "Use this when you need to update an existing bank account's details. Do not use for creating or deleting bank accounts.",
+          "Use this when you need to update an existing bank account's details.",
         inputSchema: UpdateBankAccountToolSchema,
         annotations: {
           readOnlyHint: false,
