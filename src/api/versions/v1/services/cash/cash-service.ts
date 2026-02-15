@@ -15,8 +15,8 @@ import { SortOrder } from "../../enums/sort-order-enum.ts";
 import { CashSortField } from "../../enums/cash-sort-field-enum.ts";
 import { CashBalanceSortField } from "../../enums/cash-balance-sort-field-enum.ts";
 import { CashFilter } from "../../interfaces/cash/cash-filter-interface.ts";
-import { CashSummary } from "../../interfaces/cash/cash-summary-interface.ts";
-import { CashBalanceSummary } from "../../interfaces/cash/cash-balance-summary-interface.ts";
+import type { CashSummary } from "../../schemas/cash-schemas.ts";
+import type { CashBalanceSummary } from "../../schemas/cash-balances-schemas.ts";
 import type {
   CreateCashRequest,
   CreateCashResponse,

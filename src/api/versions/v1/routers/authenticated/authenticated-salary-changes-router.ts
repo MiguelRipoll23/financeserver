@@ -5,11 +5,9 @@ import { SalaryChangesService } from "../../services/salary-changes/salary-chang
 import {
   CreateSalaryChangeRequestSchema,
   CreateSalaryChangeResponseSchema,
-  GetSalaryChangesRequestSchema as _GetSalaryChangesRequestSchema,
   GetSalaryChangesResponseSchema,
   ListSalaryChangesRequestBodySchema,
   SalaryChangeIdParamSchema,
-  SalaryChangeSchema as _SalaryChangeSchema,
   UpdateSalaryChangeRequestSchema,
   UpdateSalaryChangeResponseSchema,
 } from "../../schemas/salary-changes-schemas.ts";

@@ -74,10 +74,8 @@ export class PublicAuthenticationRouter {
           );
         }
 
-        const requestUrl = c.req.url;
         const response = await this.authenticationService.getLoginOptions(
           origin,
-          requestUrl,
           transactionId,
         );
 

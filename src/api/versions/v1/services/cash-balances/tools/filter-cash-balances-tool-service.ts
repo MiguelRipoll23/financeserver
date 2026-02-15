@@ -36,9 +36,8 @@ export class FilterCashBalancesToolService {
 
         const count = result.results.length;
         const balancesList = result.results
-          .map(
-            (balance: CashBalanceSummary) =>
-              `- ${balance.balance} ${balance.currencyCode} (ID: ${balance.id}, Created: ${balance.createdAt})`,
+          .map((balance: CashBalanceSummary) =>
+            `- ${balance.balance} ${balance.currencyCode} (ID: ${balance.id}, Created: ${balance.createdAt})`,
           )
           .join("\n");
 

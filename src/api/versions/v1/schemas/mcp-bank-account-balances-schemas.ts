@@ -2,9 +2,7 @@ import { z } from "zod";
 import { SortOrder } from "../enums/sort-order-enum.ts";
 import { BankAccountBalanceSortField } from "../enums/bank-account-balance-sort-field-enum.ts";
 
-const _DateOnlyRegex = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
 const MonetaryRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
-const _PercentageRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
 
 // Bank Account Balance Tool Schemas
 export const CreateBankAccountBalanceToolSchema = z.object({
