@@ -51,37 +51,19 @@ export class CryptoExchangeCalculationsService {
   ): Promise<void> {
     const db = this.databaseService.get();
 
-    const [existing] = await db
-      .select()
-      .from(cryptoExchangeCalculationsTable)
-      .where(
-        and(
-          eq(
-            cryptoExchangeCalculationsTable.cryptoExchangeId,
-            cryptoExchangeId,
-          ),
-          eq(cryptoExchangeCalculationsTable.symbolCode, symbolCode),
-        ),
-      )
-      .orderBy(desc(cryptoExchangeCalculationsTable.createdAt))
-      .limit(1);
-
-    if (existing) {
-      await db
-        .update(cryptoExchangeCalculationsTable)
-        .set({
-          currentValue,
-          updatedAt: new Date(),
-        })
-        .where(eq(cryptoExchangeCalculationsTable.id, existing.id));
-
-      return;
-    }
-
     await db.insert(cryptoExchangeCalculationsTable).values({
       cryptoExchangeId,
       symbolCode,
       currentValue,
+    }).onConflictDoUpdate({
+      target: [
+        cryptoExchangeCalculationsTable.cryptoExchangeId,
+        cryptoExchangeCalculationsTable.symbolCode,
+      ],
+      set: {
+        currentValue,
+        updatedAt: new Date(),
+      },
     });
   }
 }

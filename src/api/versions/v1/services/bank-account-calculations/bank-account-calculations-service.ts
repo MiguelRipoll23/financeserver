@@ -52,37 +52,19 @@ export class BankAccountCalculationsService {
   ): Promise<void> {
     const db = this.databaseService.get();
 
-    const [existing] = await db
-      .select()
-      .from(bankAccountCalculationsTable)
-      .where(
-        eq(
-          bankAccountCalculationsTable.bankAccountId,
-          bankAccountId,
-        ),
-      )
-      .orderBy(desc(bankAccountCalculationsTable.createdAt))
-      .limit(1);
-
-    if (existing) {
-      await db
-        .update(bankAccountCalculationsTable)
-        .set({
-          monthlyProfit,
-          annualProfit,
-          currencyCode,
-          updatedAt: new Date(),
-        })
-        .where(eq(bankAccountCalculationsTable.id, existing.id));
-
-      return;
-    }
-
     await db.insert(bankAccountCalculationsTable).values({
       bankAccountId,
       monthlyProfit,
       annualProfit,
       currencyCode,
+    }).onConflictDoUpdate({
+      target: [bankAccountCalculationsTable.bankAccountId],
+      set: {
+        monthlyProfit,
+        annualProfit,
+        currencyCode,
+        updatedAt: new Date(),
+      },
     });
   }
 }

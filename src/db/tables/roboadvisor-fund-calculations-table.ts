@@ -2,6 +2,7 @@ import {
   bigint,
   bigserial,
   index,
+  uniqueIndex,
   numeric,
   pgTable,
   timestamp,
@@ -29,6 +30,9 @@ export const roboadvisorFundCalculationsTable = pgTable(
       .notNull(),
   },
   (table) => [
+    uniqueIndex("uq_roboadvisor_fund_calculations_roboadvisor").on(
+      table.roboadvisorId,
+    ),
     index("idx_roboadvisor_fund_calcs_roboadvisor_created").on(
       table.roboadvisorId,
       table.createdAt.desc()

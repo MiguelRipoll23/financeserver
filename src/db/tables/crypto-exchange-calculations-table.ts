@@ -2,6 +2,7 @@ import {
   bigint,
   bigserial,
   index,
+  uniqueIndex,
   numeric,
   pgTable,
   timestamp,
@@ -29,6 +30,10 @@ export const cryptoExchangeCalculationsTable = pgTable(
       .notNull(),
   },
   (table) => [
+    uniqueIndex("uq_crypto_calcs_exchange_symbol").on(
+      table.cryptoExchangeId,
+      table.symbolCode,
+    ),
     index("idx_crypto_calcs_exchange_symbol_created").on(
       table.cryptoExchangeId,
       table.symbolCode,

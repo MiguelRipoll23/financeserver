@@ -1,0 +1,3 @@
+CREATE UNIQUE INDEX "uq_bank_account_calculations_account" ON "bank_account_calculations" USING btree ("bank_account_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "uq_crypto_calcs_exchange_symbol" ON "crypto_exchange_calculations" USING btree ("crypto_exchange_id","symbol_code");--> statement-breakpoint
+CREATE UNIQUE INDEX "uq_roboadvisor_fund_calculations_roboadvisor" ON "roboadvisor_fund_calculations" USING btree ("roboadvisor_id");

@@ -37,8 +37,8 @@
     "dev": "deno run --permission-set=development --env --watch src/main.ts",
     "debug": "deno run --inspect-wait --permission-set=development --env --watch src/main.ts",
     "check": "deno check src/main.ts",
-    "studio": "deno run --permission-set=database --node-modules-dir studio",
-    "generate": "deno run --permission-set=database --node-modules-dir generate",
+    "studio": "deno run --permission-set=database --node-modules-dir npm:drizzle-kit studio",
+    "generate": "deno run --permission-set=database --node-modules-dir npm:drizzle-kit generate",
     "migrate": "deno run --permission-set=database --node-modules-dir npm:drizzle-kit migrate"
   },
   "deploy": {
