@@ -142,12 +142,13 @@ export const GetReceiptsRequestSchema = PaginationQuerySchema.extend({
     .describe("Product name filter")
     .openapi({ example: "chair" })
     .optional(),
-  merchantName: z
-    .string()
-    .min(1)
-    .max(256)
-    .describe("Merchant name filter")
-    .openapi({ example: "Costco" })
+  merchantId: z
+    .coerce
+    .number()
+    .int()
+    .positive()
+    .describe("Merchant ID filter")
+    .openapi({ example: 7 })
     .optional(),
   sortField: z
     .nativeEnum(ReceiptSortField)

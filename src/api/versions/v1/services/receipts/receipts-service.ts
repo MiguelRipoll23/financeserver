@@ -255,26 +255,12 @@ export class ReceiptsService {
 
     const filters: SQL[] = [];
 
-    // Filter by merchant name if provided
-    if (params.merchantName) {
-      const escapedMerchantName = this.escapeLikePattern(params.merchantName);
-      // Find merchant IDs matching the name (case-insensitive, partial match)
-      const matchingMerchants = await db
-        .select({ id: merchantsTable.id })
-        .from(merchantsTable)
-        .where(ilike(merchantsTable.name, `%${escapedMerchantName}%`));
-
-      const merchantIds = matchingMerchants.map((row) => row.id as number);
-      if (merchantIds.length === 0) {
-        return createOffsetPagination<ReceiptSummary>(
-          [],
-          limit,
-          offset,
-          0,
-        ) as GetReceiptsResponse;
-      }
-      filters.push(inArray(receiptsTable.merchantId, merchantIds));
+    // Filter by exact merchant ID if provided
+    if (params.merchantId !== undefined) {
+      filters.push(eq(receiptsTable.merchantId, params.merchantId));
     }
+
+    // merchantName filter removed in favor of exact merchantId filtering
 
     if (params.startDate) {
       filters.push(gte(receiptsTable.receiptDate, params.startDate));
