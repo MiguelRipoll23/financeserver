@@ -28,27 +28,33 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
 
   private isValidTicker(ticker: string): boolean {
     if (typeof ticker !== "string") return false;
-    // Strict alphanumeric validation to avoid path traversal/SSRF risks
-    return /^[A-Z0-9]+$/.test(ticker.toUpperCase());
+    const normalized = ticker.toUpperCase();
+
+    // Quick reject for suspicious substrings that indicate traversal or encoding
+    const forbiddenSubstrings = ["..", "/", "\\\\", "\0", "%2E", "%2F", "%5C"];
+    for (const sub of forbiddenSubstrings) {
+      if (normalized.includes(sub)) return false;
+    }
+
+    // Allow letters, digits, dot, hyphen and caret (e.g., BRK.B, BRK-B, ^GSPC)
+    return /^[A-Z0-9.\-^]+$/.test(normalized);
   }
 
   private getCachedTicker(isin: string): string | undefined {
-    const key = isin;
-    const value = this.isinTickerCache.get(key);
+    const value = this.isinTickerCache.get(isin);
     if (value !== undefined) {
       // Promote to most-recently-used by re-inserting
-      this.isinTickerCache.delete(key);
-      this.isinTickerCache.set(key, value);
+      this.isinTickerCache.delete(isin);
+      this.isinTickerCache.set(isin, value);
     }
     return value;
   }
 
   private setCachedTicker(isin: string, ticker: string): void {
-    const key = isin;
-    if (this.isinTickerCache.has(key)) {
-      this.isinTickerCache.delete(key);
+    if (this.isinTickerCache.has(isin)) {
+      this.isinTickerCache.delete(isin);
     }
-    this.isinTickerCache.set(key, ticker);
+    this.isinTickerCache.set(isin, ticker);
     // Evict oldest entry if over capacity
     if (this.isinTickerCache.size > this.cacheMaxSize) {
       const firstKey = this.isinTickerCache.keys().next().value;
@@ -83,7 +89,7 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
       }
 
       const url = `${this.baseUrl}/${encodeURIComponent(normalizedTicker)}?range=1d&interval=1d`;
-      const response = await fetch(url);
+      const response = await fetch(url, { signal: AbortSignal.timeout(10_000) });
 
       if (!response.ok) {
         console.warn(`YahooFinanceAdapter: Yahoo fetch failed for ${normalizedTicker}: ${response.status}`);
@@ -122,7 +128,7 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
     }
 
     try {
-      const response = await fetch("https://api.openfigi.com/v3/mapping", {
+      const response = await fetch("https://api.openfigi.com/v3/mapping", { signal: AbortSignal.timeout(10_000),
         method: "POST",
         headers: {
           "Content-Type": "application/json",
