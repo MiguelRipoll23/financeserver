@@ -54,9 +54,8 @@ export class PasskeyAuthenticationService {
     authenticationResponse: AuthenticationResponseJSON,
   ) {
     // Retrieve and consume authentication options from KV
-    const authenticationOptions = await this.getAuthenticationOptionsOrThrow(
-      transactionId,
-    );
+    const authenticationOptions =
+      await this.getAuthenticationOptionsOrThrow(transactionId);
 
     // Validate origin is allowed
     if (!WebAuthnUtils.isOriginAllowed(origin)) {
@@ -79,7 +78,11 @@ export class PasskeyAuthenticationService {
       .then((res: PasskeyEntity[]) => res[0]);
 
     if (!passkey) {
-      throw new ServerError("INVALID_CREDENTIAL", "Credential not found", 400);
+      throw new ServerError(
+        "CREDENTIAL_NOT_FOUND",
+        "Credential not found",
+        400,
+      );
     }
 
     const verification = await verifyAuthenticationResponse({
@@ -89,9 +92,7 @@ export class PasskeyAuthenticationService {
       expectedRPID,
       credential: {
         id: passkey.id,
-        publicKey: new Uint8Array(
-          Buffer.from(passkey.publicKey, "base64url"),
-        ),
+        publicKey: new Uint8Array(Buffer.from(passkey.publicKey, "base64url")),
         counter: Number(passkey.counter),
         transports: passkey.transports
           ? (passkey.transports as AuthenticatorTransportFuture[])
@@ -126,8 +127,8 @@ export class PasskeyAuthenticationService {
   private async getAuthenticationOptionsOrThrow(
     transactionId: string,
   ): Promise<PublicKeyCredentialRequestOptionsJSON> {
-    const authenticationOptions = await this.kvService
-      .consumeAuthenticationOptionsByTransactionId(
+    const authenticationOptions =
+      await this.kvService.consumeAuthenticationOptionsByTransactionId(
         transactionId,
       );
 
@@ -141,7 +142,7 @@ export class PasskeyAuthenticationService {
 
     if (
       authenticationOptions.createdAt + KV_OPTIONS_EXPIRATION_TIME <
-        Date.now()
+      Date.now()
     ) {
       throw new ServerError(
         "AUTHENTICATION_OPTIONS_EXPIRED",
