@@ -38,7 +38,7 @@ export const VerifyAuthenticationRequestSchema = z.object({
       example: "00000000-0000-0000-0000-000000000000",
     }),
   authenticationResponse: z
-    .custom<AuthenticationResponseJSON>((val) => typeof val === "object" && val !== null)
+    .looseObject({})
     .describe("The authentication response from the authenticator"),
 });
 

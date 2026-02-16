@@ -77,13 +77,7 @@ export const VerifyRegistrationRequestSchema = z.object({
       example: "00000000-0000-0000-0000-000000000000",
     }),
   registrationResponse: z
-    .custom<RegistrationResponseJSON>(
-      (val) =>
-        typeof val === "object" &&
-        val !== null &&
-        !Array.isArray(val) &&
-        !(val instanceof Date),
-    )
+    .looseObject({})
     .describe("The registration response from the authenticator"),
 });
 
