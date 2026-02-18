@@ -1,5 +1,5 @@
 import { z } from "@hono/zod-openapi";
-import type { RegistrationResponseJSON } from "@simplewebauthn/server";
+
 
 export const GetRegistrationOptionsRequestSchema = z.object({
   transactionId: z
