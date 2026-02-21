@@ -1,7 +1,7 @@
 {
   "imports": {
     "@ai-sdk/openai": "npm:@ai-sdk/openai@^3.0.30",
-    "ai": "npm:ai@^6.0.94",
+    "ai": "npm:ai@^6.0.97",
     "@hono/zod-openapi": "npm:@hono/zod-openapi@^1.2.2",
     "@simplewebauthn/server": "jsr:@simplewebauthn/server@^13.2.2",
     "@needle-di/core": "jsr:@needle-di/core@^1.1.1",
