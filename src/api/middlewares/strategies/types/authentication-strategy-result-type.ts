@@ -4,4 +4,5 @@ import type { AuthenticationPrincipalType } from "../../../versions/v1/types/aut
 export type AuthenticationStrategyResultType = {
   principal: AuthenticationPrincipalType;
   jwtPayload?: Payload;
+  metadata?: Record<string, unknown>;
 };

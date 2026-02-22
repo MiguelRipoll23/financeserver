@@ -56,12 +56,12 @@ export class InternalJwtAuthenticationStrategy
   }
 
   public async validateResourceAccess(
-    token: string,
+    _token: string,
     requestUrl: string,
     strategyResult: AuthenticationStrategyResultType
   ): Promise<void> {
     const requestPath = new URL(requestUrl).pathname;
-    const payload = strategyResult.jwtPayload ?? (await this.jwtService.verify(token));
+    const payload = strategyResult.jwtPayload!;
 
     this.validateJwtAudience(payload, requestUrl, requestPath);
   }
@@ -92,7 +92,10 @@ export class InternalJwtAuthenticationStrategy
 
       if (audienceValue.endsWith("/*")) {
         const baseAudience = audienceValue.slice(0, -2);
-        return requestedResource.startsWith(baseAudience);
+        return (
+          requestedResource === baseAudience ||
+          requestedResource.startsWith(baseAudience + "/")
+        );
       }
 
       return false;
