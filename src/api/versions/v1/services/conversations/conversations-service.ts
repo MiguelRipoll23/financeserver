@@ -276,7 +276,7 @@ export class ConversationsService {
       if (history.length === 0 || history[0].role !== "system") {
         messages = [systemMessage, ...history, newMessage];
       } else {
-        messages = [...history, newMessage];
+        messages = [systemMessage, ...history.slice(1), newMessage];
       }
 
       return await streamText({
