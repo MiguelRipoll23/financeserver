@@ -22,7 +22,11 @@ export class OAuthAuthenticationStrategy
       return null;
     }
 
-    const user = connection.user as { id: string; displayName?: string };
+    const user = connection.user as { id?: string; displayName?: string };
+
+    if (!user?.id) {
+      return null;
+    }
 
     return {
       principal: {
