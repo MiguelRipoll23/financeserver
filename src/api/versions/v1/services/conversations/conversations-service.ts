@@ -265,16 +265,18 @@ export class ConversationsService {
         content: messageContent,
       };
 
+      const currentDate = new Date().toISOString().slice(0, 10);
+
       const systemMessage: ModelMessage = {
         role: "system",
-        content: OPENAI_SYSTEM_PROMPT,
+        content: `${OPENAI_SYSTEM_PROMPT} Current date: ${currentDate}.`,
       };
 
       let messages: ModelMessage[];
       if (history.length === 0 || history[0].role !== "system") {
         messages = [systemMessage, ...history, newMessage];
       } else {
-        messages = [...history, newMessage];
+        messages = [systemMessage, ...history.slice(1), newMessage];
       }
 
       return await streamText({
