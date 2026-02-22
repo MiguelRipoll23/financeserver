@@ -12,8 +12,7 @@ export const CreateCryptoExchangeRequestSchema = z.object({
     .max(255)
     .openapi({ example: "Binance" })
     .describe("Crypto exchange name"),
-  taxPercentage: NullablePercentageSchema
-    .optional()
+  taxPercentage: NullablePercentageSchema.optional()
     .openapi({ example: 0.26 })
     .describe("Tax percentage as decimal (0.26 = 26%)"),
 });
@@ -58,8 +57,7 @@ export const UpdateCryptoExchangeRequestSchema = z.object({
     .optional()
     .openapi({ example: "Updated Exchange Name" })
     .describe("New crypto exchange name"),
-  taxPercentage: NullablePercentageSchema
-    .optional()
+  taxPercentage: NullablePercentageSchema.optional()
     .openapi({ example: 0.26 })
     .describe("Tax percentage as decimal (0.26 = 26%)"),
 });

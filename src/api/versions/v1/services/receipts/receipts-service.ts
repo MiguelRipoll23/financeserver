@@ -260,8 +260,6 @@ export class ReceiptsService {
       filters.push(eq(receiptsTable.merchantId, params.merchantId));
     }
 
-    
-
     if (params.startDate) {
       filters.push(gte(receiptsTable.receiptDate, params.startDate));
     }

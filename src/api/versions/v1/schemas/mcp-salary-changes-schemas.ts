@@ -28,9 +28,11 @@ export const CreateSalaryChangeToolSchema = z.object({
 
 export const UpdateSalaryChangeToolSchema = z
   .object({
-    id: z.number().int().positive().describe(
-      "ID of the salary change to update",
-    ),
+    id: z
+      .number()
+      .int()
+      .positive()
+      .describe("ID of the salary change to update"),
   })
   .merge(CreateSalaryChangeToolSchema.partial())
   .refine((data) => Object.keys(data).some((key) => key !== "id"), {

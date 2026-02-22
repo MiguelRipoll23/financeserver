@@ -1,4 +1,5 @@
 import {
+  bigint,
   bigserial,
   date,
   index,
@@ -6,7 +7,6 @@ import {
   pgTable,
   text,
   timestamp,
-  bigint,
 } from "drizzle-orm/pg-core";
 import { subscriptionsTable } from "./subscriptions-table.ts";
 import { recurrenceEnum } from "./subscriptions-table.ts";
@@ -40,13 +40,13 @@ export const subscriptionPricesTable = pgTable(
     index("subscription_prices_effective_until_idx").on(table.effectiveUntil),
     index("subscription_prices_subscription_id_effective_from_desc_idx").on(
       table.subscriptionId,
-      table.effectiveFrom.desc()
+      table.effectiveFrom.desc(),
     ),
     index("subscription_prices_effective_dates_idx").on(
       table.effectiveFrom,
-      table.effectiveUntil
+      table.effectiveUntil,
     ),
-  ]
+  ],
 );
 
 export type SubscriptionPriceEntity =

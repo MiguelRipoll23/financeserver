@@ -49,7 +49,10 @@ export class AuthenticatedOAuthRouter {
             content: {
               "application/json": {
                 schema: z.object({
-                  redirectUrl: z.string().url().describe("URL to redirect the user to"),
+                  redirectUrl: z
+                    .string()
+                    .url()
+                    .describe("URL to redirect the user to"),
                 }),
               },
             },
@@ -88,7 +91,10 @@ export class AuthenticatedOAuthRouter {
         // Create authorization code and handle potential failure
         try {
           const redirectUrl = await this.oauthAuthorizationService
-            .createAuthorizationCode(request, principal);
+            .createAuthorizationCode(
+              request,
+              principal,
+            );
 
           return context.json({ redirectUrl }, 200);
         } catch (error) {
@@ -97,7 +103,12 @@ export class AuthenticatedOAuthRouter {
             await this.oauthRequestService.denyRequest(request_id);
           } catch (rollbackError) {
             // Rollback failed — don't suppress original error
-            console.error("Failed to rollback OAuth request approval for request:", request_id, "rollback error:", rollbackError);
+            console.error(
+              "Failed to rollback OAuth request approval for request:",
+              request_id,
+              "rollback error:",
+              rollbackError,
+            );
           }
           throw error;
         }
@@ -125,7 +136,10 @@ export class AuthenticatedOAuthRouter {
             content: {
               "application/json": {
                 schema: z.object({
-                  redirectUrl: z.string().url().describe("URL to redirect the user to"),
+                  redirectUrl: z
+                    .string()
+                    .url()
+                    .describe("URL to redirect the user to"),
                 }),
               },
             },
@@ -141,7 +155,10 @@ export class AuthenticatedOAuthRouter {
 
         const redirectUrl = new URL(request.redirectUri);
         redirectUrl.searchParams.set("error", "access_denied");
-        redirectUrl.searchParams.set("error_description", "User denied authorization");
+        redirectUrl.searchParams.set(
+          "error_description",
+          "User denied authorization",
+        );
         redirectUrl.searchParams.set("state", request.state);
 
         return context.json({ redirectUrl: redirectUrl.toString() }, 200);

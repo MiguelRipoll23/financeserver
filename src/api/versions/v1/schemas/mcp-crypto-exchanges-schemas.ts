@@ -14,9 +14,7 @@ export const CreateCryptoExchangeToolSchema = z.object({
     .min(0)
     .max(1)
     .optional()
-    .describe(
-      "Tax percentage as decimal (0.26 = 26%)",
-    ),
+    .describe("Tax percentage as decimal (0.26 = 26%)"),
 });
 
 export const UpdateCryptoExchangeToolSchema = z
@@ -37,9 +35,7 @@ export const UpdateCryptoExchangeToolSchema = z
       .min(0)
       .max(1)
       .optional()
-      .describe(
-        "Tax percentage as decimal (0.26 = 26%)",
-      ),
+      .describe("Tax percentage as decimal (0.26 = 26%)"),
   })
   .refine((data) => Object.keys(data).some((key) => key !== "id"), {
     message: "At least one field to update must be provided besides the ID.",

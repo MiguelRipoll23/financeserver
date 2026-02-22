@@ -3,8 +3,8 @@ import { inject, injectable } from "@needle-di/core";
 import { ServerError } from "../versions/v1/models/server-error.ts";
 import { InternalJwtAuthenticationStrategy } from "./strategies/internal-jwt-authentication-strategy.ts";
 import { OAuthAuthenticationStrategy } from "./strategies/oauth-authentication-strategy.ts";
-import type { AuthenticationStrategyInterface } from "./strategies/interfaces/authentication-strategy-interface.ts";
-import type { AuthenticationStrategyResultType } from "./strategies/types/authentication-strategy-result-type.ts";
+import type { AuthenticationStrategyInterface } from "../../core/interfaces/authentication/authentication-strategy-interface.ts";
+import { AuthenticationStrategyResultType } from "../../core/types/authentication/authentication-strategy-result-type.ts";
 
 @injectable()
 export class AuthenticationMiddleware {
@@ -12,9 +12,9 @@ export class AuthenticationMiddleware {
 
   constructor(
     private internalJwtAuthenticationStrategy = inject(
-      InternalJwtAuthenticationStrategy
+      InternalJwtAuthenticationStrategy,
     ),
-    private oauthAuthenticationStrategy = inject(OAuthAuthenticationStrategy)
+    private oauthAuthenticationStrategy = inject(OAuthAuthenticationStrategy),
   ) {
     this.authenticationStrategies = [
       this.internalJwtAuthenticationStrategy,
@@ -31,7 +31,7 @@ export class AuthenticationMiddleware {
       await strategyResult.strategy.validateResourceAccess(
         token,
         context.req.url,
-        strategyResult.result
+        strategyResult.result,
       );
 
       const principal = strategyResult.result.principal;
@@ -44,7 +44,7 @@ export class AuthenticationMiddleware {
     });
   }
 
-  public getTokenFromContext(authorization: string | null): string {
+  private getTokenFromContext(authorization: string | null): string {
     const token =
       authorization === null
         ? null
@@ -57,9 +57,7 @@ export class AuthenticationMiddleware {
     return token;
   }
 
-  private async authenticateWithStrategies(
-    token: string
-  ): Promise<{
+  private async authenticateWithStrategies(token: string): Promise<{
     strategy: AuthenticationStrategyInterface;
     result: AuthenticationStrategyResultType;
   }> {

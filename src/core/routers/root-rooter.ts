@@ -39,7 +39,7 @@ export class RootRouter {
       }),
       (c) => {
         return c.body(null, 204);
-      }
+      },
     );
   }
 
@@ -65,10 +65,12 @@ export class RootRouter {
         },
       }),
       (c) => {
-        const metadata = this.oauthService.getAuthorizationServerMetadata(c.req.url);
+        const metadata = this.oauthService.getAuthorizationServerMetadata(
+          c.req.url,
+        );
 
         return c.json(metadata, 200);
-      }
+      },
     );
   }
 
@@ -93,10 +95,12 @@ export class RootRouter {
         },
       }),
       (c) => {
-        const metadata = this.oauthService.getProtectedResourceMetadata(c.req.url);
+        const metadata = this.oauthService.getProtectedResourceMetadata(
+          c.req.url,
+        );
 
         return c.json(metadata, 200);
-      }
+      },
     );
   }
 }

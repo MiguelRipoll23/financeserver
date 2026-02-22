@@ -26,7 +26,7 @@ export const cryptoExchangesTable = pgTable(
   },
   (table) => [
     uniqueIndex("crypto_exchanges_name_unique").on(sql`lower(${table.name})`),
-  ]
+  ],
 );
 
 export type CryptoExchangeEntity = typeof cryptoExchangesTable.$inferSelect;

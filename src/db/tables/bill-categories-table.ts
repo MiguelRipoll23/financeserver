@@ -1,10 +1,10 @@
 import {
   bigserial,
+  index,
   pgTable,
   text,
   timestamp,
   uniqueIndex,
-  index,
   varchar,
 } from "drizzle-orm/pg-core";
 
@@ -30,7 +30,7 @@ export const billCategoriesTable = pgTable(
     // Partial/favorited index (if needed in the future)
     // index("idx_bill_categories_favorited").on(table.name.asc()),
     //   .where(sql`${table.favoritedAt} IS NOT NULL`),
-  ]
+  ],
 );
 
 export type BillCategoryEntity = typeof billCategoriesTable.$inferSelect;

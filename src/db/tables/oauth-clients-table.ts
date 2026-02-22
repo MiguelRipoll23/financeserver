@@ -34,27 +34,27 @@ export const oauthClientsTable = pgTable(
   (table) => [
     check(
       "oauth_clients_redirect_uris_not_empty",
-      sql`cardinality(${table.redirectUris}) > 0`
+      sql`cardinality(${table.redirectUris}) > 0`,
     ),
     check(
       "oauth_clients_grant_types_supported",
-      sql`${table.grantTypes} <@ ARRAY['authorization_code', 'refresh_token']::text[]`
+      sql`${table.grantTypes} <@ ARRAY['authorization_code', 'refresh_token']::text[]`,
     ),
     check(
       "oauth_clients_grant_types_not_empty",
-      sql`cardinality(${table.grantTypes}) > 0`
+      sql`cardinality(${table.grantTypes}) > 0`,
     ),
     check(
       "oauth_clients_response_types_supported",
-      sql`${table.responseTypes} <@ ARRAY['code']::text[]`
+      sql`${table.responseTypes} <@ ARRAY['code']::text[]`,
     ),
     check(
       "oauth_clients_response_types_not_empty",
-      sql`cardinality(${table.responseTypes}) > 0`
+      sql`cardinality(${table.responseTypes}) > 0`,
     ),
     check(
       "oauth_clients_token_endpoint_auth_method_supported",
-      sql`${table.tokenEndpointAuthMethod} IN ('none', 'client_secret_basic', 'client_secret_post')`
+      sql`${table.tokenEndpointAuthMethod} IN ('none', 'client_secret_basic', 'client_secret_post')`,
     ),
     pgPolicy("oauth_clients_select_own", {
       for: "select",
@@ -67,7 +67,7 @@ export const oauthClientsTable = pgTable(
       using: isCurrentClient(table.clientId),
       withCheck: isCurrentClient(table.clientId),
     }),
-  ]
+  ],
 );
 
 export type OAuthClientEntity = typeof oauthClientsTable.$inferSelect;

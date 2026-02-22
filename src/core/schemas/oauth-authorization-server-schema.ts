@@ -26,7 +26,7 @@ export const OAuthAuthorizationServerSchema = z.object({
     .array(z.string())
     .nonempty()
     .describe(
-      "Supported token endpoint client authentication methods. Includes 'client_secret_basic' (HTTP Basic Auth), 'client_secret_post' (credentials in POST body), and 'none' (public clients with PKCE)."
+      "Supported token endpoint client authentication methods. Includes 'client_secret_basic' (HTTP Basic Auth), 'client_secret_post' (credentials in POST body), and 'none' (public clients with PKCE).",
     ),
   code_challenge_methods_supported: z
     .array(z.string())

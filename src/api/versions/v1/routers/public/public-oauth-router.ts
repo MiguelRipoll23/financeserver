@@ -79,8 +79,8 @@ export class PublicOAuthRouter {
           await context.req.json(),
         );
 
-        const response =
-          await this.oauthClientRegistryService.registerPublicClient(payload);
+        const response = await this.oauthClientRegistryService
+          .registerPublicClient(payload);
 
         return context.json(response, 201);
       },
@@ -107,8 +107,8 @@ export class PublicOAuthRouter {
       }),
       async (context: Context) => {
         const query = OAuthAuthorizeQuerySchema.parse(context.req.query());
-        const redirectUrl =
-          await this.oauthRequestService.initiateAuthorizationRequest(query);
+        const redirectUrl = await this.oauthRequestService
+          .initiateAuthorizationRequest(query);
         return context.redirect(redirectUrl, 302);
       },
     );
@@ -195,8 +195,8 @@ export class PublicOAuthRouter {
       async (context: Context) => {
         const body = await context.req.parseBody();
         const payload = OAuthTokenRequestSchema.parse(body);
-        const tokenResponse =
-          await this.oauthAuthorizationService.exchangeAuthorizationCode(
+        const tokenResponse = await this.oauthAuthorizationService
+          .exchangeAuthorizationCode(
             payload,
           );
 

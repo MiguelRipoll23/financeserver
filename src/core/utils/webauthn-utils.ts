@@ -1,4 +1,7 @@
-import { ENV_WEBAUTHN_ORIGINS, ENV_RP_NAME } from "../../api/versions/v1/constants/environment-constants.ts";
+import {
+  ENV_RP_NAME,
+  ENV_WEBAUTHN_ORIGINS,
+} from "../../api/versions/v1/constants/environment-constants.ts";
 
 /**
  * Utility functions for WebAuthn origin validation and relying party configuration
@@ -39,7 +42,7 @@ export class WebAuthnUtils {
     const escapedPattern = pattern
       .replace(/[.+?^${}()|[\]\\]/g, "\\$&")
       .replace(/\*/g, ".*");
-    
+
     const regex = new RegExp(`^${escapedPattern}$`);
     return regex.test(origin);
   }

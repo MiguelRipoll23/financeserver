@@ -14,8 +14,7 @@ export class CreateCryptoExchangeToolService {
       name: "crypto_exchanges.create",
       meta: {
         title: "Create crypto exchange",
-        description:
-          "Use this when you need to create a new crypto exchange.",
+        description: "Use this when you need to create a new crypto exchange.",
         inputSchema: CreateCryptoExchangeToolSchema,
         annotations: {
           readOnlyHint: false,

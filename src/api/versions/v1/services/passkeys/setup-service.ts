@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import { JWTService } from "../../../../../core/services/jwt-service.ts";
 import { passkeysTable } from "../../../../../db/schema.ts";
+import { UrlUtils } from "../../../../../core/utils/url-utils.ts";
 
 @injectable()
 export class PasskeySetupService {
@@ -18,7 +19,7 @@ export class PasskeySetupService {
       return null; // Return null to signal 204 response
     }
 
-    const token = await this.jwtService.createSetupToken(requestUrl);
+    const token = await this.createSetupToken(requestUrl);
     return { token };
   }
 
@@ -29,5 +30,21 @@ export class PasskeySetupService {
       .from(passkeysTable);
 
     return Number(result[0].count) > 0;
+  }
+
+  public async createSetupToken(requestUrl: string) {
+    const applicationBaseURL = UrlUtils.getApplicationBaseURL(requestUrl);
+    const now = Math.floor(Date.now() / 1000);
+
+    return await this.jwtService.sign(
+      {
+        id: "setup",
+        name: "Setup",
+        // Restrict to registration endpoints only for first passkey setup
+        aud: `${applicationBaseURL}/api/v1/registration/*`,
+        exp: now + 15 * 60, // 15 minutes
+      },
+      15 * 60, // 15 minutes
+    );
   }
 }

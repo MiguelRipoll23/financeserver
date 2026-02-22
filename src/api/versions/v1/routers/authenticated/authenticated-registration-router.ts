@@ -1,6 +1,7 @@
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { inject, injectable } from "@needle-di/core";
 import { PasskeyRegistrationService } from "../../services/passkeys/registration-service.ts";
+import type { RegistrationResponseJSON } from "@simplewebauthn/server";
 import {
   GetRegistrationOptionsRequestSchema,
   GetRegistrationOptionsResponseSchema,
@@ -135,7 +136,7 @@ export class AuthenticatedRegistrationRouter {
           origin,
           requestUrl,
           transactionId,
-          registrationResponse,
+          registrationResponse as unknown as RegistrationResponseJSON,
         );
 
         return c.json(response, 200);

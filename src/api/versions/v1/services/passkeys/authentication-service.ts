@@ -16,6 +16,7 @@ import { passkeysTable } from "../../../../../db/schema.ts";
 import type { PasskeyEntity } from "../../../../../db/tables/passkeys-table.ts";
 import { ServerError } from "../../models/server-error.ts";
 import { KV_OPTIONS_EXPIRATION_TIME } from "../../constants/kv-constants.ts";
+import { UrlUtils } from "../../../../../core/utils/url-utils.ts";
 
 @injectable()
 export class PasskeyAuthenticationService {
@@ -54,8 +55,9 @@ export class PasskeyAuthenticationService {
     authenticationResponse: AuthenticationResponseJSON,
   ) {
     // Retrieve and consume authentication options from KV
-    const authenticationOptions =
-      await this.getAuthenticationOptionsOrThrow(transactionId);
+    const authenticationOptions = await this.getAuthenticationOptionsOrThrow(
+      transactionId,
+    );
 
     // Validate origin is allowed
     if (!WebAuthnUtils.isOriginAllowed(origin)) {
@@ -119,16 +121,30 @@ export class PasskeyAuthenticationService {
       })
       .where(eq(passkeysTable.id, passkey.id));
 
-    // Create management token (userless passkeys)
-    const token = await this.jwtService.createManagementToken(requestUrl);
+    // Return JWT for authenticated session
+    const token = await this.generateJWT(requestUrl);
     return { token };
+  }
+
+  public async generateJWT(requestUrl: string) {
+    const applicationBaseURL = UrlUtils.getApplicationBaseURL(requestUrl);
+    const now = Math.floor(Date.now() / 1000);
+    const threeMonthsInSeconds = 90 * 24 * 60 * 60; // 90 days
+
+    return await this.jwtService.sign({
+      id: "00000000-0000-0000-0000-000000000000",
+      name: "Management",
+      // Wildcard audience claim to grant access to all resources
+      aud: `${applicationBaseURL}/*`,
+      exp: now + threeMonthsInSeconds, // 3 months
+    });
   }
 
   private async getAuthenticationOptionsOrThrow(
     transactionId: string,
   ): Promise<PublicKeyCredentialRequestOptionsJSON> {
-    const authenticationOptions =
-      await this.kvService.consumeAuthenticationOptionsByTransactionId(
+    const authenticationOptions = await this.kvService
+      .consumeAuthenticationOptionsByTransactionId(
         transactionId,
       );
 
@@ -142,7 +158,7 @@ export class PasskeyAuthenticationService {
 
     if (
       authenticationOptions.createdAt + KV_OPTIONS_EXPIRATION_TIME <
-      Date.now()
+        Date.now()
     ) {
       throw new ServerError(
         "AUTHENTICATION_OPTIONS_EXPIRED",

@@ -24,7 +24,7 @@ export const billsTable = pgTable(
     currencyCode: varchar("currency_code", { length: 3 }).notNull(),
     emailId: bigint("email_id", { mode: "number" }).references(
       () => billEmailsTable.id,
-      { onDelete: "set null" }
+      { onDelete: "set null" },
     ),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
@@ -38,8 +38,11 @@ export const billsTable = pgTable(
     index("bills_category_id_idx").on(table.categoryId),
     index("bills_total_amount_idx").on(table.totalAmount),
     // Composite index for category/date queries
-    index("idx_bills_date_category").on(table.billDate.desc(), table.categoryId),
-  ]
+    index("idx_bills_date_category").on(
+      table.billDate.desc(),
+      table.categoryId,
+    ),
+  ],
 );
 
 export type BillEntity = typeof billsTable.$inferSelect;

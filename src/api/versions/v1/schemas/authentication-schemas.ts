@@ -1,6 +1,5 @@
 import { z } from "@hono/zod-openapi";
 
-
 export const GetAuthenticationOptionsRequestSchema = z.object({
   transactionId: z
     .uuid()
@@ -47,9 +46,7 @@ export type VerifyAuthenticationRequest = z.infer<
 >;
 
 export const VerifyAuthenticationResponseSchema = z.object({
-  token: z
-    .string()
-    .describe("The JWT to authenticate with the server"),
+  token: z.string().describe("The JWT to authenticate with the server"),
 });
 
 export type VerifyAuthenticationResponse = z.infer<

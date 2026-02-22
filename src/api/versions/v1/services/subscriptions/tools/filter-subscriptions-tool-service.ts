@@ -57,7 +57,9 @@ export class FilterSubscriptionsToolService {
                 ? ` - ${subscription.plan}`
                 : "";
               return `• ${subscription.name}${planInfo} – ${subscription.category} (${
-                getCurrencySymbolForCode(subscription.currencyCode)
+                getCurrencySymbolForCode(
+                  subscription.currencyCode,
+                )
               }${subscription.amount}/${subscription.recurrence}, started: ${startDate}${endDate})`;
             })
             .join("\n");

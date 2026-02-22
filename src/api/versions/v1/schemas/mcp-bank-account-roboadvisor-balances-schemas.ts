@@ -7,11 +7,7 @@ const DateRegex = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
 
 // Roboadvisor Balance Tool Schemas
 export const CreateBankAccountRoboadvisorBalanceToolSchema = z.object({
-  roboadvisorId: z
-    .number()
-    .int()
-    .positive()
-    .describe("ID of the roboadvisor"),
+  roboadvisorId: z.number().int().positive().describe("ID of the roboadvisor"),
   date: z
     .string()
     .regex(DateRegex, "Date must be in YYYY-MM-DD format")
@@ -43,9 +39,10 @@ export const FilterBankAccountRoboadvisorBalancesToolSchema = z.object({
     .nativeEnum(BankAccountRoboadvisorBalanceSortField)
     .optional()
     .describe("Sort field (default: date)"),
-  sortOrder: z.nativeEnum(SortOrder).optional().describe(
-    "Sort order (default: desc)",
-  ),
+  sortOrder: z
+    .nativeEnum(SortOrder)
+    .optional()
+    .describe("Sort order (default: desc)"),
   pageSize: z
     .number()
     .int()
@@ -57,9 +54,11 @@ export const FilterBankAccountRoboadvisorBalancesToolSchema = z.object({
 });
 
 export const UpdateBankAccountRoboadvisorBalanceToolSchema = z.object({
-  id: z.number().int().positive().describe(
-    "ID of the balance record to update",
-  ),
+  id: z
+    .number()
+    .int()
+    .positive()
+    .describe("ID of the balance record to update"),
   date: z
     .string()
     .regex(DateRegex, "Date must be in YYYY-MM-DD format")
@@ -85,7 +84,9 @@ export const UpdateBankAccountRoboadvisorBalanceToolSchema = z.object({
 });
 
 export const DeleteBankAccountRoboadvisorBalanceToolSchema = z.object({
-  id: z.number().int().positive().describe(
-    "ID of the balance record to delete",
-  ),
+  id: z
+    .number()
+    .int()
+    .positive()
+    .describe("ID of the balance record to delete"),
 });

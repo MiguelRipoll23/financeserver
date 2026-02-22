@@ -7,19 +7,19 @@ import {
 } from "@simplewebauthn/server";
 import { Buffer } from "node:buffer";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
-import { JWTService } from "../../../../../core/services/jwt-service.ts";
 import { KVService } from "../../../../../core/services/kv-service.ts";
 import { WebAuthnUtils } from "../../../../../core/utils/webauthn-utils.ts";
 import { passkeysTable } from "../../../../../db/schema.ts";
 import { ServerError } from "../../models/server-error.ts";
 import { KV_OPTIONS_EXPIRATION_TIME } from "../../constants/kv-constants.ts";
+import { PasskeyAuthenticationService } from "./authentication-service.ts";
 
 @injectable()
 export class PasskeyRegistrationService {
   constructor(
     private kvService = inject(KVService),
     private databaseService = inject(DatabaseService),
-    private jwtService = inject(JWTService),
+    private passkeyAuthenticationService = inject(PasskeyAuthenticationService),
   ) {}
 
   public async getRegistrationOptions(
@@ -43,7 +43,7 @@ export class PasskeyRegistrationService {
     const options = await generateRegistrationOptions({
       rpName,
       rpID,
-      userName: "User", // Userless, but WebAuthn needs a user handle/name
+      userName: "User",
     });
 
     // Store options with displayName in KV storage
@@ -95,7 +95,8 @@ export class PasskeyRegistrationService {
     // Validate displayName
     const displayName = registrationOptions.displayName;
     if (
-      !displayName || typeof displayName !== "string" ||
+      !displayName ||
+      typeof displayName !== "string" ||
       displayName.trim().length === 0
     ) {
       throw new ServerError(
@@ -109,21 +110,27 @@ export class PasskeyRegistrationService {
     const transports = registrationResponse.response?.transports;
     const sanitizedTransports = Array.isArray(transports) &&
         transports.every((t) => typeof t === "string")
-      ? transports as string[]
+      ? (transports as string[])
       : undefined;
 
     // Save passkey to database with displayName
     const { credential } = verification.registrationInfo;
-    await this.databaseService.get().insert(passkeysTable).values({
-      id: credential.id,
-      publicKey: Buffer.from(credential.publicKey).toString("base64url"),
-      counter: credential.counter,
-      transports: sanitizedTransports,
-      displayName: displayName.trim(),
-    });
+    await this.databaseService
+      .get()
+      .insert(passkeysTable)
+      .values({
+        id: credential.id,
+        publicKey: Buffer.from(credential.publicKey).toString("base64url"),
+        counter: credential.counter,
+        transports: sanitizedTransports,
+        displayName: displayName.trim(),
+      });
 
-    // Create management token (userless passkeys)
-    const token = await this.jwtService.createManagementToken(requestUrl);
+    // Return JWT for authenticated session
+    const token = await this.passkeyAuthenticationService.generateJWT(
+      requestUrl,
+    );
+
     return { token };
   }
 

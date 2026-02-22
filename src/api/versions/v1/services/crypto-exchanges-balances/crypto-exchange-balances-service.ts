@@ -358,9 +358,7 @@ export class CryptoExchangeBalancesService {
       }
 
       if (!exchange) {
-        console.warn(
-          `Crypto exchange with ID ${cryptoExchangeId} not found`,
-        );
+        console.warn(`Crypto exchange with ID ${cryptoExchangeId} not found`);
         return null;
       }
 
@@ -459,10 +457,7 @@ export class CryptoExchangeBalancesService {
         currencyCode,
       };
     } catch (error) {
-      console.error(
-        "Error calculating crypto value after tax:",
-        error,
-      );
+      console.error("Error calculating crypto value after tax:", error);
       return null;
     }
   }

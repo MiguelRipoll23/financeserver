@@ -9,12 +9,14 @@ import { IndexFundPriceProvider } from "../interfaces/index-fund-price-provider-
  */
 @injectable()
 export class YahooFinanceAdapter implements IndexFundPriceProvider {
-  private readonly baseUrl = "https://query1.finance.yahoo.com/v8/finance/chart";
+  private readonly baseUrl =
+    "https://query1.finance.yahoo.com/v8/finance/chart";
 
   // Read OPENFIGI key once at class initialization
-  private readonly openFigiKey: string | undefined = (typeof Deno !== "undefined" && Deno.env?.get)
-    ? Deno.env.get("OPENFIGI_API_KEY")
-    : undefined;
+  private readonly openFigiKey: string | undefined =
+    typeof Deno !== "undefined" && Deno.env?.get
+      ? Deno.env.get("OPENFIGI_API_KEY")
+      : undefined;
 
   // Simple LRU-like in-memory cache for ISIN→ticker mappings with a fixed max size
   private readonly isinTickerCache = new Map<string, string>();
@@ -74,7 +76,9 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
       if (this.isISIN(isinOrTicker)) {
         ticker = await this.convertIsinToTicker(isinOrTicker);
         if (!ticker) {
-          console.warn(`YahooFinanceAdapter: ISIN-to-ticker mapping failed for ISIN: ${isinOrTicker}`);
+          console.warn(
+            `YahooFinanceAdapter: ISIN-to-ticker mapping failed for ISIN: ${isinOrTicker}`,
+          );
           return null;
         }
       } else {
@@ -84,15 +88,25 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
       const normalizedTicker = ticker.toUpperCase();
 
       if (!this.isValidTicker(normalizedTicker)) {
-        console.warn(`YahooFinanceAdapter: Invalid ticker supplied: ${normalizedTicker}`);
+        console.warn(
+          `YahooFinanceAdapter: Invalid ticker supplied: ${normalizedTicker}`,
+        );
         return null;
       }
 
-      const url = `${this.baseUrl}/${encodeURIComponent(normalizedTicker)}?range=1d&interval=1d`;
-      const response = await fetch(url, { signal: AbortSignal.timeout(10_000) });
+      const url = `${this.baseUrl}/${
+        encodeURIComponent(
+          normalizedTicker,
+        )
+      }?range=1d&interval=1d`;
+      const response = await fetch(url, {
+        signal: AbortSignal.timeout(10_000),
+      });
 
       if (!response.ok) {
-        console.warn(`YahooFinanceAdapter: Yahoo fetch failed for ${normalizedTicker}: ${response.status}`);
+        console.warn(
+          `YahooFinanceAdapter: Yahoo fetch failed for ${normalizedTicker}: ${response.status}`,
+        );
         return null;
       }
 
@@ -107,7 +121,10 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
 
       return price != null ? String(price) : null;
     } catch (error) {
-      console.error(`Error fetching index fund price from Yahoo Finance:`, error);
+      console.error(
+        `Error fetching index fund price from Yahoo Finance:`,
+        error,
+      );
       return null;
     }
   }
@@ -123,12 +140,15 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
     if (cached) return cached;
 
     if (!this.openFigiKey) {
-      console.warn(`YahooFinanceAdapter: OPENFIGI_API_KEY not set; cannot convert ISIN: ${normalizedIsin}`);
+      console.warn(
+        `YahooFinanceAdapter: OPENFIGI_API_KEY not set; cannot convert ISIN: ${normalizedIsin}`,
+      );
       return null;
     }
 
     try {
-      const response = await fetch("https://api.openfigi.com/v3/mapping", { signal: AbortSignal.timeout(10_000),
+      const response = await fetch("https://api.openfigi.com/v3/mapping", {
+        signal: AbortSignal.timeout(10_000),
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -138,7 +158,9 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
       });
 
       if (!response.ok) {
-        console.warn(`YahooFinanceAdapter: OpenFIGI lookup failed for ${normalizedIsin}: ${response.status}`);
+        console.warn(
+          `YahooFinanceAdapter: OpenFIGI lookup failed for ${normalizedIsin}: ${response.status}`,
+        );
         return null;
       }
 
@@ -153,7 +175,10 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
 
       return null;
     } catch (error) {
-      console.warn(`YahooFinanceAdapter: Error converting ISIN ${normalizedIsin}:`, error);
+      console.warn(
+        `YahooFinanceAdapter: Error converting ISIN ${normalizedIsin}:`,
+        error,
+      );
       return null;
     }
   }

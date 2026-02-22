@@ -12,12 +12,15 @@ import type {
   OAuthTokenResponse,
 } from "../../schemas/oauth-schemas.ts";
 import type { OAuthRequestData } from "../../interfaces/authentication/oauth-request-data-interface.ts";
-import type { AuthenticationPrincipal } from "../../interfaces/authentication/authentication-principal-interface.ts";
+import type { AuthenticationPrincipal } from "../../../../../core/interfaces/authentication/authentication-principal-interface.ts";
 import { OAuthClientRegistryService } from "./oauth-client-registry-service.ts";
 import { Base64Utils } from "../../../../../core/utils/base64-utils.ts";
 import { TokenHashUtils } from "../../../../../core/utils/token-hash-utils.ts";
 import { UrlUtils } from "../../../../../core/utils/url-utils.ts";
-import { OAUTH_ACCESS_TOKEN_EXPIRES_IN_SECONDS, OAUTH_REFRESH_TOKEN_EXPIRES_IN_SECONDS } from "../../../../../core/constants/oauth-constants.ts";
+import {
+  OAUTH_ACCESS_TOKEN_EXPIRES_IN_SECONDS,
+  OAUTH_REFRESH_TOKEN_EXPIRES_IN_SECONDS,
+} from "../../../../../core/constants/oauth-constants.ts";
 
 @injectable()
 export class OAuthAuthorizationService {
@@ -47,7 +50,12 @@ export class OAuthAuthorizationService {
     const normalized = this.normalizeUrl(redirectUri);
     const client = await this.clientRegistry.getClient(clientId);
 
-    if (client === null || !client.redirectUris.map(uri => this.normalizeUrl(uri)).includes(normalized)) {
+    if (
+      client === null ||
+      !client.redirectUris
+        .map((uri) => this.normalizeUrl(uri))
+        .includes(normalized)
+    ) {
       throw new ServerError(
         "INVALID_OAUTH_REDIRECT_URI",
         "Redirect URI is not allowed",
@@ -65,21 +73,24 @@ export class OAuthAuthorizationService {
     const expiresAt = new Date(Date.now() + this.authorizationCodeTtlMs);
 
     // Store authorization code in database with hashed token
-    await this.databaseService.get().insert(oauthAuthorizationCodes).values({
-      codeHash,
-      clientId: request.clientId,
-      redirectUri: request.redirectUri,
-      codeChallenge: request.codeChallenge,
-      codeChallengeMethod: request.codeChallengeMethod,
-      scope: request.scope,
-      tokenType: "Bearer",
-      user: {
-        id: principal.id,
-        displayName: principal.displayName,
-      },
-      resource: request.resource,
-      expiresAt: expiresAt.toISOString(),
-    });
+    await this.databaseService
+      .get()
+      .insert(oauthAuthorizationCodes)
+      .values({
+        codeHash,
+        clientId: request.clientId,
+        redirectUri: request.redirectUri,
+        codeChallenge: request.codeChallenge,
+        codeChallengeMethod: request.codeChallengeMethod,
+        scope: request.scope,
+        tokenType: "Bearer",
+        user: {
+          id: principal.id,
+          displayName: principal.displayName,
+        },
+        resource: request.resource,
+        expiresAt: expiresAt.toISOString(),
+      });
 
     // Build redirect URL with authorization code (raw token returned to client)
     const redirectUrl = new URL(request.redirectUri);
@@ -137,8 +148,12 @@ export class OAuthAuthorizationService {
     const refreshTokenHash = await TokenHashUtils.hashToken(refreshToken);
     const accessToken = Base64Utils.generateRandomString(32);
     const accessTokenHash = await TokenHashUtils.hashToken(accessToken);
-    const expiresAt = new Date(Date.now() + OAUTH_ACCESS_TOKEN_EXPIRES_IN_SECONDS * 1000);
-    const refreshTokenExpiresAt = new Date(Date.now() + OAUTH_REFRESH_TOKEN_EXPIRES_IN_SECONDS * 1000);
+    const expiresAt = new Date(
+      Date.now() + OAUTH_ACCESS_TOKEN_EXPIRES_IN_SECONDS * 1000,
+    );
+    const refreshTokenExpiresAt = new Date(
+      Date.now() + OAUTH_REFRESH_TOKEN_EXPIRES_IN_SECONDS * 1000,
+    );
 
     // Store connection with hashed tokens
     await this.databaseService.get().insert(oauthConnections).values({
@@ -168,7 +183,9 @@ export class OAuthAuthorizationService {
   ): Promise<OAuthTokenResponse> {
     await this.assertClient(request.client_id);
 
-    const refreshTokenHash = await TokenHashUtils.hashToken(request.refresh_token);
+    const refreshTokenHash = await TokenHashUtils.hashToken(
+      request.refresh_token,
+    );
 
     // Find connection by refresh token hash
     const connections = await this.databaseService
@@ -210,8 +227,12 @@ export class OAuthAuthorizationService {
     const newAccessTokenHash = await TokenHashUtils.hashToken(newAccessToken);
     const newRefreshToken = Base64Utils.generateRandomString(32);
     const newRefreshTokenHash = await TokenHashUtils.hashToken(newRefreshToken);
-    const expiresAt = new Date(Date.now() + OAUTH_ACCESS_TOKEN_EXPIRES_IN_SECONDS * 1000);
-    const refreshTokenExpiresAt = new Date(Date.now() + OAUTH_REFRESH_TOKEN_EXPIRES_IN_SECONDS * 1000);
+    const expiresAt = new Date(
+      Date.now() + OAUTH_ACCESS_TOKEN_EXPIRES_IN_SECONDS * 1000,
+    );
+    const refreshTokenExpiresAt = new Date(
+      Date.now() + OAUTH_REFRESH_TOKEN_EXPIRES_IN_SECONDS * 1000,
+    );
 
     // Update connection with hashed tokens
     await this.databaseService

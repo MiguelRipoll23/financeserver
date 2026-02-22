@@ -13,8 +13,7 @@ export class DeleteSalaryChangeToolService {
       name: "salary_changes.delete",
       meta: {
         title: "Delete salary change",
-        description:
-          "Use this when you need to delete a salary change.",
+        description: "Use this when you need to delete a salary change.",
         inputSchema: DeleteSalaryChangeToolSchema,
         annotations: {
           readOnlyHint: false,

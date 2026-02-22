@@ -4,7 +4,10 @@ export class UrlUtils {
       const url = new URL(requestUrl);
       return `${url.protocol}//${url.host}`;
     } catch (error) {
-      console.error("Invalid request URL provided to getApplicationBaseURL", error);
+      console.error(
+        "Invalid request URL provided to getApplicationBaseURL",
+        error,
+      );
       throw error;
     }
   }

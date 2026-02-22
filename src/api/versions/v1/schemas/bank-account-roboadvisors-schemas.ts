@@ -28,18 +28,18 @@ export const CreateBankAccountRoboadvisorRequestSchema = z.object({
     .optional()
     .openapi({ example: 5 })
     .describe("Risk level (1-7 scale)"),
-  managementFeePercentage: PercentageSchema
-    .openapi({ example: 0.0015 })
-    .describe("Annual management fee as decimal (0.0015 = 0.15%)"),
-  custodyFeePercentage: PercentageSchema
-    .openapi({ example: 0.0015 })
-    .describe("Annual custody fee as decimal (0.0015 = 0.15%)"),
-  fundTerPercentage: PercentageSchema
-    .openapi({ example: 0.0010 })
-    .describe("Fund TER as decimal (0.0010 = 0.10%)"),
-  totalFeePercentage: PercentageSchema
-    .openapi({ example: 0.0040 })
-    .describe("Total annual fee as decimal (0.0040 = 0.40%)"),
+  managementFeePercentage: PercentageSchema.openapi({
+    example: 0.0015,
+  }).describe("Annual management fee as decimal (0.0015 = 0.15%)"),
+  custodyFeePercentage: PercentageSchema.openapi({ example: 0.0015 }).describe(
+    "Annual custody fee as decimal (0.0015 = 0.15%)",
+  ),
+  fundTerPercentage: PercentageSchema.openapi({ example: 0.001 }).describe(
+    "Fund TER as decimal (0.0010 = 0.10%)",
+  ),
+  totalFeePercentage: PercentageSchema.openapi({ example: 0.004 }).describe(
+    "Total annual fee as decimal (0.0040 = 0.40%)",
+  ),
   managementFeeFrequency: z
     .enum(["monthly", "quarterly", "yearly"])
     .openapi({ example: "monthly" })
@@ -53,8 +53,7 @@ export const CreateBankAccountRoboadvisorRequestSchema = z.object({
     .default(true)
     .openapi({ example: true })
     .describe("Whether TER is priced in NAV"),
-  taxPercentage: NullablePercentageSchema
-    .optional()
+  taxPercentage: NullablePercentageSchema.optional()
     .openapi({ example: 0.26 })
     .describe("Tax percentage as decimal (0.26 = 26%)"),
 });
@@ -70,8 +69,8 @@ export const CreateBankAccountRoboadvisorResponseSchema = z.object({
   riskLevel: z.number().int().nullable().openapi({ example: 5 }),
   managementFeePercentage: z.number().openapi({ example: 0.0015 }),
   custodyFeePercentage: z.number().openapi({ example: 0.0015 }),
-  fundTerPercentage: z.number().openapi({ example: 0.0010 }),
-  totalFeePercentage: z.number().openapi({ example: 0.0040 }),
+  fundTerPercentage: z.number().openapi({ example: 0.001 }),
+  totalFeePercentage: z.number().openapi({ example: 0.004 }),
   managementFeeFrequency: z.string().openapi({ example: "monthly" }),
   custodyFeeFrequency: z.string().openapi({ example: "quarterly" }),
   terPricedInNav: z.boolean().openapi({ example: true }),
@@ -132,8 +131,8 @@ export const BankAccountRoboadvisorSummarySchema = z.object({
   riskLevel: z.number().int().nullable().openapi({ example: 5 }),
   managementFeePercentage: z.number().openapi({ example: 0.0015 }),
   custodyFeePercentage: z.number().openapi({ example: 0.0015 }),
-  fundTerPercentage: z.number().openapi({ example: 0.0010 }),
-  totalFeePercentage: z.number().openapi({ example: 0.0040 }),
+  fundTerPercentage: z.number().openapi({ example: 0.001 }),
+  totalFeePercentage: z.number().openapi({ example: 0.004 }),
   managementFeeFrequency: z.string().openapi({ example: "monthly" }),
   custodyFeeFrequency: z.string().openapi({ example: "quarterly" }),
   terPricedInNav: z.boolean().openapi({ example: true }),
@@ -159,15 +158,18 @@ export const GetBankAccountRoboadvisorsResponseSchema = z.object({
     .describe("List of roboadvisor summaries"),
   limit: z.number().int().describe("Maximum number of results returned"),
   offset: z.number().int().describe("Number of results skipped"),
-  total: z.number().int().describe(
-    "Total number of roboadvisors matching the query",
-  ),
-  nextCursor: z.string().nullable().describe(
-    "Cursor for the next page of results or null",
-  ),
-  previousCursor: z.string().nullable().describe(
-    "Cursor for the previous page of results or null",
-  ),
+  total: z
+    .number()
+    .int()
+    .describe("Total number of roboadvisors matching the query"),
+  nextCursor: z
+    .string()
+    .nullable()
+    .describe("Cursor for the next page of results or null"),
+  previousCursor: z
+    .string()
+    .nullable()
+    .describe("Cursor for the previous page of results or null"),
 });
 
 export type GetBankAccountRoboadvisorsResponse = z.infer<
@@ -190,21 +192,17 @@ export const UpdateBankAccountRoboadvisorRequestSchema = z.object({
     .optional()
     .openapi({ example: 5 })
     .describe("Risk level (1-7 scale)"),
-  managementFeePercentage: PercentageSchema
-    .optional()
+  managementFeePercentage: PercentageSchema.optional()
     .openapi({ example: 0.0015 })
     .describe("Annual management fee as decimal (0.0015 = 0.15%)"),
-  custodyFeePercentage: PercentageSchema
-    .optional()
+  custodyFeePercentage: PercentageSchema.optional()
     .openapi({ example: 0.0015 })
     .describe("Annual custody fee as decimal (0.0015 = 0.15%)"),
-  fundTerPercentage: PercentageSchema
-    .optional()
-    .openapi({ example: 0.0010 })
+  fundTerPercentage: PercentageSchema.optional()
+    .openapi({ example: 0.001 })
     .describe("Fund TER as decimal (0.0010 = 0.10%)"),
-  totalFeePercentage: PercentageSchema
-    .optional()
-    .openapi({ example: 0.0040 })
+  totalFeePercentage: PercentageSchema.optional()
+    .openapi({ example: 0.004 })
     .describe("Total annual fee as decimal (0.0040 = 0.40%)"),
   managementFeeFrequency: z
     .enum(["monthly", "quarterly", "yearly"])
@@ -221,8 +219,7 @@ export const UpdateBankAccountRoboadvisorRequestSchema = z.object({
     .optional()
     .openapi({ example: true })
     .describe("Whether TER is priced in NAV"),
-  taxPercentage: NullablePercentageSchema
-    .optional()
+  taxPercentage: NullablePercentageSchema.optional()
     .openapi({ example: 0.26 })
     .describe("Tax percentage as decimal (0.26 = 26%)"),
 });

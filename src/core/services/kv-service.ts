@@ -28,14 +28,14 @@ export class KVService {
 
   public async setRegistrationOptions(
     transactionId: string,
-    options: RegistrationOptionsKV
+    options: RegistrationOptionsKV,
   ): Promise<void> {
     const kv = await this.getKV();
     await kv.set(["registration_options", transactionId], options);
   }
 
   public async consumeRegistrationOptionsByTransactionId(
-    transactionId: string
+    transactionId: string,
   ): Promise<RegistrationOptionsKV | null> {
     const kv = await this.getKV();
     const result = await kv.get<RegistrationOptionsKV>([
@@ -67,14 +67,14 @@ export class KVService {
 
   public async setAuthenticationOptions(
     transactionId: string,
-    options: AuthenticationOptionsKV
+    options: AuthenticationOptionsKV,
   ): Promise<void> {
     const kv = await this.getKV();
     await kv.set(["authentication_options", transactionId], options);
   }
 
   public async consumeAuthenticationOptionsByTransactionId(
-    transactionId: string
+    transactionId: string,
   ): Promise<AuthenticationOptionsKV | null> {
     const kv = await this.getKV();
     const result = await kv.get<AuthenticationOptionsKV>([
@@ -114,14 +114,14 @@ export class KVService {
   public async setOAuthRequest(
     requestId: string,
     data: OAuthRequestData,
-    ttlMs: number
+    ttlMs: number,
   ): Promise<void> {
     const kv = await this.getKV();
     await kv.set(["oauth_request", requestId], data, { expireIn: ttlMs });
   }
 
   public async getOAuthRequest(
-    requestId: string
+    requestId: string,
   ): Promise<OAuthRequestData | null> {
     const kv = await this.getKV();
     const result = await kv.get<OAuthRequestData>(["oauth_request", requestId]);
@@ -130,7 +130,7 @@ export class KVService {
 
   public async updateOAuthRequestStatus(
     requestId: string,
-    status: "approved" | "denied"
+    status: "approved" | "denied",
   ): Promise<boolean> {
     const kv = await this.getKV();
     const result = await kv.get<OAuthRequestData>(["oauth_request", requestId]);
@@ -157,7 +157,7 @@ export class KVService {
       .set(
         ["oauth_request", requestId],
         updatedData,
-        ttl > 0 ? { expireIn: ttl } : undefined
+        ttl > 0 ? { expireIn: ttl } : undefined,
       )
       .commit();
 
@@ -165,7 +165,7 @@ export class KVService {
   }
 
   public async consumeOAuthRequest(
-    requestId: string
+    requestId: string,
   ): Promise<OAuthRequestData | null> {
     const kv = await this.getKV();
     const result = await kv.get<OAuthRequestData>(["oauth_request", requestId]);

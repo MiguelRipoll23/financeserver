@@ -15,7 +15,7 @@ export const OAUTH_GRANT_TYPES_SUPPORTED: [string, ...string[]] = [
 ];
 export const OAUTH_TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED: [
   string,
-  ...string[]
+  ...string[],
 ] = ["client_secret_basic", "client_secret_post", "none"];
 export const OAUTH_CODE_CHALLENGE_METHODS_SUPPORTED: [string, ...string[]] = [
   "S256",

@@ -21,7 +21,7 @@ function isValidDateString(dateString: string): boolean {
   const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
   // Adjust for leap year
-  const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+  const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
   if (isLeapYear) {
     daysInMonth[1] = 29;
   }
@@ -135,15 +135,18 @@ export const GetBankAccountRoboadvisorBalancesResponseSchema = z.object({
     .describe("List of roboadvisor balance records"),
   limit: z.number().int().describe("Maximum number of results returned"),
   offset: z.number().int().describe("Number of results skipped"),
-  total: z.number().int().describe(
-    "Total number of balance records matching the query",
-  ),
-  nextCursor: z.string().nullable().describe(
-    "Cursor for the next page of results or null",
-  ),
-  previousCursor: z.string().nullable().describe(
-    "Cursor for the previous page of results or null",
-  ),
+  total: z
+    .number()
+    .int()
+    .describe("Total number of balance records matching the query"),
+  nextCursor: z
+    .string()
+    .nullable()
+    .describe("Cursor for the next page of results or null"),
+  previousCursor: z
+    .string()
+    .nullable()
+    .describe("Cursor for the previous page of results or null"),
 });
 
 export type GetBankAccountRoboadvisorBalancesResponse = z.infer<

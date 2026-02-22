@@ -2,10 +2,10 @@ import {
   bigint,
   bigserial,
   index,
-  uniqueIndex,
   numeric,
   pgTable,
   timestamp,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { roboadvisors } from "./roboadvisors-table.ts";
 
@@ -35,9 +35,9 @@ export const roboadvisorFundCalculationsTable = pgTable(
     ),
     index("idx_roboadvisor_fund_calcs_roboadvisor_created").on(
       table.roboadvisorId,
-      table.createdAt.desc()
+      table.createdAt.desc(),
     ),
-  ]
+  ],
 );
 
 export type RoboadvisorFundCalculationEntity =

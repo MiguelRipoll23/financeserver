@@ -12,8 +12,7 @@ export class CreateCashToolService {
       name: "cash.create",
       meta: {
         title: "Create cash source",
-        description:
-          "Use this when you need to create a new cash source.",
+        description: "Use this when you need to create a new cash source.",
         inputSchema: CreateCashToolSchema,
         annotations: {
           readOnlyHint: false,

@@ -13,8 +13,7 @@ export class UpdateReceiptToolService {
       name: "receipts.update",
       meta: {
         title: "Update receipt",
-        description:
-          "Use this when you need to update an existing receipt.",
+        description: "Use this when you need to update an existing receipt.",
         inputSchema: UpdateReceiptToolSchema,
         annotations: {
           readOnlyHint: false,

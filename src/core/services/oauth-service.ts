@@ -3,10 +3,10 @@ import {
   OAUTH_ACCESS_TOKEN_EXPIRES_IN_SECONDS,
   OAUTH_CODE_CHALLENGE_METHODS_SUPPORTED,
   OAUTH_GRANT_TYPES_SUPPORTED,
-  OAUTH_REFRESH_TOKEN_EXPIRES_IN_SECONDS,
-  OAUTH_RESPONSE_TYPES_SUPPORTED,
   OAUTH_PROTECTED_RESOURCE_DOCUMENTATION_URL,
   OAUTH_PROTECTED_RESOURCE_PATH,
+  OAUTH_REFRESH_TOKEN_EXPIRES_IN_SECONDS,
+  OAUTH_RESPONSE_TYPES_SUPPORTED,
   OAUTH_SCOPES_SUPPORTED,
   OAUTH_SERVICE_DOCUMENTATION_URL,
   OAUTH_TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED,
@@ -17,27 +17,29 @@ import type { OAuthProtectedResourceMetadata } from "../types/oauth/oauth-protec
 
 @injectable()
 export class OAuthService {
-  public getAuthorizationServerMetadata(requestUrl: string): OAuthAuthorizationServerType {
+  public getAuthorizationServerMetadata(
+    requestUrl: string,
+  ): OAuthAuthorizationServerType {
     const applicationBaseURL = UrlUtils.getApplicationBaseURL(requestUrl);
 
     return {
       issuer: applicationBaseURL,
       authorization_endpoint: new URL(
         "/api/v1/oauth/authorize",
-        applicationBaseURL
+        applicationBaseURL,
       ).toString(),
       token_endpoint: new URL(
         "/api/v1/oauth/token",
-        applicationBaseURL
+        applicationBaseURL,
       ).toString(),
       scopes_supported: [...OAUTH_SCOPES_SUPPORTED] as [string, ...string[]],
       response_types_supported: [...OAUTH_RESPONSE_TYPES_SUPPORTED] as [
         string,
-        ...string[]
+        ...string[],
       ],
       grant_types_supported: [...OAUTH_GRANT_TYPES_SUPPORTED] as [
         string,
-        ...string[]
+        ...string[],
       ],
       token_endpoint_auth_methods_supported: [
         ...OAUTH_TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED,
@@ -47,26 +49,28 @@ export class OAuthService {
       ] as [string, ...string[]],
       revocation_endpoint: new URL(
         "/api/v1/oauth/revoke",
-        applicationBaseURL
+        applicationBaseURL,
       ).toString(),
       service_documentation: OAUTH_SERVICE_DOCUMENTATION_URL,
       registration_endpoint: new URL(
         "/api/v1/oauth/register",
-        applicationBaseURL
+        applicationBaseURL,
       ).toString(),
       access_token_expires_in: OAUTH_ACCESS_TOKEN_EXPIRES_IN_SECONDS,
       refresh_token_expires_in: OAUTH_REFRESH_TOKEN_EXPIRES_IN_SECONDS,
     };
   }
 
-  public getProtectedResourceMetadata(requestUrl: string): OAuthProtectedResourceMetadata {
+  public getProtectedResourceMetadata(
+    requestUrl: string,
+  ): OAuthProtectedResourceMetadata {
     const applicationBaseURL = UrlUtils.getApplicationBaseURL(requestUrl);
 
     return {
       issuer: applicationBaseURL,
       resource: new URL(
         OAUTH_PROTECTED_RESOURCE_PATH,
-        applicationBaseURL
+        applicationBaseURL,
       ).toString(),
       authorization_servers: [applicationBaseURL],
       scopes_supported: [...OAUTH_SCOPES_SUPPORTED],

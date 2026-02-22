@@ -12,8 +12,7 @@ export class CreateBankAccountToolService {
       name: "bank_accounts.create",
       meta: {
         title: "Create bank account",
-        description:
-          "Use this when you need to create a new bank account.",
+        description: "Use this when you need to create a new bank account.",
         inputSchema: CreateBankAccountToolSchema,
         annotations: {
           readOnlyHint: false,

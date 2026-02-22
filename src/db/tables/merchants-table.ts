@@ -1,6 +1,6 @@
 import {
-  pgTable,
   bigserial,
+  pgTable,
   timestamp,
   uniqueIndex,
   varchar,
@@ -21,7 +21,7 @@ export const merchantsTable = pgTable(
   },
   (table) => [
     uniqueIndex("merchants_name_unique").on(sql`lower(${table.name})`),
-  ]
+  ],
 );
 
 export type MerchantEntity = typeof merchantsTable.$inferSelect;
