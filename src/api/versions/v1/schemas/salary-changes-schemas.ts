@@ -177,9 +177,9 @@ export type ListSalaryChangesRequestBody = z.infer<
 >;
 
 export const GetSalaryChangesResponseSchema = z.object({
-  results: z.array(SalaryChangeSchema).describe(
-    "List of salary change summaries",
-  ),
+  results: z
+    .array(SalaryChangeSchema)
+    .describe("List of salary change summaries"),
   limit: z.number().int().describe("Maximum number of results returned"),
   offset: z.number().int().describe("Number of results skipped"),
   total: z

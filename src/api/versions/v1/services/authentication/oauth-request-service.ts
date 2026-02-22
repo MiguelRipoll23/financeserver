@@ -26,8 +26,8 @@ export class OAuthRequestService {
 
     const requestId = await this.createRequest(query);
 
-    const frontendUrl =
-      Deno.env.get(ENV_OAUTH_APP_BASE_URL) || "http://localhost:5173";
+    const frontendUrl = Deno.env.get(ENV_OAUTH_APP_BASE_URL) ||
+      "http://localhost:5173";
     const redirectUrl = new URL("/authorize", frontendUrl);
     redirectUrl.searchParams.set("request_id", requestId);
 

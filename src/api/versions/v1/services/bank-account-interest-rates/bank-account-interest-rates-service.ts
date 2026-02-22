@@ -524,23 +524,23 @@ export class BankAccountInterestRatesService {
       );
 
       // Get all bank accounts with their latest balances using a subquery
-      const latestBalances = db
-        .$with("latest_balances")
-        .as(
-          db
-            .select({
-              bankAccountId: bankAccountBalancesTable.bankAccountId,
-              balance: bankAccountBalancesTable.balance,
-              currencyCode: bankAccountBalancesTable.currencyCode,
-              createdAt: bankAccountBalancesTable.createdAt,
-              id: bankAccountBalancesTable.id,
-              rowNumber: sql<
-                number
-              >`ROW_NUMBER() OVER (PARTITION BY ${bankAccountBalancesTable.bankAccountId} ORDER BY ${bankAccountBalancesTable.createdAt} DESC, ${bankAccountBalancesTable.id} DESC)`
-                .as("row_number"),
-            })
-            .from(bankAccountBalancesTable),
-        );
+      const latestBalances = db.$with("latest_balances").as(
+        db
+          .select({
+            bankAccountId: bankAccountBalancesTable.bankAccountId,
+            balance: bankAccountBalancesTable.balance,
+            currencyCode: bankAccountBalancesTable.currencyCode,
+            createdAt: bankAccountBalancesTable.createdAt,
+            id: bankAccountBalancesTable.id,
+            rowNumber: sql<
+              number
+            >`ROW_NUMBER() OVER (PARTITION BY ${bankAccountBalancesTable.bankAccountId} ORDER BY ${bankAccountBalancesTable.createdAt} DESC, ${bankAccountBalancesTable.id} DESC)`
+              .as(
+                "row_number",
+              ),
+          })
+          .from(bankAccountBalancesTable),
+      );
 
       const bankAccountsWithBalances = await db
         .with(latestBalances)

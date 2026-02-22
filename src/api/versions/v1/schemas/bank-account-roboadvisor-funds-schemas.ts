@@ -38,9 +38,9 @@ export const CreateBankAccountRoboadvisorFundRequestSchema = z.object({
     .length(3)
     .openapi({ example: "USD" })
     .describe("Fund currency ISO 4217 code"),
-  weight: PercentageSchema
-    .openapi({ example: 0.39 })
-    .describe("Fund weight as decimal (0.39 = 39%)"),
+  weight: PercentageSchema.openapi({ example: 0.39 }).describe(
+    "Fund weight as decimal (0.39 = 39%)",
+  ),
   shareCount: z
     .number()
     .positive()
@@ -167,15 +167,18 @@ export const GetBankAccountRoboadvisorFundsResponseSchema = z.object({
     .describe("List of roboadvisor funds"),
   limit: z.number().int().describe("Maximum number of results returned"),
   offset: z.number().int().describe("Number of results skipped"),
-  total: z.number().int().describe(
-    "Total number of fund allocations matching the query",
-  ),
-  nextCursor: z.string().nullable().describe(
-    "Cursor for the next page of results or null",
-  ),
-  previousCursor: z.string().nullable().describe(
-    "Cursor for the previous page of results or null",
-  ),
+  total: z
+    .number()
+    .int()
+    .describe("Total number of fund allocations matching the query"),
+  nextCursor: z
+    .string()
+    .nullable()
+    .describe("Cursor for the next page of results or null"),
+  previousCursor: z
+    .string()
+    .nullable()
+    .describe("Cursor for the previous page of results or null"),
 });
 
 export type GetBankAccountRoboadvisorFundsResponse = z.infer<
@@ -216,8 +219,7 @@ export const UpdateBankAccountRoboadvisorFundRequestSchema = z.object({
     .optional()
     .openapi({ example: "USD" })
     .describe("Fund currency ISO 4217 code"),
-  weight: PercentageSchema
-    .optional()
+  weight: PercentageSchema.optional()
     .openapi({ example: 0.39 })
     .describe("Fund weight as decimal (0.39 = 39%)"),
   shareCount: z

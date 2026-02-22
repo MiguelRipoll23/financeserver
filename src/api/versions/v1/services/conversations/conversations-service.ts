@@ -7,8 +7,8 @@ import {
   streamText,
   type StreamTextResult,
   type TextPart,
-  tool as aiTool,
   type Tool,
+  tool as aiTool,
 } from "ai";
 import { MCPService } from "../mcp-server.ts";
 import { SendMessageRequest } from "../../schemas/conversations-schemas.ts";
@@ -49,8 +49,8 @@ export class ConversationsService {
       ConversationsService.cleanupInterval = setInterval(
         () => {
           const expiredSessions = ConversationsService.sessions.evictExpired();
-          const expiredImages =
-            ConversationsService.imageAttachments.evictExpired();
+          const expiredImages = ConversationsService.imageAttachments
+            .evictExpired();
           if (expiredSessions > 0 || expiredImages > 0) {
             console.log(
               `Cleaned up ${expiredSessions} expired sessions and ${expiredImages} expired image attachments`,

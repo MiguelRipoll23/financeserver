@@ -27,10 +27,13 @@ export const cashBalancesTable = pgTable(
   },
   (table) => [
     // Composite index for filtered queries (per cash)
-    index("idx_cash_balances_cash_created").on(table.cashId, table.createdAt.desc()),
+    index("idx_cash_balances_cash_created").on(
+      table.cashId,
+      table.createdAt.desc(),
+    ),
     // Index for full table scans (Dashboard load)
     index("idx_cash_balances_created").on(table.createdAt.desc()),
-  ]
+  ],
 );
 
 export type CashBalanceEntity = typeof cashBalancesTable.$inferSelect;

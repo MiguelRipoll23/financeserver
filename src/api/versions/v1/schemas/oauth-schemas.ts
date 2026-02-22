@@ -298,10 +298,18 @@ export const OAuthRevokeRequestFormSchema = z.object({
 export type OAuthRevokeRequest = z.infer<typeof OAuthRevokeRequestFormSchema>;
 
 export const OAuthRequestDetailsSchema = z.object({
-  requestId: z.string().min(1).describe("Unique identifier for the OAuth request."),
-  clientId: z.string().min(1).describe("Client identifier for the requesting application."),
+  requestId: z
+    .string()
+    .min(1)
+    .describe("Unique identifier for the OAuth request."),
+  clientId: z
+    .string()
+    .min(1)
+    .describe("Client identifier for the requesting application."),
   scope: z.string().describe("Requested OAuth scopes."),
-  status: z.enum(["pending", "approved", "denied"]).describe("Current status of the OAuth request."),
+  status: z
+    .enum(["pending", "approved", "denied"])
+    .describe("Current status of the OAuth request."),
   createdAt: z.number().describe("Timestamp when the request was created."),
   expiresAt: z.number().describe("Timestamp when the request expires."),
 });
@@ -312,4 +320,6 @@ export const OAuthRequestApproveResponseSchema = z.object({
   success: z.boolean().describe("Indicates if the approval was successful."),
 });
 
-export type OAuthRequestApproveResponse = z.infer<typeof OAuthRequestApproveResponseSchema>;
+export type OAuthRequestApproveResponse = z.infer<
+  typeof OAuthRequestApproveResponseSchema
+>;

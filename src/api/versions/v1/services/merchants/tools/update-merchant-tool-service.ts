@@ -12,8 +12,7 @@ export class UpdateMerchantToolService {
       name: "merchants.update",
       meta: {
         title: "Update merchant",
-        description:
-          "Use this when you need to update an existing merchant.",
+        description: "Use this when you need to update an existing merchant.",
         inputSchema: UpdateMerchantToolSchema,
         annotations: {
           readOnlyHint: false,

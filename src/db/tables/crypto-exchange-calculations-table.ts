@@ -2,10 +2,10 @@ import {
   bigint,
   bigserial,
   index,
-  uniqueIndex,
   numeric,
   pgTable,
   timestamp,
+  uniqueIndex,
   varchar,
 } from "drizzle-orm/pg-core";
 import { cryptoExchangesTable } from "./crypto-exchanges-table.ts";
@@ -37,9 +37,9 @@ export const cryptoExchangeCalculationsTable = pgTable(
     index("idx_crypto_calcs_exchange_symbol_created").on(
       table.cryptoExchangeId,
       table.symbolCode,
-      table.createdAt.desc()
+      table.createdAt.desc(),
     ),
-  ]
+  ],
 );
 
 export type CryptoExchangeCalculationEntity =

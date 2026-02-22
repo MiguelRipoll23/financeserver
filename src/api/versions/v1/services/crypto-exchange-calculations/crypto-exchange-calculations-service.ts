@@ -51,19 +51,22 @@ export class CryptoExchangeCalculationsService {
   ): Promise<void> {
     const db = this.databaseService.get();
 
-    await db.insert(cryptoExchangeCalculationsTable).values({
-      cryptoExchangeId,
-      symbolCode,
-      currentValue,
-    }).onConflictDoUpdate({
-      target: [
-        cryptoExchangeCalculationsTable.cryptoExchangeId,
-        cryptoExchangeCalculationsTable.symbolCode,
-      ],
-      set: {
+    await db
+      .insert(cryptoExchangeCalculationsTable)
+      .values({
+        cryptoExchangeId,
+        symbolCode,
         currentValue,
-        updatedAt: new Date(),
-      },
-    });
+      })
+      .onConflictDoUpdate({
+        target: [
+          cryptoExchangeCalculationsTable.cryptoExchangeId,
+          cryptoExchangeCalculationsTable.symbolCode,
+        ],
+        set: {
+          currentValue,
+          updatedAt: new Date(),
+        },
+      });
   }
 }

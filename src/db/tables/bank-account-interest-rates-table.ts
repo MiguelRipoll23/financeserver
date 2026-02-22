@@ -18,7 +18,10 @@ export const bankAccountInterestRatesTable = pgTable(
     bankAccountId: bigint("bank_account_id", { mode: "number" })
       .notNull()
       .references(() => bankAccountsTable.id, { onDelete: "cascade" }),
-    interestRate: numeric("interest_rate", { precision: 8, scale: 6 }).notNull(),
+    interestRate: numeric("interest_rate", {
+      precision: 8,
+      scale: 6,
+    }).notNull(),
     interestRateStartDate: date("interest_rate_start_date").notNull(),
     interestRateEndDate: date("interest_rate_end_date"),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -30,12 +33,15 @@ export const bankAccountInterestRatesTable = pgTable(
   },
   (table) => [
     // Composite index for fast dashboard queries
-    index("idx_interest_rates_account_created").on(table.bankAccountId, table.createdAt.desc()),
+    index("idx_interest_rates_account_created").on(
+      table.bankAccountId,
+      table.createdAt.desc(),
+    ),
     check(
       "interest_rate_end_date_check",
-      sql`${table.interestRateEndDate} IS NULL OR ${table.interestRateEndDate} >= ${table.interestRateStartDate}`
+      sql`${table.interestRateEndDate} IS NULL OR ${table.interestRateEndDate} >= ${table.interestRateStartDate}`,
     ),
-  ]
+  ],
 );
 
 export type BankAccountInterestRateEntity =

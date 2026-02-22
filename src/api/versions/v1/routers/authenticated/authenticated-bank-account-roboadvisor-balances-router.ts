@@ -74,7 +74,9 @@ export class AuthenticatedBankAccountRoboadvisorBalancesRouter {
           await context.req.json(),
         );
         const result = await this.roboadvisorsService
-          .createBankAccountRoboadvisorBalance(body);
+          .createBankAccountRoboadvisorBalance(
+            body,
+          );
 
         return context.json(result, 201);
       },
@@ -118,7 +120,9 @@ export class AuthenticatedBankAccountRoboadvisorBalancesRouter {
           payload,
         );
         const result = await this.roboadvisorsService
-          .getBankAccountRoboadvisorBalances(body);
+          .getBankAccountRoboadvisorBalances(
+            body,
+          );
 
         return context.json(result, 200);
       },

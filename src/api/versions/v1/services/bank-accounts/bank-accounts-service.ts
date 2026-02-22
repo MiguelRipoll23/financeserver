@@ -48,7 +48,6 @@ import type {
   UpdateBankAccountBalanceResponse,
 } from "../../schemas/bank-account-balances-schemas.ts";
 
-
 import { BankAccountInterestRatesService } from "../bank-account-interest-rates/bank-account-interest-rates-service.ts";
 
 @injectable()

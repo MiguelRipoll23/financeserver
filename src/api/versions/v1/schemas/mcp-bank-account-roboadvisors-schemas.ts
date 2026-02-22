@@ -4,11 +4,7 @@ import { BankAccountRoboadvisorSortField } from "../enums/bank-account-roboadvis
 
 // Roboadvisor Tool Schemas
 export const CreateBankAccountRoboadvisorToolSchema = z.object({
-  name: z
-    .string()
-    .min(1)
-    .max(255)
-    .describe("Name of the roboadvisor"),
+  name: z.string().min(1).max(255).describe("Name of the roboadvisor"),
   bankAccountId: z
     .number()
     .int()

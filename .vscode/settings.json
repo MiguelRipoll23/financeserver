@@ -1,11 +1,5 @@
 {
-  "deno.enablePaths": [
-    "./"
-  ],
+  "deno.enablePaths": ["./"],
   "editor.inlayHints.enabled": "off",
-  "cSpell.words": [
-    "Roboadvisor",
-    "roboadvisors",
-    "simplewebauthn"
-  ]
+  "cSpell.words": ["Roboadvisor", "roboadvisors", "simplewebauthn"]
 }

@@ -11,9 +11,7 @@ export const UpsertMerchantRequestSchema = z.object({
     .describe("Merchant name"),
 });
 
-export type UpsertMerchantRequest = z.infer<
-  typeof UpsertMerchantRequestSchema
->;
+export type UpsertMerchantRequest = z.infer<typeof UpsertMerchantRequestSchema>;
 
 export const UpsertMerchantResponseSchema = z.object({
   id: z
@@ -21,10 +19,7 @@ export const UpsertMerchantResponseSchema = z.object({
     .int()
     .openapi({ example: 12 })
     .describe("Unique merchant identifier"),
-  name: z
-    .string()
-    .openapi({ example: "Amazon" })
-    .describe("Merchant name"),
+  name: z.string().openapi({ example: "Amazon" }).describe("Merchant name"),
   createdAt: z
     .string()
     .openapi({ example: "2025-03-14T12:34:56.000Z" })
@@ -71,14 +66,15 @@ export const GetMerchantsRequestSchema = PaginationQuerySchema.extend({
 export type GetMerchantsRequest = z.infer<typeof GetMerchantsRequestSchema>;
 
 export const GetMerchantsResponseSchema = z.object({
-  results: z.array(MerchantSummarySchema).describe(
-    "List of merchant summaries",
-  ),
+  results: z
+    .array(MerchantSummarySchema)
+    .describe("List of merchant summaries"),
   limit: z.number().int().describe("Maximum number of results returned"),
   offset: z.number().int().describe("Number of results skipped"),
-  total: z.number().int().describe(
-    "Total number of merchants matching the query",
-  ),
+  total: z
+    .number()
+    .int()
+    .describe("Total number of merchants matching the query"),
   nextCursor: z
     .string()
     .nullable()

@@ -18,9 +18,6 @@ export const DeleteCashToolSchema = z.object({
 
 export const FilterCashToolSchema = PaginationQuerySchema.extend({
   label: z.string().optional().describe("Filter by cash label"),
-  sortField: z
-    .nativeEnum(CashSortField)
-    .optional()
-    .describe("Sort field"),
+  sortField: z.nativeEnum(CashSortField).optional().describe("Sort field"),
   sortOrder: z.nativeEnum(SortOrder).optional().describe("Sort order"),
 });

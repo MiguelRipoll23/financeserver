@@ -8,9 +8,7 @@ import { toISOStringSafe } from "../../utils/date-utils.ts";
 export class BankAccountRoboadvisorFundCalculationsService {
   constructor(private databaseService = inject(DatabaseService)) {}
 
-  public async getLatestCalculation(
-    roboadvisorId: number,
-  ): Promise<
+  public async getLatestCalculation(roboadvisorId: number): Promise<
     {
       currentValue: string;
       createdAt: string;
@@ -21,12 +19,7 @@ export class BankAccountRoboadvisorFundCalculationsService {
     const [calculation] = await db
       .select()
       .from(roboadvisorFundCalculationsTable)
-      .where(
-        eq(
-          roboadvisorFundCalculationsTable.roboadvisorId,
-          roboadvisorId,
-        ),
-      )
+      .where(eq(roboadvisorFundCalculationsTable.roboadvisorId, roboadvisorId))
       .orderBy(desc(roboadvisorFundCalculationsTable.createdAt))
       .limit(1);
 
@@ -46,15 +39,18 @@ export class BankAccountRoboadvisorFundCalculationsService {
   ): Promise<void> {
     const db = this.databaseService.get();
 
-    await db.insert(roboadvisorFundCalculationsTable).values({
-      roboadvisorId: roboadvisorId,
-      currentValue,
-    }).onConflictDoUpdate({
-      target: [roboadvisorFundCalculationsTable.roboadvisorId],
-      set: {
+    await db
+      .insert(roboadvisorFundCalculationsTable)
+      .values({
+        roboadvisorId: roboadvisorId,
         currentValue,
-        updatedAt: new Date(),
-      },
-    });
+      })
+      .onConflictDoUpdate({
+        target: [roboadvisorFundCalculationsTable.roboadvisorId],
+        set: {
+          currentValue,
+          updatedAt: new Date(),
+        },
+      });
   }
 }

@@ -36,8 +36,9 @@ export class FilterBankAccountsToolService {
 
         const count = result.results.length;
         const accountsList = result.results
-          .map((account) =>
-            `- ${account.name} (${account.type}) (ID: ${account.id})`
+          .map(
+            (account) =>
+              `- ${account.name} (${account.type}) (ID: ${account.id})`,
           )
           .join("\n");
 

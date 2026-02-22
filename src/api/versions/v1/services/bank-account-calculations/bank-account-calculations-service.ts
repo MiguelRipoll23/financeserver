@@ -8,9 +8,7 @@ import { toISOStringSafe } from "../../utils/date-utils.ts";
 export class BankAccountCalculationsService {
   constructor(private databaseService = inject(DatabaseService)) {}
 
-  public async getLatestCalculation(
-    bankAccountId: number,
-  ): Promise<
+  public async getLatestCalculation(bankAccountId: number): Promise<
     {
       monthlyProfit: string;
       annualProfit: string;
@@ -23,12 +21,7 @@ export class BankAccountCalculationsService {
     const [calculation] = await db
       .select()
       .from(bankAccountCalculationsTable)
-      .where(
-        eq(
-          bankAccountCalculationsTable.bankAccountId,
-          bankAccountId,
-        ),
-      )
+      .where(eq(bankAccountCalculationsTable.bankAccountId, bankAccountId))
       .orderBy(desc(bankAccountCalculationsTable.createdAt))
       .limit(1);
 
@@ -52,19 +45,22 @@ export class BankAccountCalculationsService {
   ): Promise<void> {
     const db = this.databaseService.get();
 
-    await db.insert(bankAccountCalculationsTable).values({
-      bankAccountId,
-      monthlyProfit,
-      annualProfit,
-      currencyCode,
-    }).onConflictDoUpdate({
-      target: [bankAccountCalculationsTable.bankAccountId],
-      set: {
+    await db
+      .insert(bankAccountCalculationsTable)
+      .values({
+        bankAccountId,
         monthlyProfit,
         annualProfit,
         currencyCode,
-        updatedAt: new Date(),
-      },
-    });
+      })
+      .onConflictDoUpdate({
+        target: [bankAccountCalculationsTable.bankAccountId],
+        set: {
+          monthlyProfit,
+          annualProfit,
+          currencyCode,
+          updatedAt: new Date(),
+        },
+      });
   }
 }

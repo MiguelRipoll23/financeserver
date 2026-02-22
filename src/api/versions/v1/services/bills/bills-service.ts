@@ -37,9 +37,7 @@ type NormalizedCategoryInput = {
 
 @injectable()
 export class BillsService {
-  constructor(
-    private databaseService = inject(DatabaseService),
-  ) {}
+  constructor(private databaseService = inject(DatabaseService)) {}
 
   public async createBill(
     payload: Omit<UpsertBillRequest, "senderEmail"> & { senderEmail?: string },

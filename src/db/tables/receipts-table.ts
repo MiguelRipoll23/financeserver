@@ -21,7 +21,7 @@ export const receiptsTable = pgTable(
       .default("USD"),
     merchantId: bigint("merchant_id", { mode: "number" }).references(
       () => merchantsTable.id,
-      { onDelete: "set null" }
+      { onDelete: "set null" },
     ),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
@@ -35,7 +35,7 @@ export const receiptsTable = pgTable(
     index("idx_receipts_date").on(table.receiptDate.desc()),
     index("receipts_total_amount_idx").on(table.totalAmount),
     index("receipts_merchant_id_idx").on(table.merchantId),
-  ]
+  ],
 );
 
 export type ReceiptEntity = typeof receiptsTable.$inferSelect;

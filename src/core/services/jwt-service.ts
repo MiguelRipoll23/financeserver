@@ -1,58 +1,37 @@
-import { create, Payload, verify } from "@wok/djwt";
+import { jwt, sign, verify } from "hono/jwt";
 import { injectable } from "@needle-di/core";
 import { ServerError } from "../../api/versions/v1/models/server-error.ts";
 import { ENV_JWT_SECRET } from "../../api/versions/v1/constants/environment-constants.ts";
-import { UrlUtils } from "../utils/url-utils.ts";
+import { MiddlewareHandler } from "hono/types";
 
 @injectable()
 export class JWTService {
-  private key: CryptoKey | null = null;
+  private static EXPIRATION_SECONDS = 1800;
+  private secret: string;
 
-  public async getKey(): Promise<CryptoKey> {
-    if (this.key !== null) {
-      return this.key;
-    }
-
-    const secret: string | undefined = Deno.env.get(ENV_JWT_SECRET);
-
-    this.key =
-      secret === undefined
-        ? await this.generateTemporaryKey()
-        : await this.createKeyFromSecret(secret);
-
-    return this.key;
+  constructor() {
+    this.secret = this.resolveSecret();
   }
 
-  private async generateTemporaryKey(): Promise<CryptoKey> {
-    return await crypto.subtle.generateKey(
-      { name: "HMAC", hash: "SHA-512" },
-      false,
-      ["sign", "verify"]
-    );
+  public async sign(
+    payload: Record<string, unknown>,
+    expiresInSeconds = JWTService.EXPIRATION_SECONDS,
+  ): Promise<string> {
+    const now = Math.floor(Date.now() / 1000);
+    const finalPayload: Record<string, unknown> = {
+      iat: now,
+      exp: now + expiresInSeconds,
+      ...payload, // caller-supplied exp/iat wins if present
+    };
+
+    return await sign(finalPayload, this.secret, "HS512");
   }
 
-  private async createKeyFromSecret(secret: string): Promise<CryptoKey> {
-    const secretBytes = new TextEncoder().encode(secret);
-
-    return await crypto.subtle.importKey(
-      "raw",
-      secretBytes,
-      {
-        name: "HMAC",
-        hash: "SHA-512",
-      },
-      false,
-      ["sign", "verify"]
-    );
-  }
-
-  public async verify(jwt: string): Promise<Payload> {
-    const jwtKey = await this.getKey();
-
-    let payload = null;
+  public async verify(jwt: string): Promise<Record<string, unknown>> {
+    let payload: Record<string, unknown> | null = null;
 
     try {
-      payload = await verify(jwt, jwtKey);
+      payload = await verify(jwt, this.secret, "HS512");
     } catch (error) {
       console.error(error);
     }
@@ -64,39 +43,20 @@ export class JWTService {
     return payload;
   }
 
-  public async createManagementToken(requestUrl: string) {
-    const applicationBaseURL = UrlUtils.getApplicationBaseURL(requestUrl);
-    const now = Math.floor(Date.now() / 1000);
-    const threeMonthsInSeconds = 90 * 24 * 60 * 60; // 90 days
-
-    return await create(
-      { alg: "HS512", typ: "JWT" },
-      {
-        id: "00000000-0000-0000-0000-000000000000",
-        name: "Management",
-        // Wildcard audience claim to grant access to all resources
-        aud: `${applicationBaseURL}/*`,
-        exp: now + threeMonthsInSeconds, // 3 months
-      },
-      await this.getKey()
-    );
+  public getJWTMiddleware(): MiddlewareHandler {
+    return jwt({
+      secret: this.secret,
+      alg: "HS512",
+    });
   }
 
-  public async createSetupToken(requestUrl: string) {
-    const applicationBaseURL = UrlUtils.getApplicationBaseURL(requestUrl);
-    const now = Math.floor(Date.now() / 1000);
+  private resolveSecret(): string {
+    const secret: string | undefined = Deno.env.get(ENV_JWT_SECRET);
 
-    return await create(
-      { alg: "HS512", typ: "JWT" },
-      {
-        id: "setup",
-        name: "Setup",
-        // Restrict to registration endpoints only for first passkey setup
-        aud: `${applicationBaseURL}/api/v1/registration/*`,
-        exp: now + 15 * 60, // 15 minutes
-      },
-      await this.getKey()
-    );
+    if (secret === undefined) {
+      throw new Error("JWT secret is not defined in environment variables");
+    }
+
+    return secret;
   }
 }
-

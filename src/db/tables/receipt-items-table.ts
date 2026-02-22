@@ -1,6 +1,6 @@
 import {
-  bigserial,
   bigint,
+  bigserial,
   index,
   integer,
   numeric,
@@ -32,7 +32,7 @@ export const receiptItemsTable = pgTable(
   (table) => [
     index("receipt_items_receipt_id_idx").on(table.receiptId),
     index("receipt_items_item_id_idx").on(table.itemId),
-  ]
+  ],
 );
 
 export type ReceiptItemEntity = typeof receiptItemsTable.$inferSelect;

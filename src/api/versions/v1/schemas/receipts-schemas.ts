@@ -142,8 +142,7 @@ export const GetReceiptsRequestSchema = PaginationQuerySchema.extend({
     .describe("Product name filter")
     .openapi({ example: "chair" })
     .optional(),
-  merchantId: z
-    .coerce
+  merchantId: z.coerce
     .number()
     .int()
     .positive()

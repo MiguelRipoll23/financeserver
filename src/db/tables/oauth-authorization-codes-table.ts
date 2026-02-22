@@ -1,10 +1,10 @@
 import {
+  check,
+  jsonb,
   pgPolicy,
   pgTable,
   text,
   timestamp,
-  jsonb,
-  check,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { oauthClientsTable } from "./oauth-clients-table.ts";
@@ -13,9 +13,7 @@ import { authenticatedUserRole, isCurrentClient } from "../rls.ts";
 export const oauthAuthorizationCodes = pgTable(
   "oauth_authorization_codes",
   {
-    codeHash: text("code_hash")
-      .primaryKey()
-      .notNull(),
+    codeHash: text("code_hash").primaryKey().notNull(),
     clientId: text("client_id")
       .notNull()
       .references(() => oauthClientsTable.clientId, { onDelete: "cascade" }),
@@ -40,7 +38,7 @@ export const oauthAuthorizationCodes = pgTable(
   (table) => [
     check(
       "oauth_authorization_codes_code_challenge_method_valid",
-      sql`code_challenge_method = 'S256'`
+      sql`code_challenge_method = 'S256'`,
     ),
     pgPolicy("oauth_authorization_codes_select_own", {
       for: "select",
@@ -52,5 +50,5 @@ export const oauthAuthorizationCodes = pgTable(
       to: authenticatedUserRole,
       using: isCurrentClient(table.clientId),
     }),
-  ]
+  ],
 );

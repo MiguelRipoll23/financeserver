@@ -13,8 +13,7 @@ export class SaveBillToolService {
       name: "bills.save",
       meta: {
         title: "Save bill",
-        description:
-          "Use this when you need to save a new bill.",
+        description: "Use this when you need to save a new bill.",
         inputSchema: SaveBillToolSchema,
         annotations: {
           readOnlyHint: false,

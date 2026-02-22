@@ -31,10 +31,13 @@ export const cryptoExchangeBalancesTable = pgTable(
   },
   (table) => [
     // Composite index for filtered queries (per exchange)
-    index("idx_crypto_balances_exchange_created").on(table.cryptoExchangeId, table.createdAt.desc()),
+    index("idx_crypto_balances_exchange_created").on(
+      table.cryptoExchangeId,
+      table.createdAt.desc(),
+    ),
     // Index for full table scans (Dashboard load)
     index("idx_crypto_balances_created").on(table.createdAt.desc()),
-  ]
+  ],
 );
 
 export type CryptoExchangeBalanceEntity =

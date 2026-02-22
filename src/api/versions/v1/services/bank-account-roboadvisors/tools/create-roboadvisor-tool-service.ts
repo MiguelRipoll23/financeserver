@@ -44,7 +44,9 @@ export class CreateRoboadvisorToolService {
 
         const text =
           `Roboadvisor created successfully: ${result.name} (ID: ${result.id}, Total Fee: ${
-            (result.totalFeePercentage * 100).toFixed(2)
+            (
+              result.totalFeePercentage * 100
+            ).toFixed(2)
           }%)`;
 
         return {

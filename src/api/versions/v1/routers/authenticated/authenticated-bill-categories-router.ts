@@ -69,8 +69,9 @@ export class AuthenticatedBillCategoriesRouter {
       async (context: Context<{ Variables: HonoVariables }>) => {
         const payload = await readJsonOrEmpty(context);
         const query = GetBillCategoriesRequestSchema.parse(payload);
-        const result =
-          await this.billCategoriesService.getBillCategories(query);
+        const result = await this.billCategoriesService.getBillCategories(
+          query,
+        );
 
         return context.json(result, 200);
       },
@@ -112,8 +113,9 @@ export class AuthenticatedBillCategoriesRouter {
         const body = CreateBillCategoryRequestSchema.parse(
           await context.req.json(),
         );
-        const result =
-          await this.billCategoriesService.createBillCategory(body);
+        const result = await this.billCategoriesService.createBillCategory(
+          body,
+        );
 
         return context.json(result, 201);
       },

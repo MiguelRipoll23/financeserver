@@ -12,9 +12,9 @@ export const CreateBankAccountInterestRateRequestSchema = z
       .int()
       .openapi({ example: 1 })
       .describe("Bank account identifier"),
-    interestRate: PercentageSchema
-      .openapi({ example: 0.025 })
-      .describe("Interest rate as decimal (0.025 = 2.5%)"),
+    interestRate: PercentageSchema.openapi({ example: 0.025 }).describe(
+      "Interest rate as decimal (0.025 = 2.5%)",
+    ),
     interestRateStartDate: DateOnlyStringSchema.describe(
       "Start date of interest rate period in YYYY-MM-DD format",
     ),
@@ -126,8 +126,7 @@ export type GetBankAccountInterestRatesResponse = z.infer<
 
 export const UpdateBankAccountInterestRateRequestSchema = z
   .object({
-    interestRate: PercentageSchema
-      .optional()
+    interestRate: PercentageSchema.optional()
       .openapi({ example: 0.025 })
       .describe("Interest rate as decimal (0.025 = 2.5%)"),
     interestRateStartDate: DateOnlyStringSchema.optional().describe(

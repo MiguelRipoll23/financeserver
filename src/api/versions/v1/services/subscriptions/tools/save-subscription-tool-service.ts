@@ -13,8 +13,7 @@ export class SaveSubscriptionToolService {
       name: "subscriptions.save",
       meta: {
         title: "Save subscription",
-        description:
-          "Use this when you need to save a new subscription.",
+        description: "Use this when you need to save a new subscription.",
         inputSchema: SaveSubscriptionToolSchema,
         annotations: {
           readOnlyHint: false,

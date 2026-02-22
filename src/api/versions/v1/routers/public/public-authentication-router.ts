@@ -1,6 +1,7 @@
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { inject, injectable } from "@needle-di/core";
 import { PasskeyAuthenticationService } from "../../services/passkeys/authentication-service.ts";
+import type { AuthenticationResponseJSON } from "@simplewebauthn/server";
 import {
   GetAuthenticationOptionsRequestSchema,
   GetAuthenticationOptionsResponseSchema,
@@ -133,7 +134,7 @@ export class PublicAuthenticationRouter {
           origin,
           requestUrl,
           transactionId,
-          authenticationResponse,
+          authenticationResponse as unknown as AuthenticationResponseJSON,
         );
 
         return c.json(response, 200);

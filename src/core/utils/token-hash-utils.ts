@@ -26,7 +26,7 @@ export class TokenHashUtils {
    */
   public static async verifyToken(
     token: string,
-    hashedToken: string
+    hashedToken: string,
   ): Promise<boolean> {
     const computedHash = await this.hashToken(token);
     return this.constantTimeEquals(computedHash, hashedToken);

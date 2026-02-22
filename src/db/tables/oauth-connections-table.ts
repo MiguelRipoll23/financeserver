@@ -1,10 +1,10 @@
 import {
+  check,
+  jsonb,
   pgPolicy,
   pgTable,
   text,
   timestamp,
-  jsonb,
-  check,
   uuid,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
@@ -15,12 +15,8 @@ export const oauthConnections = pgTable(
   "oauth_connections",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    refreshTokenHash: text("refresh_token_hash")
-      .notNull()
-      .unique(),
-    accessTokenHash: text("access_token_hash")
-      .notNull()
-      .unique(),
+    refreshTokenHash: text("refresh_token_hash").notNull().unique(),
+    accessTokenHash: text("access_token_hash").notNull().unique(),
     clientId: text("client_id")
       .notNull()
       .references(() => oauthClientsTable.clientId, { onDelete: "cascade" }),
@@ -46,7 +42,7 @@ export const oauthConnections = pgTable(
   (table) => [
     check(
       "oauth_connections_token_type_valid",
-      sql`token_type IN ('Bearer', 'bearer')`
+      sql`token_type IN ('Bearer', 'bearer')`,
     ),
     pgPolicy("oauth_connections_select_own", {
       for: "select",
@@ -64,5 +60,5 @@ export const oauthConnections = pgTable(
       to: authenticatedUserRole,
       using: isCurrentClient(table.clientId),
     }),
-  ]
+  ],
 );

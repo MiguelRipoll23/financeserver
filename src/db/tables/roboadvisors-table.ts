@@ -1,13 +1,13 @@
 import {
-  pgTable,
-  varchar,
-  integer,
-  decimal,
-  boolean,
-  timestamp,
-  pgEnum,
   bigint,
   bigserial,
+  boolean,
+  decimal,
+  integer,
+  pgEnum,
+  pgTable,
+  timestamp,
+  varchar,
 } from "drizzle-orm/pg-core";
 import { bankAccountsTable } from "./bank-accounts-table.ts";
 

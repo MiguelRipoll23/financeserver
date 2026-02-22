@@ -13,8 +13,7 @@ export class UpdateBillToolService {
       name: "bills.update",
       meta: {
         title: "Update bill",
-        description:
-          "Use this when you need to update an existing bill.",
+        description: "Use this when you need to update an existing bill.",
         inputSchema: UpdateBillToolSchema,
         annotations: {
           readOnlyHint: false,

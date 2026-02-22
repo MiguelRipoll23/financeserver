@@ -1,6 +1,6 @@
 import {
-  bigserial,
   bigint,
+  bigserial,
   date,
   index,
   numeric,
@@ -28,15 +28,15 @@ export const itemPricesTable = pgTable(
   (table) => [
     uniqueIndex("item_prices_item_id_price_date_key").on(
       table.itemId,
-      table.priceDate
+      table.priceDate,
     ),
     index("item_prices_unit_price_idx").on(table.unitPrice),
     index("item_prices_price_date_idx").on(table.priceDate),
     index("item_prices_item_id_price_date_desc_idx").on(
       table.itemId,
-      table.priceDate.desc()
+      table.priceDate.desc(),
     ),
-  ]
+  ],
 );
 
 export type ItemPriceEntity = typeof itemPricesTable.$inferSelect;

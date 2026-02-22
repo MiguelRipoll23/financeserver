@@ -13,9 +13,7 @@ export const CreateBankAccountInterestRateToolSchema = z.object({
   interestRateStartDate: z
     .string()
     .regex(DateOnlyRegex, "Date must be in YYYY-MM-DD format")
-    .describe(
-      "Start date of interest rate period (format: YYYY-MM-DD)",
-    ),
+    .describe("Start date of interest rate period (format: YYYY-MM-DD)"),
   interestRateEndDate: z
     .string()
     .regex(DateOnlyRegex, "Date must be in YYYY-MM-DD format")

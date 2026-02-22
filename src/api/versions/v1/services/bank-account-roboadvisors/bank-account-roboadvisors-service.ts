@@ -131,9 +131,7 @@ export class BankAccountRoboadvisorsService {
     const conditions: SQL[] = [];
 
     if (filter.bankAccountId !== undefined) {
-      conditions.push(
-        eq(roboadvisors.bankAccountId, filter.bankAccountId),
-      );
+      conditions.push(eq(roboadvisors.bankAccountId, filter.bankAccountId));
     }
 
     if (filter.name) {
@@ -195,10 +193,7 @@ export class BankAccountRoboadvisorsService {
       })
       .from(roboadvisors)
       .where(whereClause)
-      .orderBy(
-        orderDirection(orderColumn),
-        orderDirection(roboadvisors.id),
-      )
+      .orderBy(orderDirection(orderColumn), orderDirection(roboadvisors.id))
       .limit(pageSize)
       .offset(offset);
 
@@ -445,10 +440,7 @@ export class BankAccountRoboadvisorsService {
 
     if (filter.roboadvisorId !== undefined) {
       conditions.push(
-        eq(
-          roboadvisorBalances.roboadvisorId,
-          filter.roboadvisorId,
-        ),
+        eq(roboadvisorBalances.roboadvisorId, filter.roboadvisorId),
       );
     }
 
@@ -670,24 +662,15 @@ export class BankAccountRoboadvisorsService {
     const conditions: SQL[] = [];
 
     if (filter.roboadvisorId !== undefined) {
-      conditions.push(
-        eq(
-          roboadvisorFunds.roboadvisorId,
-          filter.roboadvisorId,
-        ),
-      );
+      conditions.push(eq(roboadvisorFunds.roboadvisorId, filter.roboadvisorId));
     }
 
     if (filter.name) {
-      conditions.push(
-        ilike(roboadvisorFunds.name, `%${filter.name}%`),
-      );
+      conditions.push(ilike(roboadvisorFunds.name, `%${filter.name}%`));
     }
 
     if (filter.isin) {
-      conditions.push(
-        ilike(roboadvisorFunds.isin, `%${filter.isin}%`),
-      );
+      conditions.push(ilike(roboadvisorFunds.isin, `%${filter.isin}%`));
     }
 
     if (filter.assetClass) {
@@ -697,17 +680,12 @@ export class BankAccountRoboadvisorsService {
     }
 
     if (filter.region) {
-      conditions.push(
-        ilike(roboadvisorFunds.region, `%${filter.region}%`),
-      );
+      conditions.push(ilike(roboadvisorFunds.region, `%${filter.region}%`));
     }
 
     if (filter.fundCurrencyCode) {
       conditions.push(
-        eq(
-          roboadvisorFunds.fundCurrencyCode,
-          filter.fundCurrencyCode,
-        ),
+        eq(roboadvisorFunds.fundCurrencyCode, filter.fundCurrencyCode),
       );
     }
 
@@ -1024,9 +1002,7 @@ export class BankAccountRoboadvisorsService {
     };
   }
 
-  private getFundSortColumn(
-    sortField: BankAccountRoboadvisorFundSortField,
-  ) {
+  private getFundSortColumn(sortField: BankAccountRoboadvisorFundSortField) {
     switch (sortField) {
       case BankAccountRoboadvisorFundSortField.Name:
         return roboadvisorFunds.name;
@@ -1074,9 +1050,7 @@ export class BankAccountRoboadvisorsService {
         .then((rows) => rows[0]);
 
       if (!roboadvisor) {
-        console.warn(
-          `Roboadvisor with ID ${roboadvisorId} not found`,
-        );
+        console.warn(`Roboadvisor with ID ${roboadvisorId} not found`);
         return null;
       }
 
@@ -1084,14 +1058,10 @@ export class BankAccountRoboadvisorsService {
       const funds = await db
         .select()
         .from(roboadvisorFunds)
-        .where(
-          eq(roboadvisorFunds.roboadvisorId, roboadvisorId),
-        );
+        .where(eq(roboadvisorFunds.roboadvisorId, roboadvisorId));
 
       if (funds.length === 0) {
-        console.warn(
-          `No funds found for roboadvisor ${roboadvisorId}`,
-        );
+        console.warn(`No funds found for roboadvisor ${roboadvisorId}`);
         return null;
       }
 
@@ -1099,17 +1069,10 @@ export class BankAccountRoboadvisorsService {
       const balances = await db
         .select()
         .from(roboadvisorBalances)
-        .where(
-          eq(
-            roboadvisorBalances.roboadvisorId,
-            roboadvisorId,
-          ),
-        );
+        .where(eq(roboadvisorBalances.roboadvisorId, roboadvisorId));
 
       if (balances.length === 0) {
-        console.warn(
-          `No balances found for roboadvisor ${roboadvisorId}`,
-        );
+        console.warn(`No balances found for roboadvisor ${roboadvisorId}`);
         return null;
       }
 
@@ -1177,10 +1140,7 @@ export class BankAccountRoboadvisorsService {
           }
           successfulPriceFetches++;
         } catch (error) {
-          console.error(
-            `Error fetching price for ISIN ${fund.isin}:`,
-            error,
-          );
+          console.error(`Error fetching price for ISIN ${fund.isin}:`, error);
           continue;
         }
       }
@@ -1227,10 +1187,7 @@ export class BankAccountRoboadvisorsService {
         currencyCode,
       };
     } catch (error) {
-      console.error(
-        "Error calculating roboadvisor value after tax:",
-        error,
-      );
+      console.error("Error calculating roboadvisor value after tax:", error);
       return null;
     }
   }

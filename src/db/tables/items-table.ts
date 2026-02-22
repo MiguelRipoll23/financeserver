@@ -1,12 +1,12 @@
 import {
   bigint,
   bigserial,
+  foreignKey,
   index,
   pgTable,
   text,
   timestamp,
   uniqueIndex,
-  foreignKey,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -42,7 +42,7 @@ export const itemsTable = pgTable(
       .where(sql`${table.parentItemId} IS NOT NULL`),
 
     index("items_parent_item_id_idx").on(table.parentItemId),
-  ]
+  ],
 );
 
 export type ItemEntity = typeof itemsTable.$inferSelect;
