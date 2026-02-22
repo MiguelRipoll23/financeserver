@@ -46,7 +46,9 @@ export class AuthenticationMiddleware {
 
   public getTokenFromContext(authorization: string | null): string {
     const token =
-      authorization === null ? null : authorization.replace("Bearer", "").trim();
+      authorization === null
+        ? null
+        : authorization.replace(/^Bearer\s+/i, "").trim();
 
     if (token === null || token.length === 0) {
       throw new ServerError("NO_TOKEN_PROVIDED", "No token provided", 401);
