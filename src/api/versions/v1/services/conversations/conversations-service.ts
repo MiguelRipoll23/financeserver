@@ -19,20 +19,19 @@ import {
 } from "../../constants/environment-constants.ts";
 import { OPENAI_SYSTEM_PROMPT } from "../../constants/ai-constants.ts";
 import {
+  CONVERSATION_TTL_MS,
   MAX_SESSION_CACHE_ENTRIES,
   SESSION_TTL_MS,
 } from "../../constants/api-constants.ts";
 import { APICallError, InvalidPromptError, RetryError } from "ai";
 import { LRUCache } from "../../utils/lru-cache.ts";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
+import { KVService } from "../../../../../core/services/kv-service.ts";
 
 @injectable()
 export class ConversationsService {
-  // LRU cache with TTL to prevent unbounded growth
-  private static sessions = new LRUCache<string, ModelMessage[]>(
-    MAX_SESSION_CACHE_ENTRIES,
-    SESSION_TTL_MS,
-  );
+  // Cap for conversation history to avoid Deno KV 64 KiB limit
+  private static readonly MAX_HISTORY_MESSAGES = 50;
 
   // Store image attachments per session with LRU cache
   private static imageAttachments = new LRUCache<string, ImagePart[]>(
@@ -40,27 +39,10 @@ export class ConversationsService {
     SESSION_TTL_MS,
   );
 
-  // Cleanup interval for expired sessions (runs every hour)
-  private static cleanupInterval: number | null = null;
-
-  constructor(private mcpService = inject(MCPService)) {
-    // Start cleanup job if not already started
-    if (ConversationsService.cleanupInterval === null) {
-      ConversationsService.cleanupInterval = setInterval(
-        () => {
-          const expiredSessions = ConversationsService.sessions.evictExpired();
-          const expiredImages = ConversationsService.imageAttachments
-            .evictExpired();
-          if (expiredSessions > 0 || expiredImages > 0) {
-            console.log(
-              `Cleaned up ${expiredSessions} expired sessions and ${expiredImages} expired image attachments`,
-            );
-          }
-        },
-        60 * 60 * 1000,
-      ); // Run every hour
-    }
-  }
+  constructor(
+    private kvService = inject(KVService),
+    private mcpService = inject(MCPService),
+  ) {}
 
   private getModel(model: string) {
     const apiKey = Deno.env.get(ENV_OPENAI_API_KEY);
@@ -127,12 +109,31 @@ export class ConversationsService {
     ConversationsService.imageAttachments.set(sessionId, images);
   }
 
-  private getHistory(sessionId: string): ModelMessage[] {
-    return ConversationsService.sessions.get(sessionId) || [];
+  private async getHistory(sessionId: string): Promise<ModelMessage[]> {
+    const conversationEntry =
+      await this.kvService.getConversationHistory(sessionId);
+    return Array.isArray(conversationEntry) ? conversationEntry : [];
   }
 
-  private updateHistory(sessionId: string, messages: ModelMessage[]) {
-    ConversationsService.sessions.set(sessionId, messages);
+  private async updateHistory(
+    sessionId: string,
+    messages: ModelMessage[],
+  ): Promise<void> {
+    let cappedMessages = messages;
+    if (messages.length > ConversationsService.MAX_HISTORY_MESSAGES) {
+      cappedMessages = messages.slice(
+        -ConversationsService.MAX_HISTORY_MESSAGES,
+      );
+    }
+    try {
+      await this.kvService.setConversationHistory(
+        sessionId,
+        cappedMessages,
+        CONVERSATION_TTL_MS,
+      );
+    } catch (error) {
+      throw error;
+    }
   }
 
   private getTools(
@@ -238,7 +239,7 @@ export class ConversationsService {
 
     try {
       const aiModel = this.getModel(model);
-      const history = this.getHistory(sessionId);
+      const history = await this.getHistory(sessionId);
       const tools = this.getTools(mcpServer);
 
       // Get any attached images for this session
@@ -279,13 +280,21 @@ export class ConversationsService {
         messages = [systemMessage, ...history.slice(1), newMessage];
       }
 
-      return await streamText({
+      return streamText({
         model: aiModel,
         messages,
         tools,
         stopWhen: stepCountIs(25), // Allow up to 25 tool call steps
         onFinish: ({ response }) => {
-          this.updateHistory(sessionId, [...messages, ...response.messages]);
+          this.updateHistory(sessionId, [
+            ...messages,
+            ...response.messages,
+          ]).catch((error) => {
+            console.error(
+              `Failed to persist conversation history for session ${sessionId}`,
+              error,
+            );
+          });
         },
       });
     } catch (error) {
