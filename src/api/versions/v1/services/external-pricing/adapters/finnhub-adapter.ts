@@ -4,6 +4,7 @@ import { IndexFundPriceProvider } from "../interfaces/index-fund-price-provider-
 @injectable()
 export class FinnhubAdapter implements IndexFundPriceProvider {
   private readonly finnhubBaseUrl = "https://finnhub.io/api/v1";
+  private readonly maximumLoggedResponseLength = 2000;
 
   private readonly finnhubApiKey: string | undefined =
     typeof Deno !== "undefined" && Deno.env?.get
@@ -89,6 +90,99 @@ export class FinnhubAdapter implements IndexFundPriceProvider {
     }
   }
 
+  private stringifyResponseForLogging(responseBody: unknown): string {
+    try {
+      const serializedResponse = JSON.stringify(responseBody);
+      if (serializedResponse.length <= this.maximumLoggedResponseLength) {
+        return serializedResponse;
+      }
+
+      return `${serializedResponse.slice(0, this.maximumLoggedResponseLength)}…`;
+    } catch {
+      return "<unserializable response body>";
+    }
+  }
+
+  private extractValidPriceFromQuoteResponse(
+    quoteResponse: unknown,
+  ): string | null {
+    const currentPrice = (quoteResponse as { c?: unknown })?.c;
+
+    if (
+      typeof currentPrice === "number" &&
+      Number.isFinite(currentPrice) &&
+      currentPrice > 0
+    ) {
+      return String(currentPrice);
+    }
+
+    return null;
+  }
+
+  private async resolveTickerFromFinnhubSearch(
+    normalizedTicker: string,
+  ): Promise<string | null> {
+    const searchRequestUrl = new URL(`${this.finnhubBaseUrl}/search`);
+    searchRequestUrl.searchParams.set("q", normalizedTicker);
+    searchRequestUrl.searchParams.set("token", this.finnhubApiKey ?? "");
+
+    const searchRequestStartedAt = Date.now();
+    const response = await fetch(searchRequestUrl.toString(), {
+      signal: AbortSignal.timeout(10_000),
+    });
+    const searchRequestDurationMilliseconds = Date.now() -
+      searchRequestStartedAt;
+
+    if (!response.ok) {
+      console.warn(
+        `FinnhubAdapter: Search request failed for ticker ${normalizedTicker} with status ${response.status} after ${searchRequestDurationMilliseconds}ms`,
+      );
+      return null;
+    }
+
+    const searchResponse = await response.json();
+    console.info(
+      `FinnhubAdapter: Search response for ticker ${normalizedTicker}: ${this.stringifyResponseForLogging(searchResponse)}`,
+    );
+
+    const searchResults = Array.isArray(
+      (searchResponse as { result?: unknown[] })?.result,
+    )
+      ? (searchResponse as { result: unknown[] }).result
+      : [];
+
+    for (const searchResult of searchResults) {
+      const symbol = (searchResult as { symbol?: unknown })?.symbol;
+      const displaySymbol =
+        (searchResult as { displaySymbol?: unknown })?.displaySymbol;
+
+      const normalizedSymbol = typeof symbol === "string"
+        ? symbol.toUpperCase()
+        : null;
+      const normalizedDisplaySymbol = typeof displaySymbol === "string"
+        ? displaySymbol.toUpperCase()
+        : null;
+
+      if (
+        normalizedSymbol === normalizedTicker ||
+        normalizedDisplaySymbol === normalizedTicker
+      ) {
+        return normalizedSymbol ?? normalizedDisplaySymbol;
+      }
+
+      if (
+        normalizedSymbol?.startsWith(`${normalizedTicker}.`) ||
+        normalizedSymbol?.startsWith(`${normalizedTicker}:`) ||
+        normalizedDisplaySymbol?.startsWith(`${normalizedTicker}.`) ||
+        normalizedDisplaySymbol?.startsWith(`${normalizedTicker}:`)
+      ) {
+        return normalizedSymbol ?? normalizedDisplaySymbol;
+      }
+    }
+
+    return null;
+  }
+
   public async getCurrentPrice(
     internationalSecuritiesIdentificationNumberOrTicker: string,
     _targetCurrencyCode: string,
@@ -142,10 +236,10 @@ export class FinnhubAdapter implements IndexFundPriceProvider {
       requestUrl.searchParams.set("token", this.finnhubApiKey);
 
       const quoteRequestStartedAt = Date.now();
-      const response = await fetch(requestUrl.toString(), {
+      let response = await fetch(requestUrl.toString(), {
         signal: AbortSignal.timeout(10_000),
       });
-      const quoteRequestDurationMilliseconds = Date.now() -
+      let quoteRequestDurationMilliseconds = Date.now() -
         quoteRequestStartedAt;
 
       if (!response.ok) {
@@ -155,22 +249,59 @@ export class FinnhubAdapter implements IndexFundPriceProvider {
         return null;
       }
 
-      const quoteResponse = await response.json();
-      const currentPrice = quoteResponse?.c;
+      let quoteResponse = await response.json();
+      console.info(
+        `FinnhubAdapter: Quote response for ticker ${normalizedTicker}: ${this.stringifyResponseForLogging(quoteResponse)}`,
+      );
 
-      if (
-        typeof currentPrice === "number" &&
-        Number.isFinite(currentPrice) &&
-        currentPrice > 0
-      ) {
+      let price = this.extractValidPriceFromQuoteResponse(quoteResponse);
+
+      if (price) {
         console.info(
-          `FinnhubAdapter: Price request succeeded for ticker ${normalizedTicker} with price ${currentPrice} after ${quoteRequestDurationMilliseconds}ms`,
+          `FinnhubAdapter: Price request succeeded for ticker ${normalizedTicker} with price ${price} after ${quoteRequestDurationMilliseconds}ms`,
         );
-        return String(currentPrice);
+        return price;
+      }
+
+      const alternativeTicker = await this.resolveTickerFromFinnhubSearch(
+        normalizedTicker,
+      );
+
+      if (alternativeTicker && alternativeTicker !== normalizedTicker) {
+        const alternativeRequestUrl = new URL(`${this.finnhubBaseUrl}/quote`);
+        alternativeRequestUrl.searchParams.set("symbol", alternativeTicker);
+        alternativeRequestUrl.searchParams.set("token", this.finnhubApiKey);
+
+        const alternativeQuoteRequestStartedAt = Date.now();
+        response = await fetch(alternativeRequestUrl.toString(), {
+          signal: AbortSignal.timeout(10_000),
+        });
+        quoteRequestDurationMilliseconds = Date.now() -
+          alternativeQuoteRequestStartedAt;
+
+        if (!response.ok) {
+          console.warn(
+            `FinnhubAdapter: Quote retry failed for ticker ${alternativeTicker} with status ${response.status} after ${quoteRequestDurationMilliseconds}ms`,
+          );
+          return null;
+        }
+
+        quoteResponse = await response.json();
+        console.info(
+          `FinnhubAdapter: Quote response for alternative ticker ${alternativeTicker}: ${this.stringifyResponseForLogging(quoteResponse)}`,
+        );
+
+        price = this.extractValidPriceFromQuoteResponse(quoteResponse);
+        if (price) {
+          console.info(
+            `FinnhubAdapter: Price request succeeded for alternative ticker ${alternativeTicker} with price ${price} after ${quoteRequestDurationMilliseconds}ms`,
+          );
+          return price;
+        }
       }
 
       console.warn(
-        `FinnhubAdapter: Quote response did not contain a valid current price for ticker ${normalizedTicker}`,
+        `FinnhubAdapter: Quote response did not contain a valid current price for ticker ${normalizedTicker}. Response body: ${this.stringifyResponseForLogging(quoteResponse)}`,
       );
       return null;
     } catch (error) {
@@ -229,6 +360,9 @@ export class FinnhubAdapter implements IndexFundPriceProvider {
       }
 
       const responseBody = await response.json();
+      console.info(
+        `FinnhubAdapter: OpenFIGI response for ISIN ${normalizedInternationalSecuritiesIdentificationNumber}: ${this.stringifyResponseForLogging(responseBody)}`,
+      );
       const ticker = responseBody?.[0]?.data?.[0]?.ticker ?? null;
 
       if (ticker) {
