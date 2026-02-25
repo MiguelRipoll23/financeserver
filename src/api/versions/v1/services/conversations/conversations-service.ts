@@ -11,6 +11,7 @@ import {
   tool as aiTool,
 } from "ai";
 import { MCPService } from "../mcp-server.ts";
+import { KVService } from "../../../../core/services/kv-service.ts";
 import { SendMessageRequest } from "../../schemas/conversations-schemas.ts";
 import { ServerError } from "../../models/server-error.ts";
 import {
@@ -31,7 +32,7 @@ import type { ContentfulStatusCode } from "hono/utils/http-status";
 export class ConversationsService {
   // Cap for conversation history to avoid Deno KV 64 KiB limit
   private static readonly MAX_HISTORY_MESSAGES = 50;
-  private static denoKvPromise = Deno.openKv();
+  private kvService = inject(KVService);
 
   // Store image attachments per session with LRU cache
   private static imageAttachments = new LRUCache<string, ImagePart[]>(
@@ -126,34 +127,23 @@ export class ConversationsService {
   }
 
   private async getHistory(sessionId: string): Promise<ModelMessage[]> {
-    const denoKv = await ConversationsService.denoKvPromise;
-    const conversationKey = ["conversation", sessionId];
-    const conversationEntry = await denoKv.get<ModelMessage[]>(conversationKey);
-
-    return conversationEntry.value || [];
+    const conversationEntry = await this.kvService.getConversationHistory(sessionId);
+    return conversationEntry || [];
   }
 
   private async updateHistory(
     sessionId: string,
     messages: ModelMessage[],
   ): Promise<void> {
-    const denoKv = await ConversationsService.denoKvPromise;
-    const conversationKey = ["conversation", sessionId];
-
-    // Cap history to last N messages to avoid Deno KV 64 KiB limit
     let cappedMessages = messages;
     if (messages.length > ConversationsService.MAX_HISTORY_MESSAGES) {
       cappedMessages = messages.slice(
         -ConversationsService.MAX_HISTORY_MESSAGES,
       );
     }
-
     try {
-      await denoKv.set(conversationKey, cappedMessages, {
-        expireIn: CONVERSATION_TTL_MS,
-      });
+      await this.kvService.setConversationHistory(sessionId, cappedMessages, CONVERSATION_TTL_MS);
     } catch (error) {
-      console.error("Failed to persist conversation history to Deno KV", error);
       throw error;
     }
   }

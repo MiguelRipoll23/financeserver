@@ -26,6 +26,17 @@ export class KVService {
     return this.kv;
   }
 
+  public async getConversationHistory(sessionId: string): Promise<ModelMessage[] | null> {
+    const kv = await this.getKV();
+    const result = await kv.get<ModelMessage[]>(["conversation", sessionId]);
+    return result.value || null;
+  }
+
+  public async setConversationHistory(sessionId: string, messages: ModelMessage[], ttlMs: number): Promise<void> {
+    const kv = await this.getKV();
+    await kv.set(["conversation", sessionId], messages, { expireIn: ttlMs });
+  }
+
   public async setRegistrationOptions(
     transactionId: string,
     options: RegistrationOptionsKV,
