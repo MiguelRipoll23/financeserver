@@ -48,15 +48,24 @@ export class CoingeckoAdapter implements CryptoPriceProvider {
         vs_currencies: currency,
       });
       const url = `${this.baseUrl}/simple/price?${params}`;
+
+      const priceRequestStartedAt = Date.now();
+      console.info(
+        `CoingeckoAdapter: Starting price request for symbol ${symbolCode}, coin id ${coinId}, target currency ${targetCurrencyCode}`,
+      );
+
       const response = await fetch(url, {
         headers: {
           Accept: "application/json",
         },
       });
 
+      const priceRequestDurationMilliseconds = Date.now() -
+        priceRequestStartedAt;
+
       if (!response.ok) {
         console.error(
-          `CoinGecko API error: ${response.status} ${response.statusText}`,
+          `CoingeckoAdapter: Price request failed for symbol ${symbolCode}, coin id ${coinId}, target currency ${targetCurrencyCode} with status ${response.status} ${response.statusText} after ${priceRequestDurationMilliseconds}ms`,
         );
         return null;
       }
@@ -70,15 +79,21 @@ export class CoingeckoAdapter implements CryptoPriceProvider {
         data[coinId][currency] === undefined
       ) {
         console.error(
-          `No price found for ${symbolCode} in ${targetCurrencyCode}`,
+          `CoingeckoAdapter: No price found for symbol ${symbolCode}, coin id ${coinId}, target currency ${targetCurrencyCode}`,
         );
         return null;
       }
 
       const price = data[coinId][currency];
+      console.info(
+        `CoingeckoAdapter: Price request succeeded for symbol ${symbolCode}, coin id ${coinId}, target currency ${targetCurrencyCode}, price ${price}, duration ${priceRequestDurationMilliseconds}ms`,
+      );
       return price.toString();
     } catch (error) {
-      console.error(`Error fetching crypto price from CoinGecko:`, error);
+      console.error(
+        `CoingeckoAdapter: Error fetching crypto price for symbol ${symbolCode}, target currency ${targetCurrencyCode}:`,
+        error,
+      );
       return null;
     }
   }

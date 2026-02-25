@@ -108,6 +108,10 @@ export class FinnhubAdapter implements IndexFundPriceProvider {
 
       let ticker: string | null = null;
 
+      console.info(
+        `FinnhubAdapter: Starting price request for identifier ${internationalSecuritiesIdentificationNumberOrTicker}`,
+      );
+
       if (
         this.isInternationalSecuritiesIdentificationNumber(
           internationalSecuritiesIdentificationNumberOrTicker,
@@ -137,13 +141,16 @@ export class FinnhubAdapter implements IndexFundPriceProvider {
       requestUrl.searchParams.set("symbol", normalizedTicker);
       requestUrl.searchParams.set("token", this.finnhubApiKey);
 
+      const quoteRequestStartedAt = Date.now();
       const response = await fetch(requestUrl.toString(), {
         signal: AbortSignal.timeout(10_000),
       });
+      const quoteRequestDurationMilliseconds = Date.now() -
+        quoteRequestStartedAt;
 
       if (!response.ok) {
         console.warn(
-          `FinnhubAdapter: quote request failed for ${normalizedTicker}: ${response.status}`,
+          `FinnhubAdapter: Quote request failed for ticker ${normalizedTicker} with status ${response.status} after ${quoteRequestDurationMilliseconds}ms`,
         );
         return null;
       }
@@ -156,12 +163,21 @@ export class FinnhubAdapter implements IndexFundPriceProvider {
         Number.isFinite(currentPrice) &&
         currentPrice > 0
       ) {
+        console.info(
+          `FinnhubAdapter: Price request succeeded for ticker ${normalizedTicker} with price ${currentPrice} after ${quoteRequestDurationMilliseconds}ms`,
+        );
         return String(currentPrice);
       }
 
+      console.warn(
+        `FinnhubAdapter: Quote response did not contain a valid current price for ticker ${normalizedTicker}`,
+      );
       return null;
     } catch (error) {
-      console.error("Error fetching index fund price from Finnhub:", error);
+      console.error(
+        `FinnhubAdapter: Error fetching index fund price for identifier ${internationalSecuritiesIdentificationNumberOrTicker}:`,
+        error,
+      );
       return null;
     }
   }
@@ -175,9 +191,19 @@ export class FinnhubAdapter implements IndexFundPriceProvider {
     const cachedTicker = this.getCachedTicker(
       normalizedInternationalSecuritiesIdentificationNumber,
     );
-    if (cachedTicker) return cachedTicker;
+    if (cachedTicker) {
+      console.info(
+        `FinnhubAdapter: Using cached ticker ${cachedTicker} for ISIN ${normalizedInternationalSecuritiesIdentificationNumber}`,
+      );
+      return cachedTicker;
+    }
 
     try {
+      const mappingRequestStartedAt = Date.now();
+      console.info(
+        `FinnhubAdapter: Starting ISIN to ticker mapping for ISIN ${normalizedInternationalSecuritiesIdentificationNumber}`,
+      );
+
       const response = await fetch("https://api.openfigi.com/v3/mapping", {
         signal: AbortSignal.timeout(10_000),
         method: "POST",
@@ -192,9 +218,12 @@ export class FinnhubAdapter implements IndexFundPriceProvider {
         ]),
       });
 
+      const mappingRequestDurationMilliseconds = Date.now() -
+        mappingRequestStartedAt;
+
       if (!response.ok) {
         console.warn(
-          `FinnhubAdapter: OpenFIGI lookup failed for ${normalizedInternationalSecuritiesIdentificationNumber}: ${response.status}`,
+          `FinnhubAdapter: OpenFIGI lookup failed for ISIN ${normalizedInternationalSecuritiesIdentificationNumber} with status ${response.status} after ${mappingRequestDurationMilliseconds}ms`,
         );
         return null;
       }
@@ -208,9 +237,15 @@ export class FinnhubAdapter implements IndexFundPriceProvider {
           normalizedInternationalSecuritiesIdentificationNumber,
           normalizedTicker,
         );
+        console.info(
+          `FinnhubAdapter: ISIN mapping succeeded for ISIN ${normalizedInternationalSecuritiesIdentificationNumber}, ticker ${normalizedTicker}, duration ${mappingRequestDurationMilliseconds}ms`,
+        );
         return normalizedTicker;
       }
 
+      console.warn(
+        `FinnhubAdapter: OpenFIGI lookup returned no ticker for ISIN ${normalizedInternationalSecuritiesIdentificationNumber} after ${mappingRequestDurationMilliseconds}ms`,
+      );
       return null;
     } catch (error) {
       console.warn(
