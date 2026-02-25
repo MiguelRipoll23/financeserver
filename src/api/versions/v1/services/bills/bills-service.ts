@@ -139,7 +139,12 @@ export class BillsService {
       const existingBill = await tx
         .select({ id: billsTable.id })
         .from(billsTable)
-        .where(eq(billsTable.billDate, billDate))
+        .where(
+          and(
+            eq(billsTable.billDate, billDate),
+            eq(billsTable.categoryId, categoryId),
+          ),
+        )
         .limit(1)
         .then((rows) => rows[0]);
 
