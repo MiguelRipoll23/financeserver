@@ -1,21 +1,12 @@
-import { injectable } from "@needle-di/core";
+import type { ModelMessage } from "ai";
 import type {
   PublicKeyCredentialCreationOptionsJSON,
   PublicKeyCredentialRequestOptionsJSON,
 } from "@simplewebauthn/server";
 import type { OAuthRequestData } from "../../api/versions/v1/interfaces/authentication/oauth-request-data-interface.ts";
+import type { RegistrationOptionsKV } from "../../api/versions/v1/interfaces/authentication/registration-options-kv-interface.ts";
+import type { AuthenticationOptionsKV } from "../../api/versions/v1/interfaces/authentication/authentication-options-kv-interface.ts";
 
-export interface RegistrationOptionsKV {
-  data: PublicKeyCredentialCreationOptionsJSON & { displayName?: string };
-  createdAt: number;
-}
-
-export interface AuthenticationOptionsKV {
-  data: PublicKeyCredentialRequestOptionsJSON;
-  createdAt: number;
-}
-
-@injectable()
 export class KVService {
   private kv: Deno.Kv | null = null;
 
@@ -26,13 +17,19 @@ export class KVService {
     return this.kv;
   }
 
-  public async getConversationHistory(sessionId: string): Promise<ModelMessage[] | null> {
+  public async getConversationHistory(
+    sessionId: string,
+  ): Promise<ModelMessage[] | null> {
     const kv = await this.getKV();
     const result = await kv.get<ModelMessage[]>(["conversation", sessionId]);
     return result.value || null;
   }
 
-  public async setConversationHistory(sessionId: string, messages: ModelMessage[], ttlMs: number): Promise<void> {
+  public async setConversationHistory(
+    sessionId: string,
+    messages: ModelMessage[],
+    ttlMs: number,
+  ): Promise<void> {
     const kv = await this.getKV();
     await kv.set(["conversation", sessionId], messages, { expireIn: ttlMs });
   }
