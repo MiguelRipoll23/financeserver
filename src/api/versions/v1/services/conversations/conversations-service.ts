@@ -11,7 +11,6 @@ import {
   tool as aiTool,
 } from "ai";
 import { MCPService } from "../mcp-server.ts";
-import { KVService } from "../../../../core/services/kv-service.ts";
 import { SendMessageRequest } from "../../schemas/conversations-schemas.ts";
 import { ServerError } from "../../models/server-error.ts";
 import {
@@ -27,12 +26,12 @@ import {
 import { APICallError, InvalidPromptError, RetryError } from "ai";
 import { LRUCache } from "../../utils/lru-cache.ts";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
+import { KVService } from "../../../../../core/services/kv-service.ts";
 
 @injectable()
 export class ConversationsService {
   // Cap for conversation history to avoid Deno KV 64 KiB limit
   private static readonly MAX_HISTORY_MESSAGES = 50;
-  private kvService = inject(KVService);
 
   // Store image attachments per session with LRU cache
   private static imageAttachments = new LRUCache<string, ImagePart[]>(
@@ -40,26 +39,10 @@ export class ConversationsService {
     SESSION_TTL_MS,
   );
 
-  // Cleanup interval for expired image attachments (runs every hour)
-  private static cleanupInterval: number | null = null;
-
-  constructor(private mcpService = inject(MCPService)) {
-    // Start cleanup job if not already started
-    if (ConversationsService.cleanupInterval === null) {
-      ConversationsService.cleanupInterval = setInterval(
-        () => {
-          const expiredImages = ConversationsService.imageAttachments
-            .evictExpired();
-          if (expiredImages > 0) {
-            console.log(
-              `Cleaned up ${expiredImages} expired image attachments`,
-            );
-          }
-        },
-        60 * 60 * 1000,
-      ); // Run every hour
-    }
-  }
+  constructor(
+    private kvService = inject(KVService),
+    private mcpService = inject(MCPService),
+  ) {}
 
   private getModel(model: string) {
     const apiKey = Deno.env.get(ENV_OPENAI_API_KEY);
@@ -127,8 +110,9 @@ export class ConversationsService {
   }
 
   private async getHistory(sessionId: string): Promise<ModelMessage[]> {
-    const conversationEntry = await this.kvService.getConversationHistory(sessionId);
-    return conversationEntry || [];
+    const conversationEntry =
+      await this.kvService.getConversationHistory(sessionId);
+    return Array.isArray(conversationEntry) ? conversationEntry : [];
   }
 
   private async updateHistory(
@@ -142,7 +126,11 @@ export class ConversationsService {
       );
     }
     try {
-      await this.kvService.setConversationHistory(sessionId, cappedMessages, CONVERSATION_TTL_MS);
+      await this.kvService.setConversationHistory(
+        sessionId,
+        cappedMessages,
+        CONVERSATION_TTL_MS,
+      );
     } catch (error) {
       throw error;
     }
@@ -292,12 +280,12 @@ export class ConversationsService {
         messages = [systemMessage, ...history.slice(1), newMessage];
       }
 
-      return await streamText({
+      return streamText({
         model: aiModel,
         messages,
         tools,
         stopWhen: stepCountIs(25), // Allow up to 25 tool call steps
-        onFinish: async ({ response }) => {
+        onFinish: ({ response }) => {
           this.updateHistory(sessionId, [
             ...messages,
             ...response.messages,

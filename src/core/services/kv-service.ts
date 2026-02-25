@@ -1,12 +1,10 @@
 import type { ModelMessage } from "ai";
-import type {
-  PublicKeyCredentialCreationOptionsJSON,
-  PublicKeyCredentialRequestOptionsJSON,
-} from "@simplewebauthn/server";
 import type { OAuthRequestData } from "../../api/versions/v1/interfaces/authentication/oauth-request-data-interface.ts";
 import type { RegistrationOptionsKV } from "../../api/versions/v1/interfaces/authentication/registration-options-kv-interface.ts";
 import type { AuthenticationOptionsKV } from "../../api/versions/v1/interfaces/authentication/authentication-options-kv-interface.ts";
+import { injectable } from "@needle-di/core";
 
+@injectable()
 export class KVService {
   private kv: Deno.Kv | null = null;
 
