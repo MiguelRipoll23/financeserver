@@ -64,18 +64,19 @@ export class BillsService {
     const db = this.databaseService.get();
 
     const billResponse = await db.transaction(async (tx) => {
-      // Check if a bill already exists for this date
+      // Check if a bill already exists for this date and category
+      const categoryId = await this.resolveCategoryId(tx, categoryInput);
       const existingBill = await tx
         .select({ id: billsTable.id })
         .from(billsTable)
-        .where(eq(billsTable.billDate, billDate))
+        .where(and(eq(billsTable.billDate, billDate), eq(billsTable.categoryId, categoryId)))
         .limit(1)
         .then((rows) => rows[0]);
 
       if (existingBill) {
         throw new ServerError(
-          "BILL_DATE_CONFLICT",
-          `A bill already exists for date ${billDate}`,
+          "BILL_DATE_CATEGORY_CONFLICT",
+          `A bill already exists for date ${billDate} and category ${categoryInput.name}`,
           409,
         );
       }
@@ -84,8 +85,7 @@ export class BillsService {
         tx,
         payload.senderEmail,
       );
-      const categoryId = await this.resolveCategoryId(tx, categoryInput);
-
+      // categoryId already declared above
       const values = {
         billDate,
         categoryId,
