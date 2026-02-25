@@ -1110,17 +1110,29 @@ export class BankAccountRoboadvisorsService {
         eligibleFundsCount++;
 
         try {
+          const priceFetchStartedAt = Date.now();
+          console.info(
+            `Starting index fund price fetch for roboadvisor ${roboadvisorId}, fund ${fund.name}, ISIN ${fund.isin}, currency ${currencyCode}`,
+          );
+
           const priceString = await priceProvider.getCurrentPrice(
             fund.isin,
             currencyCode,
           );
 
+          const priceFetchDurationMilliseconds =
+            Date.now() - priceFetchStartedAt;
+
           if (!priceString) {
             console.warn(
-              `Unable to fetch price for ISIN ${fund.isin}, skipping fund`,
+              `Index fund price fetch returned no value for roboadvisor ${roboadvisorId}, fund ${fund.name}, ISIN ${fund.isin}, currency ${currencyCode} after ${priceFetchDurationMilliseconds}ms`,
             );
             continue;
           }
+
+          console.info(
+            `Index fund price fetch succeeded for roboadvisor ${roboadvisorId}, fund ${fund.name}, ISIN ${fund.isin}, currency ${currencyCode}, price ${priceString}, duration ${priceFetchDurationMilliseconds}ms`,
+          );
 
           const currentPrice = parseFloat(priceString);
           const shareCount = parseFloat(fund.shareCount);
@@ -1138,9 +1150,11 @@ export class BankAccountRoboadvisorsService {
             // skip adding to totalCurrentValue
             continue;
           }
-          successfulPriceFetches++;
         } catch (error) {
-          console.error(`Error fetching price for ISIN ${fund.isin}:`, error);
+          console.error(
+            `Index fund price fetch failed for roboadvisor ${roboadvisorId}, fund ${fund.name}, ISIN ${fund.isin}, currency ${currencyCode}:`,
+            error,
+          );
           continue;
         }
       }

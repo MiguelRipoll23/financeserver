@@ -409,17 +409,38 @@ export class CryptoExchangeBalancesService {
       const priceProvider = this.priceProviderFactory.getProvider();
 
       // Fetch current price for the crypto symbol
-      const priceString = await priceProvider.getCurrentPrice(
-        symbolCode,
-        currencyCode,
+      const priceFetchStartedAt = Date.now();
+      console.info(
+        `Starting crypto price fetch for exchange ${cryptoExchangeId}, symbol ${symbolCode}, currency ${currencyCode}`,
       );
 
-      if (!priceString) {
-        console.warn(
-          `Unable to fetch price for symbol ${symbolCode} in ${currencyCode}`,
+      let priceString: string | null;
+
+      try {
+        priceString = await priceProvider.getCurrentPrice(
+          symbolCode,
+          currencyCode,
+        );
+      } catch (error) {
+        console.error(
+          `Crypto price fetch failed for exchange ${cryptoExchangeId}, symbol ${symbolCode}, currency ${currencyCode}:`,
+          error,
         );
         return null;
       }
+
+      const priceFetchDurationMilliseconds = Date.now() - priceFetchStartedAt;
+
+      if (!priceString) {
+        console.warn(
+          `Crypto price fetch returned no value for exchange ${cryptoExchangeId}, symbol ${symbolCode}, currency ${currencyCode} after ${priceFetchDurationMilliseconds}ms`,
+        );
+        return null;
+      }
+
+      console.info(
+        `Crypto price fetch succeeded for exchange ${cryptoExchangeId}, symbol ${symbolCode}, currency ${currencyCode}, price ${priceString}, duration ${priceFetchDurationMilliseconds}ms`,
+      );
 
       // Calculate current value
       const cryptoBalance = parseFloat(balance.balance);
