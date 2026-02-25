@@ -347,32 +347,7 @@ export class BillsService {
         updatedAt: Date;
       } = { updatedAt: new Date() };
 
-      // Handle date update
-      if (payload.date !== undefined) {
-        const billDate = payload.date;
-
-        // Check for date conflicts if date is being changed
-        if (existingBill.billDate !== billDate) {
-          const conflictingBill = await tx
-            .select({ id: billsTable.id })
-            .from(billsTable)
-            .where(
-              and(eq(billsTable.billDate, billDate), ne(billsTable.id, billId)),
-            )
-            .limit(1)
-            .then((rows) => rows[0]);
-
-          if (conflictingBill) {
-            throw new ServerError(
-              "BILL_DATE_CONFLICT",
-              `Another bill already exists for date ${billDate}`,
-              409,
-            );
-          }
-        }
-
-        updateData.billDate = billDate;
-      }
+      let updatedCategoryId = existingBill.categoryId;
 
       // Handle category update
       if (payload.category !== undefined) {
@@ -386,8 +361,41 @@ export class BillsService {
           );
         }
 
-        const categoryId = await this.resolveCategoryId(tx, categoryInput);
-        updateData.categoryId = categoryId;
+        updatedCategoryId = await this.resolveCategoryId(tx, categoryInput);
+        updateData.categoryId = updatedCategoryId;
+      }
+
+      // Handle date update
+      if (payload.date !== undefined) {
+        updateData.billDate = payload.date;
+      }
+
+      const updatedBillDate = payload.date ?? existingBill.billDate;
+      const isDateChanged = updatedBillDate !== existingBill.billDate;
+      const isCategoryChanged = updatedCategoryId !== existingBill.categoryId;
+
+      // Check for date/category conflicts only when date or category changes
+      if (isDateChanged || isCategoryChanged) {
+        const conflictingBill = await tx
+          .select({ id: billsTable.id })
+          .from(billsTable)
+          .where(
+            and(
+              eq(billsTable.billDate, updatedBillDate),
+              eq(billsTable.categoryId, updatedCategoryId),
+              ne(billsTable.id, billId),
+            ),
+          )
+          .limit(1)
+          .then((rows) => rows[0]);
+
+        if (conflictingBill) {
+          throw new ServerError(
+            "BILL_DATE_CATEGORY_CONFLICT",
+            `A bill already exists for date ${updatedBillDate} and the selected category`,
+            409,
+          );
+        }
       }
 
       // Handle total amount update
