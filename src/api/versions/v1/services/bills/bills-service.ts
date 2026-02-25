@@ -85,8 +85,7 @@ export class BillsService {
         tx,
         payload.senderEmail,
       );
-      const categoryId = await this.resolveCategoryId(tx, categoryInput);
-
+      // categoryId already declared above
       const values = {
         billDate,
         categoryId,
