@@ -34,7 +34,10 @@ export const billsTable = pgTable(
       .notNull(),
   },
   (table) => [
-    uniqueIndex("bills_bill_date_unique").on(table.billDate),
+    uniqueIndex("bills_bill_date_category_unique").on(
+      table.billDate,
+      table.categoryId,
+    ),
     index("bills_category_id_idx").on(table.categoryId),
     index("bills_total_amount_idx").on(table.totalAmount),
     // Composite index for category/date queries
