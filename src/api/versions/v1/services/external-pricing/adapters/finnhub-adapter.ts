@@ -10,11 +10,6 @@ export class FinnhubAdapter implements IndexFundPriceProvider {
       ? Deno.env.get("FINNHUB_API_KEY")
       : undefined;
 
-  private readonly openFigiApiKey: string | undefined =
-    typeof Deno !== "undefined" && Deno.env?.get
-      ? Deno.env.get("OPENFIGI_API_KEY")
-      : undefined;
-
   private readonly internationalSecuritiesIdentificationNumberToTickerCache =
     new Map<string, string>();
   private readonly maximumCacheSize = 1000;
@@ -156,7 +151,11 @@ export class FinnhubAdapter implements IndexFundPriceProvider {
       const quoteResponse = await response.json();
       const currentPrice = quoteResponse?.c;
 
-      if (typeof currentPrice === "number" && Number.isFinite(currentPrice) && currentPrice > 0) {
+      if (
+        typeof currentPrice === "number" &&
+        Number.isFinite(currentPrice) &&
+        currentPrice > 0
+      ) {
         return String(currentPrice);
       }
 
@@ -178,20 +177,12 @@ export class FinnhubAdapter implements IndexFundPriceProvider {
     );
     if (cachedTicker) return cachedTicker;
 
-    if (!this.openFigiApiKey) {
-      console.warn(
-        `FinnhubAdapter: OPENFIGI_API_KEY not set; cannot convert ISIN: ${normalizedInternationalSecuritiesIdentificationNumber}`,
-      );
-      return null;
-    }
-
     try {
       const response = await fetch("https://api.openfigi.com/v3/mapping", {
         signal: AbortSignal.timeout(10_000),
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-OPENFIGI-APIKEY": this.openFigiApiKey,
         },
         body: JSON.stringify([
           {
