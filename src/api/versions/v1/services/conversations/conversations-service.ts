@@ -29,6 +29,8 @@ import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 @injectable()
 export class ConversationsService {
+  // Cap for conversation history to avoid Deno KV 64 KiB limit
+  private static readonly MAX_HISTORY_MESSAGES = 50;
   private static denoKvPromise = Deno.openKv();
 
   // Store image attachments per session with LRU cache
@@ -138,9 +140,22 @@ export class ConversationsService {
     const denoKv = await ConversationsService.denoKvPromise;
     const conversationKey = ["conversation", sessionId];
 
-    await denoKv.set(conversationKey, messages, {
-      expireIn: CONVERSATION_TTL_MS,
-    });
+    // Cap history to last N messages to avoid Deno KV 64 KiB limit
+    let cappedMessages = messages;
+    if (messages.length > ConversationsService.MAX_HISTORY_MESSAGES) {
+      cappedMessages = messages.slice(
+        -ConversationsService.MAX_HISTORY_MESSAGES,
+      );
+    }
+
+    try {
+      await denoKv.set(conversationKey, cappedMessages, {
+        expireIn: CONVERSATION_TTL_MS,
+      });
+    } catch (error) {
+      console.error("Failed to persist conversation history to Deno KV", error);
+      throw error;
+    }
   }
 
   private getTools(
@@ -292,8 +307,16 @@ export class ConversationsService {
         messages,
         tools,
         stopWhen: stepCountIs(25), // Allow up to 25 tool call steps
-        onFinish: ({ response }) => {
-          void this.updateHistory(sessionId, [...messages, ...response.messages]);
+        onFinish: async ({ response }) => {
+          this.updateHistory(sessionId, [
+            ...messages,
+            ...response.messages,
+          ]).catch((error) => {
+            console.error(
+              `Failed to persist conversation history for session ${sessionId}`,
+              error,
+            );
+          });
         },
       });
     } catch (error) {
