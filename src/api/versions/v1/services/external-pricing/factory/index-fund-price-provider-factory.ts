@@ -1,14 +1,12 @@
 import { inject, injectable } from "@needle-di/core";
 import { IndexFundPriceProvider } from "../interfaces/index-fund-price-provider-interface.ts";
-import { YahooFinanceAdapter } from "../adapters/yahoo-finance-adapter.ts";
+import { FinnhubAdapter } from "../adapters/finnhub-adapter.ts";
 
 @injectable()
 export class IndexFundPriceProviderFactory {
-  constructor(private yahooFinanceAdapter = inject(YahooFinanceAdapter)) {}
+  constructor(private finnhubAdapter = inject(FinnhubAdapter)) {}
 
   public getProvider(): IndexFundPriceProvider {
-    // For now, always return Yahoo Finance adapter
-    // In the future, this could be configurable via environment variable
-    return this.yahooFinanceAdapter;
+    return this.finnhubAdapter;
   }
 }
