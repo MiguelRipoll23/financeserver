@@ -19,6 +19,7 @@ import {
 } from "../../constants/environment-constants.ts";
 import { OPENAI_SYSTEM_PROMPT } from "../../constants/ai-constants.ts";
 import {
+  CONVERSATION_TTL_MS,
   MAX_SESSION_CACHE_ENTRIES,
   SESSION_TTL_MS,
 } from "../../constants/api-constants.ts";
@@ -28,11 +29,7 @@ import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 @injectable()
 export class ConversationsService {
-  // LRU cache with TTL to prevent unbounded growth
-  private static sessions = new LRUCache<string, ModelMessage[]>(
-    MAX_SESSION_CACHE_ENTRIES,
-    SESSION_TTL_MS,
-  );
+  private static denoKvPromise = Deno.openKv();
 
   // Store image attachments per session with LRU cache
   private static imageAttachments = new LRUCache<string, ImagePart[]>(
@@ -40,7 +37,7 @@ export class ConversationsService {
     SESSION_TTL_MS,
   );
 
-  // Cleanup interval for expired sessions (runs every hour)
+  // Cleanup interval for expired image attachments (runs every hour)
   private static cleanupInterval: number | null = null;
 
   constructor(private mcpService = inject(MCPService)) {
@@ -48,12 +45,11 @@ export class ConversationsService {
     if (ConversationsService.cleanupInterval === null) {
       ConversationsService.cleanupInterval = setInterval(
         () => {
-          const expiredSessions = ConversationsService.sessions.evictExpired();
           const expiredImages = ConversationsService.imageAttachments
             .evictExpired();
-          if (expiredSessions > 0 || expiredImages > 0) {
+          if (expiredImages > 0) {
             console.log(
-              `Cleaned up ${expiredSessions} expired sessions and ${expiredImages} expired image attachments`,
+              `Cleaned up ${expiredImages} expired image attachments`,
             );
           }
         },
@@ -127,12 +123,24 @@ export class ConversationsService {
     ConversationsService.imageAttachments.set(sessionId, images);
   }
 
-  private getHistory(sessionId: string): ModelMessage[] {
-    return ConversationsService.sessions.get(sessionId) || [];
+  private async getHistory(sessionId: string): Promise<ModelMessage[]> {
+    const denoKv = await ConversationsService.denoKvPromise;
+    const conversationKey = ["conversation", sessionId];
+    const conversationEntry = await denoKv.get<ModelMessage[]>(conversationKey);
+
+    return conversationEntry.value || [];
   }
 
-  private updateHistory(sessionId: string, messages: ModelMessage[]) {
-    ConversationsService.sessions.set(sessionId, messages);
+  private async updateHistory(
+    sessionId: string,
+    messages: ModelMessage[],
+  ): Promise<void> {
+    const denoKv = await ConversationsService.denoKvPromise;
+    const conversationKey = ["conversation", sessionId];
+
+    await denoKv.set(conversationKey, messages, {
+      expireIn: CONVERSATION_TTL_MS,
+    });
   }
 
   private getTools(
@@ -238,7 +246,7 @@ export class ConversationsService {
 
     try {
       const aiModel = this.getModel(model);
-      const history = this.getHistory(sessionId);
+      const history = await this.getHistory(sessionId);
       const tools = this.getTools(mcpServer);
 
       // Get any attached images for this session
@@ -285,7 +293,7 @@ export class ConversationsService {
         tools,
         stopWhen: stepCountIs(25), // Allow up to 25 tool call steps
         onFinish: ({ response }) => {
-          this.updateHistory(sessionId, [...messages, ...response.messages]);
+          void this.updateHistory(sessionId, [...messages, ...response.messages]);
         },
       });
     } catch (error) {

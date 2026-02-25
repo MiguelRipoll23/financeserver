@@ -9,3 +9,6 @@ export const ALLOWED_IMAGE_MIME_TYPES: string[] = [
 // Session cache constants
 export const MAX_SESSION_CACHE_ENTRIES = 1000;
 export const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+// Conversation persistence constants
+export const CONVERSATION_TTL_MS = 4 * 60 * 60 * 1000; // 4 hours
