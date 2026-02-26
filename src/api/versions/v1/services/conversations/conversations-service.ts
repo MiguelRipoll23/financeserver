@@ -27,6 +27,7 @@ import { APICallError, InvalidPromptError, RetryError } from "ai";
 import { LRUCache } from "../../utils/lru-cache.ts";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { KVService } from "../../../../../core/services/kv-service.ts";
+import { fetchWithExternalRequestDebugLogging } from "../../utils/external-request-utils.ts";
 
 @injectable()
 export class ConversationsService {
@@ -79,7 +80,9 @@ export class ConversationsService {
       Authorization: `Bearer ${apiKey}`,
     };
 
-    const response = await fetch(fetchUrl, { headers });
+    const response = await fetchWithExternalRequestDebugLogging(fetchUrl, {
+      headers,
+    });
 
     if (!response.ok) {
       throw new Error(`Failed to fetch models: ${response.statusText}`);

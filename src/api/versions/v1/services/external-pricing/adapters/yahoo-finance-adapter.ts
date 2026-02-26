@@ -1,5 +1,6 @@
 import { injectable } from "@needle-di/core";
 import { IndexFundPriceProvider } from "../interfaces/index-fund-price-provider-interface.ts";
+import { fetchWithExternalRequestDebugLogging } from "../../../utils/external-request-utils.ts";
 
 interface YahooSearchQuote {
   symbol: string;
@@ -94,7 +95,7 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
       await this.waitForRateLimit();
 
       try {
-        const response = await fetch(requestUrl, {
+        const response = await fetchWithExternalRequestDebugLogging(requestUrl, {
           signal: AbortSignal.timeout(10_000),
           headers: {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",

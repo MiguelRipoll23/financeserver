@@ -1,5 +1,6 @@
 import { injectable } from "@needle-di/core";
 import { CryptoPriceProvider } from "../interfaces/crypto-price-provider-interface.ts";
+import { fetchWithExternalRequestDebugLogging } from "../../../utils/external-request-utils.ts";
 
 /**
  * CoinGecko crypto price provider
@@ -54,7 +55,7 @@ export class CoingeckoAdapter implements CryptoPriceProvider {
         `CoingeckoAdapter: Starting price request for symbol ${symbolCode}, coin id ${coinId}, target currency ${targetCurrencyCode}`,
       );
 
-      const response = await fetch(url, {
+      const response = await fetchWithExternalRequestDebugLogging(url, {
         headers: {
           Accept: "application/json",
         },
