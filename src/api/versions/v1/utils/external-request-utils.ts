@@ -16,10 +16,16 @@ export async function fetchWithExternalRequestDebugLogging(
   };
 
   if (requestInit.body) {
-    externalRequestLogMetadata.body =
-      typeof requestInit.body === "string"
-        ? requestInit.body
-        : "[non-string request body omitted]";
+    if (typeof requestInit.body === "string") {
+      externalRequestLogMetadata.body = requestInit.body;
+    } else if (requestInit.body instanceof FormData) {
+      externalRequestLogMetadata.body = "[FormData body omitted]"; // Or attempt to serialize if small
+    } else if (requestInit.body instanceof URLSearchParams) {
+      externalRequestLogMetadata.body = requestInit.body.toString();
+    } else {
+      externalRequestLogMetadata.body = `[${requestInit.body.constructor.name} body omitted]`;
+    }
+  }
   }
 
   console.debug(
