@@ -68,8 +68,8 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
     }
   }
 
-  private sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+  private sleep(delayMilliseconds: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, delayMilliseconds));
   }
 
   private async waitForRateLimit(): Promise<void> {
@@ -84,8 +84,8 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
   }
 
   private async fetchWithRetry(
-    url: string,
-  ): Promise<{ json: unknown; status: number } | null> {
+    requestUrl: string,
+  ): Promise<{ responseJson: unknown; status: number } | null> {
     for (let attempt = 0; attempt < this.maximumRetryAttempts; attempt++) {
       if (attempt > 0) {
         await this.sleep(this.retryDelayBaseMs * Math.pow(2, attempt - 1));
@@ -93,28 +93,36 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
 
       await this.waitForRateLimit();
 
-      const response = await fetch(url, {
-        signal: AbortSignal.timeout(10_000),
-        headers: {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        },
-      });
+      try {
+        const response = await fetch(requestUrl, {
+          signal: AbortSignal.timeout(10_000),
+          headers: {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          },
+        });
 
-      if (response.status === 429) {
+        if (response.status === 429) {
+          continue;
+        }
+
+        if (!response.ok) {
+          const body = await response.text();
+          console.error(
+            `YahooFinanceAdapter: Request failed with status ${response.status}: ${body.slice(0, 500)}`,
+          );
+          return null;
+        }
+
+        const responseJson = await response.json();
+        return { responseJson, status: response.status };
+      } catch (error) {
+        console.error(
+          `YahooFinanceAdapter: Network error fetching ${requestUrl}, attempt ${attempt + 1}/${this.maximumRetryAttempts}:`,
+          error,
+        );
         continue;
       }
-
-      if (!response.ok) {
-        const body = await response.text();
-        console.error(
-          `YahooFinanceAdapter: Request failed with status ${response.status}: ${body.slice(0, 500)}`,
-        );
-        return null;
-      }
-
-      const json = await response.json();
-      return { json, status: response.status };
     }
 
     return null;
@@ -122,7 +130,7 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
 
   public async getCurrentPrice(
     isinOrTicker: string,
-    _targetCurrencyCode: string,
+    targetCurrencyCode: string,
   ): Promise<string | null> {
     if (!isinOrTicker || typeof isinOrTicker !== "string") return null;
 
@@ -178,8 +186,8 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
         return null;
       }
 
-      const { json, status } = result;
-      const searchResponse = json as {
+      const { responseJson, status } = result;
+      const searchResponse = responseJson as {
         quotes?: YahooSearchQuote[];
       };
 
@@ -192,15 +200,15 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
       }
 
       const mutualFundQuote = quotes.find(
-        (q) =>
-          q.quoteType === "MUTUALFUND" ||
-          q.quoteType === "ETF" ||
-          q.longname?.toLowerCase().includes("vanguard"),
+        (quote) =>
+          quote.quoteType === "MUTUALFUND" ||
+          quote.quoteType === "ETF" ||
+          quote.longname?.toLowerCase().includes("vanguard"),
       );
 
       if (!mutualFundQuote) {
         console.warn(
-          `YahooFinanceAdapter: No mutual fund found for ISIN ${isin}, quotes: ${JSON.stringify(quotes.map(q => ({ symbol: q.symbol, type: q.quoteType })))}`,
+          `YahooFinanceAdapter: No mutual fund found for ISIN ${isin}, quotes: ${JSON.stringify(quotes.map(quote => ({ symbol: quote.symbol, type: quote.quoteType })))}`,
         );
         return null;
       }
@@ -224,12 +232,12 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
         return null;
       }
 
-      const { json, status } = result;
-      const chartResponse = json as {
+      const { responseJson, status } = result;
+      const chartResponse = responseJson as {
         chart?: {
           result?: Array<{
             meta?: { regularMarketPrice?: number };
-            indicators?: Array<{ close?: (number | null)[] }>;
+            indicators?: { quote?: Array<{ close?: (number | null)[] }> };
           }>;
           error?: { description?: string };
         };
@@ -250,7 +258,7 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
         return null;
       }
 
-      const closes = chartResult.indicators?.[0]?.close;
+      const closes = chartResult.indicators?.quote?.[0]?.close;
       const price = Array.isArray(closes) && closes.length
         ? closes[closes.length - 1]
         : chartResult.meta?.regularMarketPrice;
