@@ -13,6 +13,7 @@ import { CryptoExchangesMCPService } from "./crypto-exchanges/crypto-exchanges-m
 import { CashMCPService } from "./cash/cash-mcp-service.ts";
 import { CashBalancesMCPService } from "./cash-balances/cash-balances-mcp-service.ts";
 import { SalaryChangesMCPService } from "./salary-changes/salary-changes-mcp-service.ts";
+import { BillCategoriesMCPService } from "./bill-categories/bill-categories-mcp-service.ts";
 import { McpToolDefinition } from "../interfaces/mcp/mcp-tool-interface.ts";
 import { McpProvider } from "../types/mcp/mcp-provider-type.ts";
 import { McpServerWithContext } from "../types/mcp/mcp-server-with-context-type.ts";
@@ -39,6 +40,7 @@ export class MCPService {
     private cashMCPService = inject(CashMCPService),
     private cashBalancesMCPService = inject(CashBalancesMCPService),
     private salaryChangesMCPService = inject(SalaryChangesMCPService),
+    private billCategoriesMCPService = inject(BillCategoriesMCPService),
   ) {}
 
   public createUnifiedServer(): McpServer {
@@ -55,6 +57,7 @@ export class MCPService {
       this.bankAccountRoboadvisorsMCPService,
       this.cryptoExchangesMCPService,
       this.salaryChangesMCPService,
+      this.billCategoriesMCPService,
     ]);
   }
 
@@ -77,6 +80,7 @@ export class MCPService {
           this.bankAccountRoboadvisorsMCPService,
           this.cryptoExchangesMCPService,
           this.salaryChangesMCPService,
+          this.billCategoriesMCPService,
         ];
         break;
       case "PORTFOLIO":
@@ -95,6 +99,7 @@ export class MCPService {
           this.billsMCPService,
           this.receiptsMCPService,
           this.subscriptionsMCPService,
+          this.billCategoriesMCPService,
         ];
         break;
     }
@@ -118,6 +123,7 @@ export class MCPService {
       this.billsMCPService,
       this.receiptsMCPService,
       this.subscriptionsMCPService,
+      this.billCategoriesMCPService,
     ]);
   }
 
