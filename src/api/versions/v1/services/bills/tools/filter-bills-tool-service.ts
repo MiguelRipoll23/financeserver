@@ -51,7 +51,7 @@ export class FilterBillsToolService {
                 bill.currencyCode,
               );
               const email = bill.senderEmail ?? "unassigned";
-              return `• ${displayDate} – category ${bill.categoryId}: ${amount}${currencySymbol} (${email})`;
+              return `• ${displayDate} – ${bill.category}: ${amount}${currencySymbol} (${email})`;
             })
             .join("\n");
 
@@ -67,7 +67,7 @@ export class FilterBillsToolService {
               id: bill.id,
               senderEmail: bill.senderEmail,
               date: bill.date,
-              categoryId: bill.categoryId,
+              category: bill.category,
               totalAmount: bill.totalAmount,
               currencyCode: bill.currencyCode,
               updatedAt: bill.updatedAt,
@@ -87,7 +87,7 @@ export class FilterBillsToolService {
             id: bill.id,
             senderEmail: bill.senderEmail,
             date: bill.date,
-            categoryId: bill.categoryId,
+            category: bill.category,
             totalAmount: bill.totalAmount,
             currencyCode: bill.currencyCode,
             updatedAt: bill.updatedAt,
