@@ -32,7 +32,7 @@ file:
 - `OPENAI_BASE_URL` — base URL for the LLM API
 - `OPENAI_API_KEY` — your API key for the LLM provider.
 
-If you would like to use the OpenCode Zen,
+If you would like to use OpenCode Zen,
 [create an API key here.](https://opencode.ai/auth)
 
 ### WebAuthn & OAuth configuration
