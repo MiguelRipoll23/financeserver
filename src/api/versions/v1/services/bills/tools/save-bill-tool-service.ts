@@ -27,7 +27,7 @@ export class SaveBillToolService {
 
         const result = await this.billsService.createBill({
           date: parsed.date,
-          category: parsed.category,
+          categoryId: parsed.categoryId,
           totalAmount: parsed.totalAmount,
           currencyCode: parsed.currencyCode,
           senderEmail: parsed.senderEmail,

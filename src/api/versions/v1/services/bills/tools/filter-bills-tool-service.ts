@@ -51,7 +51,7 @@ export class FilterBillsToolService {
                 bill.currencyCode,
               );
               const email = bill.senderEmail ?? "unassigned";
-              return `• ${displayDate} – ${bill.category}: ${amount}${currencySymbol} (${email})`;
+              return `• ${displayDate} – category ${bill.categoryId}: ${amount}${currencySymbol} (${email})`;
             })
             .join("\n");
 
@@ -61,15 +61,43 @@ export class FilterBillsToolService {
               `\n\nThe response is paginated; use the tool input "cursor" with value "${result.nextCursor}" to keep retrieving more data.`;
           }
 
+          const structured = {
+            ...result,
+            results: result.results.map((bill) => ({
+              id: bill.id,
+              senderEmail: bill.senderEmail,
+              date: bill.date,
+              categoryId: bill.categoryId,
+              totalAmount: bill.totalAmount,
+              currencyCode: bill.currencyCode,
+              updatedAt: bill.updatedAt,
+              favoritedAt: bill.favoritedAt,
+            })),
+          };
+
           return {
             text,
-            structured: result,
+            structured,
           };
         }
 
+        const structured = {
+          ...result,
+          results: result.results.map((bill) => ({
+            id: bill.id,
+            senderEmail: bill.senderEmail,
+            date: bill.date,
+            categoryId: bill.categoryId,
+            totalAmount: bill.totalAmount,
+            currencyCode: bill.currencyCode,
+            updatedAt: bill.updatedAt,
+            favoritedAt: bill.favoritedAt,
+          })),
+        };
+
         return {
           text,
-          structured: result,
+          structured,
         };
       },
     };

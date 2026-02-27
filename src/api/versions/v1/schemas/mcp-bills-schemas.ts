@@ -10,13 +10,11 @@ export const SaveBillToolSchema = z.object({
     .string()
     .regex(DateOnlyRegex, "Date must be in YYYY-MM-DD format")
     .describe("The date when the bill was issued or due (format: YYYY-MM-DD)"),
-  category: z
-    .string()
-    .min(1)
-    .max(128, "Category must be between 1-128 characters")
-    .describe(
-      "The category of the bill in English (e.g., utilities, rent, insurance)",
-    ),
+  categoryId: z
+    .number()
+    .int()
+    .positive()
+    .describe("The identifier of an existing bill category"),
   totalAmount: z
     .string()
     .regex(
