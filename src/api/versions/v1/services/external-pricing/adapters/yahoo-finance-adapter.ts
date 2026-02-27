@@ -9,14 +9,19 @@ interface YahooSearchQuote {
 
 @injectable()
 export class YahooFinanceAdapter implements IndexFundPriceProvider {
-  private readonly searchUrl = "https://query1.finance.yahoo.com/v1/finance/search";
-  private readonly chartUrl = "https://query1.finance.yahoo.com/v8/finance/chart";
+  private readonly searchUrl =
+    "https://query1.finance.yahoo.com/v1/finance/search";
+  private readonly chartUrl =
+    "https://query1.finance.yahoo.com/v8/finance/chart";
 
   private readonly maximumRetryAttempts = 3;
   private readonly retryDelayBaseMs = 2000;
 
   private readonly isinTickerCache = new Map<string, string>();
-  private readonly tickerPriceCache = new Map<string, { price: string; timestamp: number }>();
+  private readonly tickerPriceCache = new Map<
+    string,
+    { price: string; timestamp: number }
+  >();
   private readonly cacheMaxSize = 1000;
   private readonly priceCacheDurationMs = 60_000;
 
@@ -97,8 +102,10 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
         const response = await fetch(requestUrl, {
           signal: AbortSignal.timeout(10_000),
           headers: {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "User-Agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            Accept:
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
           },
         });
 
@@ -192,6 +199,7 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
       };
 
       const quotes = searchResponse.quotes;
+
       if (!quotes || quotes.length === 0) {
         console.warn(
           `YahooFinanceAdapter: No quotes found for ISIN ${isin}, status: ${status}`,
@@ -201,21 +209,22 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
 
       const mutualFundQuote = quotes.find(
         (quote) =>
-          quote.quoteType === "MUTUALFUND" ||
-          quote.quoteType === "ETF" ||
-          quote.longname?.toLowerCase().includes("vanguard"),
+          quote.quoteType === "MUTUALFUND" || quote.quoteType === "ETF",
       );
 
       if (!mutualFundQuote) {
         console.warn(
-          `YahooFinanceAdapter: No mutual fund found for ISIN ${isin}, quotes: ${JSON.stringify(quotes.map(quote => ({ symbol: quote.symbol, type: quote.quoteType })))}`,
+          `YahooFinanceAdapter: No mutual fund found for ISIN ${isin}, quotes: ${JSON.stringify(quotes.map((quote) => ({ symbol: quote.symbol, type: quote.quoteType })))}`,
         );
         return null;
       }
 
       return mutualFundQuote.symbol;
     } catch (error) {
-      console.error(`YahooFinanceAdapter: Error searching ISIN ${isin}:`, error);
+      console.error(
+        `YahooFinanceAdapter: Error searching ISIN ${isin}:`,
+        error,
+      );
       return null;
     }
   }
@@ -259,9 +268,10 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
       }
 
       const closes = chartResult.indicators?.quote?.[0]?.close;
-      const price = Array.isArray(closes) && closes.length
-        ? closes[closes.length - 1]
-        : chartResult.meta?.regularMarketPrice;
+      const price =
+        Array.isArray(closes) && closes.length
+          ? closes[closes.length - 1]
+          : chartResult.meta?.regularMarketPrice;
 
       if (price == null) {
         console.warn(
@@ -272,7 +282,10 @@ export class YahooFinanceAdapter implements IndexFundPriceProvider {
 
       return String(price);
     } catch (error) {
-      console.error(`YahooFinanceAdapter: Error fetching price for ticker ${ticker}:`, error);
+      console.error(
+        `YahooFinanceAdapter: Error fetching price for ticker ${ticker}:`,
+        error,
+      );
       return null;
     }
   }
