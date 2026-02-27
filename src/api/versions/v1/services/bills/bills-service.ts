@@ -35,23 +35,18 @@ type NormalizedCategoryInput = {
   normalized: string;
 };
 
+type CreateBillWithCategoryIdInput = Omit<UpsertBillRequest, "senderEmail" | "category"> & {
+  categoryId: number;
+  senderEmail?: string;
+};
+
 @injectable()
 export class BillsService {
   constructor(private databaseService = inject(DatabaseService)) {}
 
   public async createBill(
-    payload: Omit<UpsertBillRequest, "senderEmail"> & { senderEmail?: string },
+    payload: CreateBillWithCategoryIdInput,
   ): Promise<UpsertBillResponse> {
-    const categoryInput = this.normalizeCategoryInput(payload.category);
-
-    if (categoryInput.name.length === 0) {
-      throw new ServerError(
-        "BILL_CATEGORY_REQUIRED",
-        "Category is required to create a bill",
-        400,
-      );
-    }
-
     const billDate = payload.date;
 
     const totalAmountCents = this.parseAmountToCents(
@@ -64,8 +59,7 @@ export class BillsService {
     const db = this.databaseService.get();
 
     const billResponse = await db.transaction(async (tx) => {
-      // Check if a bill already exists for this date and category
-      const categoryId = await this.resolveCategoryId(tx, categoryInput);
+      const categoryId = await this.ensureCategoryExists(tx, payload.categoryId);
       const existingBill = await tx
         .select({ id: billsTable.id })
         .from(billsTable)
@@ -76,7 +70,7 @@ export class BillsService {
       if (existingBill) {
         throw new ServerError(
           "BILL_DATE_CATEGORY_CONFLICT",
-          `A bill already exists for date ${billDate} and category ${categoryInput.name}`,
+          `A bill already exists for date ${billDate} and the selected category`,
           409,
         );
       }
@@ -265,6 +259,7 @@ export class BillsService {
       .select({
         id: billsTable.id,
         billDate: billsTable.billDate,
+        categoryId: billsTable.categoryId,
         categoryName: billCategoriesTable.name,
         totalAmount: billsTable.totalAmount,
         currencyCode: billsTable.currencyCode,
@@ -287,6 +282,7 @@ export class BillsService {
       id: row.id,
       senderEmail: row.senderEmail ?? null,
       date: toISOStringSafe(row.billDate),
+      categoryId: row.categoryId,
       category: row.categoryName,
       totalAmount: this.formatStoredAmount(
         row.totalAmount,
@@ -433,6 +429,113 @@ export class BillsService {
     });
   }
 
+  public async updateBillByCategoryId(
+    billId: number,
+    payload: Partial<CreateBillWithCategoryIdInput>,
+  ): Promise<UpsertBillResponse> {
+    const db = this.databaseService.get();
+
+    return await db.transaction(async (tx) => {
+      const existingBill = await tx
+        .select({
+          id: billsTable.id,
+          billDate: billsTable.billDate,
+          categoryId: billsTable.categoryId,
+          totalAmount: billsTable.totalAmount,
+          currencyCode: billsTable.currencyCode,
+          emailId: billsTable.emailId,
+        })
+        .from(billsTable)
+        .where(eq(billsTable.id, billId))
+        .limit(1)
+        .then((rows) => rows[0]);
+
+      if (!existingBill) {
+        throw new ServerError(
+          "BILL_NOT_FOUND",
+          `Bill ${billId} was not found`,
+          404,
+        );
+      }
+
+      const updateData: {
+        billDate?: string;
+        categoryId?: number;
+        totalAmount?: string;
+        currencyCode?: string;
+        emailId?: number | null;
+        updatedAt: Date;
+      } = { updatedAt: new Date() };
+
+      let updatedCategoryId = existingBill.categoryId;
+
+      if (payload.categoryId !== undefined) {
+        updatedCategoryId = await this.ensureCategoryExists(tx, payload.categoryId);
+        updateData.categoryId = updatedCategoryId;
+      }
+
+      if (payload.date !== undefined) {
+        updateData.billDate = payload.date;
+      }
+
+      const updatedBillDate = payload.date ?? existingBill.billDate;
+      const isDateChanged = updatedBillDate !== existingBill.billDate;
+      const isCategoryChanged = updatedCategoryId !== existingBill.categoryId;
+
+      if (isDateChanged || isCategoryChanged) {
+        const conflictingBill = await tx
+          .select({ id: billsTable.id })
+          .from(billsTable)
+          .where(
+            and(
+              eq(billsTable.billDate, updatedBillDate),
+              eq(billsTable.categoryId, updatedCategoryId),
+              ne(billsTable.id, billId),
+            ),
+          )
+          .limit(1)
+          .then((rows) => rows[0]);
+
+        if (conflictingBill) {
+          throw new ServerError(
+            "BILL_DATE_CATEGORY_CONFLICT",
+            `A bill already exists for date ${updatedBillDate} and the selected category`,
+            409,
+          );
+        }
+      }
+
+      if (payload.totalAmount !== undefined) {
+        const totalAmountCents = this.parseAmountToCents(
+          payload.totalAmount,
+          "BILL_TOTAL_INVALID",
+          "Bill total amount must be a non-negative monetary value",
+        );
+        updateData.totalAmount = this.formatAmount(totalAmountCents / 100);
+      }
+
+      if (payload.currencyCode !== undefined) {
+        updateData.currencyCode = payload.currencyCode;
+      }
+
+      if (payload.senderEmail !== undefined) {
+        updateData.emailId = await this.resolveOptionalEmailId(
+          tx,
+          payload.senderEmail,
+        );
+      }
+
+      if (Object.keys(updateData).length > 1) {
+        await tx
+          .update(billsTable)
+          .set(updateData)
+          .where(eq(billsTable.id, billId));
+      }
+
+      return await this.loadBillResponse(tx, billId);
+    });
+  }
+
   public async deleteBill(billId: number): Promise<void> {
     const db = this.databaseService.get();
 
@@ -466,6 +569,7 @@ export class BillsService {
       .select({
         id: billsTable.id,
         billDate: billsTable.billDate,
+        categoryId: billsTable.categoryId,
         categoryName: billCategoriesTable.name,
         totalAmount: billsTable.totalAmount,
         currencyCode: billsTable.currencyCode,
@@ -495,6 +599,7 @@ export class BillsService {
       id: billRow.id,
       senderEmail: billRow.senderEmail ?? null,
       date: toISOStringSafe(billRow.billDate),
+      categoryId: billRow.categoryId,
       category: billRow.categoryName,
       totalAmount: this.formatStoredAmount(
         billRow.totalAmount,
@@ -566,6 +671,28 @@ export class BillsService {
       name: compacted,
       normalized: compacted.toLowerCase(),
     } satisfies NormalizedCategoryInput;
+  }
+
+  private async ensureCategoryExists(
+    tx: NodePgDatabase,
+    categoryId: number,
+  ): Promise<number> {
+    const existingCategory = await tx
+      .select({ id: billCategoriesTable.id })
+      .from(billCategoriesTable)
+      .where(eq(billCategoriesTable.id, categoryId))
+      .limit(1)
+      .then((rows) => rows[0]?.id);
+
+    if (!existingCategory) {
+      throw new ServerError(
+        "BILL_CATEGORY_NOT_FOUND",
+        `Bill category ${categoryId} was not found`,
+        404,
+      );
+    }
+
+    return existingCategory;
   }
 
   private async resolveCategoryId(

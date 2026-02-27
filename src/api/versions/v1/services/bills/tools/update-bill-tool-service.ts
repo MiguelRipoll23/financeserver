@@ -25,9 +25,9 @@ export class UpdateBillToolService {
       run: async (input: unknown) => {
         const parsed = UpdateBillToolSchema.parse(input);
 
-        const result = await this.billsService.updateBill(parsed.id, {
+        const result = await this.billsService.updateBillByCategoryId(parsed.id, {
           date: parsed.date,
-          category: parsed.category,
+          categoryId: parsed.categoryId,
           totalAmount: parsed.totalAmount,
           currencyCode: parsed.currencyCode,
           senderEmail: parsed.senderEmail,

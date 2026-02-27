@@ -41,6 +41,11 @@ export const UpsertBillResponseSchema = z.object({
     .string()
     .openapi({ example: "2025-03-14T00:00:00.000Z" })
     .describe("Bill date in ISO format"),
+  categoryId: z
+    .number()
+    .int()
+    .openapi({ example: 7 })
+    .describe("Bill category identifier"),
   category: z
     .string()
     .openapi({ example: "gas" })
