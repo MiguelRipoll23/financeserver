@@ -16,7 +16,7 @@ export class SaveBillCategoryToolService {
         inputSchema: SaveBillCategoryToolSchema,
         annotations: {
           readOnlyHint: false,
-          idempotentHint: true,
+          idempotentHint: false,
           destructiveHint: false,
           openWorldHint: false,
         },
