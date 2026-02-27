@@ -2,11 +2,40 @@ import { inject, injectable } from "@needle-di/core";
 import { McpToolDefinition } from "../../../interfaces/mcp/mcp-tool-interface.ts";
 import { BillsService } from "../bills-service.ts";
 import { getCurrencySymbolForCode } from "../../../utils/currency-utils.ts";
-import { FilterBillsToolSchema } from "../../../schemas/mcp-bills-schemas.ts";
+import {
+  FilterBillsToolSchema,
+  GetBillsResponse,
+} from "../../../schemas/mcp-bills-schemas.ts";
+
+type FilteredBill = GetBillsResponse["results"][number];
+
+type StructuredBill = {
+  id: number;
+  senderEmail: string | null;
+  date: string;
+  category: string;
+  totalAmount: string;
+  currencyCode: string;
+  updatedAt: string;
+  favoritedAt: string | null;
+};
 
 @injectable()
 export class FilterBillsToolService {
   constructor(private billsService = inject(BillsService)) {}
+
+  private mapBillToStructured(bill: FilteredBill): StructuredBill {
+    return {
+      id: bill.id,
+      senderEmail: bill.senderEmail,
+      date: bill.date,
+      category: bill.category,
+      totalAmount: bill.totalAmount,
+      currencyCode: bill.currencyCode,
+      updatedAt: bill.updatedAt,
+      favoritedAt: bill.favoritedAt,
+    };
+  }
 
   public getDefinition(): McpToolDefinition {
     return {
@@ -63,16 +92,7 @@ export class FilterBillsToolService {
 
           const structured = {
             ...result,
-            results: result.results.map((bill) => ({
-              id: bill.id,
-              senderEmail: bill.senderEmail,
-              date: bill.date,
-              category: bill.category,
-              totalAmount: bill.totalAmount,
-              currencyCode: bill.currencyCode,
-              updatedAt: bill.updatedAt,
-              favoritedAt: bill.favoritedAt,
-            })),
+            results: result.results.map((bill) => this.mapBillToStructured(bill)),
           };
 
           return {
@@ -83,16 +103,7 @@ export class FilterBillsToolService {
 
         const structured = {
           ...result,
-          results: result.results.map((bill) => ({
-            id: bill.id,
-            senderEmail: bill.senderEmail,
-            date: bill.date,
-            category: bill.category,
-            totalAmount: bill.totalAmount,
-            currencyCode: bill.currencyCode,
-            updatedAt: bill.updatedAt,
-            favoritedAt: bill.favoritedAt,
-          })),
+          results: result.results.map((bill) => this.mapBillToStructured(bill)),
         };
 
         return {
