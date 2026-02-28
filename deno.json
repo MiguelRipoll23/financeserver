@@ -1,12 +1,12 @@
 {
   "imports": {
     "@ai-sdk/openai": "npm:@ai-sdk/openai@^3.0.36",
-    "ai": "npm:ai@^6.0.103",
+    "ai": "npm:ai@^6.0.104",
     "@hono/zod-openapi": "npm:@hono/zod-openapi@^1.2.2",
     "@simplewebauthn/server": "jsr:@simplewebauthn/server@^13.2.3",
     "@needle-di/core": "jsr:@needle-di/core@^1.1.1",
     "@scalar/hono-api-reference": "npm:@scalar/hono-api-reference@^0.9.46",
-    "@hono/mcp": "npm:@hono/mcp@0.2.3",
+    "@hono/mcp": "npm:@hono/mcp@0.2.4",
     "@modelcontextprotocol/sdk/server/mcp.js": "npm:@modelcontextprotocol/sdk@^1.27.1/server/mcp.js",
     "drizzle-kit": "npm:drizzle-kit@^0.31.9",
     "drizzle-orm": "npm:drizzle-orm@^0.45.1",
