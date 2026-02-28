@@ -9,8 +9,8 @@ OpenAPI-documented API and MCP tools.
 
 Follow the steps below after using the Deploy button above this section:
 
-- On the Deno Deploy project page, go to Settings → Environment Variables.
-- Drag and drop the `.env.example` file from this repository onto the
+1. On the Deno Deploy project page, go to Settings → Environment Variables.
+2. Drag and drop the `.env.example` file from this repository onto the
   Environment Variables panel, or click Import and select the file.
 
 ### Database configuration
@@ -18,11 +18,10 @@ Follow the steps below after using the Deploy button above this section:
 Below is a short example showing how to create and connect a Neon database and
 point the app:
 
-- Sign up at [Neon](https://neon.tech) and create a new project.
-- Create a database branch (Neon uses branches for isolated environments).
-- From the Neon dashboard, open "Connection strings" and copy the PostgreSQL
+1. Sign up at [Neon](https://neon.tech) and create a new project.
+2. Click the `Connect` button and copy the PostgreSQL
   connection URL for the branch you created.
-- Paste that URL into your deployment or local `.env` file as `DATABASE_URL`.
+3. Paste that URL into your deployment or local `.env` file as `DATABASE_URL`.
 
 ### OpenAI configuration
 
