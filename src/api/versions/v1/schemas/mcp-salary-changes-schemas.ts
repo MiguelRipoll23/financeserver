@@ -24,6 +24,10 @@ export const CreateSalaryChangeToolSchema = z.object({
     .string()
     .length(3, "Currency code must be exactly 3 characters (ISO 4217 format)")
     .describe("ISO 4217 currency code (e.g., EUR, USD, GBP)"),
+  date: z
+    .string()
+    .date("Date must be in ISO 8601 format (YYYY-MM-DD)")
+    .describe("Date of the salary change (ISO 8601 format: YYYY-MM-DD)"),
 });
 
 export const UpdateSalaryChangeToolSchema = z

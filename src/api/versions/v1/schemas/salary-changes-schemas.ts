@@ -23,6 +23,11 @@ export const SalaryChangeSchema = z.object({
     .length(3)
     .openapi({ example: "USD" })
     .describe("ISO 4217 currency code"),
+  date: z
+    .string()
+    .date()
+    .openapi({ example: "2025-03-14" })
+    .describe("Date of the salary change (ISO 8601 format: YYYY-MM-DD)"),
   createdAt: z
     .string()
     .datetime()
@@ -50,6 +55,11 @@ export const CreateSalaryChangeRequestSchema = z.object({
     .length(3)
     .openapi({ example: "USD" })
     .describe("ISO 4217 currency code"),
+  date: z
+    .string()
+    .date()
+    .openapi({ example: "2025-03-14" })
+    .describe("Date of the salary change (ISO 8601 format: YYYY-MM-DD)"),
 });
 
 export type CreateSalaryChangeRequest = z.infer<
@@ -76,6 +86,12 @@ export const UpdateSalaryChangeRequestSchema = z.object({
     .length(3)
     .openapi({ example: "USD" })
     .describe("ISO 4217 currency code")
+    .optional(),
+  date: z
+    .string()
+    .date()
+    .openapi({ example: "2025-03-14" })
+    .describe("Date of the salary change (ISO 8601 format: YYYY-MM-DD)")
     .optional(),
 });
 

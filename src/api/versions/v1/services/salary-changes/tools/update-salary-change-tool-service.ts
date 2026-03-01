@@ -32,6 +32,7 @@ export class UpdateSalaryChangeToolService {
             recurrence: parsed.recurrence,
             netAmount: parsed.netAmount,
             currencyCode: parsed.currencyCode,
+            date: parsed.date,
           },
         );
 

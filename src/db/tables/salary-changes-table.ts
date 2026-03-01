@@ -1,5 +1,6 @@
 import {
   bigserial,
+  date,
   numeric,
   pgTable,
   text,
@@ -15,6 +16,7 @@ export const salaryChangesTable = pgTable(
     recurrence: text("recurrence").notNull(),
     netAmount: numeric("net_amount", { precision: 12, scale: 2 }).notNull(),
     currencyCode: text("currency_code").notNull(),
+    date: date("date", { mode: "string" }).notNull().defaultNow(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
