@@ -15,12 +15,11 @@ Follow the steps below after using the Deploy button above this section:
 
 ### Database configuration
 
-Below is a short example showing how to create and connect a Neon database and
-point the app:
+If you want to use Neon as a database service then follow the steps below:
 
 1. Sign up at [Neon](https://neon.tech) and create a new project.
 2. Click the `Connect` button and copy the PostgreSQL
-  connection URL for the branch you created.
+  connection URL.
 3. Paste that URL into your deployment or local `.env` file as `DATABASE_URL`.
 
 ### OpenAI configuration
