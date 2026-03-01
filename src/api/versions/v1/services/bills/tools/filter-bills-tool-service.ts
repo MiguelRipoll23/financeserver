@@ -4,8 +4,8 @@ import { BillsService } from "../bills-service.ts";
 import { getCurrencySymbolForCode } from "../../../utils/currency-utils.ts";
 import {
   FilterBillsToolSchema,
-  GetBillsResponse,
 } from "../../../schemas/mcp-bills-schemas.ts";
+import { GetBillsResponse } from "../../../schemas/bills-schemas.ts";
 
 type FilteredBill = GetBillsResponse["results"][number];
 

@@ -43,6 +43,7 @@ export class SalaryChangesService {
         recurrence: payload.recurrence,
         netAmount: netAmountString,
         currencyCode: payload.currencyCode,
+        date: payload.date,
       })
       .returning();
 
@@ -187,6 +188,10 @@ export class SalaryChangesService {
       updateData.currencyCode = payload.currencyCode;
     }
 
+    if (payload.date !== undefined) {
+      updateData.date = payload.date;
+    }
+
     const [updatedSalaryChange] = await db
       .update(salaryChangesTable)
       .set(updateData)
@@ -287,6 +292,7 @@ export class SalaryChangesService {
       recurrence: entity.recurrence as Recurrence,
       netAmount: entity.netAmount,
       currencyCode: entity.currencyCode,
+      date: entity.date,
       createdAt: toISOStringSafe(entity.createdAt),
       updatedAt: toISOStringSafe(entity.updatedAt),
     };

@@ -30,6 +30,7 @@ export class CreateSalaryChangeToolService {
           recurrence: parsed.recurrence,
           netAmount: parsed.netAmount,
           currencyCode: parsed.currencyCode,
+          date: parsed.date,
         });
 
         const currencySymbol = getCurrencySymbolForCode(result.currencyCode);
