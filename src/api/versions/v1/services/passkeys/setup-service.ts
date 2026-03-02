@@ -38,7 +38,7 @@ export class PasskeySetupService {
 
     return await this.jwtService.sign(
       {
-        id: "setup",
+        sub: "00000000-0000-0000-0000-000000000000",
         name: "Setup",
         // Restrict to registration endpoints only for first passkey setup
         aud: `${applicationBaseURL}/api/v1/registration/*`,
