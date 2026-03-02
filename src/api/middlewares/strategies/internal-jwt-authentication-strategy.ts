@@ -25,9 +25,9 @@ export class InternalJwtAuthenticationStrategy implements AuthenticationStrategy
       return null;
     }
 
-    const idValue = payload["id"] ?? payload["sub"] ?? null;
+    const subject = payload["sub"] ?? null;
 
-    if (idValue === null) {
+    if (subject === null) {
       throw new ServerError("INVALID_TOKEN", "Invalid token", 401);
     }
 
@@ -36,7 +36,7 @@ export class InternalJwtAuthenticationStrategy implements AuthenticationStrategy
     const rolesValue = Array.isArray(payload["roles"]) ? payload["roles"] : [];
 
     const principal: AuthenticationPrincipalType = {
-      id: typeof idValue === "string" ? idValue : String(idValue),
+      id: typeof subject === "string" ? subject : String(subject),
       name:
         typeof nameValue === "string" && nameValue.length > 0
           ? nameValue

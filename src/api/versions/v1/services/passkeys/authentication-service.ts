@@ -55,9 +55,8 @@ export class PasskeyAuthenticationService {
     authenticationResponse: AuthenticationResponseJSON,
   ) {
     // Retrieve and consume authentication options from KV
-    const authenticationOptions = await this.getAuthenticationOptionsOrThrow(
-      transactionId,
-    );
+    const authenticationOptions =
+      await this.getAuthenticationOptionsOrThrow(transactionId);
 
     // Validate origin is allowed
     if (!WebAuthnUtils.isOriginAllowed(origin)) {
@@ -132,7 +131,7 @@ export class PasskeyAuthenticationService {
     const threeMonthsInSeconds = 90 * 24 * 60 * 60; // 90 days
 
     return await this.jwtService.sign({
-      id: "00000000-0000-0000-0000-000000000000",
+      sub: "00000000-0000-0000-0000-000000000000",
       name: "Management",
       // Wildcard audience claim to grant access to all resources
       aud: `${applicationBaseURL}/*`,
@@ -143,8 +142,8 @@ export class PasskeyAuthenticationService {
   private async getAuthenticationOptionsOrThrow(
     transactionId: string,
   ): Promise<PublicKeyCredentialRequestOptionsJSON> {
-    const authenticationOptions = await this.kvService
-      .consumeAuthenticationOptionsByTransactionId(
+    const authenticationOptions =
+      await this.kvService.consumeAuthenticationOptionsByTransactionId(
         transactionId,
       );
 
@@ -158,7 +157,7 @@ export class PasskeyAuthenticationService {
 
     if (
       authenticationOptions.createdAt + KV_OPTIONS_EXPIRATION_TIME <
-        Date.now()
+      Date.now()
     ) {
       throw new ServerError(
         "AUTHENTICATION_OPTIONS_EXPIRED",
