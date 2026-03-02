@@ -17,36 +17,23 @@ export class NetWorthCalculationService {
    * and performs after-tax calculations for each
    */
   public async calculateAll(): Promise<void> {
-    const calculationPromises = [
+    const results = await Promise.allSettled([
       this.interestRatesService.calculateAllBankAccountInterestRates(),
       this.roboadvisorsService.calculateAllRoboadvisors(),
       this.cryptoBalancesService.calculateAllCryptoBalances(),
-    ];
+    ]);
 
-    const calculationNames = [
-      "bank account interest rates",
-      "roboadvisors",
-      "crypto balances",
-    ];
+    const failures = results.filter(
+      (result): result is PromiseRejectedResult => result.status === "rejected",
+    );
 
-    const calculationResults = await Promise.allSettled(calculationPromises);
-
-    const failedCalculations: string[] = [];
-
-    for (const [index, calculationResult] of calculationResults.entries()) {
-      if (calculationResult.status === "rejected") {
-        const calculationName = calculationNames[index];
-        console.error(
-          `Net worth calculation failed for ${calculationName}:`,
-          calculationResult.reason,
-        );
-        failedCalculations.push(calculationName);
+    if (failures.length > 0) {
+      for (const failure of failures) {
+        console.error("A net worth calculation task failed:", failure.reason);
       }
-    }
 
-    if (failedCalculations.length > 0) {
       throw new Error(
-        `Net worth calculation completed with failures in: ${failedCalculations.join(", ")}`,
+        `Net worth calculation partially failed. ${failures.length} of ${results.length} tasks failed.`,
       );
     }
 
