@@ -18,14 +18,11 @@ export class NetWorthCalculationService {
    */
   public async calculateAll(): Promise<void> {
     try {
-      // 1. Calculate for all bank accounts with active interest rates
-      await this.interestRatesService.calculateAllBankAccountInterestRates();
-
-      // 2. Calculate for all roboadvisors
-      await this.roboadvisorsService.calculateAllRoboadvisors();
-
-      // 3. Calculate for all crypto exchange balances
-      await this.cryptoBalancesService.calculateAllCryptoBalances();
+      await Promise.all([
+        this.interestRatesService.calculateAllBankAccountInterestRates(),
+        this.roboadvisorsService.calculateAllRoboadvisors(),
+        this.cryptoBalancesService.calculateAllCryptoBalances(),
+      ]);
 
       console.log("Net worth calculation completed successfully");
     } catch (error) {
