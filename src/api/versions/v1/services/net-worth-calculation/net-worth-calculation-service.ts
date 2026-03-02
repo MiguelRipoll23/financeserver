@@ -17,17 +17,39 @@ export class NetWorthCalculationService {
    * and performs after-tax calculations for each
    */
   public async calculateAll(): Promise<void> {
-    try {
-      await Promise.all([
-        this.interestRatesService.calculateAllBankAccountInterestRates(),
-        this.roboadvisorsService.calculateAllRoboadvisors(),
-        this.cryptoBalancesService.calculateAllCryptoBalances(),
-      ]);
+    const calculationPromises = [
+      this.interestRatesService.calculateAllBankAccountInterestRates(),
+      this.roboadvisorsService.calculateAllRoboadvisors(),
+      this.cryptoBalancesService.calculateAllCryptoBalances(),
+    ];
 
-      console.log("Net worth calculation completed successfully");
-    } catch (error) {
-      console.error("Error in calculateAll:", error);
-      throw error;
+    const calculationNames = [
+      "bank account interest rates",
+      "roboadvisors",
+      "crypto balances",
+    ];
+
+    const calculationResults = await Promise.allSettled(calculationPromises);
+
+    const failedCalculations: string[] = [];
+
+    for (const [index, calculationResult] of calculationResults.entries()) {
+      if (calculationResult.status === "rejected") {
+        const calculationName = calculationNames[index];
+        console.error(
+          `Net worth calculation failed for ${calculationName}:`,
+          calculationResult.reason,
+        );
+        failedCalculations.push(calculationName);
+      }
     }
+
+    if (failedCalculations.length > 0) {
+      throw new Error(
+        `Net worth calculation completed with failures in: ${failedCalculations.join(", ")}`,
+      );
+    }
+
+    console.log("Net worth calculation completed successfully");
   }
 }
