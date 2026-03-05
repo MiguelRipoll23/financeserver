@@ -38,8 +38,8 @@ export class AuthenticatedSalaryChangesRouter {
     this.app.openapi(
       createRoute({
         method: "post",
-        path: "/list",
-        summary: "List salary changes",
+        path: "/find",
+        summary: "Find salary changes",
         description: "Returns paginated salary changes with optional filters.",
         tags: ["Salary changes"],
         request: {
