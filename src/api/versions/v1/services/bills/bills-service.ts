@@ -4,7 +4,6 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { DatabaseService } from "../../../../../core/services/database-service.ts";
 import {
   billCategoriesTable,
-  billEmailsTable,
   billsTable,
 } from "../../../../../db/schema.ts";
 import type { BillRecurrence } from "../../../../../db/tables/bills-table.ts";
@@ -36,9 +35,8 @@ type NormalizedCategoryInput = {
   normalized: string;
 };
 
-type CreateBillWithCategoryIdInput = Omit<UpsertBillRequest, "senderEmail" | "category"> & {
+type CreateBillWithCategoryIdInput = Omit<UpsertBillRequest, "category"> & {
   categoryId: number;
-  senderEmail?: string;
   recurrence?: BillRecurrence | null;
 };
 
@@ -77,17 +75,12 @@ export class BillsService {
         );
       }
 
-      const emailId = await this.resolveOptionalEmailId(
-        tx,
-        payload.senderEmail,
-      );
       // categoryId already declared above
       const values = {
         billDate,
         categoryId,
         totalAmount: totalAmountString,
         currencyCode: payload.currencyCode,
-        emailId,
         recurrence: payload.recurrence ?? null,
       };
 
@@ -103,7 +96,7 @@ export class BillsService {
   }
 
   public async upsertBill(
-    payload: Omit<UpsertBillRequest, "senderEmail"> & { senderEmail?: string },
+    payload: UpsertBillRequest,
   ): Promise<UpsertBillResponse> {
     const categoryInput = this.normalizeCategoryInput(payload.category);
 
@@ -127,10 +120,6 @@ export class BillsService {
     const db = this.databaseService.get();
 
     const billResponse = await db.transaction(async (tx) => {
-      const emailId = await this.resolveOptionalEmailId(
-        tx,
-        payload.senderEmail,
-      );
       const categoryId = await this.resolveCategoryId(tx, categoryInput);
 
       const existingBill = await tx
@@ -156,7 +145,6 @@ export class BillsService {
             categoryId,
             totalAmount: totalAmountString,
             currencyCode: payload.currencyCode,
-            emailId,
             recurrence: payload.recurrence ?? null,
             bankAccountId: payload.bankAccountId ?? null,
             updatedAt: new Date(),
@@ -168,7 +156,6 @@ export class BillsService {
           categoryId,
           totalAmount: totalAmountString,
           currencyCode: payload.currencyCode,
-          emailId,
           recurrence: payload.recurrence ?? null,
           bankAccountId: payload.bankAccountId ?? null,
         };
@@ -271,7 +258,6 @@ export class BillsService {
         totalAmount: billsTable.totalAmount,
         currencyCode: billsTable.currencyCode,
         updatedAt: billsTable.updatedAt,
-        senderEmail: billEmailsTable.email,
         favoritedAt: billCategoriesTable.favoritedAt,
         recurrence: billsTable.recurrence,
       })
@@ -280,7 +266,6 @@ export class BillsService {
         billCategoriesTable,
         eq(billCategoriesTable.id, billsTable.categoryId),
       )
-      .leftJoin(billEmailsTable, eq(billEmailsTable.id, billsTable.emailId))
       .where(predicate)
       .orderBy(order)
       .limit(limit)
@@ -288,7 +273,6 @@ export class BillsService {
 
     const summaries: BillSummary[] = rows.map((row) => ({
       id: row.id,
-      senderEmail: row.senderEmail ?? null,
       date: toISOStringSafe(row.billDate),
       categoryId: row.categoryId,
       category: row.categoryName,
@@ -313,9 +297,7 @@ export class BillsService {
 
   public async updateBill(
     billId: number,
-    payload: Partial<
-      Omit<UpsertBillRequest, "senderEmail"> & { senderEmail?: string }
-    >,
+    payload: Partial<UpsertBillRequest>,
   ): Promise<UpsertBillResponse> {
     const db = this.databaseService.get();
 
@@ -327,7 +309,6 @@ export class BillsService {
           categoryId: billsTable.categoryId,
           totalAmount: billsTable.totalAmount,
           currencyCode: billsTable.currencyCode,
-          emailId: billsTable.emailId,
         })
         .from(billsTable)
         .where(eq(billsTable.id, billId))
@@ -348,7 +329,6 @@ export class BillsService {
         categoryId?: number;
         totalAmount?: string;
         currencyCode?: string;
-        emailId?: number | null;
         recurrence?: string | null;
         bankAccountId?: number | null;
         updatedAt: Date;
@@ -420,14 +400,6 @@ export class BillsService {
         updateData.currencyCode = payload.currencyCode;
       }
 
-      // Handle sender email update
-      if (payload.senderEmail !== undefined) {
-        updateData.emailId = await this.resolveOptionalEmailId(
-          tx,
-          payload.senderEmail,
-        );
-      }
-
       // Handle recurrence update
       if ("recurrence" in payload) {
         updateData.recurrence = payload.recurrence ?? null;
@@ -464,7 +436,6 @@ export class BillsService {
           categoryId: billsTable.categoryId,
           totalAmount: billsTable.totalAmount,
           currencyCode: billsTable.currencyCode,
-          emailId: billsTable.emailId,
         })
         .from(billsTable)
         .where(eq(billsTable.id, billId))
@@ -484,7 +455,6 @@ export class BillsService {
         categoryId?: number;
         totalAmount?: string;
         currencyCode?: string;
-        emailId?: number | null;
         recurrence?: string | null;
         bankAccountId?: number | null;
         updatedAt: Date;
@@ -539,13 +509,6 @@ export class BillsService {
 
       if (payload.currencyCode !== undefined) {
         updateData.currencyCode = payload.currencyCode;
-      }
-
-      if (payload.senderEmail !== undefined) {
-        updateData.emailId = await this.resolveOptionalEmailId(
-          tx,
-          payload.senderEmail,
-        );
       }
 
       if (payload.recurrence !== undefined) {
@@ -603,7 +566,6 @@ export class BillsService {
         totalAmount: billsTable.totalAmount,
         currencyCode: billsTable.currencyCode,
         updatedAt: billsTable.updatedAt,
-        senderEmail: billEmailsTable.email,
         favoritedAt: billCategoriesTable.favoritedAt,
         recurrence: billsTable.recurrence,
       })
@@ -612,7 +574,6 @@ export class BillsService {
         billCategoriesTable,
         eq(billCategoriesTable.id, billsTable.categoryId),
       )
-      .leftJoin(billEmailsTable, eq(billEmailsTable.id, billsTable.emailId))
       .where(eq(billsTable.id, billId))
       .limit(1)
       .then((rows) => rows[0]);
@@ -627,7 +588,6 @@ export class BillsService {
 
     return {
       id: billRow.id,
-      senderEmail: billRow.senderEmail ?? null,
       date: toISOStringSafe(billRow.billDate),
       categoryId: billRow.categoryId,
       category: billRow.categoryName,
@@ -769,71 +729,6 @@ export class BillsService {
     throw new ServerError(
       "BILL_CATEGORY_RESOLUTION_FAILED",
       `Failed to persist bill category "${category.name}"`,
-      500,
-    );
-  }
-
-  private async resolveOptionalEmailId(
-    tx: NodePgDatabase,
-    senderEmail?: string,
-  ): Promise<number | null> {
-    if (!senderEmail || senderEmail.trim().length === 0) {
-      return null;
-    }
-
-    return await this.resolveEmailId(tx, senderEmail);
-  }
-
-  private async resolveEmailId(
-    tx: NodePgDatabase,
-    senderEmail: string,
-  ): Promise<number> {
-    const normalizedEmail = senderEmail.trim().toLowerCase();
-
-    if (normalizedEmail.length === 0) {
-      throw new ServerError(
-        "BILL_SENDER_EMAIL_REQUIRED",
-        "Sender email is required",
-        400,
-      );
-    }
-
-    const existing = await tx
-      .select({ id: billEmailsTable.id })
-      .from(billEmailsTable)
-      .where(eq(billEmailsTable.email, normalizedEmail))
-      .limit(1)
-      .then((rows) => rows[0]?.id);
-
-    if (existing) {
-      return existing;
-    }
-
-    const inserted = await tx
-      .insert(billEmailsTable)
-      .values({ email: normalizedEmail })
-      .onConflictDoNothing()
-      .returning({ id: billEmailsTable.id })
-      .then((rows) => rows[0]?.id);
-
-    if (inserted) {
-      return inserted;
-    }
-
-    const fallback = await tx
-      .select({ id: billEmailsTable.id })
-      .from(billEmailsTable)
-      .where(eq(billEmailsTable.email, normalizedEmail))
-      .limit(1)
-      .then((rows) => rows[0]?.id ?? null);
-
-    if (fallback) {
-      return fallback;
-    }
-
-    throw new ServerError(
-      "BILL_EMAIL_RESOLUTION_FAILED",
-      `Failed to persist sender email "${normalizedEmail}"`,
       500,
     );
   }

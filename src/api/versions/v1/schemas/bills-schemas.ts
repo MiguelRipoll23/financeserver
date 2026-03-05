@@ -26,12 +26,6 @@ export const UpsertBillRequestSchema = z.object({
     .length(3)
     .openapi({ example: "USD" })
     .describe("ISO 4217 currency code"),
-  senderEmail: z
-    .string()
-    .email()
-    .openapi({ example: "example@example.com" })
-    .describe("Sender's email address")
-    .optional(),
   recurrence: BillRecurrenceSchema.optional(),
   bankAccountId: z
     .number()
@@ -71,12 +65,6 @@ export const UpsertBillResponseSchema = z.object({
     .string()
     .openapi({ example: "USD" })
     .describe("ISO 4217 currency code"),
-  senderEmail: z
-    .string()
-    .email()
-    .nullable()
-    .openapi({ example: "example@example.com" })
-    .describe("Sender's email address or null"),
   favoritedAt: z
     .string()
     .datetime()

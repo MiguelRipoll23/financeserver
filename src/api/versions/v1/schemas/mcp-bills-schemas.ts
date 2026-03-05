@@ -28,13 +28,6 @@ export const SaveBillToolSchema = z.object({
     .string()
     .length(3, "Currency code must be exactly 3 characters (ISO 4217 format)")
     .describe("ISO 4217 currency code (e.g., EUR, USD, GBP)"),
-  senderEmail: z
-    .string()
-    .email("Sender email must be a valid email address")
-    .optional()
-    .describe(
-      "Email address of the bill sender or service provider (optional)",
-    ),
 });
 
 export const UpdateBillToolSchema = z

@@ -7,7 +7,6 @@ export interface BillSummary {
   category: string;
   totalAmount: string;
   currencyCode: string;
-  senderEmail: string | null;
   favoritedAt: string | null;
   recurrence: BillRecurrence | null;
   updatedAt: string;
