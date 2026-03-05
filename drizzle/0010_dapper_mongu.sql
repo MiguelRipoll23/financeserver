@@ -1,0 +1,1 @@
+ALTER TABLE "bills" ALTER COLUMN "name" SET DEFAULT 'Unnamed';

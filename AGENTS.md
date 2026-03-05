@@ -7,6 +7,8 @@
 - Use the subdirectories constants, enums, interfaces, schemas, types, utils of
   this project structure unless other rule says otherwise
 - Use strings for fields that contain prices (no currency symbol)
+- This is a single-user application; do not attempt to associate data with individual users.
+- Never edit SQL migration files or Drizzle JSON files directly. To generate migrations, run: `deno task generate`.
 
 ### API rules
 
