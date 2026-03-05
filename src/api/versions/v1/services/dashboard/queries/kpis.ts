@@ -1,0 +1,171 @@
+import { and, desc, eq, gte, isNull, lte, or, sql } from "drizzle-orm";
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+import {
+  bankAccountBalancesTable,
+  bankAccountCalculationsTable,
+  billsTable,
+  cashBalancesTable,
+  cryptoExchangeBalancesTable,
+  cryptoExchangeCalculationsTable,
+  receiptsTable,
+  roboadvisorBalances,
+  roboadvisorFundCalculationsTable,
+  salaryChangesTable,
+  subscriptionPricesTable,
+  subscriptionsTable,
+} from "../../../../../../db/schema.ts";
+import { currentMonthRange, toMonthlyAmount } from "../dashboard-helpers.ts";
+import type { DashboardKpisResponse } from "../dashboard-types.ts";
+
+export async function getDashboardKpisData(
+  db: NodePgDatabase,
+): Promise<DashboardKpisResponse> {
+  const { start, end } = currentMonthRange();
+
+  const [
+    latestBankRows,
+    latestCashRows,
+    bankCalcs,
+    allCryptoCalcs,
+    latestCryptoRows,
+    roboadvisorCalcs,
+    roboadvisorBals,
+    monthBills,
+    monthReceipts,
+    activeSubscriptions,
+    latestSalary,
+  ] = await Promise.all([
+    db.execute(sql`
+      SELECT DISTINCT ON (bank_account_id)
+        bank_account_id, balance, currency_code
+      FROM bank_account_balances
+      ORDER BY bank_account_id, created_at DESC
+    `),
+    db.execute(sql`
+      SELECT DISTINCT ON (cash_id)
+        cash_id, balance, currency_code
+      FROM cash_balances
+      ORDER BY cash_id, created_at DESC
+    `),
+    db.select({
+      monthlyProfit: bankAccountCalculationsTable.monthlyProfit,
+      currencyCode: bankAccountCalculationsTable.currencyCode,
+    }).from(bankAccountCalculationsTable),
+    db.select({ currentValue: cryptoExchangeCalculationsTable.currentValue })
+      .from(cryptoExchangeCalculationsTable),
+    db.execute(sql`
+      SELECT DISTINCT ON (crypto_exchange_id, symbol_code)
+        crypto_exchange_id, symbol_code, balance, invested_amount
+      FROM crypto_exchange_balances
+      ORDER BY crypto_exchange_id, symbol_code, created_at DESC
+    `),
+    db.select({ currentValue: roboadvisorFundCalculationsTable.currentValue })
+      .from(roboadvisorFundCalculationsTable),
+    db.select({ type: roboadvisorBalances.type, amount: roboadvisorBalances.amount })
+      .from(roboadvisorBalances),
+    db.select({ totalAmount: billsTable.totalAmount })
+      .from(billsTable)
+      .where(and(gte(billsTable.billDate, start), lte(billsTable.billDate, end))),
+    db.select({ totalAmount: receiptsTable.totalAmount })
+      .from(receiptsTable)
+      .where(and(gte(receiptsTable.receiptDate, start), lte(receiptsTable.receiptDate, end))),
+    db.select({
+      amount: subscriptionPricesTable.amount,
+      recurrence: subscriptionPricesTable.recurrence,
+    })
+      .from(subscriptionsTable)
+      .innerJoin(subscriptionPricesTable, eq(subscriptionsTable.id, subscriptionPricesTable.subscriptionId))
+      .where(and(
+        sql`${subscriptionPricesTable.effectiveFrom} <= CURRENT_DATE`,
+        or(isNull(subscriptionPricesTable.effectiveUntil), sql`${subscriptionPricesTable.effectiveUntil} >= CURRENT_DATE`),
+      )),
+    db.select({ netAmount: salaryChangesTable.netAmount, recurrence: salaryChangesTable.recurrence })
+      .from(salaryChangesTable)
+      .orderBy(desc(salaryChangesTable.date))
+      .limit(1),
+  ]);
+
+  let liquidMoney = 0;
+  let currencyCode = "EUR";
+  for (const row of latestBankRows.rows) {
+    const bal = parseFloat(String(row.balance));
+    if (!isNaN(bal)) liquidMoney += bal;
+    if (row.currency_code) currencyCode = row.currency_code as string;
+  }
+  for (const row of latestCashRows.rows) {
+    const bal = parseFloat(String(row.balance));
+    if (!isNaN(bal)) liquidMoney += bal;
+    if (row.currency_code) currencyCode = row.currency_code as string;
+  }
+
+  let monthlyInterestIncome = 0;
+  for (const calc of bankCalcs) {
+    const profit = parseFloat(String(calc.monthlyProfit));
+    if (!isNaN(profit)) monthlyInterestIncome += profit;
+    if (calc.currencyCode) currencyCode = calc.currencyCode;
+  }
+
+  let totalCryptoValue = 0;
+  for (const calc of allCryptoCalcs) {
+    const val = parseFloat(String(calc.currentValue));
+    if (!isNaN(val)) totalCryptoValue += val;
+  }
+
+  let totalCryptoCost = 0;
+  for (const row of latestCryptoRows.rows) {
+    const invested = row.invested_amount ? parseFloat(String(row.invested_amount)) : 0;
+    if (!isNaN(invested)) totalCryptoCost += invested;
+  }
+
+  let totalRoboadvisorValue = 0;
+  for (const calc of roboadvisorCalcs) {
+    const val = parseFloat(String(calc.currentValue));
+    if (!isNaN(val)) totalRoboadvisorValue += val;
+  }
+
+  let totalRoboadvisorCost = 0;
+  for (const bal of roboadvisorBals) {
+    const amount = parseFloat(String(bal.amount));
+    if (isNaN(amount)) continue;
+    if (bal.type === "deposit") totalRoboadvisorCost += amount;
+    else if (bal.type === "withdrawal") totalRoboadvisorCost -= amount;
+  }
+
+  let monthlyBills = 0;
+  for (const bill of monthBills) {
+    const amount = parseFloat(String(bill.totalAmount));
+    if (!isNaN(amount)) monthlyBills += amount;
+  }
+
+  let monthlyReceipts = 0;
+  for (const receipt of monthReceipts) {
+    const amount = parseFloat(String(receipt.totalAmount));
+    if (!isNaN(amount)) monthlyReceipts += amount;
+  }
+
+  let monthlySubscriptions = 0;
+  for (const sub of activeSubscriptions) {
+    const amount = parseFloat(String(sub.amount));
+    if (isNaN(amount)) continue;
+    monthlySubscriptions += toMonthlyAmount(amount, sub.recurrence);
+  }
+
+  let monthlySalary = 0;
+  if (latestSalary.length > 0) {
+    const salary = latestSalary[0];
+    const amount = parseFloat(String(salary.netAmount));
+    if (!isNaN(amount)) monthlySalary = toMonthlyAmount(amount, salary.recurrence);
+  }
+
+  return {
+    liquidMoney,
+    investedMoney: totalCryptoValue + totalRoboadvisorValue,
+    totalInvestedCost: totalCryptoCost + totalRoboadvisorCost,
+    monthlyInterestIncome,
+    totalMonthlyIncome: Math.max(monthlySalary, 0) + Math.max(monthlyInterestIncome, 0),
+    monthlyBills,
+    monthlyReceipts,
+    monthlySubscriptions,
+    currencyCode,
+  };
+}
