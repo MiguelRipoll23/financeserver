@@ -10,7 +10,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 
-export const BILL_RECURRENCES = ["weekly", "monthly", "quarterly", "yearly"] as const;
+export const BILL_RECURRENCES = ["weekly", "bi-weekly", "monthly", "quarterly", "yearly"] as const;
 export type BillRecurrence = typeof BILL_RECURRENCES[number];
 import { billEmailsTable } from "./bill-emails-table.ts";
 import { billCategoriesTable } from "./bill-categories-table.ts";

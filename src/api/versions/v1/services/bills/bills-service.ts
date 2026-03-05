@@ -477,6 +477,7 @@ export class BillsService {
         totalAmount?: string;
         currencyCode?: string;
         emailId?: number | null;
+        recurrence?: string | null;
         updatedAt: Date;
       } = { updatedAt: new Date() };
 
@@ -536,6 +537,10 @@ export class BillsService {
           tx,
           payload.senderEmail,
         );
+      }
+
+      if (payload.recurrence !== undefined) {
+        updateData.recurrence = payload.recurrence;
       }
 
       if (Object.keys(updateData).length > 1) {

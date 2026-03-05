@@ -4,6 +4,8 @@ export function toMonthlyAmount(amount: number, recurrence: string): number {
       return amount * 4.33;
     case "bi-weekly":
       return amount * 2.17;
+    case "quarterly":
+      return amount / 3;
     case "yearly":
       return amount / 12;
     default:
@@ -75,18 +77,24 @@ export function computeProjectedBillsAmount(
     if (seen.has(bill.categoryId)) continue;
     seen.add(bill.categoryId);
 
+    if (!bill.recurrence) continue;
+
     // Start from the next expected date after the last known bill date
     let next = nextExpectedDate(bill.billDate, bill.recurrence);
+    let prevStr = "";
 
     // Iterate through all occurrences while within the monthEnd
     while (next.toISOString().split("T")[0] <= monthEnd) {
       const nextStr = next.toISOString().split("T")[0];
+      if (nextStr === prevStr) break; // No progress - avoid infinite loop
+      prevStr = nextStr;
+
       if (nextStr >= monthStart && nextStr <= monthEnd) {
         const amount = parseFloat(String(bill.totalAmount));
         if (!isNaN(amount)) total += amount;
       }
       // Move to the following expected date
-      next = nextExpectedDate(next.toISOString(), bill.recurrence);
+      next = nextExpectedDate(nextStr, bill.recurrence);
       // Safety: break if recurrence is unrecognized to avoid infinite loop
       if (next.toString() === "Invalid Date") break;
     }
