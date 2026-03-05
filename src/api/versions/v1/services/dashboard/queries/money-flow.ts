@@ -54,6 +54,7 @@ export async function getDashboardMoneyFlowData(
   }
 
   let billsOut = 0;
+<<<<<<< HEAD
   const categoriesWithBillsThisMonth = new Set<number>();
   for (const b of monthBills) {
     const a = parseFloat(String(b.totalAmount));

@@ -1,10 +1,18 @@
+<<<<<<< HEAD
 import { desc, eq, isNotNull, sql } from "drizzle-orm";
+=======
+import { desc, eq } from "drizzle-orm";
+>>>>>>> origin/main
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import {
   billCategoriesTable,
   billsTable,
 } from "../../../../../../db/schema.ts";
+<<<<<<< HEAD
 import { computeProjectedBillsAmount, currentMonthRange, normalizeCategory } from "../dashboard-helpers.ts";
+=======
+import { normalizeCategory } from "../dashboard-helpers.ts";
+>>>>>>> origin/main
 import type { DashboardMonthlyExpensesResponse } from "../dashboard-types.ts";
 
 const DEFAULT_COLORS = ["#10b981", "#3b82f6", "#f87171", "#fbbf24", "#a78bfa", "#f472b6", "#2dd4bf"];
@@ -12,8 +20,13 @@ const DEFAULT_COLORS = ["#10b981", "#3b82f6", "#f87171", "#fbbf24", "#a78bfa", "
 export async function getDashboardMonthlyExpensesData(
   db: NodePgDatabase,
 ): Promise<DashboardMonthlyExpensesResponse> {
+<<<<<<< HEAD
   const { start, end } = currentMonthRange();
 
+  const [allBills, allCategories, latestRecurringBillsResult] = await Promise.all([
+    db.select({
+      billDate: billsTable.billDate,
+      totalAmount: billsTable.totalAmount,
   const [allBills, allCategories, latestRecurringBillsResult] = await Promise.all([
     db.select({
       billDate: billsTable.billDate,
@@ -90,6 +103,8 @@ export async function getDashboardMonthlyExpensesData(
     }
   }
 
+=======
+>>>>>>> origin/main
   const sortedCats = Array.from(billCategoriesSet);
 
   const billHistory = Object.keys(billsMap).sort().map((month) => {

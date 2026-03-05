@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { and, desc, eq, gte, isNotNull, isNull, lte, or, sql } from "drizzle-orm";
+=======
+import { and, desc, eq, gte, isNull, lte, or, sql } from "drizzle-orm";
+>>>>>>> origin/main
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import {
   bankAccountBalancesTable,
@@ -14,7 +18,11 @@ import {
   subscriptionPricesTable,
   subscriptionsTable,
 } from "../../../../../../db/schema.ts";
+<<<<<<< HEAD
 import { computeProjectedBillsAmount, currentMonthRange, toMonthlyAmount } from "../dashboard-helpers.ts";
+=======
+import { currentMonthRange, toMonthlyAmount } from "../dashboard-helpers.ts";
+>>>>>>> origin/main
 import type { DashboardKpisResponse } from "../dashboard-types.ts";
 
 export async function getDashboardKpisData(
@@ -34,7 +42,10 @@ export async function getDashboardKpisData(
     monthReceipts,
     activeSubscriptions,
     latestSalary,
+<<<<<<< HEAD
     latestRecurringBillsResult,
+=======
+>>>>>>> origin/main
   ] = await Promise.all([
     db.execute(sql`
       SELECT DISTINCT ON (bank_account_id)
@@ -64,7 +75,11 @@ export async function getDashboardKpisData(
       .from(roboadvisorFundCalculationsTable),
     db.select({ type: roboadvisorBalances.type, amount: roboadvisorBalances.amount })
       .from(roboadvisorBalances),
+<<<<<<< HEAD
     db.select({ totalAmount: billsTable.totalAmount, categoryId: billsTable.categoryId })
+=======
+    db.select({ totalAmount: billsTable.totalAmount })
+>>>>>>> origin/main
       .from(billsTable)
       .where(and(gte(billsTable.billDate, start), lte(billsTable.billDate, end))),
     db.select({ totalAmount: receiptsTable.totalAmount })
@@ -84,6 +99,7 @@ export async function getDashboardKpisData(
       .from(salaryChangesTable)
       .orderBy(desc(salaryChangesTable.date))
       .limit(1),
+<<<<<<< HEAD
     // Recurring bills ordered latest-first per category (for projection)
     db.execute(sql`
       SELECT DISTINCT ON (category_id)
@@ -92,6 +108,8 @@ export async function getDashboardKpisData(
       WHERE recurrence IS NOT NULL
       ORDER BY category_id, bill_date DESC
     `),
+=======
+>>>>>>> origin/main
   ]);
 
   let liquidMoney = 0;
