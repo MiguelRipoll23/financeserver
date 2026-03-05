@@ -37,6 +37,9 @@ export function nextExpectedDate(lastDate: string, recurrence: string): Date {
     case "weekly":
       date.setDate(date.getDate() + 7);
       break;
+    case "bi-weekly":
+      date.setDate(date.getDate() + 14);
+      break;
     case "monthly":
       date.setMonth(date.getMonth() + 1);
       break;
@@ -72,15 +75,20 @@ export function computeProjectedBillsAmount(
     if (seen.has(bill.categoryId)) continue;
     seen.add(bill.categoryId);
 
-    // Skip if the category already has a bill recorded this month
-    if (categoriesWithBillsThisMonth.has(bill.categoryId)) continue;
+    // Start from the next expected date after the last known bill date
+    let next = nextExpectedDate(bill.billDate, bill.recurrence);
 
-    const next = nextExpectedDate(bill.billDate, bill.recurrence);
-    const nextStr = next.toISOString().split("T")[0];
-
-    if (nextStr >= monthStart && nextStr <= monthEnd) {
-      const amount = parseFloat(String(bill.totalAmount));
-      if (!isNaN(amount)) total += amount;
+    // Iterate through all occurrences while within the monthEnd
+    while (next.toISOString().split("T")[0] <= monthEnd) {
+      const nextStr = next.toISOString().split("T")[0];
+      if (nextStr >= monthStart && nextStr <= monthEnd) {
+        const amount = parseFloat(String(bill.totalAmount));
+        if (!isNaN(amount)) total += amount;
+      }
+      // Move to the following expected date
+      next = nextExpectedDate(next.toISOString(), bill.recurrence);
+      // Safety: break if recurrence is unrecognized to avoid infinite loop
+      if (next.toString() === "Invalid Date") break;
     }
   }
 

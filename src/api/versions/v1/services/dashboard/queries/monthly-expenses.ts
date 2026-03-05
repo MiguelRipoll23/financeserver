@@ -71,7 +71,6 @@ export async function getDashboardMonthlyExpensesData(
 
   for (const row of latestRecurringBillsResult.rows) {
     const categoryId = Number(row.category_id);
-    if (categoriesWithBillsThisMonth.has(categoryId)) continue;
 
     const billDate = String(row.bill_date).split("T")[0];
     const recurrence = String(row.recurrence);

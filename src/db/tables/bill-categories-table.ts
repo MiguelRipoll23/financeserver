@@ -9,7 +9,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 export const billCategoriesTable = pgTable(
-  "bill_category",
+  "bill_categories",
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
     name: text("name").notNull(),
@@ -24,9 +24,9 @@ export const billCategoriesTable = pgTable(
       .notNull(),
   },
   (table) => [
-    uniqueIndex("bill_category_normalized_name_key").on(table.normalizedName),
+    uniqueIndex("bill_categories_normalized_name_key").on(table.normalizedName),
     // Sorting index for name ASC
-    index("bill_category_name_idx").on(table.name.asc()),
+    index("bill_categories_name_idx").on(table.name.asc()),
     // Partial/favorited index (if needed in the future)
     // index("idx_bill_categories_favorited").on(table.name.asc()),
     //   .where(sql`${table.favoritedAt} IS NOT NULL`),

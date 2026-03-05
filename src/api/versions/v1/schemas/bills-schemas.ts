@@ -4,7 +4,7 @@ import { BillSortField } from "../enums/bill-sort-field-enum.ts";
 import { SortOrder } from "../enums/sort-order-enum.ts";
 import { DateOnlyStringSchema } from "./date-only-string-schema.ts";
 import { MonetaryStringSchema } from "./monetary-string-schema.ts";
-import { BILL_RECURRENCES } from "../../../../../db/tables/bills-table.ts";
+import { BILL_RECURRENCES } from "../../../../db/tables/bills-table.ts";
 
 export const BillRecurrenceSchema = z.enum(BILL_RECURRENCES)
   .openapi({ example: "monthly" })
