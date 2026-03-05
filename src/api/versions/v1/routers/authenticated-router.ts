@@ -22,6 +22,7 @@ import { AuthenticatedBankAccountRoboadvisorFundsRouter } from "./authenticated/
 import { AuthenticatedRegistrationRouter } from "./authenticated/authenticated-registration-router.ts";
 import { AuthenticatedConversationsRouter } from "./authenticated/authenticated-conversations-router.ts";
 import { AuthenticatedOAuthRouter } from "./authenticated/authenticated-oauth-router.ts";
+import { AuthenticatedDashboardRouter } from "./authenticated/authenticated-dashboard-router.ts";
 import { HonoVariables } from "../../../../core/types/hono/hono-variables-type.ts";
 
 @injectable()
@@ -65,6 +66,7 @@ export class V1AuthenticatedRouter {
     private bankAccountRoboadvisorFundsRouter = inject(
       AuthenticatedBankAccountRoboadvisorFundsRouter,
     ),
+    private dashboardRouter = inject(AuthenticatedDashboardRouter),
   ) {
     this.app = new OpenAPIHono();
     this.setMiddlewares();
@@ -134,5 +136,7 @@ export class V1AuthenticatedRouter {
 
     this.app.route("/receipts", this.receiptsRouter.getRouter());
     this.app.route("/products", this.productsRouter.getRouter());
+
+    this.app.route("/dashboard", this.dashboardRouter.getRouter());
   }
 }
