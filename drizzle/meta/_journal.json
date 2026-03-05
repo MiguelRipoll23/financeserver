@@ -36,6 +36,13 @@
       "when": 1772368284982,
       "tag": "0004_amusing_thunderbird",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1741132800000,
+      "tag": "0005_recurring_bills",
+      "breakpoints": true
     }
   ]
 }

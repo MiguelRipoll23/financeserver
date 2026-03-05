@@ -1,10 +1,10 @@
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, isNotNull, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import {
   billCategoriesTable,
   billsTable,
 } from "../../../../../../db/schema.ts";
-import { normalizeCategory } from "../dashboard-helpers.ts";
+import { computeProjectedBillsAmount, currentMonthRange, normalizeCategory } from "../dashboard-helpers.ts";
 import type { DashboardMonthlyExpensesResponse } from "../dashboard-types.ts";
 
 const DEFAULT_COLORS = ["#10b981", "#3b82f6", "#f87171", "#fbbf24", "#a78bfa", "#f472b6", "#2dd4bf"];
@@ -12,10 +12,13 @@ const DEFAULT_COLORS = ["#10b981", "#3b82f6", "#f87171", "#fbbf24", "#a78bfa", "
 export async function getDashboardMonthlyExpensesData(
   db: NodePgDatabase,
 ): Promise<DashboardMonthlyExpensesResponse> {
-  const [allBills, allCategories] = await Promise.all([
+  const { start, end } = currentMonthRange();
+
+  const [allBills, allCategories, latestRecurringBillsResult] = await Promise.all([
     db.select({
       billDate: billsTable.billDate,
       totalAmount: billsTable.totalAmount,
+      categoryId: billsTable.categoryId,
       categoryName: billCategoriesTable.name,
     })
       .from(billsTable)
@@ -27,10 +30,20 @@ export async function getDashboardMonthlyExpensesData(
       hexColor: billCategoriesTable.hexColor,
       favoritedAt: billCategoriesTable.favoritedAt,
     }).from(billCategoriesTable),
+    db.execute(sql`
+      SELECT DISTINCT ON (category_id)
+        category_id, total_amount, recurrence, bill_date,
+        (SELECT name FROM bill_categories WHERE id = bills.category_id) AS category_name
+      FROM bills
+      WHERE recurrence IS NOT NULL
+      ORDER BY category_id, bill_date DESC
+    `),
   ]);
 
   const billsMap: Record<string, Record<string, string | number | null>> = {};
   const billCategoriesSet = new Set<string>();
+
+  const currentMonth = start.substring(0, 7);
 
   for (const bill of allBills) {
     const billDateString = typeof bill.billDate === "string"
@@ -42,6 +55,40 @@ export async function getDashboardMonthlyExpensesData(
     billCategoriesSet.add(normalizedCategory);
     const parsedAmount = parseFloat(String(bill.totalAmount || "0"));
     billsMap[month][normalizedCategory] = ((billsMap[month][normalizedCategory] as number) || 0) + (isNaN(parsedAmount) ? 0 : parsedAmount);
+  }
+
+  // Inject projected recurring bills into current month bucket
+  const categoriesWithBillsThisMonth = new Set(
+    allBills
+      .filter((bill) => {
+        const billDateString = typeof bill.billDate === "string"
+          ? bill.billDate
+          : (bill.billDate as Date).toISOString().split("T")[0];
+        return billDateString.substring(0, 7) === currentMonth;
+      })
+      .map((bill) => bill.categoryId),
+  );
+
+  for (const row of latestRecurringBillsResult.rows) {
+    const categoryId = Number(row.category_id);
+    if (categoriesWithBillsThisMonth.has(categoryId)) continue;
+
+    const billDate = String(row.bill_date).split("T")[0];
+    const recurrence = String(row.recurrence);
+    const projected = computeProjectedBillsAmount(
+      [{ categoryId, totalAmount: String(row.total_amount), recurrence, billDate }],
+      categoriesWithBillsThisMonth,
+      start,
+      end,
+    );
+
+    if (projected > 0) {
+      const normalizedCategory = normalizeCategory(String(row.category_name));
+      billCategoriesSet.add(normalizedCategory);
+      if (!billsMap[currentMonth]) billsMap[currentMonth] = { date: currentMonth };
+      billsMap[currentMonth][normalizedCategory] =
+        ((billsMap[currentMonth][normalizedCategory] as number) || 0) + projected;
+    }
   }
 
   const sortedCats = Array.from(billCategoriesSet);

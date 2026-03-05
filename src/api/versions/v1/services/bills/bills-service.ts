@@ -7,6 +7,7 @@ import {
   billEmailsTable,
   billsTable,
 } from "../../../../../db/schema.ts";
+import type { BillRecurrence } from "../../../../../db/tables/bills-table.ts";
 import { ServerError } from "../../models/server-error.ts";
 import { decodeCursor } from "../../utils/cursor-utils.ts";
 import { createOffsetPagination } from "../../utils/pagination-utils.ts";
@@ -38,6 +39,7 @@ type NormalizedCategoryInput = {
 type CreateBillWithCategoryIdInput = Omit<UpsertBillRequest, "senderEmail" | "category"> & {
   categoryId: number;
   senderEmail?: string;
+  recurrence?: BillRecurrence | null;
 };
 
 @injectable()
@@ -86,6 +88,7 @@ export class BillsService {
         totalAmount: totalAmountString,
         currencyCode: payload.currencyCode,
         emailId,
+        recurrence: payload.recurrence ?? null,
       };
 
       const [{ id: billId }] = await tx
@@ -154,6 +157,7 @@ export class BillsService {
             totalAmount: totalAmountString,
             currencyCode: payload.currencyCode,
             emailId,
+            recurrence: payload.recurrence ?? null,
             updatedAt: new Date(),
           })
           .where(eq(billsTable.id, billId));
@@ -164,6 +168,7 @@ export class BillsService {
           totalAmount: totalAmountString,
           currencyCode: payload.currencyCode,
           emailId,
+          recurrence: payload.recurrence ?? null,
         };
 
         const [{ id }] = await tx
@@ -266,6 +271,7 @@ export class BillsService {
         updatedAt: billsTable.updatedAt,
         senderEmail: billEmailsTable.email,
         favoritedAt: billCategoriesTable.favoritedAt,
+        recurrence: billsTable.recurrence,
       })
       .from(billsTable)
       .innerJoin(
@@ -292,6 +298,7 @@ export class BillsService {
       currencyCode: row.currencyCode,
       updatedAt: toISOStringSafe(row.updatedAt),
       favoritedAt: toISOStringNullable(row.favoritedAt),
+      recurrence: (row.recurrence as BillRecurrence | null) ?? null,
     }));
 
     return createOffsetPagination<BillSummary>(
@@ -340,6 +347,7 @@ export class BillsService {
         totalAmount?: string;
         currencyCode?: string;
         emailId?: number | null;
+        recurrence?: string | null;
         updatedAt: Date;
       } = { updatedAt: new Date() };
 
@@ -415,6 +423,11 @@ export class BillsService {
           tx,
           payload.senderEmail,
         );
+      }
+
+      // Handle recurrence update
+      if ("recurrence" in payload) {
+        updateData.recurrence = payload.recurrence ?? null;
       }
 
       // Only update if there are changes
@@ -576,6 +589,7 @@ export class BillsService {
         updatedAt: billsTable.updatedAt,
         senderEmail: billEmailsTable.email,
         favoritedAt: billCategoriesTable.favoritedAt,
+        recurrence: billsTable.recurrence,
       })
       .from(billsTable)
       .innerJoin(
@@ -609,6 +623,7 @@ export class BillsService {
       currencyCode: billRow.currencyCode,
       updatedAt: toISOStringSafe(billRow.updatedAt),
       favoritedAt: toISOStringNullable(billRow.favoritedAt),
+      recurrence: (billRow.recurrence as BillRecurrence | null) ?? null,
     } satisfies UpsertBillResponse;
   }
 
