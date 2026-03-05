@@ -6,6 +6,11 @@ const DateOnlyRegex = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
 const MonetaryRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
 
 export const SaveBillToolSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Bill name is required")
+    .max(255, "Bill name must be at most 255 characters")
+    .describe("The name or description of the bill (e.g., Electricity bill)"),
   date: z
     .string()
     .regex(DateOnlyRegex, "Date must be in YYYY-MM-DD format")
@@ -28,13 +33,6 @@ export const SaveBillToolSchema = z.object({
     .string()
     .length(3, "Currency code must be exactly 3 characters (ISO 4217 format)")
     .describe("ISO 4217 currency code (e.g., EUR, USD, GBP)"),
-  senderEmail: z
-    .string()
-    .email("Sender email must be a valid email address")
-    .optional()
-    .describe(
-      "Email address of the bill sender or service provider (optional)",
-    ),
 });
 
 export const UpdateBillToolSchema = z

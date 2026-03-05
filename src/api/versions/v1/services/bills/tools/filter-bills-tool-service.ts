@@ -11,7 +11,7 @@ type FilteredBill = GetBillsResponse["results"][number];
 
 type StructuredBill = {
   id: number;
-  senderEmail: string | null;
+  name: string;
   date: string;
   category: string;
   totalAmount: string;
@@ -27,7 +27,7 @@ export class FilterBillsToolService {
   private mapBillToStructured(bill: FilteredBill): StructuredBill {
     return {
       id: bill.id,
-      senderEmail: bill.senderEmail,
+      name: bill.name,
       date: bill.date,
       category: bill.category,
       totalAmount: bill.totalAmount,
@@ -79,8 +79,7 @@ export class FilterBillsToolService {
               const currencySymbol = getCurrencySymbolForCode(
                 bill.currencyCode,
               );
-              const email = bill.senderEmail ?? "unassigned";
-              return `• ${displayDate} – ${bill.category}: ${amount}${currencySymbol} (${email})`;
+              return `• ${displayDate} – ${bill.category}: ${amount}${currencySymbol} – ${bill.name}`;
             })
             .join("\n");
 

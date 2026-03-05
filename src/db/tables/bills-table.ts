@@ -12,23 +12,19 @@ import {
 
 export const BILL_RECURRENCES = ["weekly", "bi-weekly", "monthly", "quarterly", "yearly"] as const;
 export type BillRecurrence = typeof BILL_RECURRENCES[number];
-import { billEmailsTable } from "./bill-emails-table.ts";
 import { billCategoriesTable } from "./bill-categories-table.ts";
 
 export const billsTable = pgTable(
   "bills",
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
+    name: varchar("name", { length: 255 }).notNull(),
     billDate: date("bill_date").notNull(),
     categoryId: bigint("category_id", { mode: "number" })
       .notNull()
       .references(() => billCategoriesTable.id, { onDelete: "restrict" }),
     totalAmount: numeric("total_amount", { precision: 12, scale: 2 }).notNull(),
     currencyCode: varchar("currency_code", { length: 3 }).notNull(),
-    emailId: bigint("email_id", { mode: "number" }).references(
-      () => billEmailsTable.id,
-      { onDelete: "set null" },
-    ),
     recurrence: varchar("recurrence", { length: 16 }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
