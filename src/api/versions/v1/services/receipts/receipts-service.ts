@@ -96,6 +96,7 @@ export class ReceiptsService {
           totalAmount: totalAmountString,
           currencyCode: receiptCurrencyCode,
           merchantId,
+          bankAccountId: payload.bankAccountId ?? null,
         })
         .returning({ id: receiptsTable.id });
 
@@ -165,6 +166,7 @@ export class ReceiptsService {
         receiptDate?: string;
         totalAmount?: string;
         currencyCode?: string;
+        bankAccountId?: number | null;
         updatedAt: Date;
       } = { updatedAt: new Date() };
 
@@ -203,6 +205,11 @@ export class ReceiptsService {
       const receiptDate = payload.date || isoReceiptDate;
       if (payload.date !== undefined) {
         updateData.receiptDate = payload.date;
+      }
+
+      // Handle bankAccountId update
+      if (payload.bankAccountId !== undefined) {
+        updateData.bankAccountId = payload.bankAccountId ?? null;
       }
 
       // Update receipt table if there are changes

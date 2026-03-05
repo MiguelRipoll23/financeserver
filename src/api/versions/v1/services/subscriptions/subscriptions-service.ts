@@ -59,6 +59,7 @@ export class SubscriptionsService {
     const subscriptionValues = {
       name: payload.name.trim(),
       category: payload.category.trim(),
+      bankAccountId: payload.bankAccountId ?? null,
     };
 
     const [{ id: subscriptionId }] = await db
@@ -309,9 +310,9 @@ export class SubscriptionsService {
     }
 
     // Check if we need to update basic info (name or category)
-    const hasBasicInfoUpdate = payload.name || payload.category;
+    const hasBasicInfoUpdate = payload.name || payload.category || payload.bankAccountId !== undefined;
     if (hasBasicInfoUpdate) {
-      const updateData: { name?: string; category?: string; updatedAt: Date } =
+      const updateData: { name?: string; category?: string; bankAccountId?: number | null; updatedAt: Date } =
         { updatedAt: new Date() };
 
       if (payload.name) {
@@ -334,6 +335,10 @@ export class SubscriptionsService {
           );
         }
         updateData.category = payload.category.trim();
+      }
+
+      if (payload.bankAccountId !== undefined) {
+        updateData.bankAccountId = payload.bankAccountId ?? null;
       }
 
       await db

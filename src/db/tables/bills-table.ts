@@ -9,11 +9,12 @@ import {
   uniqueIndex,
   varchar,
 } from "drizzle-orm/pg-core";
+import { billEmailsTable } from "./bill-emails-table.ts";
+import { billCategoriesTable } from "./bill-categories-table.ts";
+import { bankAccountsTable } from "./bank-accounts-table.ts";
 
 export const BILL_RECURRENCES = ["weekly", "bi-weekly", "monthly", "quarterly", "yearly"] as const;
 export type BillRecurrence = typeof BILL_RECURRENCES[number];
-import { billEmailsTable } from "./bill-emails-table.ts";
-import { billCategoriesTable } from "./bill-categories-table.ts";
 
 export const billsTable = pgTable(
   "bills",
@@ -30,6 +31,10 @@ export const billsTable = pgTable(
       { onDelete: "set null" },
     ),
     recurrence: varchar("recurrence", { length: 16 }),
+    bankAccountId: bigint("bank_account_id", { mode: "number" }).references(
+      () => bankAccountsTable.id,
+      { onDelete: "set null" },
+    ),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),

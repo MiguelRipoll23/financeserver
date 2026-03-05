@@ -158,6 +158,7 @@ export class BillsService {
             currencyCode: payload.currencyCode,
             emailId,
             recurrence: payload.recurrence ?? null,
+            bankAccountId: payload.bankAccountId ?? null,
             updatedAt: new Date(),
           })
           .where(eq(billsTable.id, billId));
@@ -169,6 +170,7 @@ export class BillsService {
           currencyCode: payload.currencyCode,
           emailId,
           recurrence: payload.recurrence ?? null,
+          bankAccountId: payload.bankAccountId ?? null,
         };
 
         const [{ id }] = await tx
@@ -348,6 +350,7 @@ export class BillsService {
         currencyCode?: string;
         emailId?: number | null;
         recurrence?: string | null;
+        bankAccountId?: number | null;
         updatedAt: Date;
       } = { updatedAt: new Date() };
 
@@ -430,6 +433,11 @@ export class BillsService {
         updateData.recurrence = payload.recurrence ?? null;
       }
 
+      // Handle bankAccountId update
+      if ("bankAccountId" in payload) {
+        updateData.bankAccountId = payload.bankAccountId ?? null;
+      }
+
       // Only update if there are changes
       if (Object.keys(updateData).length > 1) {
         await tx
@@ -478,6 +486,7 @@ export class BillsService {
         currencyCode?: string;
         emailId?: number | null;
         recurrence?: string | null;
+        bankAccountId?: number | null;
         updatedAt: Date;
       } = { updatedAt: new Date() };
 
@@ -543,7 +552,9 @@ export class BillsService {
         updateData.recurrence = payload.recurrence;
       }
 
-      if (Object.keys(updateData).length > 1) {
+      if (payload.bankAccountId !== undefined) {
+        updateData.bankAccountId = payload.bankAccountId ?? null;
+      }
         await tx
           .update(billsTable)
           .set(updateData)

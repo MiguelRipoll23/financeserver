@@ -13,6 +13,7 @@ import {
   salaryChangesTable,
   subscriptionPricesTable,
   subscriptionsTable,
+  userSettingsTable,
 } from "../../../../../../db/schema.ts";
 import { computeProjectedBillsAmount, currentMonthRange, toMonthlyAmount } from "../dashboard-helpers.ts";
 import type { DashboardKpisResponse } from "../dashboard-types.ts";
@@ -35,6 +36,7 @@ export async function getDashboardKpisData(
     activeSubscriptions,
     latestSalary,
     latestRecurringBillsResult,
+    userSettingsRows,
   ] = await Promise.all([
     db.execute(sql`
       SELECT DISTINCT ON (bank_account_id)
@@ -92,11 +94,23 @@ export async function getDashboardKpisData(
       WHERE recurrence IS NOT NULL
       ORDER BY category_id, bill_date DESC
     `),
+    db.select().from(userSettingsTable).limit(1),
   ]);
 
   let liquidMoney = 0;
   let currencyCode = "EUR";
+
+  const userSettings = userSettingsRows[0] ?? null;
+  const shouldAutoCalculate =
+    userSettings?.autoCalculateBalance === true &&
+    userSettings?.defaultCheckingAccountId != null;
+
   for (const row of latestBankRows.rows) {
+    if (shouldAutoCalculate && Number(row.bank_account_id) === userSettings!.defaultCheckingAccountId) {
+      // Skip stored balance for the default checking account; we'll compute it below
+      if (row.currency_code) currencyCode = row.currency_code as string;
+      continue;
+    }
     const bal = parseFloat(String(row.balance));
     if (!isNaN(bal)) liquidMoney += bal;
     if (row.currency_code) currencyCode = row.currency_code as string;
@@ -175,6 +189,61 @@ export async function getDashboardKpisData(
     const salary = latestSalary[0];
     const amount = parseFloat(String(salary.netAmount));
     if (!isNaN(amount)) monthlySalary = toMonthlyAmount(amount, salary.recurrence);
+  }
+
+  // Auto-calculate balance for the default checking account
+  if (shouldAutoCalculate) {
+    // Query paid bills/receipts/subs linked to the default checking account
+    const [paidBillsRows, paidReceiptsRows, paidSubsRows, salaryRows] = await Promise.all([
+      db.select({ totalAmount: billsTable.totalAmount })
+        .from(billsTable)
+        .where(eq(billsTable.bankAccountId, userSettings!.defaultCheckingAccountId!)),
+      db.select({ totalAmount: receiptsTable.totalAmount })
+        .from(receiptsTable)
+        .where(eq(receiptsTable.bankAccountId, userSettings!.defaultCheckingAccountId!)),
+      db.select({ amount: subscriptionPricesTable.amount, recurrence: subscriptionPricesTable.recurrence })
+        .from(subscriptionsTable)
+        .innerJoin(subscriptionPricesTable, eq(subscriptionsTable.id, subscriptionPricesTable.subscriptionId))
+        .where(
+          and(
+            eq(subscriptionsTable.bankAccountId, userSettings!.defaultCheckingAccountId!),
+            sql`${subscriptionPricesTable.effectiveFrom} <= CURRENT_DATE`,
+            or(isNull(subscriptionPricesTable.effectiveUntil), sql`${subscriptionPricesTable.effectiveUntil} >= CURRENT_DATE`),
+          ),
+        ),
+      db.select({ netAmount: salaryChangesTable.netAmount, recurrence: salaryChangesTable.recurrence })
+        .from(salaryChangesTable)
+        .orderBy(desc(salaryChangesTable.date))
+        .limit(1),
+    ]);
+
+    let calculatedSalary = 0;
+    if (salaryRows.length > 0) {
+      const salary = salaryRows[0];
+      const amount = parseFloat(String(salary.netAmount));
+      if (!isNaN(amount)) calculatedSalary = toMonthlyAmount(amount, salary.recurrence);
+    }
+
+    let paidBillsTotal = 0;
+    for (const bill of paidBillsRows) {
+      const amount = parseFloat(String(bill.totalAmount));
+      if (!isNaN(amount)) paidBillsTotal += amount;
+    }
+
+    let paidReceiptsTotal = 0;
+    for (const receipt of paidReceiptsRows) {
+      const amount = parseFloat(String(receipt.totalAmount));
+      if (!isNaN(amount)) paidReceiptsTotal += amount;
+    }
+
+    let paidSubsTotal = 0;
+    for (const sub of paidSubsRows) {
+      const amount = parseFloat(String(sub.amount));
+      if (!isNaN(amount)) paidSubsTotal += toMonthlyAmount(amount, sub.recurrence);
+    }
+
+    const calculatedBalance = calculatedSalary - paidBillsTotal - paidReceiptsTotal - paidSubsTotal;
+    liquidMoney += calculatedBalance;
   }
 
   return {

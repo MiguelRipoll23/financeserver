@@ -82,6 +82,14 @@ export const CreateReceiptRequestSchema = z.object({
     })
     .optional()
     .describe("Merchant information"),
+  bankAccountId: z
+    .number()
+    .int()
+    .positive()
+    .nullable()
+    .optional()
+    .openapi({ example: 1 })
+    .describe("Bank account ID to associate with this receipt"),
 });
 
 export type CreateReceiptRequest = z.infer<typeof CreateReceiptRequestSchema>;

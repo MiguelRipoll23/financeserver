@@ -9,6 +9,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 import { merchantsTable } from "./merchants-table.ts";
+import { bankAccountsTable } from "./bank-accounts-table.ts";
 
 export const receiptsTable = pgTable(
   "receipts",
@@ -21,6 +22,10 @@ export const receiptsTable = pgTable(
       .default("USD"),
     merchantId: bigint("merchant_id", { mode: "number" }).references(
       () => merchantsTable.id,
+      { onDelete: "set null" },
+    ),
+    bankAccountId: bigint("bank_account_id", { mode: "number" }).references(
+      () => bankAccountsTable.id,
       { onDelete: "set null" },
     ),
     createdAt: timestamp("created_at", { withTimezone: true })

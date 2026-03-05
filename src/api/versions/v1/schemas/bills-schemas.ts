@@ -33,6 +33,14 @@ export const UpsertBillRequestSchema = z.object({
     .describe("Sender's email address")
     .optional(),
   recurrence: BillRecurrenceSchema.optional(),
+  bankAccountId: z
+    .number()
+    .int()
+    .positive()
+    .nullable()
+    .optional()
+    .openapi({ example: 1 })
+    .describe("Bank account ID to associate with this bill"),
 });
 
 export type UpsertBillRequest = z.infer<typeof UpsertBillRequestSchema>;

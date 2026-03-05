@@ -1,4 +1,5 @@
 import {
+  bigint,
   bigserial,
   boolean,
   index,
@@ -7,6 +8,7 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
+import { bankAccountsTable } from "./bank-accounts-table.ts";
 
 export const recurrenceEnum = pgEnum("recurrence", [
   "weekly",
@@ -21,6 +23,10 @@ export const subscriptionsTable = pgTable(
     id: bigserial("id", { mode: "number" }).primaryKey(),
     name: text("name").notNull(),
     category: text("category").notNull(),
+    bankAccountId: bigint("bank_account_id", { mode: "number" }).references(
+      () => bankAccountsTable.id,
+      { onDelete: "set null" },
+    ),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),

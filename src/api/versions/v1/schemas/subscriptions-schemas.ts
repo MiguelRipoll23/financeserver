@@ -45,6 +45,14 @@ export const UpsertSubscriptionRequestSchema = z.object({
     .openapi({ example: "Standard" })
     .nullable()
     .optional(),
+  bankAccountId: z
+    .number()
+    .int()
+    .positive()
+    .nullable()
+    .optional()
+    .openapi({ example: 1 })
+    .describe("Bank account ID to associate with this subscription"),
 });
 
 export type UpsertSubscriptionRequest = z.infer<
