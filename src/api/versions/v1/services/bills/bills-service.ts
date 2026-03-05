@@ -78,6 +78,7 @@ export class BillsService {
       // categoryId already declared above
       const values = {
         billDate,
+        name: payload.name,
         categoryId,
         totalAmount: totalAmountString,
         currencyCode: payload.currencyCode,
@@ -142,6 +143,7 @@ export class BillsService {
         await tx
           .update(billsTable)
           .set({
+            name: payload.name,
             categoryId,
             totalAmount: totalAmountString,
             currencyCode: payload.currencyCode,
@@ -153,6 +155,7 @@ export class BillsService {
       } else {
         const values = {
           billDate,
+          name: payload.name,
           categoryId,
           totalAmount: totalAmountString,
           currencyCode: payload.currencyCode,
@@ -252,6 +255,7 @@ export class BillsService {
     const rows = await db
       .select({
         id: billsTable.id,
+        name: billsTable.name,
         billDate: billsTable.billDate,
         categoryId: billsTable.categoryId,
         categoryName: billCategoriesTable.name,
@@ -273,6 +277,7 @@ export class BillsService {
 
     const summaries: BillSummary[] = rows.map((row) => ({
       id: row.id,
+      name: row.name,
       date: toISOStringSafe(row.billDate),
       categoryId: row.categoryId,
       category: row.categoryName,
@@ -325,6 +330,7 @@ export class BillsService {
 
       // Build update object with only provided fields
       const updateData: {
+        name?: string;
         billDate?: string;
         categoryId?: number;
         totalAmount?: string;
@@ -335,6 +341,11 @@ export class BillsService {
       } = { updatedAt: new Date() };
 
       let updatedCategoryId = existingBill.categoryId;
+
+      // Handle name update
+      if (payload.name !== undefined) {
+        updateData.name = payload.name;
+      }
 
       // Handle category update
       if (payload.category !== undefined) {
@@ -451,6 +462,7 @@ export class BillsService {
       }
 
       const updateData: {
+        name?: string;
         billDate?: string;
         categoryId?: number;
         totalAmount?: string;
@@ -461,6 +473,10 @@ export class BillsService {
       } = { updatedAt: new Date() };
 
       let updatedCategoryId = existingBill.categoryId;
+
+      if (payload.name !== undefined) {
+        updateData.name = payload.name;
+      }
 
       if (payload.categoryId !== undefined) {
         updatedCategoryId = await this.ensureCategoryExists(tx, payload.categoryId);
@@ -560,6 +576,7 @@ export class BillsService {
     const billRow = await tx
       .select({
         id: billsTable.id,
+        name: billsTable.name,
         billDate: billsTable.billDate,
         categoryId: billsTable.categoryId,
         categoryName: billCategoriesTable.name,
@@ -588,6 +605,7 @@ export class BillsService {
 
     return {
       id: billRow.id,
+      name: billRow.name,
       date: toISOStringSafe(billRow.billDate),
       categoryId: billRow.categoryId,
       category: billRow.categoryName,

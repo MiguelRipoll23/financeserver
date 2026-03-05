@@ -12,6 +12,12 @@ export const BillRecurrenceSchema = z.enum(BILL_RECURRENCES)
 
 export const UpsertBillRequestSchema = z.object({
   date: DateOnlyStringSchema.describe("Date of the bill in YYYY-MM-DD format"),
+  name: z
+    .string()
+    .min(1)
+    .max(128)
+    .openapi({ example: "Electricity" })
+    .describe("Bill name"),
   category: z
     .string()
     .min(1)
@@ -45,6 +51,10 @@ export const UpsertBillResponseSchema = z.object({
     .int()
     .openapi({ example: 12 })
     .describe("Unique bill identifier"),
+  name: z
+    .string()
+    .openapi({ example: "Electricity" })
+    .describe("Bill name"),
   date: z
     .string()
     .openapi({ example: "2025-03-14T00:00:00.000Z" })

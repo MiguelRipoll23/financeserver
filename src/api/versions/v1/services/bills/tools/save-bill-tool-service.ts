@@ -26,6 +26,7 @@ export class SaveBillToolService {
         const parsed = SaveBillToolSchema.parse(input);
 
         const result = await this.billsService.createBill({
+          name: parsed.name,
           date: parsed.date,
           categoryId: parsed.categoryId,
           totalAmount: parsed.totalAmount,

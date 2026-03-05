@@ -1,0 +1,1 @@
+ALTER TABLE "bills" ADD COLUMN "name" varchar(128) NOT NULL;

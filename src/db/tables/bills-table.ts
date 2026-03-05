@@ -20,6 +20,7 @@ export const billsTable = pgTable(
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
     billDate: date("bill_date").notNull(),
+    name: varchar("name", { length: 128 }).notNull(),
     categoryId: bigint("category_id", { mode: "number" })
       .notNull()
       .references(() => billCategoriesTable.id, { onDelete: "restrict" }),
