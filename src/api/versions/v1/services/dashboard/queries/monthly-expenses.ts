@@ -32,51 +32,51 @@ export async function getDashboardMonthlyExpensesData(
   const billsMap: Record<string, Record<string, string | number | null>> = {};
   const billCategoriesSet = new Set<string>();
 
-  for (const b of allBills) {
-    const dateStr = typeof b.billDate === "string"
-      ? b.billDate
-      : (b.billDate as Date).toISOString().split("T")[0];
-    const month = dateStr.substring(0, 7);
+  for (const bill of allBills) {
+    const billDateString = typeof bill.billDate === "string"
+      ? bill.billDate
+      : (bill.billDate as Date).toISOString().split("T")[0];
+    const month = billDateString.substring(0, 7);
     if (!billsMap[month]) billsMap[month] = { date: month };
-    const cat = normalizeCategory(b.categoryName);
-    billCategoriesSet.add(cat);
-    const amount = parseFloat(String(b.totalAmount || "0"));
-    billsMap[month][cat] = ((billsMap[month][cat] as number) || 0) + (isNaN(amount) ? 0 : amount);
+    const normalizedCategory = normalizeCategory(bill.categoryName);
+    billCategoriesSet.add(normalizedCategory);
+    const parsedAmount = parseFloat(String(bill.totalAmount || "0"));
+    billsMap[month][normalizedCategory] = ((billsMap[month][normalizedCategory] as number) || 0) + (isNaN(parsedAmount) ? 0 : parsedAmount);
   }
 
   const sortedCats = Array.from(billCategoriesSet);
 
-  const billHistory = Object.keys(billsMap).sort().map((m) => {
-    const p = { ...billsMap[m] };
+  const billHistory = Object.keys(billsMap).sort().map((month) => {
+    const monthData = { ...billsMap[month] };
     let total = 0;
-    sortedCats.forEach((c) => {
-      if (p[c] === undefined) p[c] = null;
-      else total += p[c] as number;
+    sortedCats.forEach((category) => {
+      if (monthData[category] === undefined) monthData[category] = null;
+      else total += monthData[category] as number;
     });
-    p["Total"] = total;
-    return p;
+    monthData["Total"] = total;
+    return monthData;
   });
 
   // Linear regression trend lines per category
-  for (const cat of [...sortedCats, "Total"]) {
+  for (const category of [...sortedCats, "Total"]) {
     const dataPoints = billHistory
-      .map((p, i) => ({ x: i, y: p[cat] }))
-      .filter((p) => p.y !== null && p.y !== undefined);
+      .map((monthData, i) => ({ x: i, y: monthData[category] }))
+      .filter((point) => point.y !== null && point.y !== undefined);
 
     if (dataPoints.length > 1) {
       const n = dataPoints.length;
       let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
-      for (const pt of dataPoints) {
-        sumX += pt.x;
-        sumY += pt.y as number;
-        sumXY += pt.x * (pt.y as number);
-        sumX2 += pt.x * pt.x;
+      for (const dataPoint of dataPoints) {
+        sumX += dataPoint.x;
+        sumY += dataPoint.y as number;
+        sumXY += dataPoint.x * (dataPoint.y as number);
+        sumX2 += dataPoint.x * dataPoint.x;
       }
       const denom = n * sumX2 - sumX * sumX;
       if (denom !== 0) {
         const slope = (n * sumXY - sumX * sumY) / denom;
         const intercept = (sumY - slope * sumX) / n;
-        billHistory.forEach((p, i) => { p[`${cat} Trend`] = slope * i + intercept; });
+        billHistory.forEach((monthData, i) => { monthData[`${category} Trend`] = slope * i + intercept; });
       }
     }
   }
@@ -85,14 +85,14 @@ export async function getDashboardMonthlyExpensesData(
   const usedColors = new Set<string>();
   const favoritedBillCategories: string[] = [];
 
-  for (const apiCat of allCategories) {
-    if (!apiCat.name) continue;
-    const normalized = normalizeCategory(apiCat.name);
-    if (apiCat.hexColor) {
-      categoryColors[normalized] = apiCat.hexColor;
-      usedColors.add(apiCat.hexColor.toLowerCase());
+  for (const categoryRecord of allCategories) {
+    if (!categoryRecord.name) continue;
+    const normalized = normalizeCategory(categoryRecord.name);
+    if (categoryRecord.hexColor) {
+      categoryColors[normalized] = categoryRecord.hexColor;
+      usedColors.add(categoryRecord.hexColor.toLowerCase());
     }
-    if (apiCat.favoritedAt !== null) {
+    if (categoryRecord.favoritedAt !== null) {
       const match = sortedCats.find((bc) => normalizeCategory(bc) === normalized);
       if (match) favoritedBillCategories.push(match);
     }

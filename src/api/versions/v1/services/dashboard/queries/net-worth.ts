@@ -50,24 +50,24 @@ export async function getDashboardNetWorthData(
   type BalanceEvent = { date: string; key: string; value: number };
   const events: BalanceEvent[] = [];
 
-  for (const b of bankBalances) {
-    const balance = parseFloat(String(b.balance));
+  for (const bankBalance of bankBalances) {
+    const balance = parseFloat(String(bankBalance.balance));
     if (!isNaN(balance)) {
-      events.push({ date: b.createdAt.toISOString().split("T")[0], key: `bank-${b.bankAccountId}`, value: balance });
+      events.push({ date: bankBalance.createdAt.toISOString().split("T")[0], key: `bank-${bankBalance.bankAccountId}`, value: balance });
     }
   }
-  for (const b of cashBalances) {
-    const balance = parseFloat(String(b.balance));
+  for (const cashBalance of cashBalances) {
+    const balance = parseFloat(String(cashBalance.balance));
     if (!isNaN(balance)) {
-      events.push({ date: b.createdAt.toISOString().split("T")[0], key: `cash-${b.cashId}`, value: balance });
+      events.push({ date: cashBalance.createdAt.toISOString().split("T")[0], key: `cash-${cashBalance.cashId}`, value: balance });
     }
   }
-  for (const b of cryptoBalances) {
-    const balance = parseFloat(String(b.balance));
+  for (const cryptoBalance of cryptoBalances) {
+    const balance = parseFloat(String(cryptoBalance.balance));
     if (isNaN(balance)) continue;
-    const fallbackValue = b.symbolCode === "USDT" || b.symbolCode === "USDC" ? balance : 0;
-    const invested = b.investedAmount ? parseFloat(String(b.investedAmount)) : fallbackValue;
-    events.push({ date: b.createdAt.toISOString().split("T")[0], key: `crypto-${b.cryptoExchangeId}-${b.symbolCode}`, value: isNaN(invested) ? fallbackValue : invested });
+    const fallbackValue = cryptoBalance.symbolCode === "USDT" || cryptoBalance.symbolCode === "USDC" ? balance : 0;
+    const invested = cryptoBalance.investedAmount ? parseFloat(String(cryptoBalance.investedAmount)) : fallbackValue;
+    events.push({ date: cryptoBalance.createdAt.toISOString().split("T")[0], key: `crypto-${cryptoBalance.cryptoExchangeId}-${cryptoBalance.symbolCode}`, value: isNaN(invested) ? fallbackValue : invested });
   }
   for (const row of roboadvisorCalcs.rows) {
     const val = parseFloat(String(row.current_value));
@@ -81,15 +81,15 @@ export async function getDashboardNetWorthData(
 
   events.sort((a, b) => a.date.localeCompare(b.date));
 
-  const curBals: Record<string, number> = {};
-  const nwByDate: Record<string, number> = {};
-  for (const e of events) {
-    curBals[e.key] = e.value;
-    nwByDate[e.date] = Object.values(curBals).reduce((s, v) => s + v, 0);
+  const currentBalances: Record<string, number> = {};
+  const netWorthByDate: Record<string, number> = {};
+  for (const eventEntry of events) {
+    currentBalances[eventEntry.key] = eventEntry.value;
+    netWorthByDate[eventEntry.date] = Object.values(currentBalances).reduce((s, v) => s + v, 0);
   }
 
   const monthlyMap: Record<string, { date: string; value: number }> = {};
-  for (const [date, value] of Object.entries(nwByDate)) {
+  for (const [date, value] of Object.entries(netWorthByDate)) {
     const month = date.substring(0, 7);
     if (!monthlyMap[month] || date > monthlyMap[month].date) monthlyMap[month] = { date, value };
   }
@@ -97,16 +97,16 @@ export async function getDashboardNetWorthData(
   const history = Object.values(monthlyMap).sort((a, b) => a.date.localeCompare(b.date));
 
   let monthlyInterestIncome = 0;
-  for (const c of bankCalcRows) {
-    const p = parseFloat(String(c.monthlyProfit));
-    if (!isNaN(p)) monthlyInterestIncome += p;
+  for (const bankCalcRow of bankCalcRows) {
+    const parsedProfit = parseFloat(String(bankCalcRow.monthlyProfit));
+    if (!isNaN(parsedProfit)) monthlyInterestIncome += parsedProfit;
   }
 
   let monthlySalary = 0;
   if (latestSalary.length > 0) {
-    const s = latestSalary[0];
-    const amount = parseFloat(String(s.netAmount));
-    if (!isNaN(amount)) monthlySalary = toMonthlyAmount(amount, s.recurrence);
+    const salaryRecord = latestSalary[0];
+    const amount = parseFloat(String(salaryRecord.netAmount));
+    if (!isNaN(amount)) monthlySalary = toMonthlyAmount(amount, salaryRecord.recurrence);
   }
 
   const netWorthPoints: NetWorthPoint[] = history.map((h) => ({ date: h.date, value: h.value }));
@@ -115,10 +115,10 @@ export async function getDashboardNetWorthData(
     const last = history[history.length - 1];
     netWorthPoints[netWorthPoints.length - 1].projection = last.value;
     for (let i = 1; i <= 6; i++) {
-      const d = new Date(last.date);
-      d.setMonth(d.getMonth() + i);
+      const projectionDate = new Date(last.date);
+      projectionDate.setMonth(projectionDate.getMonth() + i);
       netWorthPoints.push({
-        date: d.toISOString().split("T")[0],
+        date: projectionDate.toISOString().split("T")[0],
         projection: last.value + monthlyInterestIncome * i + monthlySalary * i,
       });
     }

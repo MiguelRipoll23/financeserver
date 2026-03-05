@@ -32,22 +32,22 @@ export async function getDashboardPortfolioData(
 
   let liquidMoney = 0;
   for (const row of latestBankRows.rows) {
-    const b = parseFloat(String(row.balance));
-    if (!isNaN(b)) liquidMoney += b;
+    const parsedBalance = parseFloat(String(row.balance));
+    if (!isNaN(parsedBalance)) liquidMoney += parsedBalance;
   }
   for (const row of latestCashRows.rows) {
-    const b = parseFloat(String(row.balance));
-    if (!isNaN(b)) liquidMoney += b;
+    const parsedBalance = parseFloat(String(row.balance));
+    if (!isNaN(parsedBalance)) liquidMoney += parsedBalance;
   }
 
   let investedMoney = 0;
-  for (const c of allCryptoCalcs) {
-    const v = parseFloat(String(c.currentValue));
-    if (!isNaN(v)) investedMoney += v;
+  for (const cryptoCalc of allCryptoCalcs) {
+    const parsedValue = parseFloat(String(cryptoCalc.currentValue));
+    if (!isNaN(parsedValue)) investedMoney += parsedValue;
   }
-  for (const c of roboadvisorCalcs) {
-    const v = parseFloat(String(c.currentValue));
-    if (!isNaN(v)) investedMoney += v;
+  for (const roboCalc of roboadvisorCalcs) {
+    const parsedValue = parseFloat(String(roboCalc.currentValue));
+    if (!isNaN(parsedValue)) investedMoney += parsedValue;
   }
 
   return {

@@ -90,24 +90,11 @@ function makeDbMock(overrides: Record<string, unknown> = {}) {
           return Promise.resolve(cb(resolved));
         },
       };
-      // Make it thenable at the chain level too
       (chain as { [Symbol.toPrimitive]?: unknown })[Symbol.toPrimitive] =
         undefined;
       Object.defineProperty(chain, Symbol.iterator, {
         get: () => () => [][Symbol.iterator](),
       });
-
-      // Allow await on the chain itself
-      (chain as { then: unknown }).then = (
-        cb: (v: unknown[]) => unknown,
-        _rej?: unknown,
-      ) => {
-        if (!resolved.length) {
-          resolved = (self._selectData[self._selectIdx.n] as unknown[]) ?? [];
-          self._selectIdx.n++;
-        }
-        return Promise.resolve(cb(resolved));
-      };
 
       return chain;
     },
