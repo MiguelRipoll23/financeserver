@@ -11,6 +11,12 @@ export const BillRecurrenceSchema = z.enum(BILL_RECURRENCES)
   .describe("Billing recurrence interval");
 
 export const UpsertBillRequestSchema = z.object({
+  name: z
+    .string()
+    .min(1)
+    .max(255)
+    .openapi({ example: "Electricity bill" })
+    .describe("Bill name"),
   date: DateOnlyStringSchema.describe("Date of the bill in YYYY-MM-DD format"),
   category: z
     .string()
@@ -26,12 +32,6 @@ export const UpsertBillRequestSchema = z.object({
     .length(3)
     .openapi({ example: "USD" })
     .describe("ISO 4217 currency code"),
-  senderEmail: z
-    .string()
-    .email()
-    .openapi({ example: "example@example.com" })
-    .describe("Sender's email address")
-    .optional(),
   recurrence: BillRecurrenceSchema.optional(),
 });
 
@@ -43,6 +43,10 @@ export const UpsertBillResponseSchema = z.object({
     .int()
     .openapi({ example: 12 })
     .describe("Unique bill identifier"),
+  name: z
+    .string()
+    .openapi({ example: "Electricity bill" })
+    .describe("Bill name"),
   date: z
     .string()
     .openapi({ example: "2025-03-14T00:00:00.000Z" })
@@ -63,12 +67,6 @@ export const UpsertBillResponseSchema = z.object({
     .string()
     .openapi({ example: "USD" })
     .describe("ISO 4217 currency code"),
-  senderEmail: z
-    .string()
-    .email()
-    .nullable()
-    .openapi({ example: "example@example.com" })
-    .describe("Sender's email address or null"),
   favoritedAt: z
     .string()
     .datetime()

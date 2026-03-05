@@ -30,17 +30,14 @@ export class SaveBillToolService {
           categoryId: parsed.categoryId,
           totalAmount: parsed.totalAmount,
           currencyCode: parsed.currencyCode,
-          senderEmail: parsed.senderEmail,
+          name: parsed.name,
         });
 
         const displayDate = result.date.split("T")[0];
-        const emailDisplay = result.senderEmail
-          ? ` from ${result.senderEmail}`
-          : "";
         const currencySymbol = getCurrencySymbolForCode(result.currencyCode);
 
         const text =
-          `Bill saved successfully: ${displayDate} – ${result.category}: ${result.totalAmount}${currencySymbol}${emailDisplay} (ID: ${result.id})`;
+          `Bill saved successfully: ${displayDate} – ${result.category}: ${result.totalAmount}${currencySymbol} – ${result.name} (ID: ${result.id})`;
 
         return {
           text,
