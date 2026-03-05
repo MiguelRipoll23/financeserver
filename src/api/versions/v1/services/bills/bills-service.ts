@@ -83,6 +83,7 @@ export class BillsService {
         totalAmount: totalAmountString,
         currencyCode: payload.currencyCode,
         recurrence: payload.recurrence ?? null,
+        bankAccountId: payload.bankAccountId ?? null,
       };
 
       const [{ id: billId }] = await tx
