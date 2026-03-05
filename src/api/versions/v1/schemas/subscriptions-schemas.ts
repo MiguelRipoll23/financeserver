@@ -98,6 +98,13 @@ export const UpsertSubscriptionResponseSchema = z.object({
     .nullable()
     .describe("Subscription plan name, nullable")
     .openapi({ example: "Standard" }),
+  bankAccountId: z
+    .number()
+    .int()
+    .nullable()
+    .optional()
+    .openapi({ example: 5 })
+    .describe("Associated checking bank account ID, or null"),
   updatedAt: z
     .string()
     .describe("Last update timestamp in ISO format")

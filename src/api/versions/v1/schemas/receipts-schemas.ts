@@ -105,6 +105,13 @@ const ReceiptMutationResponseSchema = z.object({
     .string()
     .describe("ISO 4217 currency code")
     .openapi({ example: "USD" }),
+  bankAccountId: z
+    .number()
+    .int()
+    .nullable()
+    .optional()
+    .openapi({ example: 5 })
+    .describe("Associated checking bank account ID, or null"),
   merchant: z
     .object({
       id: z.number().int().describe("Merchant ID").openapi({ example: 7 }),
@@ -198,6 +205,13 @@ export const ReceiptSummarySchema = z.object({
     .string()
     .describe("ISO 4217 currency code")
     .openapi({ example: "USD" }),
+  bankAccountId: z
+    .number()
+    .int()
+    .nullable()
+    .optional()
+    .openapi({ example: 5 })
+    .describe("Associated checking bank account ID, or null"),
   items: z.array(ReceiptItemSchema).describe("List of items in the receipt"),
   merchant: z
     .object({

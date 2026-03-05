@@ -82,6 +82,13 @@ export const UpsertBillResponseSchema = z.object({
     .openapi({ example: "2025-03-14T12:34:56.000Z" })
     .describe("Timestamp when the bill category was favorited, or null"),
   recurrence: BillRecurrenceSchema.nullable().optional(),
+  bankAccountId: z
+    .number()
+    .int()
+    .nullable()
+    .optional()
+    .openapi({ example: 5 })
+    .describe("Associated checking bank account ID, or null"),
   updatedAt: z
     .string()
     .openapi({ example: "2025-03-14T12:34:56.000Z" })
