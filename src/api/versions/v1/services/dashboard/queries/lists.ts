@@ -55,9 +55,13 @@ export async function getDashboardListsData(
   }
 
   return {
-    subscriptions: Object.entries(subscriptionsMap).map(([name, total]) => ({ name, total })).sort((a, b) => b.total - a.total),
-    receipts: Object.entries(receiptsMap).map(([name, total]) => ({ name, total })).sort((a, b) => b.total - a.total),
-    totalSubscriptions,
-    totalReceipts,
+    subscriptions: Object.entries(subscriptionsMap)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, total]) => ({ name, total: total.toFixed(2) })),
+    receipts: Object.entries(receiptsMap)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, total]) => ({ name, total: total.toFixed(2) })),
+    totalSubscriptions: totalSubscriptions.toFixed(2),
+    totalReceipts: totalReceipts.toFixed(2),
   };
 }

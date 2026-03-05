@@ -109,17 +109,17 @@ export async function getDashboardNetWorthData(
     if (!isNaN(amount)) monthlySalary = toMonthlyAmount(amount, salaryRecord.recurrence);
   }
 
-  const netWorthPoints: NetWorthPoint[] = history.map((historyItem) => ({ date: historyItem.date, value: historyItem.value }));
+  const netWorthPoints: NetWorthPoint[] = history.map((historyItem) => ({ date: historyItem.date, value: historyItem.value.toFixed(2) }));
 
   if (history.length > 0) {
     const last = history[history.length - 1];
-    netWorthPoints[netWorthPoints.length - 1].projection = last.value;
+    netWorthPoints[netWorthPoints.length - 1].projection = last.value.toFixed(2);
     for (let i = 1; i <= 6; i++) {
       const projectionDate = new Date(last.date);
       projectionDate.setMonth(projectionDate.getMonth() + i);
       netWorthPoints.push({
         date: projectionDate.toISOString().split("T")[0],
-        projection: last.value + monthlyInterestIncome * i + monthlySalary * i,
+        projection: (last.value + monthlyInterestIncome * i + monthlySalary * i).toFixed(2),
       });
     }
   }

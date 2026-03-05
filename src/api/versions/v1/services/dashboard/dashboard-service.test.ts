@@ -115,14 +115,14 @@ Deno.test("getDashboardKpis - returns zeros when no data", async () => {
   const service = new DashboardService(makeDbMock());
   const result = await service.getDashboardKpis();
 
-  assertEquals(result.liquidMoney, 0);
-  assertEquals(result.investedMoney, 0);
-  assertEquals(result.totalInvestedCost, 0);
-  assertEquals(result.monthlyInterestIncome, 0);
-  assertEquals(result.totalMonthlyIncome, 0);
-  assertEquals(result.monthlyBills, 0);
-  assertEquals(result.monthlyReceipts, 0);
-  assertEquals(result.monthlySubscriptions, 0);
+  assertEquals(result.liquidMoney, "0.00");
+  assertEquals(result.investedMoney, "0.00");
+  assertEquals(result.totalInvestedCost, "0.00");
+  assertEquals(result.monthlyInterestIncome, "0.00");
+  assertEquals(result.totalMonthlyIncome, "0.00");
+  assertEquals(result.monthlyBills, "0.00");
+  assertEquals(result.monthlyReceipts, "0.00");
+  assertEquals(result.monthlySubscriptions, "0.00");
   assertEquals(result.currencyCode, "EUR");
 });
 
@@ -138,7 +138,7 @@ Deno.test("getDashboardKpis - sums bank balances correctly", async () => {
     }),
   );
   const result = await service.getDashboardKpis();
-  assertEquals(result.liquidMoney, 1500.5);
+  assertEquals(result.liquidMoney, "1500.50");
   assertEquals(result.currencyCode, "EUR");
 });
 
@@ -155,7 +155,7 @@ Deno.test("getDashboardKpis - computes monthly subscriptions for different recur
   const result = await service.getDashboardKpis();
   // monthly: 10 + weekly: 10*4.33 + yearly: 12/12 = 10 + 43.3 + 1 = 54.3
   const expected = 10 + 10 * 4.33 + 12 / 12;
-  assertEquals(Math.round(result.monthlySubscriptions * 100), Math.round(expected * 100));
+  assertEquals(Math.round(parseFloat(result.monthlySubscriptions) * 100), Math.round(expected * 100));
 });
 
 Deno.test("getDashboardNetWorth - returns empty array when no data", async () => {
@@ -216,8 +216,8 @@ Deno.test("getDashboardPortfolio - returns portfolio with liquid and invested", 
   const invested = result.portfolio.find((p) => p.name === "Invested");
   assertExists(liquid);
   assertExists(invested);
-  assertEquals(liquid!.value, 5000);
-  assertEquals(invested!.value, 2000);
+  assertEquals(liquid!.value, "5000.00");
+  assertEquals(invested!.value, "2000.00");
 });
 
 Deno.test("getDashboardPortfolio - liquidFlow nodes are always 6", async () => {
@@ -285,7 +285,7 @@ Deno.test("getDashboardLists - sorts subscriptions by total descending", async (
   assertEquals(result.subscriptions[0].name, "Expensive");
   assertEquals(result.subscriptions[1].name, "Mid");
   assertEquals(result.subscriptions[2].name, "Cheap");
-  assertEquals(result.totalSubscriptions, 75);
+  assertEquals(result.totalSubscriptions, "75.00");
 });
 
 Deno.test("getDashboardLists - aggregates receipts by merchant and sorts descending", async () => {
@@ -301,8 +301,8 @@ Deno.test("getDashboardLists - aggregates receipts by merchant and sorts descend
   const result = await service.getDashboardLists();
 
   assertEquals(result.receipts[0].name, "Amazon");
-  assertEquals(result.receipts[0].total, 120);
+  assertEquals(result.receipts[0].total, "120.00");
   assertEquals(result.receipts[1].name, "Lidl");
-  assertEquals(result.receipts[1].total, 55);
-  assertEquals(result.totalReceipts, 175);
+  assertEquals(result.receipts[1].total, "55.00");
+  assertEquals(result.totalReceipts, "175.00");
 });

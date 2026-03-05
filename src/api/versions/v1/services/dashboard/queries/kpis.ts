@@ -158,14 +158,14 @@ export async function getDashboardKpisData(
   }
 
   return {
-    liquidMoney,
-    investedMoney: totalCryptoValue + totalRoboadvisorValue,
-    totalInvestedCost: totalCryptoCost + totalRoboadvisorCost,
-    monthlyInterestIncome,
-    totalMonthlyIncome: Math.max(monthlySalary, 0) + Math.max(monthlyInterestIncome, 0),
-    monthlyBills,
-    monthlyReceipts,
-    monthlySubscriptions,
+    liquidMoney: liquidMoney.toFixed(2),
+    investedMoney: (totalCryptoValue + totalRoboadvisorValue).toFixed(2),
+    totalInvestedCost: (totalCryptoCost + totalRoboadvisorCost).toFixed(2),
+    monthlyInterestIncome: monthlyInterestIncome.toFixed(2),
+    totalMonthlyIncome: (Math.max(monthlySalary, 0) + Math.max(monthlyInterestIncome, 0)).toFixed(2),
+    monthlyBills: monthlyBills.toFixed(2),
+    monthlyReceipts: monthlyReceipts.toFixed(2),
+    monthlySubscriptions: monthlySubscriptions.toFixed(2),
     currencyCode,
   };
 }

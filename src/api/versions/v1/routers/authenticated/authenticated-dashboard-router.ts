@@ -9,28 +9,28 @@ import { ServerResponse } from "../../models/server-response.ts";
 // ─── response schemas (zod) ───────────────────────────────────────────────────
 
 const DashboardKpisResponseSchema = z.object({
-  liquidMoney: z.number(),
-  investedMoney: z.number(),
-  totalInvestedCost: z.number(),
-  monthlyInterestIncome: z.number(),
-  totalMonthlyIncome: z.number(),
-  monthlyBills: z.number(),
-  monthlyReceipts: z.number(),
-  monthlySubscriptions: z.number(),
+  liquidMoney: z.string(),
+  investedMoney: z.string(),
+  totalInvestedCost: z.string(),
+  monthlyInterestIncome: z.string(),
+  totalMonthlyIncome: z.string(),
+  monthlyBills: z.string(),
+  monthlyReceipts: z.string(),
+  monthlySubscriptions: z.string(),
   currencyCode: z.string(),
 });
 
 const NetWorthPointSchema = z.object({
   date: z.string(),
-  value: z.number().optional(),
-  projection: z.number().optional(),
+  value: z.string().optional(),
+  projection: z.string().optional(),
 });
 
 const DashboardNetWorthResponseSchema = z.object({
   netWorth: z.array(NetWorthPointSchema),
 });
 
-const PortfolioItemSchema = z.object({ name: z.string(), value: z.number() });
+const PortfolioItemSchema = z.object({ name: z.string(), value: z.string() });
 
 const DashboardPortfolioResponseSchema = z.object({
   portfolio: z.array(PortfolioItemSchema),
@@ -39,7 +39,7 @@ const DashboardPortfolioResponseSchema = z.object({
 const LiquidFlowLinkSchema = z.object({
   source: z.number(),
   target: z.number(),
-  value: z.number(),
+  value: z.string(),
 });
 const LiquidFlowNodeSchema = z.object({ name: z.string() });
 
@@ -49,9 +49,9 @@ const DashboardMoneyFlowResponseSchema = z.object({
     links: z.array(LiquidFlowLinkSchema),
   }),
   liquidFlowSummary: z.object({
-    gained: z.number(),
-    lost: z.number(),
-    netChange: z.number(),
+    gained: z.string(),
+    lost: z.string(),
+    netChange: z.string(),
   }),
 });
 
@@ -62,12 +62,12 @@ const DashboardMonthlyExpensesResponseSchema = z.object({
   favoritedBillCategories: z.array(z.string()),
 });
 
-const ListItemSchema = z.object({ name: z.string(), total: z.number() });
+const ListItemSchema = z.object({ name: z.string(), total: z.string() });
 const DashboardListsResponseSchema = z.object({
   subscriptions: z.array(ListItemSchema),
   receipts: z.array(ListItemSchema),
-  totalSubscriptions: z.number(),
-  totalReceipts: z.number(),
+  totalSubscriptions: z.string(),
+  totalReceipts: z.string(),
 });
 
 // ─── router ───────────────────────────────────────────────────────────────────

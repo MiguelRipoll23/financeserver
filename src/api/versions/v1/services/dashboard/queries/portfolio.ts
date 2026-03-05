@@ -52,8 +52,8 @@ export async function getDashboardPortfolioData(
 
   return {
     portfolio: [
-      { name: "Liquid", value: liquidMoney },
-      { name: "Invested", value: investedMoney },
+      { name: "Liquid", value: liquidMoney.toFixed(2) },
+      { name: "Invested", value: investedMoney.toFixed(2) },
     ],
   };
 }

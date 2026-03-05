@@ -1,21 +1,21 @@
 // ─── Response types for /api/v1/dashboard/* endpoints ────────────────────────
 
 export interface DashboardKpisResponse {
-  liquidMoney: number;
-  investedMoney: number;
-  totalInvestedCost: number;
-  monthlyInterestIncome: number;
-  totalMonthlyIncome: number;
-  monthlyBills: number;
-  monthlyReceipts: number;
-  monthlySubscriptions: number;
+  liquidMoney: string;
+  investedMoney: string;
+  totalInvestedCost: string;
+  monthlyInterestIncome: string;
+  totalMonthlyIncome: string;
+  monthlyBills: string;
+  monthlyReceipts: string;
+  monthlySubscriptions: string;
   currencyCode: string;
 }
 
 export interface NetWorthPoint {
   date: string;
-  value?: number;
-  projection?: number;
+  value?: string;
+  projection?: string;
 }
 
 export interface DashboardNetWorthResponse {
@@ -23,15 +23,15 @@ export interface DashboardNetWorthResponse {
 }
 
 export interface DashboardPortfolioResponse {
-  portfolio: { name: string; value: number }[];
+  portfolio: { name: string; value: string }[];
 }
 
 export interface DashboardMoneyFlowResponse {
   liquidFlow: {
     nodes: { name: string }[];
-    links: { source: number; target: number; value: number }[];
+    links: { source: number; target: number; value: string }[];
   };
-  liquidFlowSummary: { gained: number; lost: number; netChange: number };
+  liquidFlowSummary: { gained: string; lost: string; netChange: string };
 }
 
 export interface DashboardMonthlyExpensesResponse {
@@ -42,8 +42,8 @@ export interface DashboardMonthlyExpensesResponse {
 }
 
 export interface DashboardListsResponse {
-  subscriptions: { name: string; total: number }[];
-  receipts: { name: string; total: number }[];
-  totalSubscriptions: number;
-  totalReceipts: number;
+  subscriptions: { name: string; total: string }[];
+  receipts: { name: string; total: string }[];
+  totalSubscriptions: string;
+  totalReceipts: string;
 }

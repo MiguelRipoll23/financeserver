@@ -76,16 +76,22 @@ export async function getDashboardMoneyFlowData(
   const nodeNames = ["Salary", "Interest", "Liquid Money", "Bills", "Merchants", "Subscriptions"] as const;
   const getIdx = (name: (typeof nodeNames)[number]) => nodeNames.indexOf(name);
 
-  const links = [
+  const numericLinks = [
     { source: getIdx("Salary"), target: getIdx("Liquid Money"), value: Math.max(monthlySalary, 0) },
     { source: getIdx("Interest"), target: getIdx("Liquid Money"), value: Math.max(monthlyInterestIncome, 0) },
     { source: getIdx("Liquid Money"), target: getIdx("Bills"), value: Math.max(billsOut, 0) },
     { source: getIdx("Liquid Money"), target: getIdx("Merchants"), value: Math.max(receiptsOut, 0) },
     { source: getIdx("Liquid Money"), target: getIdx("Subscriptions"), value: Math.max(subscriptionsOut, 0) },
-  ].filter((l) => l.value > 0);
+  ].filter((link) => link.value > 0);
+
+  const links = numericLinks.map((link) => ({ ...link, value: link.value.toFixed(2) }));
 
   return {
     liquidFlow: { nodes: nodeNames.map((name) => ({ name })), links },
-    liquidFlowSummary: { gained: totalIn, lost: totalOut, netChange: totalIn - totalOut },
+    liquidFlowSummary: {
+      gained: totalIn.toFixed(2),
+      lost: totalOut.toFixed(2),
+      netChange: (totalIn - totalOut).toFixed(2),
+    },
   };
 }
