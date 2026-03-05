@@ -555,11 +555,11 @@ export class BillsService {
       if (payload.bankAccountId !== undefined) {
         updateData.bankAccountId = payload.bankAccountId ?? null;
       }
-        await tx
-          .update(billsTable)
-          .set(updateData)
-          .where(eq(billsTable.id, billId));
-      }
+
+      await tx
+        .update(billsTable)
+        .set(updateData)
+        .where(eq(billsTable.id, billId));
 
       return await this.loadBillResponse(tx, billId);
     });
