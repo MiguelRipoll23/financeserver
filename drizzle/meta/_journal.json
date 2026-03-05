@@ -36,6 +36,20 @@
       "when": 1772368284982,
       "tag": "0004_amusing_thunderbird",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1772717034866,
+      "tag": "0005_superb_anthem",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1772717915024,
+      "tag": "0006_purple_rockslide",
+      "breakpoints": true
     }
   ]
 }

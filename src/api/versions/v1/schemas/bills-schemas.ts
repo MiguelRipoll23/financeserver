@@ -4,6 +4,11 @@ import { BillSortField } from "../enums/bill-sort-field-enum.ts";
 import { SortOrder } from "../enums/sort-order-enum.ts";
 import { DateOnlyStringSchema } from "./date-only-string-schema.ts";
 import { MonetaryStringSchema } from "./monetary-string-schema.ts";
+import { BILL_RECURRENCES } from "../../../../db/tables/bills-table.ts";
+
+export const BillRecurrenceSchema = z.enum(BILL_RECURRENCES)
+  .openapi({ example: "monthly" })
+  .describe("Billing recurrence interval");
 
 export const UpsertBillRequestSchema = z.object({
   date: DateOnlyStringSchema.describe("Date of the bill in YYYY-MM-DD format"),
@@ -27,6 +32,7 @@ export const UpsertBillRequestSchema = z.object({
     .openapi({ example: "example@example.com" })
     .describe("Sender's email address")
     .optional(),
+  recurrence: BillRecurrenceSchema.optional(),
 });
 
 export type UpsertBillRequest = z.infer<typeof UpsertBillRequestSchema>;
@@ -69,6 +75,7 @@ export const UpsertBillResponseSchema = z.object({
     .nullable()
     .openapi({ example: "2025-03-14T12:34:56.000Z" })
     .describe("Timestamp when the bill category was favorited, or null"),
+  recurrence: BillRecurrenceSchema.nullable().optional(),
   updatedAt: z
     .string()
     .openapi({ example: "2025-03-14T12:34:56.000Z" })

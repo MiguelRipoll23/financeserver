@@ -8,7 +8,7 @@ import {
   subscriptionPricesTable,
   subscriptionsTable,
 } from "../../../../../../db/schema.ts";
-import { currentMonthRange, toMonthlyAmount } from "../dashboard-helpers.ts";
+import { computeProjectedBillsAmount, currentMonthRange, toMonthlyAmount } from "../dashboard-helpers.ts";
 import type { DashboardMoneyFlowResponse } from "../dashboard-types.ts";
 
 export async function getDashboardMoneyFlowData(
@@ -16,11 +16,11 @@ export async function getDashboardMoneyFlowData(
 ): Promise<DashboardMoneyFlowResponse> {
   const { start, end } = currentMonthRange();
 
-  const [bankCalcs, monthBills, monthReceipts, activeSubscriptions, latestSalary] =
+  const [bankCalcs, monthBills, monthReceipts, activeSubscriptions, latestSalary, latestRecurringBillsResult] =
     await Promise.all([
       db.select({ monthlyProfit: bankAccountCalculationsTable.monthlyProfit })
         .from(bankAccountCalculationsTable),
-      db.select({ totalAmount: billsTable.totalAmount })
+      db.select({ totalAmount: billsTable.totalAmount, categoryId: billsTable.categoryId })
         .from(billsTable)
         .where(and(gte(billsTable.billDate, start), lte(billsTable.billDate, end))),
       db.select({ totalAmount: receiptsTable.totalAmount })
@@ -37,6 +37,14 @@ export async function getDashboardMoneyFlowData(
         .from(salaryChangesTable)
         .orderBy(desc(salaryChangesTable.date))
         .limit(1),
+      // Recurring bills ordered latest-first per category (for projection)
+      db.execute(sql`
+        SELECT DISTINCT ON (category_id)
+          category_id, total_amount, recurrence, bill_date
+        FROM bills
+        WHERE recurrence IS NOT NULL
+        ORDER BY category_id, bill_date DESC
+      `),
     ]);
 
   let monthlyInterestIncome = 0;
@@ -46,10 +54,22 @@ export async function getDashboardMoneyFlowData(
   }
 
   let billsOut = 0;
+<<<<<<< HEAD
+  const categoriesWithBillsThisMonth = new Set<number>();
   for (const b of monthBills) {
     const a = parseFloat(String(b.totalAmount));
     if (!isNaN(a)) billsOut += a;
+    categoriesWithBillsThisMonth.add(b.categoryId);
   }
+
+  // Add projected amounts for recurring bills
+  const recurringBills = latestRecurringBillsResult.rows.map((row) => ({
+    categoryId: Number(row.category_id),
+    totalAmount: String(row.total_amount),
+    recurrence: String(row.recurrence),
+    billDate: String(row.bill_date).split("T")[0],
+  }));
+  billsOut += computeProjectedBillsAmount(recurringBills, categoriesWithBillsThisMonth, start, end);
 
   let receiptsOut = 0;
   for (const r of monthReceipts) {

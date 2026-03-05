@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, isNull, lte, or, sql } from "drizzle-orm";
+import { and, desc, eq, gte, isNotNull, isNull, lte, or, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import {
   bankAccountBalancesTable,
@@ -14,7 +14,7 @@ import {
   subscriptionPricesTable,
   subscriptionsTable,
 } from "../../../../../../db/schema.ts";
-import { currentMonthRange, toMonthlyAmount } from "../dashboard-helpers.ts";
+import { computeProjectedBillsAmount, currentMonthRange, toMonthlyAmount } from "../dashboard-helpers.ts";
 import type { DashboardKpisResponse } from "../dashboard-types.ts";
 
 export async function getDashboardKpisData(
@@ -34,6 +34,7 @@ export async function getDashboardKpisData(
     monthReceipts,
     activeSubscriptions,
     latestSalary,
+    latestRecurringBillsResult,
   ] = await Promise.all([
     db.execute(sql`
       SELECT DISTINCT ON (bank_account_id)
@@ -63,7 +64,7 @@ export async function getDashboardKpisData(
       .from(roboadvisorFundCalculationsTable),
     db.select({ type: roboadvisorBalances.type, amount: roboadvisorBalances.amount })
       .from(roboadvisorBalances),
-    db.select({ totalAmount: billsTable.totalAmount })
+    db.select({ totalAmount: billsTable.totalAmount, categoryId: billsTable.categoryId })
       .from(billsTable)
       .where(and(gte(billsTable.billDate, start), lte(billsTable.billDate, end))),
     db.select({ totalAmount: receiptsTable.totalAmount })
@@ -83,6 +84,14 @@ export async function getDashboardKpisData(
       .from(salaryChangesTable)
       .orderBy(desc(salaryChangesTable.date))
       .limit(1),
+    // Recurring bills ordered latest-first per category (for projection)
+    db.execute(sql`
+      SELECT DISTINCT ON (category_id)
+        category_id, total_amount, recurrence, bill_date
+      FROM bills
+      WHERE recurrence IS NOT NULL
+      ORDER BY category_id, bill_date DESC
+    `),
   ]);
 
   let liquidMoney = 0;
@@ -132,10 +141,21 @@ export async function getDashboardKpisData(
   }
 
   let monthlyBills = 0;
+  const categoriesWithBillsThisMonth = new Set<number>();
   for (const bill of monthBills) {
     const amount = parseFloat(String(bill.totalAmount));
     if (!isNaN(amount)) monthlyBills += amount;
+    categoriesWithBillsThisMonth.add(bill.categoryId);
   }
+
+  // Add projected amounts for recurring bills not yet recorded this month
+  const recurringBills = latestRecurringBillsResult.rows.map((row) => ({
+    categoryId: Number(row.category_id),
+    totalAmount: String(row.total_amount),
+    recurrence: String(row.recurrence),
+    billDate: String(row.bill_date).split("T")[0],
+  }));
+  monthlyBills += computeProjectedBillsAmount(recurringBills, categoriesWithBillsThisMonth, start, end);
 
   let monthlyReceipts = 0;
   for (const receipt of monthReceipts) {
