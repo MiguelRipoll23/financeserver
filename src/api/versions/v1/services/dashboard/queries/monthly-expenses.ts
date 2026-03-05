@@ -93,19 +93,19 @@ export async function getDashboardMonthlyExpensesData(
       usedColors.add(categoryRecord.hexColor.toLowerCase());
     }
     if (categoryRecord.favoritedAt !== null) {
-      const match = sortedCats.find((bc) => normalizeCategory(bc) === normalized);
+      const match = sortedCats.find((billCategory) => normalizeCategory(billCategory) === normalized);
       if (match) favoritedBillCategories.push(match);
     }
   }
 
   let colorIdx = 0;
-  for (const cat of sortedCats) {
-    if (!categoryColors[cat]) {
+  for (const category of sortedCats) {
+    if (!categoryColors[category]) {
       let attempts = 0;
       while (attempts < DEFAULT_COLORS.length) {
         const candidate = DEFAULT_COLORS[colorIdx % DEFAULT_COLORS.length];
         if (!usedColors.has(candidate.toLowerCase())) {
-          categoryColors[cat] = candidate;
+          categoryColors[category] = candidate;
           usedColors.add(candidate.toLowerCase());
           colorIdx++;
           break;
@@ -113,8 +113,8 @@ export async function getDashboardMonthlyExpensesData(
         colorIdx++;
         attempts++;
       }
-      if (!categoryColors[cat]) {
-        categoryColors[cat] = DEFAULT_COLORS[colorIdx % DEFAULT_COLORS.length];
+      if (!categoryColors[category]) {
+        categoryColors[category] = DEFAULT_COLORS[colorIdx % DEFAULT_COLORS.length];
         colorIdx++;
       }
     }

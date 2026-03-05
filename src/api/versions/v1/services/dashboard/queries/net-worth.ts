@@ -109,7 +109,7 @@ export async function getDashboardNetWorthData(
     if (!isNaN(amount)) monthlySalary = toMonthlyAmount(amount, salaryRecord.recurrence);
   }
 
-  const netWorthPoints: NetWorthPoint[] = history.map((h) => ({ date: h.date, value: h.value }));
+  const netWorthPoints: NetWorthPoint[] = history.map((historyItem) => ({ date: historyItem.date, value: historyItem.value }));
 
   if (history.length > 0) {
     const last = history[history.length - 1];
