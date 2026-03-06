@@ -10,15 +10,21 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 
-export const BILL_RECURRENCES = ["weekly", "bi-weekly", "monthly", "quarterly", "yearly"] as const;
-export type BillRecurrence = typeof BILL_RECURRENCES[number];
+export const BILL_RECURRENCES = [
+  "weekly",
+  "bi-weekly",
+  "monthly",
+  "quarterly",
+  "yearly",
+] as const;
+export type BillRecurrence = (typeof BILL_RECURRENCES)[number];
 import { billCategoriesTable } from "./bill-categories-table.ts";
 
 export const billsTable = pgTable(
   "bills",
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
-    name: varchar("name", { length: 255 }).notNull(),
+    name: varchar("name", { length: 255 }),
     billDate: date("bill_date").notNull(),
     categoryId: bigint("category_id", { mode: "number" })
       .notNull()
