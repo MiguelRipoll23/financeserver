@@ -23,7 +23,7 @@ export const bankAccountsTable = pgTable(
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
     name: text("name").notNull(),
-    type: bankAccountTypeEnum("type").notNull().default("checking"),
+    type: bankAccountTypeEnum("type").notNull(),
     taxPercentage: numeric("tax_percentage", { precision: 8, scale: 6 }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
