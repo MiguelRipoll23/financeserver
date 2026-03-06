@@ -50,13 +50,6 @@
       "when": 1772717915024,
       "tag": "0006_purple_rockslide",
       "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1772802387073,
-      "tag": "0007_first_tigra",
-      "breakpoints": true
     }
   ]
 }
